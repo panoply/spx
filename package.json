@@ -1,0 +1,66 @@
+{
+  "name": "@brixtol/pjax",
+  "version": "0.1.0",
+  "private": false,
+  "description": "A modern next generation pjax solution for SSR web applications",
+  "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
+  "owner": "BRIXTOL TEXTILES",
+  "license": "MIT",
+  "types": "types/pjax.d.ts",
+  "main": "package/pjax.min.js",
+  "module": "package/pjax.esm.js",
+  "browser": "package/pjax.esm.min.js",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c --environment prod",
+    "deploy": "pnpm run build && netlify deploy -p",
+    "test": "ava --color --verbose --watch --timeout=2m"
+  },
+  "prettier": "@brixtol/prettier-config",
+  "eslintConfig": {
+    "extends": [
+      "@brixtol/eslint-config-javascript"
+    ]
+  },
+  "ava": {
+    "files": [
+      "tests/shopify.js"
+    ],
+    "require": [
+      "esm"
+    ]
+  },
+  "esm": {
+    "cjs": true
+  },
+  "dependencies": {
+    "mergerino": "^0.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "@brixtol/eslint-config-javascript": "workspace:^2.0.1",
+    "@brixtol/prettier-config": "workspace:^1.0.3",
+    "@brixtol/rollup-utils": "workspace:^0.1.0",
+    "@rollup/plugin-alias": "^3.1.1",
+    "@rollup/plugin-babel": "^5.2.1",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-replace": "^2.3.4",
+    "@types/aws-lambda": "^8.10.64",
+    "@types/facebook-js-sdk": "^3.3.1",
+    "@types/isomorphic-fetch": "^0.0.35",
+    "@types/lodash": "^4.14.165",
+    "@types/mithril": "^2.0.6",
+    "ava": "^3.13.0",
+    "esm": "^3.2.25",
+    "rollup": "^2.33.2",
+    "rollup-plugin-filesize": "^9.1.1",
+    "rollup-plugin-livereload": "^2.0.0",
+    "rollup-plugin-node-polyfills": "^0.2.1"
+  },
+  "peerDependencies": {
+    "ava": "^3.13.0",
+    "esm": "^3.2.25",
+    "rollup": "^2.26.11"
+  }
+}

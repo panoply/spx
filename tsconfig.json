@@ -1,0 +1,30 @@
+{
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [
+      "es2020",
+      "dom",
+      "dom.iterable"
+    ],
+    "module": "esnext",
+    "checkJs": true,
+    "allowSyntheticDefaultImports": true,
+    "keyofStringsOnly": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "noStrictGenericChecks": true,
+    "noEmit": true,
+    "suppressExcessPropertyErrors": true,
+    "noEmitOnError": true,
+    "noUnusedLocals": true,
+    "baseUrl": ".",
+    "pretty": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  }
+}
