@@ -1,21 +1,29 @@
-import { asyncTimeout, bytesToSize } from './utils'
+import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
+import { XHRFailed, XHRPrevented, XHRSuccess, XHREmpty, XHRExists } from '../constants/enums'
 import { store } from './store'
 
 /**
- * Updated the response DOMString cache size records
+ * Executes on request end. Removes the XHR recrod and update
+ * the response DOMString cache size record.
+
+ * @param {string} url
+ * DOM string, equivelent to`document.documentElement.outerHTML`
  *
  * @param {string} DOMString
  * DOM string, equivelent to`document.documentElement.outerHTML`
  *
- * @returns {Promise<void>}
+ * @returns {void}
  * Executes asynchronously, to prevent any delayed between requests
  */
-const HttpResponseSize = async DOMString => {
+function HttpRequestEnd (url, DOMString) {
 
+  const { total } = store.request.cache
+
+  store.request.xhr.delete(url)
   store.update.request({
     cache: {
-      total: (store.request.cache.total + encodeURI(DOMString).split(/%..|./).length - 1),
-      weight: bytesToSize(store.request.cache.total)
+      total: (total + byteSize(DOMString)),
+      weight: byteConvert(total)
     }
   })
 
@@ -32,14 +40,14 @@ const HttpResponseSize = async DOMString => {
  * @return {Promise<string>}
  * DOM string, equivelent to `document.documentElement.outerHTML`
  */
-const HttpRequest = ({
+function HttpRequest ({
   url,
   prefetch,
   target,
   location: {
     href
   }
-}) => {
+}) {
 
   const xhr = new XMLHttpRequest()
 
@@ -60,7 +68,7 @@ const HttpRequest = ({
     //
     xhr.onloadstart = e => store.request.xhr.set(url, xhr)
     xhr.onload = e => xhr.status === 200 ? resolve(xhr.responseText) : null
-    xhr.onloadend = e => store.request.xhr.delete(url)
+    xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText)
     xhr.onerror = reject
 
     // SEND
@@ -80,7 +88,7 @@ const HttpRequest = ({
  * @returns {void}
  * The request will either be aborted or warn in console if failed
  */
-export const cancel = url => {
+export function cancel (url) {
 
   if (store.request.xhr.has(url)) {
 
@@ -112,7 +120,7 @@ export const cancel = url => {
  * @return {Promise<boolean>}
  * Returns `true` if request resolved in `850ms` else `false`
  */
-export const inFlight = async (url, limit = 0) => {
+export async function inFlight (url, limit = 0) {
 
   if (store.request.xhr.has(url) && limit <= 85) {
     console.log('waiting', url, limit)
@@ -130,29 +138,40 @@ export const inFlight = async (url, limit = 0) => {
  * @param {IPjax.IState} state
  * The page state object acquired from link
  *
- * @return {Promise<string>}
- * DOM string, equivelent to `document.documentElement.outerHTML`
+ * @return {Promise<number>}
+ * A boolean response representing a successful or failed fetch
  */
-export const get = async (state) => {
+export async function get (state) {
 
-  if (!store.request.xhr.has(state.url)) {
+  if (store.request.xhr.has(state.url)) return XHRExists
+  if (!dispatchEvent('pjax:request', state.location, true)) return XHRPrevented
 
-    try {
+  try {
 
-      const DOMString = await HttpRequest(state)
+    const snapshot = await HttpRequest(state)
 
-      HttpResponseSize(DOMString)
+    if (typeof snapshot === 'string' && snapshot.length > 0) {
 
-      return DOMString
+      state.snapshot = snapshot
 
-    } catch (error) {
+      if (store.config.cache && !store.cache.has(state.url)) {
+        if (dispatchEvent('pjax:cache', state, true)) {
+          store.cache.set(state.url, state)
+        }
+      }
 
-      console.error(error)
+      return XHRSuccess
 
-      store.request.xhr.delete(state.url)
-
+    } else {
+      console.info(`Pjax: Failed to receive response at: ${state.url}`)
+      return XHREmpty
     }
 
+  } catch (error) {
+    store.request.xhr.delete(state.url)
+    console.error(error)
   }
+
+  return XHRFailed
 
 }
