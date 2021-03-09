@@ -18,9 +18,7 @@ export const store = (
 
       this.update.config(options)
       this.update.page(this.config)
-      this.update.prefetch()
       this.update.dom()
-      this.update.hrefs()
       this.update.request()
 
     }
@@ -100,32 +98,6 @@ export const store = (
     ,
 
     /* -------------------------------------------- */
-    /* OBSERVER GETTERS                             */
-    /* -------------------------------------------- */
-
-    /**
-     * @return {IPjax.IPrefetch}
-     */
-    get prefetch () {
-
-      return state.prefetch
-
-    }
-
-    ,
-
-    /**
-     * @return {IPjax.IHrefs}
-     */
-    get hrefs () {
-
-      return state.hrefs
-
-    }
-
-    ,
-
-    /* -------------------------------------------- */
     /* REQUEST GETTER                               */
     /* -------------------------------------------- */
 
@@ -162,11 +134,15 @@ export const store = (
             '#navbar',
             '[script]'
           ],
-          action: 'replace',
+          method: 'replace',
           prefetch: true,
           cache: true,
           throttle: 0,
-          progress: false
+          progress: false,
+          threshold: {
+            intersect: 250,
+            hover: 100
+          }
         }
       )
 
@@ -189,9 +165,7 @@ export const store = (
           chunks: Object.create(null),
           method: 'replace',
           prefetch: 'intersect',
-          action: {
-
-          },
+          action: {},
           cache: null,
           progress: false,
           reload: false,
@@ -231,53 +205,6 @@ export const store = (
 
       ,
 
-      prefetch: (
-        initial => patch => (
-          state.prefetch = merge(
-            initial,
-            { ...patch, transit: initial.transit }
-          )
-        )
-      )(
-        {
-          nodes: null,
-          started: false,
-          transit: new Map(),
-          threshold: {
-            intersect: 250,
-            hover: 100
-          }
-        }
-      )
-
-      ,
-
-      hrefs: (
-        initial => patch => (
-          state.hrefs = merge(
-            initial,
-            { ...patch, attrs: initial.attrs }
-          )
-
-        )
-      )(
-        {
-          started: false,
-          attrs: [
-            'target',
-            'action',
-            'prefetch',
-            'cache',
-            'progress',
-            'throttle',
-            'position',
-            'reload'
-          ]
-        }
-      )
-
-      ,
-
       request: (
         initial => patch => (
           state.request = merge(
@@ -302,7 +229,6 @@ export const store = (
 )(
   Object.create(
     {
-      document: '',
       started: false,
       cache: new Map()
     }
