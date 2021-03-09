@@ -1,6 +1,6 @@
 import { DOMParseFallback, isReplace } from '../constants/regexp'
 import { Implementation, ArraySlice, DomParser } from '../constants/common'
-import { Selectors, Dispatch, ForEach } from './utils'
+import { eachSelector, dispatchEvent, forEach } from './utils'
 import { store } from './store'
 
 /**
@@ -10,9 +10,9 @@ import { store } from './store'
  * @param {HTMLHeadElement} head
  * @return {string}
  */
-const DOMHeadNodes = (nodes, { children }) => {
+function DOMHeadNodes (nodes, { children }) {
 
-  ForEach(children, DOMNode => {
+  forEach(children, DOMNode => {
     if (DOMNode.tagName === 'TITLE') return null
     if (DOMNode.getAttribute('data-pjax-eval') !== 'false') {
       const index = nodes.indexOf(DOMNode.outerHTML)
@@ -29,7 +29,7 @@ const DOMHeadNodes = (nodes, { children }) => {
  *
  * @param {HTMLHeadElement} head
  */
-const DOMHead = ({ children }) => {
+function DOMHead ({ children }) {
 
   const targetNodes = Array.from(children).reduce((arr, node) => (
     node.tagName !== 'TITLE' ? (
@@ -40,7 +40,7 @@ const DOMHead = ({ children }) => {
   const fragment = document.createElement('div')
   fragment.innerHTML = DOMHeadNodes(targetNodes, document.head)
 
-  ForEach(fragment.children, DOMNode => {
+  forEach(fragment.children, DOMNode => {
     if (!DOMNode.hasAttribute('data-pjax-eval')) {
       document.head.appendChild(DOMNode)
     }
@@ -53,7 +53,7 @@ const DOMHead = ({ children }) => {
  *
  * @param {Element} node
  */
-const appendTrackedNode = (node) => {
+function appendTrackedNode (node) {
 
   // tracked element must contain id
   if (!node.hasAttribute('id')) return
@@ -74,9 +74,9 @@ const appendTrackedNode = (node) => {
  * @returns {(DOM: Element) => void}}
  * @memberof Render
  */
-const ReplaceTarget = (target, { action }) => DOM => {
+const replaceTarget = (target, { method }) => DOM => {
 
-  if (!isReplace.test(action)) {
+  if (!isReplace.test(method)) {
 
     DOM.innerHTML = target.innerHTML
 
@@ -84,9 +84,9 @@ const ReplaceTarget = (target, { action }) => DOM => {
 
     let fragment = document.createDocumentFragment()
 
-    ForEach(ArraySlice.call(target.childNodes), fragment.appendChild)
+    forEach(ArraySlice.call(target.childNodes), fragment.appendChild)
 
-    if (action === 'append') {
+    if (method === 'append') {
       DOM.appendChild(fragment)
     } else {
       DOM.insertBefore(fragment, DOM.firstChild)
@@ -95,8 +95,8 @@ const ReplaceTarget = (target, { action }) => DOM => {
     fragment = null
 
   }
-
 }
+
 /**
  * Parse HTML document string from request response
  * using `DomParser()` method. Cached pages will pass
@@ -105,7 +105,7 @@ const ReplaceTarget = (target, { action }) => DOM => {
  * @param {string} data
  * @return {Document}
  */
-const DOMParse = data => {
+export function DOMParse (data) {
 
   if (DomParser) return DomParser.parseFromString(data, 'text/html')
 
@@ -136,7 +136,9 @@ const DOMParse = data => {
  * @param {boolean} [popstate=false]
  * @memberof Render
  */
-export const update = (state, popstate = false) => {
+export function update (state, popstate = false) {
+
+  // console.log(state)
 
   const target = DOMParse(state.snapshot)
   const title = document.title = target.title || ''
@@ -151,20 +153,22 @@ export const update = (state, popstate = false) => {
 
   // APPEND TRACKED NODES
   //
-  Selectors(target, '[data-pjax-track]', appendTrackedNode)
+  eachSelector(target, '[data-pjax-track]', appendTrackedNode)
 
   let fallback = 1
 
   // REPLACE TARGETS
   //
-  ForEach(state.target, element => {
+  forEach(state.target, element => {
 
     const node = target.body.querySelector(element)
 
-    return node ? Selectors(
+    // if (node && node.hasAttribute('data-pjax-class')) setTargetClass(node)
+
+    return node ? eachSelector(
       document,
       element,
-      ReplaceTarget(node, state)
+      replaceTarget(node, state)
     ) : fallback++
 
   })
@@ -172,16 +176,15 @@ export const update = (state, popstate = false) => {
   // when no targets are found we will replace the
   // entire document body
   if (fallback === state.target.length) {
-    ReplaceTarget(target.body, state)(document.body)
+    replaceTarget(target.body, state)(document.body)
   }
 
   // SET SCROLL POSITION
   //
-  // window.scrollTo(state.position.x, state.position.y)
+  window.scrollTo(state.position.x, state.position.y)
 
   console.log(store.dom)
 
-  // @ts-ignore
-  Dispatch('pjax:load', { state })
+  dispatchEvent('pjax:load', { state })
 
 }
