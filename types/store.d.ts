@@ -131,6 +131,7 @@ export type IConfigPresets = {
    */
   throttle?: number
 
+
 }
 
 export interface IConfig {
@@ -249,25 +250,11 @@ export interface IDom {
   head?: object
 }
 
-export interface IPrefetch {
-  nodes?: IntersectionObserver,
-  started?: boolean,
-  readonly transit?: Map<string, number>,
-  threshold?: {
-    intersect?: number,
-    hover?: number
-  }
-}
 
 export type IAttrs<T extends string[]> = {
   [P in T as string]?: string[]
 }
 
-
-export interface IHrefs {
-  started?: boolean,
-  attrs?: string[]
-}
 
 export interface IRequest {
   readonly xhr?: Map<string, XMLHttpRequest>,
@@ -280,13 +267,10 @@ export interface IRequest {
 
 export interface IStoreState {
   started: boolean
-  document: Document,
   cache: Map<string, IState>
   config: IConfigPresets;
   page: IState;
   dom: IDom;
-  prefetch: IPrefetch;
-  hrefs: IHrefs;
   request: IRequest;
 }
 
@@ -295,8 +279,6 @@ export type IStoreUpdate = {
   config: (patch?: IConfigPresets) => IConfigPresets;
   page: (patch?: IState) => IState;
   dom: (patch?: IDom) => IDom;
-  prefetch: (patch?: IPrefetch) => IPrefetch;
-  hrefs: (patch?: IHrefs) => IHrefs;
   request: (patch?: IRequest) => IRequest;
 }
 
@@ -323,6 +305,14 @@ export interface IState extends IConfig {
    * Location URL
    */
   location?: ILocation
+
+  /**
+  * Threshold
+  */
+  threshold?: {
+    intersect?: number,
+    hover?: number
+  }
 
 }
 
