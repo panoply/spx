@@ -10,7 +10,7 @@ A modern next generation drop-in pjax solution for SSR web applications.
 ✓ Lifecycle event hooks<br>
 ✓ Intersection caching engine<br>
 ✓ Pre-fetching capabilities<br>
-✓ 6kb gzipped dependency free <br>
+✓ Tiny! Only 4.2kb minified and gzipped<br>
 ✓ Integrates seamlessly with Stimulus<br>
 
 ### Why?
@@ -19,16 +19,84 @@ The landscape of pjax orientated solutions has become rather scarce and all curr
 
 ### Differences
 
-This pjax solution will cache each request using an immutable state management pattern and provides opt-in prefetch capabilities using mouseover events and the Intersection Observer API. Each response is stored and rendered with the DOM Parser.
+This pjax solution will cache each request using an immutable state management pattern. It provides opt-in prefetch capabilities using mouseover events and/or the Intersection Observer API. Each response is stored and rendered with the native DOM Parser and you can set per-page options via data attributes.
 
-## Presets
+## Install
 
-| Option   | Type       | Default     |
-| -------- | ---------- | ----------- |
-| target   | `string[]` | `['#main']` |
-| action   | `string`   | `replace`   |
-| throttle | `number`   | `0`         |
-| cache    | `boolean`  | `true`      |
+```cli
+pnpm i @brixtol/pjax
+```
+
+> Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit.
+
+## Get Started
+
+You do not create a class instance, the module has no classes or any of that oop shit but you do need to call `connect` to initialize.
+
+```js
+import * as Pjax from "@brixtol/pjax";
+
+/* CONNECT
+/* -------------------------------------------- */
+
+Pjax.connect({
+  target: ["main", "#navbar"],
+  action: "replace",
+  prefetch: true,
+  cache: true,
+  throttle: 0,
+  progress: false,
+  threshold: {
+    intersect: 250,
+    hover: 100,
+  },
+});
+
+/* LIFECYCLE EVENTS
+/* -------------------------------------------- */
+
+document.addEventListener("pjax:load", ({ detail }) => {});
+
+document.addEventListener("pjax:click", (event) => {});
+
+document.addEventListener("pjax:request", (event) => {});
+
+document.addEventListener("pjax:cache", (event) => {});
+
+document.addEventListener("pjax:render", ({ detail }) => {});
+```
+
+You can also cherry-pick the export methods:
+
+```js
+import { connect } from "@brixtol/pjax";
+
+connect({
+  target: ["main", "#navbar"],
+  action: "replace",
+  prefetch: true,
+  cache: true,
+  throttle: 0,
+  progress: false,
+  threshold: {
+    intersect: 250,
+    hover: 100,
+  },
+});
+```
+
+## Define Presets
+
+The below options will be used as the global default presets. Pass these options within `Pjax.connect()` and they will be inherited and applied to each page navigation. Once initialized you can control each page visit using attributes. You can omit the options and just use the defaults if you would rather that.
+
+| Option    | Type       | Default                          |
+| --------- | ---------- | -------------------------------- |
+| target    | `string[]` | `['body']`                       |
+| method    | `string`   | `replace`                        |
+| throttle  | `number`   | `0`                              |
+| cache     | `boolean`  | `true`                           |
+| progress  | `boolean`  | `false`                          |
+| threshold | `object{}` | `{ intersect: 250, hover: 100 }` |
 
 ## Methods
 
@@ -44,7 +112,7 @@ Programmatic navigation visit to a URL. You can optionally pass in options for t
 
 Returns cache `Map` session. All methods available to `Map` can be accessed via this method.
 
-## Configuration
+## Navigation Options
 
 #### `data-pjax-eval="false"`
 
@@ -214,6 +282,26 @@ Example
 
 </details>
 
+#### `data-pjax-threshold="*"`
+
+Set the threshold timeouts for pre-fetches. By default these options are `250ms` for `intersect` and `100` for `hover` elements. You can optionally set to a preferred defaults on preset.
+
+<details>
+<summary>
+Example
+</summary>
+
+```html
+<!-- hover prefetch will begin 500ms after it was observed -->
+<!-- A prefetch will not be initialized if a click was detected before threshold -->
+<a data-pjax-prefetch="hover" data-pjax-threshold="500" href="*"></a>
+
+<!-- Intersection prefetch will begin 500ms after it was observed -->
+<a data-pjax-prefetch="intersect" data-pjax-threshold="500" href="*"></a>
+```
+
+</details>
+
 #### `data-pjax-position="*"`
 
 Scroll position of the next navigation. Space separated expression with colon separated prop and value.
@@ -282,20 +370,11 @@ Fires on pre-fetches after caching a response. If you are leveraging `intersect`
 
 #### `pjax:render`
 
-Fires before rendering document targets in the dom. When you are replacing multiple targets, it will fire for each replacement. If you are using a SPA framework like [Mithril](#)
+Fires before rendering document targets in the dom. When you are replacing multiple targets, it will fire for each replacement.
 
 #### `pjax:load`
 
 Fires on initialization and on each page navigation. Treat this event as you would the `DOMContentLoaded` event.
-
-### Acknowledgements
-
-This project owes its creation and some of the source code to the maintainers and developers who provide related pjax solutions within the nexus.
-
-- [brcontainer/pjax.js](#)
-- [hotwired/turbo](#)
-- [defunkt/jquery-pjax](#)
-- [youtube/spfjs](#)
 
 ### Licence
 
