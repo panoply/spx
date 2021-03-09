@@ -1,4 +1,4 @@
-import { ForEach, Dispatch, jsonAttrs } from '../app/utils'
+import { forEach, dispatchEvent, jsonAttrs } from '../app/utils'
 import { Link } from '../constants/common'
 import { isNumber, isBoolean, isWhitespace, inPosition } from '../constants/regexp'
 import { getCacheKeyFromTarget, getLocationFromURL } from '../app/location'
@@ -11,10 +11,10 @@ import { store } from '../app/store'
  * @param {MouseEvent} event
  * @return {boolean}
  */
-export const linkEventValidate = event => (
+export function linkEventValidate (event) {
 
   // @ts-ignore
-  !((event.target && event.target.isContentEditable) ||
+  return !((event.target && event.target.isContentEditable) ||
     event.defaultPrevented ||
     event.which > 1 ||
     event.altKey ||
@@ -22,34 +22,22 @@ export const linkEventValidate = event => (
     event.metaKey ||
     event.shiftKey)
 
-)
+}
 
 /**
  * Locted the closest link when click bubbles.
  *
  * @param {EventTarget} target
+ * The link `href` element target
+ *
+ * @param {string} selector
+ * The selector query name, eg: `[data-pjax]`
+ *
  * @return {Element|false}
  */
-const linkLocator = target => (target instanceof Element) ? target.closest(Link) : false
+export function linkLocator (target, selector) {
 
-/**
- * Sets the page state configuration object from which
- * attribute options will be applied.
- *
- * @param {Element} target
- * @return {IPjax.IState}
- */
-const setState = target => {
-
-  const url = getCacheKeyFromTarget(target)
-
-  return store.cache.has(url) ? store.cache.get(url) : store.update.page(
-    {
-      url,
-      location: getLocationFromURL(url)
-    }
-  )
-
+  return target instanceof Element ? target.closest(selector) : false
 }
 
 /**
@@ -58,40 +46,54 @@ const setState = target => {
  * navigation options.
  *
  * @param {Element} target
+ * The link `href` element target
+
  * @return {IPjax.IState}
+ * Returns an updated page state object
  */
-export const getState = target => {
+export function getState (target) {
 
-  const state = setState(target)
+  const url = getCacheKeyFromTarget(target)
+  const state = store.cache.has(url) ? (
+    store.cache.get(url)
+  ) : store.update.page({
+    url,
+    location: getLocationFromURL(url)
+  })
 
-  ForEach(store.hrefs.attrs, prop => {
+  forEach(store.hrefs.attrs, prop => {
 
     const value = target.getAttribute(`data-pjax-${prop}`)
 
-    if (value === null) return
+    if (value === null) {
+      if (
+        prop === 'prefetch' &&
+        value !== 'hover' &&
+        value !== 'intersect') state[prop] = false
+    } else {
 
-    state[prop] = (prop === 'target') ? (
+      state[prop] = prop === 'target' ? (
 
-      value.split(isWhitespace)
+        value.split(isWhitespace)
 
-    ) : (prop === 'position' || prop === 'chunks') ? (
+      ) : (prop === 'position' || prop === 'chunks') ? (
 
-      value.match(inPosition).reduce(jsonAttrs, {})
+        value.match(inPosition).reduce(jsonAttrs, {})
 
-    ) : isBoolean.test(value.trim()) ? (
+      ) : isBoolean.test(value.trim()) ? (
 
-      value === 'true'
+        value === 'true'
 
-    ) : isNumber.test(value.trim()) ? (
+      ) : isNumber.test(value.trim()) ? (
 
-      Number(value)
+        Number(value)
 
-    ) : (
+      ) : (
 
-      value.trim()
+        value.trim()
 
-    )
-
+      )
+    }
   })
 
   return state
@@ -99,28 +101,22 @@ export const getState = target => {
 }
 
 /**
- * Attempted to visit location, Handles bubbled click events and
+ * Attempts to visit href location, Handles click bubbles and
  * Dispatches a `pjax:click` event respecting the cancelable
  * `preventDefault()` from user event
  *
  * @param {MouseEvent} event
  */
-const visitOnClick = (event) => {
+function visitOnClick (event) {
 
   if (linkEventValidate(event)) {
+    event.preventDefault()
 
-    const target = linkLocator(event.target)
+    const target = linkLocator(event.target, Link)
 
     if (target) {
-
-      event.preventDefault()
-
-      const newState = getState(target)
-
-      if (Dispatch('pjax:click', { state: newState, target }, true)) {
-        return navigate(newState)
-      }
-
+      const state = getState(target)
+      if (dispatchEvent('pjax:click', state, true)) return navigate(state)
     }
   }
 }
@@ -130,7 +126,7 @@ const visitOnClick = (event) => {
  *
  * @private
  */
-const captureClick = () => {
+function captureClick () {
 
   removeEventListener('click', visitOnClick, false)
   addEventListener('click', visitOnClick, false)
@@ -140,9 +136,9 @@ const captureClick = () => {
 /**
  * Attached `click` event listener.
  *
- * @memberof LinksObserver
+ * @export
  */
-export const start = () => {
+export function start () {
 
   if (!store.hrefs.started) {
     addEventListener('click', captureClick, true)
@@ -154,9 +150,9 @@ export const start = () => {
 /**
  * Removed `click` event listener.
  *
- * @memberof LinksObserver
+ * @export
  */
-export const stop = () => {
+export function stop () {
 
   if (store.hrefs.started) {
     removeEventListener('click', captureClick, true)
