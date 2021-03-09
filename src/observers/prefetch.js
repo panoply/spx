@@ -6,6 +6,26 @@ import { getCacheKeyFromTarget } from '../app/location'
 import { store } from '../app/store'
 
 /**
+ * @exports
+ * @type {Map<string, number>}
+ */
+export const transit = new Map()
+
+/**
+ * @type IntersectionObserver
+ */
+let nodes
+
+/**
+ * @type Boolean
+ */
+let started = false
+
+/* -------------------------------------------- */
+/* FUNCTIONS                                    */
+/* -------------------------------------------- */
+
+/**
  * Cleanup throttlers
  *
  * @param {string} url
@@ -13,10 +33,10 @@ import { store } from '../app/store'
  */
 function cleanup (url) {
 
-  clearTimeout(store.prefetch.transit.get(url))
+  clearTimeout(transit.get(url))
 
   // remove request reference
-  store.prefetch.transit.delete(url)
+  transit.delete(url)
 
 }
 
@@ -29,8 +49,8 @@ function cleanup (url) {
  */
 function fetchThrottle (url, fn, delay) {
 
-  if (!store.cache.has(url) && !store.prefetch.transit.has(url)) {
-    store.prefetch.transit.set(url, setTimeout(fn, delay))
+  if (!store.cache.has(url) && !transit.has(url)) {
+    transit.set(url, setTimeout(fn, delay))
   }
 }
 
@@ -87,7 +107,7 @@ function fetchOnHover (event) {
           }
         })
 
-      }, store.prefetch.threshold.hover)
+      }, state.threshold.hover)
     }
   }
 }
@@ -105,13 +125,13 @@ function OnIntersection ({ isIntersecting, target }) {
 
     fetchThrottle(state.url, () => {
 
-      store.prefetch.nodes.unobserve(target)
+      nodes.unobserve(target)
 
       prefetchRequest(state, status => {
-        if (status !== XHRSuccess) store.prefetch.nodes.observe(target)
+        if (status !== XHRSuccess) nodes.observe(target)
       })
 
-    }, store.prefetch.threshold.intersect)
+    }, state.threshold.intersect)
   }
 }
 
@@ -123,7 +143,7 @@ function OnIntersection ({ isIntersecting, target }) {
  */
 function observeLinks (target) {
 
-  return store.prefetch.nodes.observe(target)
+  return nodes.observe(target)
 }
 
 /**
@@ -186,12 +206,12 @@ function observeIntersects (entries) {
  */
 export function start () {
 
-  if (!store.prefetch.started) {
+  if (!started) {
 
-    store.prefetch.nodes = new IntersectionObserver(observeIntersects)
+    nodes = new IntersectionObserver(observeIntersects)
     getTargets(LinkPrefetchIntersect).forEach(observeLinks)
     getTargets(LinkPrefetchHover).forEach(observeHovers)
-    store.prefetch.started = true
+    started = true
   }
 }
 
@@ -203,11 +223,11 @@ export function start () {
  */
 export function stop () {
 
-  if (store.prefetch.started) {
+  if (started) {
 
-    store.prefetch.transit.clear()
-    store.prefetch.nodes.disconnect()
+    transit.clear()
+    nodes.disconnect()
     getTargets(LinkPrefetchHover).forEach(disconnectHover)
-    store.prefetch.started = false
+    started = false
   }
 }

@@ -6,6 +6,29 @@ import { navigate } from '../app/controller'
 import { store } from '../app/store'
 
 /**
+ * @type {boolean}
+ */
+let started = false
+
+/**
+ * @type {string[]}
+ */
+const attrs = [
+  'target',
+  'action',
+  'prefetch',
+  'cache',
+  'progress',
+  'throttle',
+  'position',
+  'reload'
+]
+
+/* -------------------------------------------- */
+/* FUNCTIONS                                    */
+/* -------------------------------------------- */
+
+/**
  * Handles a clicked link, prevents special click types.
  *
  * @param {MouseEvent} event
@@ -61,7 +84,7 @@ export function getState (target) {
     location: getLocationFromURL(url)
   })
 
-  forEach(store.hrefs.attrs, prop => {
+  forEach(attrs, prop => {
 
     const value = target.getAttribute(`data-pjax-${prop}`)
 
@@ -76,7 +99,7 @@ export function getState (target) {
 
         value.split(isWhitespace)
 
-      ) : (prop === 'position' || prop === 'chunks') ? (
+      ) : (prop === 'position' || prop === 'threshold' || prop === 'chunks') ? (
 
         value.match(inPosition).reduce(jsonAttrs, {})
 
@@ -140,9 +163,9 @@ function captureClick () {
  */
 export function start () {
 
-  if (!store.hrefs.started) {
+  if (!started) {
     addEventListener('click', captureClick, true)
-    store.hrefs.started = true
+    started = true
   }
 
 }
@@ -154,9 +177,9 @@ export function start () {
  */
 export function stop () {
 
-  if (store.hrefs.started) {
+  if (started) {
     removeEventListener('click', captureClick, true)
-    store.hrefs.started = false
+    started = false
   }
 
 }
