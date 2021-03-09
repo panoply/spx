@@ -1,17 +1,9 @@
 import * as hrefs from './hrefs'
 import * as request from '../app/request'
-import { Dispatch } from '../app/utils'
+import { XHRSuccess } from '../constants/enums'
 import { LinkPrefetchHover, LinkPrefetchIntersect } from '../constants/common'
 import { getCacheKeyFromTarget } from '../app/location'
 import { store } from '../app/store'
-
-/**
- * Begin Observing `href` links
- *
- * @param {Element} target
- * @memberof PrefetchObserver
- */
-const observeLinks = target => store.prefetch.nodes.observe(target)
 
 /**
  * Cleanup throttlers
@@ -19,12 +11,13 @@ const observeLinks = target => store.prefetch.nodes.observe(target)
  * @param {string} url
  * @memberof PrefetchObserver
  */
-const cleanup = url => {
+function cleanup (url) {
 
   clearTimeout(store.prefetch.transit.get(url))
 
   // remove request reference
   store.prefetch.transit.delete(url)
+
 }
 
 /**
@@ -34,7 +27,7 @@ const cleanup = url => {
  * @param {function} fn
  * @param {number} delay
  */
-const fetchThrottle = (url, fn, delay) => {
+function fetchThrottle (url, fn, delay) {
 
   if (!store.cache.has(url) && !store.prefetch.transit.has(url)) {
     store.prefetch.transit.set(url, setTimeout(fn, delay))
@@ -48,30 +41,19 @@ const fetchThrottle = (url, fn, delay) => {
  * @param {IPjax.IState} state
  * The navigation configuration state for the requestd page
  *
- * @param {Element} target
+ * @param {(status: number) => void} callback
  * The `href` link target the prefetch was issued for
  */
-const prefetchRequest = async (state, target) => {
+async function prefetchRequest (state, callback) {
 
-  console.log('prefetch', state.url)
-
+  // console.log('prefetch', state.url)
   try {
 
-    state.snapshot = await request.get(state)
+    const response = await request.get(state)
 
-    if (state.snapshot.length > 0) {
-      if (Dispatch('pjax:cache', { state, target }, true)) {
-        store.cache.set(state.url, state)
-        console.log(store.cache)
-      }
-    } else {
-      store.prefetch.nodes.observe(target)
-      console.info(`Prefetch will retry on url: ${state.url}`)
-    }
+    callback(response)
+
   } catch (error) {
-
-    store.prefetch.nodes.observe(target)
-
     console.error(error)
     console.info(`Endpoint "${state.url}" failed, will retry prefetch again`)
   }
@@ -81,28 +63,32 @@ const prefetchRequest = async (state, target) => {
 }
 
 /**
- * Attempted to visit location, Handles bubbled click events and
- * Dispatches a `pjax:click` event respecting the cancelable
- * `preventDefault()` from user event
- *
+ * Attempts to visit location, Handles bubbled mousovers and
+ * Dispatches to the fetcher. Once item is cached, the mouseover
+ * event is removed.
  *
  * @param {MouseEvent} event
  */
-const fetchOnHover = (event) => {
+function fetchOnHover (event) {
 
-  if (hrefs.linkEventValidate(event) && event.target instanceof Element) {
+  if (hrefs.linkEventValidate(event)) {
 
-    const state = hrefs.getState(event.target)
+    const target = hrefs.linkLocator(event.target, LinkPrefetchHover)
 
-    fetchThrottle(state.url, () => {
+    if (target) {
 
-      event.target.removeEventListener('mouseover', fetchOnHover)
+      const state = hrefs.getState(target)
 
-      // @ts-ignore
-      prefetchRequest(state, event.target)
+      fetchThrottle(state.url, () => {
 
-    }, store.prefetch.threshold.hover)
+        prefetchRequest(state, status => {
+          if (status === XHRSuccess) {
+            target.removeEventListener('mouseover', fetchOnHover, true)
+          }
+        })
 
+      }, store.prefetch.threshold.hover)
+    }
   }
 }
 
@@ -111,7 +97,7 @@ const fetchOnHover = (event) => {
  *
  * @param {IntersectionObserverEntry} params
  */
-const OnIntersection = ({ isIntersecting, target }) => {
+function OnIntersection ({ isIntersecting, target }) {
 
   if (isIntersecting) {
 
@@ -121,11 +107,23 @@ const OnIntersection = ({ isIntersecting, target }) => {
 
       store.prefetch.nodes.unobserve(target)
 
-      prefetchRequest(state, target)
+      prefetchRequest(state, status => {
+        if (status !== XHRSuccess) store.prefetch.nodes.observe(target)
+      })
 
     }, store.prefetch.threshold.intersect)
-
   }
+}
+
+/**
+ * Begin Observing `href` links
+ *
+ * @param {Element} target
+ * @memberof PrefetchObserver
+ */
+function observeLinks (target) {
+
+  return store.prefetch.nodes.observe(target)
 }
 
 /**
@@ -134,54 +132,62 @@ const OnIntersection = ({ isIntersecting, target }) => {
  * @param {Element} target
  * @returns {boolean}
  */
-const canFetch = target => !store.cache.has(getCacheKeyFromTarget(target))
+function canFetch (target) {
+
+  return !store.cache.has(getCacheKeyFromTarget(target))
+}
 
 /**
  * Returns a list of link elements to be prefetched. Filters out
  * any links which exist in cache to prevent extrenous transit.
  *
- * @param {string} el
+ * @param {string} selector
  */
-const getTargets = el => Array.from(document.body.querySelectorAll(el)).filter(canFetch)
+function getTargets (selector) {
+
+  return Array.from(document.body.querySelectorAll(selector)).filter(canFetch)
+}
 
 /**
  * Adds and/or Removes click events.
  *
  * @param {EventTarget} target
  */
-const disconnectHover = target => target.removeEventListener('mouseover', fetchOnHover)
+function disconnectHover (target) {
+
+  return target.removeEventListener('mouseover', fetchOnHover, false)
+}
 
 /**
  * Adds and/or Removes click events.
  *
  * @param {EventTarget} target
  */
-const observeHovers = target => target.addEventListener('mouseover', fetchOnHover)
+function observeHovers (target) {
+
+  return target.addEventListener('mouseover', fetchOnHover, true)
+}
 
 /**
  * Start Intersection Observer and iterate over entries.
  *
  * @type {IntersectionObserverCallback}
  */
-const observeIntersects = entries => entries.forEach(OnIntersection)
+function observeIntersects (entries) {
 
-/**
- * Checks if prefetch for the passed in url is currently in flight.
- *
- * @param {string} url
- * The `cacheKey` url identifier
- *
- * @returns {boolean}
- * Returns `true` when url is being pre-fetched, else `false`
- */
-export const inFlight = url => store.prefetch.transit.has(url)
+  return entries.forEach(OnIntersection)
+}
 
 /**
  * Starts prefetch, will initialize `IntersectionObserver` and
  * add event listeners and other logics.
+ *
+ * @export
  */
-export const start = () => {
+export function start () {
+
   if (!store.prefetch.started) {
+
     store.prefetch.nodes = new IntersectionObserver(observeIntersects)
     getTargets(LinkPrefetchIntersect).forEach(observeLinks)
     getTargets(LinkPrefetchHover).forEach(observeHovers)
@@ -192,9 +198,13 @@ export const start = () => {
 /**
  * Stops prefetch, will disconnect `IntersectionObserver` and
  * remove any event listeners or transits.
+ *
+ * @export
  */
-export const stop = () => {
+export function stop () {
+
   if (store.prefetch.started) {
+
     store.prefetch.transit.clear()
     store.prefetch.nodes.disconnect()
     getTargets(LinkPrefetchHover).forEach(disconnectHover)
