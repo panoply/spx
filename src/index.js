@@ -19,17 +19,11 @@ export const supported = !!(
  */
 export const connect = options => {
 
-  const initialize = controller.initialize(undefined)
-
   store.connect(options)
 
   if (supported) {
     if (Protocol.test(window.location.protocol)) {
-      if (isReady.test(document.readyState)) {
-        initialize()
-      } else {
-        addEventListener('DOMContentLoaded', initialize, false)
-      }
+      if (isReady.test(document.readyState)) controller.initialize()
     } else {
       console.error('Invalid protocol, pjax expects https or http protocol')
     }
@@ -60,6 +54,4 @@ export const visit = state => controller.navigate(state)
  *
  * Disconnect Pjax
  */
-export const disconnect = () => {
-
-}
+export const disconnect = () => controller.destroy()
