@@ -180,9 +180,11 @@ Example
 ></a>
 ```
 
-#### `data-pjax-action="*"`
+</details>
 
-The navigation action to execute on navigation. Accepts `replace`, `append` or `prepend`. When multiple target selectors are defined, space separate actions in accordance with target order.
+#### `data-pjax-method="*"`
+
+The navigation method to execute on navigation. Accepts `replace`, `append` or `prepend`. When multiple target selectors are defined, space separate actions in accordance with target order.
 
 <details>
 <summary>
@@ -190,7 +192,7 @@ Example
 </summary>
 
 ```html
-<a data-pjax-action="replace" href="*"></a>
+<a data-pjax-method="replace" href="*"></a>
 ```
 
 </details>
@@ -272,7 +274,7 @@ Fires when when a link has been clicked. You can cancel the pjax navigation with
 
 #### `pjax:request`
 
-Fires after a request has been made. You can access the parsed response document via `target`and made adjustments where necessary.
+Fires after a request has completed. You can access the parsed response document via `target`and make adjustments where necessary.
 
 #### `pjax:cache`
 
