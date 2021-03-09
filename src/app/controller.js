@@ -128,7 +128,7 @@ export const cacheVisit = url => {
  */
 export async function pjaxVisit (state) {
 
-  if (store.prefetch.transit.has(state.url)) {
+  if (prefetch.transit.has(state.url)) {
     if ((await request.inFlight(state.url))) return cacheVisit(state.url)
     request.cancel(state.url)
   }
