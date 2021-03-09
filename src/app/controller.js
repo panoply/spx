@@ -2,41 +2,97 @@ import * as hrefs from '../observers/hrefs'
 import * as prefetch from '../observers/prefetch'
 import * as render from './render'
 import * as request from './request'
+import { XHRSuccess } from '../constants/enums'
+import { dispatchEvent } from './utils'
 import { store } from './store'
+import { expandURL, getCacheKey, getLocation } from './location'
 
 /**
  * Popstate event handler
  *
  * @param {PopStateEvent} event
  */
-const popstate = event => {
+function popstate (event) {
 
   if (store.config.prefetch) prefetch.stop()
-  if (event?.state) render.update(event.state, true)
+
+  if (event?.state) {
+    render.update(event.state, true)
+  } else {
+
+    // If get here default to regular back button
+    history.back()
+  }
+
   if (store.config.prefetch) prefetch.start()
 
 }
 
 /**
- * Initialize
+ * Sets initial page state on landing page and
+ * caches it so return navigation don't perform an extrenous
+ * request
  *
- * @param {boolean} started
+ * @param {Window} window
  */
-export const initialize = started => () => {
+function setInitialCache ({ location: { href } }) {
 
-  if (typeof started !== 'undefined' && !started) {
+  const location = expandURL(href)
+  const url = getCacheKey(location)
+  const state = store.update.page({
+    url,
+    location: getLocation(location),
+    snapshot: document.documentElement.outerHTML
+  })
+
+  store.cache.set(url, state)
+
+}
+
+/**
+ * Initialize
+ */
+export const initialize = () => {
+
+  if (!store.started) {
+
+    setInitialCache(window)
 
     hrefs.start()
     prefetch.start()
 
-    addEventListener('popstate', popstate)
+    console.info('Pjax: Connection Established ⚡')
 
-    started = true
+    addEventListener('popstate', popstate)
+    dispatchEvent('pjax:load', store.page)
+
+    store.started = true
+
+  }
+
+}
+
+/**
+ * Destory Pjax instances
+ *
+ * @exports
+ */
+export function destroy () {
+
+  if (store.started) {
+
+    removeEventListener('popstate', popstate)
+
+    hrefs.stop()
+    prefetch.stop()
+
+    store.cache.clear()
+    store.started = false
+
+    console.info('Pjax: Instance has been disconnected! 😔')
 
   } else {
-
-    started = false
-
+    console.info('Pjax: No connection made, disconnection is void 🙃')
   }
 
 }
@@ -46,16 +102,18 @@ export const initialize = started => () => {
  * from the session and passes it to the renderer.
  *
  * @param {string} url
+ * @exports
  */
 export const cacheVisit = url => {
 
   const state = store.cache.get(url)
 
-  console.log('cache', url)
+  // console.log('cache', url)
 
   if (store.config.prefetch) prefetch.stop()
 
-  render.update(state)
+  // ensure we have state before updating
+  if (state) render.update(state)
 
   if (store.config.prefetch) prefetch.start()
 
@@ -68,20 +126,18 @@ export const cacheVisit = url => {
  *
  * @param {IPjax.IState} state
  */
-export const pjaxVisit = async state => {
+export async function pjaxVisit (state) {
 
-  if (prefetch.inFlight(state.url)) {
+  if (store.prefetch.transit.has(state.url)) {
     if ((await request.inFlight(state.url))) return cacheVisit(state.url)
     request.cancel(state.url)
   }
 
   if (store.config.prefetch) prefetch.stop()
 
-  state.snapshot = await request.get(state)
+  const response = await request.get(state)
 
-  if (!store.cache.has(state.url)) store.cache.set(state.url, state)
-
-  render.update(state)
+  if (response === XHRSuccess) render.update(store.page)
 
   if (store.config.prefetch) prefetch.start()
 
@@ -92,6 +148,7 @@ export const pjaxVisit = async state => {
  *
  * @param {IPjax.IState} state
  */
-export const navigate = state => (
-  store.cache.has(state.url) ? cacheVisit(state.url) : pjaxVisit(state)
-)
+export function navigate (state) {
+
+  return store.cache.has(state.url) ? cacheVisit(state.url) : pjaxVisit(state)
+}
