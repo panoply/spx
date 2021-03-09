@@ -41,6 +41,13 @@ export const isWhitespace = /\s+/g
 export const isReplace = /\b(ap|pre)pend\b/
 
 /**
+ * Class Event Attribute Value
+ *
+ * Used to match a class event caller target attributes
+ */
+export const inClass = /\b(?:add|remove|toggle)\b(?=\()|(?<=['"])[^'"]+(?=["'])/g
+
+/**
  * Mached Position Attributes
  *
  * Used to match `x:0` and `y:0` JSON space separated attributes
