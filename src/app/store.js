@@ -28,6 +28,26 @@ export const store = (
     ,
 
     /* -------------------------------------------- */
+    /* STARTED                                      */
+    /* -------------------------------------------- */
+
+    get started () {
+
+      return state.started
+
+    }
+
+    ,
+
+    set started (status) {
+
+      state.started = status
+
+    }
+
+    ,
+
+    /* -------------------------------------------- */
     /* CACHE                                        */
     /* -------------------------------------------- */
 
@@ -167,8 +187,11 @@ export const store = (
           snapshot: '',
           target: [],
           chunks: Object.create(null),
-          action: 'replace',
+          method: 'replace',
           prefetch: 'intersect',
+          action: {
+
+          },
           cache: null,
           progress: false,
           reload: false,
@@ -221,7 +244,7 @@ export const store = (
           started: false,
           transit: new Map(),
           threshold: {
-            intersect: 200,
+            intersect: 250,
             hover: 100
           }
         }
@@ -279,6 +302,8 @@ export const store = (
 )(
   Object.create(
     {
+      document: '',
+      started: false,
       cache: new Map()
     }
   )
