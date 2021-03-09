@@ -12,7 +12,7 @@ export type IEvents = (
 /**
  * Action to be executed on navigation.
  */
-export type IConfigAction = 'replace' | 'prepend' | 'append'
+export type IConfigMethod= 'replace' | 'prepend' | 'append'
 
 /**
  * Prefetch operation on navigation
@@ -94,19 +94,22 @@ export type IConfigPresets = {
    */
   target?: string[],
   /**
-   * Default action to be applied.
+   * Default method to be applied.
    *
    * @default 'replace'
    */
-  action?: string,
+  method?: string,
   /**
-   * Enable disable prefetching
+   * Enable/disable prefetching. Settings this option to `false`will
+   * prevent prefetches from occuring and ignore all `data-pjax-prefetch="*"`
+   * attributes.
    *
    * @default true
    */
   prefetch?: boolean
   /**
-   * Enable disable request caching
+   * Enable disable request caching, setting this option to `false` will
+   * prevent cached navigations and ignore all `data-pjax-cache="*"` attributes.
    *
    * @default true
    */
@@ -127,6 +130,7 @@ export type IConfigPresets = {
    * @default 0
    */
   throttle?: number
+
 }
 
 export interface IConfig {
@@ -141,7 +145,7 @@ export interface IConfig {
   target?: string[]
 
   /**
-   * Default action to be applied.
+   * Default method to be applied.
    * ---
    * `replace` - Navigation target will be replaced
    *
@@ -150,7 +154,7 @@ export interface IConfig {
    * `prepend` - Navigation target will be prepended
    *
    */
-  action?: string
+  method?: string
 
   /**
    * Controls the caching engine for the link navigation.
@@ -275,6 +279,8 @@ export interface IRequest {
 }
 
 export interface IStoreState {
+  started: boolean
+  document: Document,
   cache: Map<string, IState>
   config: IConfigPresets;
   page: IState;
@@ -318,7 +324,6 @@ export interface IState extends IConfig {
    */
   location?: ILocation
 
-
 }
 
 
@@ -327,8 +332,8 @@ export interface IState extends IConfig {
  */
 export interface IEventDetails {
   target?: Element,
-  config?: IConfig,
-  url?: ILocation
+  state?: IConfig,
+  data?: any
 }
 
 

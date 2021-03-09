@@ -1,5 +1,5 @@
 
-export default interface Pjax {
+interface Pjax {
 
   /**
    * Pjax Support
@@ -34,3 +34,4 @@ export default interface Pjax {
 
 }
 
+export default Pjax
