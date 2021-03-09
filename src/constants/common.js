@@ -34,6 +34,6 @@ export const Form = 'form:not([data-pjax-disable]):not([action^="javascript:"])'
 export const DomParser = new DOMParser()
 
 /**
- * Cache
+ * Units
  */
-export const Cache = new Map()
+export const Units = [ 'B', 'KB', 'MB', 'GB', 'TB' ]
