@@ -78,6 +78,8 @@ const replaceTarget = (target, { method }) => DOM => {
 
   if (!isReplace.test(method)) {
 
+    dispatchEvent('pjax:render', { method, fragment: target })
+
     DOM.innerHTML = target.innerHTML
 
   } else {
@@ -87,8 +89,10 @@ const replaceTarget = (target, { method }) => DOM => {
     forEach(ArraySlice.call(target.childNodes), fragment.appendChild)
 
     if (method === 'append') {
+      dispatchEvent('pjax:render', { method, fragment })
       DOM.appendChild(fragment)
     } else {
+      dispatchEvent('pjax:render', { method, fragment })
       DOM.insertBefore(fragment, DOM.firstChild)
     }
 
