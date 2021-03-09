@@ -1,4 +1,5 @@
 import { isNumber } from '../constants/regexp'
+import { Units } from './../constants/common'
 
 /**
  * Constructs a JSON object from HTML `data-pjax-*` attributes.
@@ -23,37 +24,44 @@ import { isNumber } from '../constants/regexp'
  * { string: 'foo', number: 200 }
  *
  */
-export const jsonAttrs = (accumulator, current, index, source) => (index % 2 ? ({
-  ...accumulator
-  , [source[(source.length - 1) >= index ? (
-    index - 1
-  ) : index]]: isNumber.test(current) ? Number(current) : current
-}) : accumulator)
+export function jsonAttrs (accumulator, current, index, source) {
+
+  return (index % 2 ? ({
+    ...accumulator
+    , [source[(source.length - 1) >= index ? (
+      index - 1
+    ) : index]]: isNumber.test(current) ? Number(current) : current
+  }) : accumulator)
+
+}
 
 /**
- * UUID
- *
  * Unqiue Identifier code for cached state
+ *
+ * NOT IN USE
  *
  * @returns {string}
  */
-export const uuid = () => Array.apply(
-  null
-  , { length: 36 }
-).map((
-  _
-  , index
-) => (
-  (index === 8 || index === 13 || index === 18 || index === 23) ? (
-    '-'
-  ) : index === 14 ? (
-    '4'
-  ) : index === 19 ? (
-    (Math.floor(Math.random() * 4) + 8).toString(16)
-  ) : (
-    Math.floor(Math.random() * 15).toString(16)
-  )
-)).join('')
+export function uuid () {
+
+  return Array.apply(
+    null
+    , { length: 36 }
+  ).map((
+    _
+    , index
+  ) => (
+    (index === 8 || index === 13 || index === 18 || index === 23) ? (
+      '-'
+    ) : index === 14 ? (
+      '4'
+    ) : index === 19 ? (
+      (Math.floor(Math.random() * 4) + 8).toString(16)
+    ) : (
+      Math.floor(Math.random() * 15).toString(16)
+    )
+  )).join('')
+}
 
 /**
  * Dispatches lifecycle events on the document.
@@ -63,7 +71,7 @@ export const uuid = () => Array.apply(
  * @param {IPjax.IEvents} eventName
  * The event name to be created
  *
- * @param {IPjax.IEventDetails} detail
+ * @param {object} detail
  * Details to be passed to event dispatch
  *
  * @param {boolean} cancelable
@@ -71,40 +79,42 @@ export const uuid = () => Array.apply(
  *
  * @return {boolean}
  */
-export const Dispatch = (
-  eventName
-  , { target, state, url }
-  , cancelable = false
-) => {
+export function dispatchEvent (eventName, detail, cancelable = false) {
 
   // create and dispatch the event
-  const event = new CustomEvent(eventName, {
-    detail: { state, target, url },
-    cancelable
-  })
+  const newEvent = new CustomEvent(eventName, { detail, cancelable })
 
-  return (document || target).dispatchEvent(event)
+  return document.dispatchEvent(newEvent)
 
 }
 
 /**
- * Convert bytes
+ * Returns the byte size of a string value
+ *
+ * @param {string} string
+ */
+export function byteSize (string) {
+
+  return new Blob([ string ]).size
+}
+
+/**
+ * Converts byte size to killobyte, megabyre,
+ * gigabyte or terrabyte
  *
  * @param {number} bytes
  */
-export const bytesToSize = bytes => {
+export function byteConvert (bytes) {
 
-  if (bytes === 0) return 'n/a'
+  if (bytes === 0) return '0 B'
 
-  const unit = [ 'B', 'KB', 'MB', 'GB', 'TB' ]
   const size = parseInt(`${Math.floor(Math.log(bytes) / Math.log(1024))}`, 10)
 
   return size === 0 ? (
-    `${bytes} ${unit[size]}`
+    `${bytes} ${Units[size]}`
   ) : (
-    `${(bytes / (1024 ** size)).toFixed(1)} ${unit[size]}`
+    `${(bytes / (1024 ** size)).toFixed(1)} ${Units[size]}`
   )
-
 }
 
 /**
@@ -113,39 +123,35 @@ export const bytesToSize = bytes => {
  * @param {function} callback
  * @param {number} ms
  */
-export const asyncTimeout = (callback, ms = 0) => (
+export function asyncTimeout (callback, ms = 0) {
 
-  new Promise(
+  return new Promise(
     resolve => setTimeout(() => {
-
       const response = callback()
-
       return resolve(response)
-
     }, ms)
   )
-
-)
+}
 
 /**
  * Each iterator helper function. Provides a util function
  * for loop iterations
  *
- * @export
+ *
  * @param {any} list
- * @param {function} fn
- * @param {{index?: boolean, isMap?: boolean }} options
- * @return {(array|void)}
+ * An array list of items to iterate over
+ *
+ * @param {(item: Element | any, index?: number) => any} fn
+ * Callback function to be executed for each iteration
+ *
+ * @param {{index?: boolean  }} [index=flase]
+ *
+ * @return {void}
  */
-export const ForEach = (list, fn, options = { index: false, isMap: false }) => {
+export function forEach (list, fn, { index = false } = {}) {
 
   let i = list.length - 1
-  const item = Array(list.length)
-
-  for (; i >= 0; i--) item[i] = options.index ? fn(list[i], i) : fn(list[i])
-
-  if (options.isMap) return item
-
+  for (; i >= 0; i--) index ? fn(list[i], i) : fn(list[i])
 }
 
 /**
@@ -158,21 +164,21 @@ export const ForEach = (list, fn, options = { index: false, isMap: false }) => {
  * List of attributes to be excluded
  *
  */
-export const getElementAttrs = (
-  { attributes }
-  , exclude = []
-) => Array.from(attributes).reduce((
-  accumulator
-  , {
-    name = null
-    , value = null
-  }
-) => ((name && value && !exclude.includes(name))) ? (
-  [
-    ...accumulator,
-    [ name, value ]
-  ]
-) : accumulator, [])
+export function getElementAttrs ({ attributes }, exclude = []) {
+
+  return Array.from(attributes).reduce((
+    accumulator
+    , {
+      name = null
+      , value = null
+    }
+  ) => ((name && value && !exclude.includes(name))) ? (
+    [
+      ...accumulator,
+      [ name, value ]
+    ]
+  ) : accumulator, [])
+}
 
 /**
  * Each Selector
@@ -186,8 +192,8 @@ export const getElementAttrs = (
  * @param {(element: Element) => void} callback
  * The callback function
  */
-export const Selectors = ({ body }, query, callback) => (
+export function eachSelector ({ body }, query, callback) {
 
-  [].slice.call(body.querySelectorAll(query)).forEach(callback)
+  return [].slice.call(body.querySelectorAll(query)).forEach(callback)
 
-)
+}
