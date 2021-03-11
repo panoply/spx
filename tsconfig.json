@@ -21,10 +21,25 @@
     "suppressExcessPropertyErrors": true,
     "noEmitOnError": true,
     "noUnusedLocals": true,
-    "baseUrl": ".",
     "pretty": true,
     "typeRoots": [
       "node_modules/@types"
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "src/*",
+        "tests/*"
+      ],
+      "~application": [
+        "./src/app/*"
+      ],
+      "~constant": [
+        "./src/constants/*"
+      ],
+      "~observer/*": [
+        "./src/observers/*"
+      ]
+    }
   }
 }

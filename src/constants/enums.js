@@ -1,24 +1,24 @@
 /**
  * XMLHttp Request fetch was successful
  */
-export const XHRSuccess = 1
+export const xhrSuccess = 1
 
 /**
  * XMLHttp Request fetch to url is in flight
  */
-export const XHRExists = 2
+export const xhrExists = 2
 
 /**
  * XMLHttp Request was prevented from dispatched event
  */
-export const XHRPrevented = 3
+export const xhrPrevented = 3
 
 /**
  * XMLHttp Request was prevented from dispatched event
  */
-export const XHREmpty = 4
+export const xhrEmpty = 4
 
 /**
  * XMLHttp Request failed to fetch
  */
-export const XHRFailed = 5
+export const xhrFailed = 5

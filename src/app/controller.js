@@ -1,11 +1,11 @@
+import { store } from './store'
+import { dispatchEvent } from './utils'
+import { expandURL } from './location'
+import { xhrSuccess } from '../constants/enums'
 import * as hrefs from '../observers/hrefs'
 import * as prefetch from '../observers/prefetch'
 import * as render from './render'
 import * as request from './request'
-import { XHRSuccess } from '../constants/enums'
-import { dispatchEvent } from './utils'
-import { store } from './store'
-import { expandURL, getCacheKey, getLocation } from './location'
 
 /**
  * Popstate event handler
@@ -38,14 +38,13 @@ function popstate (event) {
 function setInitialCache ({ location: { href } }) {
 
   const location = expandURL(href)
-  const url = getCacheKey(location)
   const state = store.update.page({
-    url,
-    location: getLocation(location),
+    location,
+    url: location.pathname + location.search,
     snapshot: document.documentElement.outerHTML
   })
 
-  store.cache.set(url, state)
+  store.cache.set(store.page.url, state)
 
 }
 
@@ -137,7 +136,7 @@ export async function pjaxVisit (state) {
 
   const response = await request.get(state)
 
-  if (response === XHRSuccess) render.update(store.page)
+  if (response === xhrSuccess) render.update(store.page)
 
   if (store.config.prefetch) prefetch.start()
 

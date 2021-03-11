@@ -1,9 +1,9 @@
-import * as hrefs from './hrefs'
-import * as request from '../app/request'
-import { XHRSuccess } from '../constants/enums'
+import { xhrSuccess } from '../constants/enums'
 import { LinkPrefetchHover, LinkPrefetchIntersect } from '../constants/common'
 import { getCacheKeyFromTarget } from '../app/location'
 import { store } from '../app/store'
+import * as hrefs from './hrefs'
+import * as request from '../app/request'
 
 /**
  * @exports
@@ -97,12 +97,12 @@ function fetchOnHover (event) {
 
     if (target) {
 
-      const state = hrefs.getState(target)
+      const state = hrefs.visitState(target, true)
 
       fetchThrottle(state.url, () => {
 
         prefetchRequest(state, status => {
-          if (status === XHRSuccess) {
+          if (status === xhrSuccess) {
             target.removeEventListener('mouseover', fetchOnHover, true)
           }
         })
@@ -121,14 +121,14 @@ function OnIntersection ({ isIntersecting, target }) {
 
   if (isIntersecting) {
 
-    const state = hrefs.getState(target)
+    const state = hrefs.visitState(target, true)
 
     fetchThrottle(state.url, () => {
 
       nodes.unobserve(target)
 
       prefetchRequest(state, status => {
-        if (status !== XHRSuccess) nodes.observe(target)
+        if (status !== xhrSuccess) nodes.observe(target)
       })
 
     }, state.threshold.intersect)

@@ -307,6 +307,14 @@ export interface IState extends IConfig {
   location?: ILocation
 
   /**
+   * Action
+   */
+  action?: {
+    append?: Array<[from: string, to: string]>,
+    prepend?: Array<[from: string, to: string]>,
+  }
+
+  /**
   * Threshold
   */
   threshold?: {

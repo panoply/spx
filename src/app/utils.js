@@ -1,4 +1,4 @@
-import { isNumber } from '../constants/regexp'
+import { isNumber, ActionAttr, ActionParams } from '../constants/regexp'
 import { Units } from './../constants/common'
 
 /**
@@ -32,6 +32,55 @@ export function jsonAttrs (accumulator, current, index, source) {
       index - 1
     ) : index]]: isNumber.test(current) ? Number(current) : current
   }) : accumulator)
+
+}
+
+/**
+ * Array Chunk function
+ *
+ * @export
+ * @param {number} size
+ * @return {(acc: any[], value: string) => any[]}
+ */
+export function chunk (size) {
+
+  return (acc, value) => (!acc.length || acc[acc.length - 1].length === size ? (
+    acc.push([ value ])
+  ) : (
+    acc[acc.length - 1].push(value)
+  )) && acc
+
+}
+
+/**
+ * Constructs a JSON object from HTML `data-pjax-*` attributes.
+ * Attributes are passed in as array items
+ *
+ * @param {string} string
+ * @return {object}
+ */
+export function actionAttrs (string) {
+
+  let newString
+  let lastIndex = 0
+
+  /**
+   * @param {object} acc
+   * @param {string} value
+   * @returns
+   */
+  const actions = (acc, value) => {
+    lastIndex = string.indexOf(')', lastIndex) + 1
+    newString = string.substring(string.indexOf(value) + value.length, lastIndex)
+    return {
+      ...acc,
+      [value]: newString.match(ActionParams).reduce(chunk(2), [])
+    }
+  }
+
+  return string
+    .match(ActionAttr)
+    .reduce(actions, {})
 
 }
 

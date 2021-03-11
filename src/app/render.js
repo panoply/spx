@@ -74,31 +74,54 @@ function appendTrackedNode (node) {
  * @returns {(DOM: Element) => void}}
  * @memberof Render
  */
-const replaceTarget = (target, { method }) => DOM => {
+const replaceTarget = (target, element, { method }) => DOM => {
 
   if (!isReplace.test(method)) {
 
-    dispatchEvent('pjax:render', { method, fragment: target })
+    dispatchEvent('pjax:render', { method, element, fragment: target }, true)
 
     DOM.innerHTML = target.innerHTML
 
   } else {
 
-    let fragment = document.createDocumentFragment()
+    let fragment = document.createElement('div')
+    const nodes = ArraySlice.call(target.childNodes)
 
-    forEach(ArraySlice.call(target.childNodes), fragment.appendChild)
+    forEach(nodes, node => fragment.appendChild(node))
 
     if (method === 'append') {
-      dispatchEvent('pjax:render', { method, fragment })
+      dispatchEvent('pjax:render', { method, element, fragment }, true)
       DOM.appendChild(fragment)
+
+      console.log(fragment)
+      console.log('in append')
+
     } else {
-      dispatchEvent('pjax:render', { method, fragment })
+      dispatchEvent('pjax:render', { method, element, fragment }, true)
       DOM.insertBefore(fragment, DOM.firstChild)
     }
 
     fragment = null
 
   }
+}
+
+/**
+ * Updates cached DOM
+ *
+ * @export
+ * @param {string} url
+ */
+export function getActiveDOM (url) {
+
+  if (store.config.cache && store.cache.has(url)) {
+
+    // store.cache.get(url).snapshot = document.documentElement.outerHTML
+
+    // console.log(store.cache.get(url).snapshot)
+
+  }
+
 }
 
 /**
@@ -142,7 +165,7 @@ export function DOMParse (data) {
  */
 export function update (state, popstate = false) {
 
-  // console.log(state)
+  console.log(state)
 
   const target = DOMParse(state.snapshot)
   const title = document.title = target.title || ''
@@ -159,11 +182,37 @@ export function update (state, popstate = false) {
   //
   eachSelector(target, '[data-pjax-track]', appendTrackedNode)
 
-  let fallback = 1
+  eachSelector(document, '[data-pjax-replace]', element => {
+
+    element.replaceWith(target.getElementById(element.id))
+
+  })
+
+  Object.keys(state.action).forEach(prop => {
+
+    if (state.action[prop]) {
+
+      forEach(state.action[prop], ([ from, to ]) => {
+
+        const nodes = target.body.querySelectorAll(from)
+        const frag = document.body.querySelector(to)
+
+        console.log(nodes)
+        nodes.forEach(node => {
+          frag.appendChild(node)
+          dispatchEvent('pjax:render', { node }, true)
+        })
+
+      })
+    }
+
+  })
+
+  const fallback = 1
 
   // REPLACE TARGETS
   //
-  forEach(state.target, element => {
+  /* forEach(state.target, element => {
 
     const node = target.body.querySelector(element)
 
@@ -172,23 +221,23 @@ export function update (state, popstate = false) {
     return node ? eachSelector(
       document,
       element,
-      replaceTarget(node, state)
+      replaceTarget(node, element, state)
     ) : fallback++
 
   })
-
+*/
   // when no targets are found we will replace the
   // entire document body
   if (fallback === state.target.length) {
-    replaceTarget(target.body, state)(document.body)
+    // replaceTarget(target.body, state)(document.body)
   }
 
   // SET SCROLL POSITION
   //
-  window.scrollTo(state.position.x, state.position.y)
+  // window.scrollTo(state.position.x, state.position.y)
 
   console.log(store.dom)
 
-  dispatchEvent('pjax:load', { state })
+  dispatchEvent('pjax:load', { state, target })
 
 }

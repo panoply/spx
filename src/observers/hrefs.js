@@ -1,9 +1,10 @@
-import { forEach, dispatchEvent, jsonAttrs } from '../app/utils'
-import { Link } from '../constants/common'
-import { isNumber, isBoolean, isWhitespace, inPosition } from '../constants/regexp'
-import { getCacheKeyFromTarget, getLocationFromURL } from '../app/location'
-import { navigate } from '../app/controller'
 import { store } from '../app/store'
+import { expandURL } from '../app/location'
+import { navigate } from '../app/controller'
+import { getActiveDOM } from '../app/render'
+import { forEach, dispatchEvent, jsonAttrs, actionAttrs } from '../app/utils'
+import { Link } from '../constants/common'
+import * as regexp from '../constants/regexp'
 
 /**
  * @type {boolean}
@@ -15,6 +16,7 @@ let started = false
  */
 const attrs = [
   'target',
+  'method',
   'action',
   'prefetch',
   'cache',
@@ -64,50 +66,92 @@ export function linkLocator (target, selector) {
 }
 
 /**
+ * Define state location navigation
+ *
+ * @export
+ *
+ * @param {Element} target
+ * The link `href` element target
+ */
+function getLocation (target) {
+
+  const location = expandURL(target.getAttribute('href'))
+
+  return {
+    location,
+    url: location.pathname + location.search
+  }
+}
+
+/**
+ * Get State Page
+ *
+ *
+ * @param {Element} target
+ * The link `href` element target
+ *
+ * @return {IPjax.IState}
+ * Returns an updated page state object
+ */
+function getPageState (target) {
+
+  const href = getLocation(target)
+  const url = href.location.pathname + href.location.search
+
+  return store.cache.has(url) ? store.cache.get(url) : store.update.page(href)
+
+}
+
+/**
  * Parses link `href` attributes and assigns them to
  * configuration options. Each link target can define
  * navigation options.
  *
  * @param {Element} target
  * The link `href` element target
-
+ *
+ * @param {boolean} isPrefetch
+ * Boolean condition to determine is visit is a prefetch
+ *
  * @return {IPjax.IState}
  * Returns an updated page state object
  */
-export function getState (target) {
+export function visitState (target, isPrefetch = false) {
 
-  const url = getCacheKeyFromTarget(target)
-  const state = store.cache.has(url) ? (
-    store.cache.get(url)
-  ) : store.update.page({
-    url,
-    location: getLocationFromURL(url)
-  })
+  if (isPrefetch === false) getActiveDOM(store.page.url)
+
+  const state = getPageState(target)
 
   forEach(attrs, prop => {
 
     const value = target.getAttribute(`data-pjax-${prop}`)
 
     if (value === null) {
+
       if (
         prop === 'prefetch' &&
         value !== 'hover' &&
         value !== 'intersect') state[prop] = false
+
     } else {
 
       state[prop] = prop === 'target' ? (
 
-        value.split(isWhitespace)
+        value.split(regexp.isWhitespace)
 
-      ) : (prop === 'position' || prop === 'threshold' || prop === 'chunks') ? (
+      ) : (prop === 'position' || prop === 'threshold') ? (
 
-        value.match(inPosition).reduce(jsonAttrs, {})
+        value.match(regexp.inPosition).reduce(jsonAttrs, {})
 
-      ) : isBoolean.test(value.trim()) ? (
+      ) : regexp.isBoolean.test(value.trim()) ? (
 
         value === 'true'
 
-      ) : isNumber.test(value.trim()) ? (
+      ) : prop === 'action' ? (
+
+        actionAttrs(value)
+
+      ) : regexp.isNumber.test(value.trim()) ? (
 
         Number(value)
 
@@ -116,6 +160,7 @@ export function getState (target) {
         value.trim()
 
       )
+
     }
   })
 
@@ -133,13 +178,16 @@ export function getState (target) {
 function visitOnClick (event) {
 
   if (linkEventValidate(event)) {
+
     event.preventDefault()
 
     const target = linkLocator(event.target, Link)
 
     if (target) {
-      const state = getState(target)
-      if (dispatchEvent('pjax:click', state, true)) return navigate(state)
+      if (target.tagName === 'A') {
+        const state = visitState(target, false)
+        if (dispatchEvent('pjax:click', state, true)) return navigate(state)
+      }
     }
   }
 }

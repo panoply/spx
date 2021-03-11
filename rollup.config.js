@@ -2,9 +2,6 @@ import { terser } from 'rollup-plugin-terser'
 import noderesolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import filesize from 'rollup-plugin-filesize'
-// import alias from '@rollup/plugin-alias'
-import { plugins } from '@brixtol/rollup-utils'
-import { config } from 'dotenv'
 
 export default {
   input: 'src/index.js',
@@ -45,13 +42,8 @@ export default {
     }
   ],
   plugins: [
-    config(),
     noderesolve(),
-    //  alias({ entries: { '~scripts': resolve(path, 'src/api/scripts') } }),
-    commonjs({
-      esmExternals: false,
-      requireReturnsDefault: true
-    }),
+    commonjs(),
     filesize()
   ]
 }

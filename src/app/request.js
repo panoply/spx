@@ -1,6 +1,6 @@
-import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
-import { XHRFailed, XHRPrevented, XHRSuccess, XHREmpty, XHRExists } from '../constants/enums'
 import { store } from './store'
+import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
+import { xhrFailed, xhrPrevented, xhrSuccess, xhrEmpty, xhrExists } from '../constants/enums'
 
 /**
  * Executes on request end. Removes the XHR recrod and update
@@ -27,7 +27,7 @@ function HttpRequestEnd (url, DOMString) {
     }
   })
 
-  console.log('cache size: ', store.request.cache.weight)
+  // console.log('cache size: ', store.request.cache.weight)
 
 }
 
@@ -143,8 +143,8 @@ export async function inFlight (url, limit = 0) {
  */
 export async function get (state) {
 
-  if (store.request.xhr.has(state.url)) return XHRExists
-  if (!dispatchEvent('pjax:request', state.location, true)) return XHRPrevented
+  if (store.request.xhr.has(state.url)) return xhrExists
+  if (!dispatchEvent('pjax:request', state.location, true)) return xhrPrevented
 
   try {
 
@@ -160,11 +160,11 @@ export async function get (state) {
         }
       }
 
-      return XHRSuccess
+      return xhrSuccess
 
     } else {
       console.info(`Pjax: Failed to receive response at: ${state.url}`)
-      return XHREmpty
+      return xhrEmpty
     }
 
   } catch (error) {
@@ -172,6 +172,6 @@ export async function get (state) {
     console.error(error)
   }
 
-  return XHRFailed
+  return xhrFailed
 
 }

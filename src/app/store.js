@@ -154,7 +154,13 @@ export const store = (
         initial => patch => (
           state.page = merge(
             state.page || initial,
-            patch
+            {
+              ...patch,
+              action: {
+                append: null,
+                prepend: null
+              }
+            }
           )
         )
       )(
@@ -165,7 +171,10 @@ export const store = (
           chunks: Object.create(null),
           method: 'replace',
           prefetch: 'intersect',
-          action: {},
+          action: {
+            prepend: null,
+            append: null
+          },
           cache: null,
           progress: false,
           reload: false,

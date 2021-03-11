@@ -38,14 +38,22 @@ export const isWhitespace = /\s+/g
  *
  * Used to match append or prepend insertion
  */
-export const isReplace = /\b(ap|pre)pend\b/
+export const isReplace = /\b(append|prepend)\b/
 
 /**
- * Class Event Attribute Value
+ * Attribute Action Caller
+ *
+ * Used to match the event caller for attribute actions
+ *
+ */
+export const ActionAttr = /\b(?:append|prepend|replace)/g
+
+/**
+ * Attribute Parameter Value
  *
  * Used to match a class event caller target attributes
  */
-export const inClass = /\b(?:add|remove|toggle)\b(?=\()|(?<=['"])[^'"]+(?=["'])/g
+export const ActionParams = /[^,'"[\]()\s]+/g
 
 /**
  * Mached Position Attributes
