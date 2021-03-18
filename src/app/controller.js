@@ -18,11 +18,13 @@ function setInitialCache (event) {
 
   const location = expandURL(window.location.href)
   const state = store.update.page({
-    title: document.title,
-    url: location.pathname + location.search,
+    url: location.lastUrl,
     snapshot: render.DOMSnapshot(document),
+    title: document.title,
     location
   })
+
+  console.log(state)
 
   cache.set(state.url, state)
 
