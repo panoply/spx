@@ -208,7 +208,7 @@ export function captureDOM (url, options) {
     } else if (options.action === 'capture') {
 
       state.captured = DOMSnapshot(target)
-      history.replace(state.location.href, state)
+      history.replace(state.location.url, state)
       console.info('Pjax: DOM Captured at: ' + state.captured)
     }
 
@@ -246,19 +246,17 @@ export function update (state, popstate = false) {
 
   if (!popstate) {
 
-    const { pathname, search } = history.location
-
-    if ((pathname + search) === state.url) {
-      history.replace(state.location.href, state)
+    if (history.createHref(history.location) === state.url) {
+      history.replace(state.location, state)
     } else {
-      history.push(state.location.href, state)
+      history.push(state.location, state)
     }
 
   } else if (typeof state?.captured === 'string') {
 
     if (snapshots.delete(uuid)) {
       state.captured = null
-      history.replace(state.location.href, state)
+      history.replace(state.location, state)
       console.info('Pjax: Captured snapshot removed at: ' + state.url)
     }
 
