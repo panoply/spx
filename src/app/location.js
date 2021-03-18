@@ -1,13 +1,16 @@
+import history from 'history/browser'
+
 /**
  * Expands URL href location.
  *
  * @param {string} url
+ * @returns {IPjax.ILocation}
  */
 export function expandURL (url) {
 
-  const anchor = document.createElement('a')
-
-  anchor.href = url.toString()
+  const lastPath = history.createHref(window.location)
+  const location = document.createElement('a')
+  location.href = url.toString()
 
   const {
     protocol
@@ -16,7 +19,7 @@ export function expandURL (url) {
     , href
     , pathname
     , search
-  } = new URL(anchor.href)
+  } = new URL(location.href)
 
   return {
     protocol
@@ -25,6 +28,7 @@ export function expandURL (url) {
     , href
     , pathname
     , search
+    , lastPath
   }
 
 }
@@ -75,23 +79,21 @@ export const getLocation = (
 /**
  * Returns the current URL
  *
- * @param {Element} target
+ * @param {Element|string} target
  */
-export const getURL = target => expandURL(target.getAttribute('href'))
+export function getURL (target) {
+
+  const href = target instanceof Element ? target.getAttribute('href') : target
+  const { pathname, search } = expandURL(href)
+  return pathname + search
+}
 
 /**
  * Returns the pathname from `href` target used for cache key.
  *
- * @param {IPjax.ILocation} location
- */
-export const getCacheKey = ({ pathname, search }) => (pathname + search)
-
-/**
- * Returns the pathname from `href` target used for cache key.
- *
  * @param {Element} target
  */
-export const getCacheKeyFromTarget = target => getCacheKey(getURL(target))
+export const getCacheKeyFromTarget = target => getURL(target)
 
 /**
  * Returns the protocol and host
