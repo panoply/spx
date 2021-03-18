@@ -40,7 +40,7 @@ import * as Pjax from "@brixtol/pjax";
 /* -------------------------------------------- */
 
 Pjax.connect({
-  target: ["main", "#navbar"],
+  fragments: ["main"],
   action: "replace",
   prefetch: true,
   cache: true,
@@ -112,7 +112,19 @@ Programmatic navigation visit to a URL. You can optionally pass in options for t
 
 Returns cache `Map` session. All methods available to `Map` can be accessed via this method.
 
-## Navigation Options
+## Terminology
+
+###### Targets
+
+Targets are fragment elements which contain a `data-pjax-target="*"` attribute.
+
+###### Actions
+
+Actions are manipulations executed by pjax.
+
+## Navigation
+
+<hr>
 
 #### `data-pjax-eval="false"`
 
@@ -139,6 +151,11 @@ Example
 </details>
 
 #### `data-pjax-disable`
+
+###### Options
+
+- `true`
+- `history`
 
 Place on `href`elements you don't want pjax navigation to be executed. When present a normal page navigation will be executed and cache will be cleared unless combined with a `cache` option.
 
@@ -215,37 +232,102 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 
 </details>
 
-#### `data-pjax-target="*"`
+<hr>
 
-Target selectors for navigation. Use space separation when defining multiple targets to reload.
+#### `data-pjax-replace`
+
+Executes a replacement to single or multiple fragments.
+
+###### ATTRIBUTE
+
+- `(['target'])`
+- `(['target' , 'target'])`
 
 <details>
 <summary>
 Example
 </summary>
 
+<!-- prettier-ignore -->
 ```html
-<a data-pjax-target="#header #main #footer" href="*"></a>
+
+<a
+ href="*"
+ data-pjax-replace="(['target1', 'target2'])">
+ Link
+</a>
+
+<div data-pjax-target="target1">
+  I will be replaced on next navigation
+</div>
+
+<div data-pjax-target="target2">
+  I will be replaced on next navigation
+</div>
+
 ```
 
 </details>
 
-#### `data-pjax-chunks="*"`
+<hr>
 
-Target multiple fragments from a link navigation. Space separated expression with colon separated `target` and `action` options. This is helpful when you which to reload additional target elements using different actions, like providing infinite scrolling.
+#### `data-pjax-prepend`
+
+Executes a prepend visit. Locates target, then prepends it another target. A Prepend navigation will have its action recorded.
+
+###### ATTRIBUTE
+
+- `(['target' , 'target'])`
+- `(['target' , 'target'], ['target' , 'target'])`
 
 <details>
 <summary>
 Example
 </summary>
 
+###### PAGE 1
+
+<!-- prettier-ignore -->
 ```html
-<!-- This will replace the #header element and append to #products element -->
 
 <a
-  data-pjax-chunks="#header:replace #products:append"
-  href="/products?page=2"
-></a>
+ href="*"
+ data-pjax-prepend="(['target-1', 'target-2'])">
+ Page 2
+</a>
+
+<div data-pjax-target="target-1">
+  I will prepend to target-2 on next navigation
+</div>
+
+<div data-pjax-target="target-2">
+  <p>target-1 will prepended to me on next navigation</p>
+</div>
+
+```
+
+###### PAGE 2
+
+<!-- prettier-ignore -->
+```html
+
+<a
+ href="*"
+ data-pjax-prepend="(['target-1', 'target-2'])">
+ Page 2
+</a>
+
+<div data-pjax-target="target-2">
+
+  <!-- An action reference record is applied -->
+  <div data-pjax-action="xxxxxxx">
+    I am target-1 and have been prepended to target-2
+  </div>
+
+  <p>target-1 is now prepended to me</p>
+
+</div>
+
 ```
 
 </details>
