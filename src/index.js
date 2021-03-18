@@ -12,7 +12,8 @@ import * as controller from './app/controller'
 export const supported = !!(
   window.history.pushState &&
   window.requestAnimationFrame &&
-  window.addEventListener
+  window.addEventListener &&
+  window.DOMParser
 )
 
 /**

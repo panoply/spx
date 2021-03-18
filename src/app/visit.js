@@ -6,6 +6,7 @@ import * as scroll from '../observers/scrolling'
 import * as prefetch from './prefetch'
 import * as render from './render'
 import * as request from './request'
+import history from 'history/browser'
 
 /**
  * @type {string[]}
@@ -38,7 +39,7 @@ const attrs = [
 export function getPageState (target) {
 
   const location = expandURL(target.getAttribute('href'))
-  const url = location.pathname + location.search
+  const url = history.createHref(location)
 
   return cache.has(url) ? cache.get(url) : store.update.page({
     url,
@@ -131,8 +132,8 @@ export function getVisitConfig (state, target) {
  */
 export function navigate (state) {
 
-  // console.log(state, cache.has(state.url))
-  cache.get(state.location.lastPath).position = scroll.getPosition()
+  console.log(state, state.location.lastUrl)
+  cache.get(state.location.lastUrl).position = scroll.getPosition()
   state.position = scroll.reset()
 
   if (cache.has(state.url)) {
@@ -153,6 +154,8 @@ export function navigate (state) {
 export async function cacheVisit (url) {
 
   const state = cache.get(url)
+
+  console.log(state)
 
   if (store.config.prefetch) prefetch.stop()
 

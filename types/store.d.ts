@@ -37,14 +37,6 @@ export type IPosition = {
  * The URL location object
  */
 export interface ILocation {
-
-  /**
-   * The URL protocol
-   *
-   * @example
-   * 'https:' OR 'http:'
-   */
-  protocol: string
   /**
    * The URL origin name
    *
@@ -83,13 +75,20 @@ export interface ILocation {
    */
   search: string
   /**
+   * The URL Hash
+   *
+   * @example
+   * '#foo'
+   */
+  hash: string
+  /**
    * The previous path href URL.
    * This is also the cache identifier
    *
    * @example
    * '/pathname' OR '/pathname?foo=bar'
    */
-  lastPath: string
+  lastUrl: string
 
 }
 
@@ -380,6 +379,7 @@ export interface IState extends IConfig {
    * The URL cache key
    */
   url?: string
+
 
   /**
    * Location URL

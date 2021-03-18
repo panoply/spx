@@ -20,7 +20,7 @@ let started = false
 export function start () {
 
   if (!started) {
-    addEventListener('click', captureClick, true)
+    addEventListener('click', observe, true)
     started = true
   }
 
@@ -34,7 +34,7 @@ export function start () {
 export function stop () {
 
   if (started) {
-    removeEventListener('click', captureClick, true)
+    removeEventListener('click', observe, true)
     started = false
   }
 
@@ -72,7 +72,7 @@ function onClick (event) {
  *
  * @private
  */
-function captureClick () {
+function observe () {
 
   removeEventListener('click', onClick, false)
   addEventListener('click', onClick, false)

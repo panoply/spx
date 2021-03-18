@@ -59,7 +59,7 @@ async function popstate (url) {
 
   prefetch.stop()
 
-  if (url !== inTransit) request.cancel(inTransit)
+  if (inTransit && url !== inTransit) request.cancel(inTransit)
 
   if (cache.has(url)) {
 
@@ -88,9 +88,7 @@ async function popstate (url) {
  */
 async function listener ({ action, location }) {
 
-  const url = location.pathname + location.search
-
-  if (action === 'POP') return popstate(url)
+  if (action === 'POP') return popstate(history.createHref(location))
 
   console.log(action, location.state)
 

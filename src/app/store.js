@@ -83,14 +83,6 @@ export const store = (
     }
 
     ,
-
-    get location () {
-
-      return state.page.url
-
-    }
-
-    ,
     /* -------------------------------------------- */
     /* STORE GETTERS                                */
     /* -------------------------------------------- */
@@ -181,13 +173,13 @@ export const store = (
             append: null
           },
           location: {
-            protocol: '',
             origin: '',
             hostname: '',
             href: '',
             pathname: '',
             search: '',
-            lastPath: ''
+            hash: '',
+            lastUrl: ''
           },
           position: {
             x: 0,
@@ -200,6 +192,4 @@ export const store = (
 
   })
 
-)(
-  Object.create(null)
-)
+)(Object.create(null))

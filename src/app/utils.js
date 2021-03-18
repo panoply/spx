@@ -149,12 +149,7 @@ export function byteConvert (bytes) {
  */
 export function asyncTimeout (callback, ms = 0) {
 
-  return new Promise(
-    resolve => setTimeout(() => {
-      const response = callback()
-      return resolve(response)
-    }, ms)
-  )
+  return new Promise(resolve => setTimeout(() => resolve(callback()), ms))
 }
 
 /**
