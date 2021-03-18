@@ -141,8 +141,6 @@ export async function inFlight (url, limit = 0) {
       if (limit === store.config.threshold.progress) progress.show()
     }
 
-    console.log('waiting', url, limit)
-
     return asyncTimeout(() => inFlight(url, (limit + 1)), 25)
 
   }
@@ -161,19 +159,19 @@ export async function inFlight (url, limit = 0) {
  * @param {boolean} [async=false]
  * The XHR request is a asynchronous request or not
  *
- * @return {Promise<IPjax.IState>}
+ * @return {Promise<IPjax.IState|false>}
  * A boolean response representing a successful or failed fetch
  */
 export async function get (state, async = true) {
 
   if (requests.has(state.url)) {
     console.warn(`Pjax: XHR Request is already in transit for: ${state.url}`)
-    return null
+    return false
   }
 
   if (!dispatchEvent('pjax:request', state.location, true)) {
     console.warn(`Pjax: Request cancelled via dispatched event for: ${state.url}`)
-    return null
+    return false
   }
 
   if (state.method !== 'prefetch') {
@@ -205,10 +203,12 @@ export async function get (state, async = true) {
     }
 
   } catch (error) {
+
     requests.delete(state.url)
     console.error(error)
+
   }
 
-  return null
+  return false
 
 }
