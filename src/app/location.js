@@ -3,78 +3,36 @@ import history from 'history/browser'
 /**
  * Expands URL href location.
  *
- * @param {string} url
+ * @param {string} anchor
  * @returns {IPjax.ILocation}
  */
-export function expandURL (url) {
+export function expandURL (anchor) {
 
-  const lastPath = history.createHref(window.location)
+  const lastUrl = history.createHref(window.location)
   const location = document.createElement('a')
-  location.href = url.toString()
+
+  location.href = anchor.toString()
 
   const {
-    protocol
-    , origin
-    , hostname
-    , href
-    , pathname
-    , search
-  } = new URL(location.href)
-
-  return {
-    protocol
-    , origin
-    , hostname
-    , href
-    , pathname
-    , search
-    , lastPath
-  }
-
-}
-
-/**
- * Hash URL using DJB2A algorithm
- *
- * @export
- * @param {string} url
- * @return {string}
- */
-export function getUID (url) {
-
-  let i = 0
-  let hash = 5381
-
-  for (; i < url.length; i++) hash = ((hash << 5) + hash) ^ url.charCodeAt(i)
-
-  return (hash >>> 0).toString(16)
-
-}
-
-/**
- * Returns last pathname value
- *
- * @param {URL} url
- */
-export const getLocation = (
-  {
+    origin,
+    hostname,
     href,
     pathname,
     search,
-    origin,
-    hostname,
-    protocol
-  }
-) => (
-  {
-    protocol
-    , origin
+    hash
+  } = new URL(location.href)
+
+  return {
+    origin
     , hostname
     , href
     , pathname
     , search
+    , hash
+    , lastUrl
   }
-)
+
+}
 
 /**
  * Returns the current URL
@@ -84,8 +42,9 @@ export const getLocation = (
 export function getURL (target) {
 
   const href = target instanceof Element ? target.getAttribute('href') : target
-  const { pathname, search } = expandURL(href)
-  return pathname + search
+
+  return history.createHref(expandURL(href))
+
 }
 
 /**
@@ -96,8 +55,21 @@ export function getURL (target) {
 export const getCacheKeyFromTarget = target => getURL(target)
 
 /**
- * Returns the protocol and host
+ * Hash URL using DJB2A algorithm
  *
- * @param {URL} location
+ * NOT IN USE - REMOVE IN NEXT RELEASE
+ *
+ * @export
+ * @param {string} url
+ * @return {string}
  */
-export const getProtocol = ({ protocol, host }) => protocol.replace(/:/g, `://${host}`)
+export function getCacheKey (url) {
+
+  let i = 0
+  let hash = 5381
+
+  for (; i < url.length; i++) hash = ((hash << 5) + hash) ^ url.charCodeAt(i)
+
+  return (hash >>> 0).toString(16)
+
+}
