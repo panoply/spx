@@ -1,6 +1,17 @@
-import { store } from './store'
+import { store, snapshots, requests, cache } from './store'
 import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
-import { xhrFailed, xhrPrevented, xhrSuccess, xhrEmpty, xhrExists } from '../constants/enums'
+import { nanoid } from 'nanoid'
+import * as progress from './progress'
+
+/* -------------------------------------------- */
+/* LETTINGS                                     */
+/* -------------------------------------------- */
+
+let storage = 0
+
+/* -------------------------------------------- */
+/* FUNCTIONS                                    */
+/* -------------------------------------------- */
 
 /**
  * Executes on request end. Removes the XHR recrod and update
@@ -17,17 +28,8 @@ import { xhrFailed, xhrPrevented, xhrSuccess, xhrEmpty, xhrExists } from '../con
  */
 function HttpRequestEnd (url, DOMString) {
 
-  const { total } = store.request.cache
-
-  store.request.xhr.delete(url)
-  store.update.request({
-    cache: {
-      total: (total + byteSize(DOMString)),
-      weight: byteConvert(total)
-    }
-  })
-
-  // console.log('cache size: ', store.request.cache.weight)
+  storage = storage + byteSize(DOMString)
+  requests.delete(url)
 
 }
 
@@ -37,17 +39,19 @@ function HttpRequestEnd (url, DOMString) {
  * @param {IPjax.IState} state
  * The `location.href`request address
  *
- * @return {Promise<string>}
+ * @param {boolean} [async=false]
+ * The XHR request is a asynchronous request or not
+ *
  * DOM string, equivelent to `document.documentElement.outerHTML`
  */
-function HttpRequest ({
+async function HttpRequest ({
   url,
   prefetch,
   target,
   location: {
     href
   }
-}) {
+}, async) {
 
   const xhr = new XMLHttpRequest()
 
@@ -55,7 +59,7 @@ function HttpRequest ({
 
     // OPEN
     //
-    xhr.open('GET', href, true)
+    xhr.open('GET', href, async)
 
     // HEADERS
     //
@@ -66,7 +70,7 @@ function HttpRequest ({
 
     // EVENTS
     //
-    xhr.onloadstart = e => store.request.xhr.set(url, xhr)
+    xhr.onloadstart = e => requests.set(url, xhr)
     xhr.onload = e => xhr.status === 200 ? resolve(xhr.responseText) : null
     xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText)
     xhr.onerror = reject
@@ -76,6 +80,20 @@ function HttpRequest ({
     xhr.send(null)
 
   })
+
+}
+
+/**
+ * Returns request cache metrics
+ *
+ */
+export function cacheSize () {
+
+  return {
+    requests: snapshots.size,
+    total: storage,
+    weight: byteConvert(storage)
+  }
 
 }
 
@@ -90,17 +108,13 @@ function HttpRequest ({
  */
 export function cancel (url) {
 
-  if (store.request.xhr.has(url)) {
+  if (requests.has(url)) {
 
-    // ABORT AND REMOVE
-    //
-    store.request.xhr.get(url).abort()
-    store.request.xhr.delete(url)
+    requests.get(url).abort()
+    requests.delete(url)
 
-    console.info(`XHR Request was cancelled for url: ${url}`)
+    console.warn(`Pjax: XHR Request was cancelled for url: ${url}`)
 
-  } else {
-    console.warn(`No in-flight request in transit for url: ${url}`)
   }
 }
 
@@ -122,12 +136,18 @@ export function cancel (url) {
  */
 export async function inFlight (url, limit = 0) {
 
-  if (store.request.xhr.has(url) && limit <= 85) {
+  if (requests.has(url) && limit <= 85) {
+    if (store.config.progress && !progress.loading) {
+      if (limit === store.config.threshold.progress) progress.show()
+    }
+
     console.log('waiting', url, limit)
+
     return asyncTimeout(() => inFlight(url, (limit + 1)), 25)
+
   }
 
-  return !store.request.xhr.has(url)
+  return !requests.has(url)
 
 }
 
@@ -138,40 +158,57 @@ export async function inFlight (url, limit = 0) {
  * @param {IPjax.IState} state
  * The page state object acquired from link
  *
- * @return {Promise<number>}
+ * @param {boolean} [async=false]
+ * The XHR request is a asynchronous request or not
+ *
+ * @return {Promise<IPjax.IState>}
  * A boolean response representing a successful or failed fetch
  */
-export async function get (state) {
+export async function get (state, async = true) {
 
-  if (store.request.xhr.has(state.url)) return xhrExists
-  if (!dispatchEvent('pjax:request', state.location, true)) return xhrPrevented
+  if (requests.has(state.url)) {
+    console.warn(`Pjax: XHR Request is already in transit for: ${state.url}`)
+    return null
+  }
+
+  if (!dispatchEvent('pjax:request', state.location, true)) {
+    console.warn(`Pjax: Request cancelled via dispatched event for: ${state.url}`)
+    return null
+  }
+
+  if (state.method !== 'prefetch') {
+    if (store.config.progress && !progress.loading) progress.show()
+  }
 
   try {
 
-    const snapshot = await HttpRequest(state)
+    const response = await HttpRequest(state, async)
 
-    if (typeof snapshot === 'string' && snapshot.length > 0) {
+    if (typeof response === 'string' && response.length > 0) {
 
-      state.snapshot = snapshot
+      if (!state.snapshot) state.snapshot = nanoid(16)
 
-      if (store.config.cache && !store.cache.has(state.url)) {
+      snapshots.set(state.snapshot, response)
+
+      if (store.config.cache && !cache.has(state.url)) {
         if (dispatchEvent('pjax:cache', state, true)) {
-          store.cache.set(state.url, state)
+          cache.set(state.url, state)
         }
       }
 
-      return xhrSuccess
+      if (store.config.progress && progress.loading) progress.hide()
+
+      return Promise.resolve(state)
 
     } else {
-      console.info(`Pjax: Failed to receive response at: ${state.url}`)
-      return xhrEmpty
+      console.warn(`Pjax: Failed to receive response at: ${state.url}`)
     }
 
   } catch (error) {
-    store.request.xhr.delete(state.url)
+    requests.delete(state.url)
     console.error(error)
   }
 
-  return xhrFailed
+  return null
 
 }

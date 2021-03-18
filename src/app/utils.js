@@ -1,5 +1,40 @@
-import { isNumber, ActionAttr, ActionParams } from '../constants/regexp'
+import { isNumber } from '../constants/regexp'
 import { Units } from './../constants/common'
+
+/**
+ * Handles a clicked link, prevents special click types.
+ *
+ * @param {MouseEvent} event
+ * @return {boolean}
+ */
+export function linkEventValidate (event) {
+
+  // @ts-ignore
+  return !((event.target && event.target.isContentEditable) ||
+    event.defaultPrevented ||
+    event.which > 1 ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey)
+
+}
+
+/**
+ * Locted the closest link when click bubbles.
+ *
+ * @param {EventTarget} target
+ * The link `href` element target
+ *
+ * @param {string} selector
+ * The selector query name, eg: `[data-pjax]`
+ *
+ * @return {Element|false}
+ */
+export function linkLocator (target, selector) {
+
+  return target instanceof Element ? target.closest(selector) : false
+}
 
 /**
  * Constructs a JSON object from HTML `data-pjax-*` attributes.
@@ -39,10 +74,10 @@ export function jsonAttrs (accumulator, current, index, source) {
  * Array Chunk function
  *
  * @export
- * @param {number} size
+ * @param {number} [size=2]
  * @return {(acc: any[], value: string) => any[]}
  */
-export function chunk (size) {
+export function chunk (size = 2) {
 
   return (acc, value) => (!acc.length || acc[acc.length - 1].length === size ? (
     acc.push([ value ])
@@ -50,66 +85,6 @@ export function chunk (size) {
     acc[acc.length - 1].push(value)
   )) && acc
 
-}
-
-/**
- * Constructs a JSON object from HTML `data-pjax-*` attributes.
- * Attributes are passed in as array items
- *
- * @param {string} string
- * @return {object}
- */
-export function actionAttrs (string) {
-
-  let newString
-  let lastIndex = 0
-
-  /**
-   * @param {object} acc
-   * @param {string} value
-   * @returns
-   */
-  const actions = (acc, value) => {
-    lastIndex = string.indexOf(')', lastIndex) + 1
-    newString = string.substring(string.indexOf(value) + value.length, lastIndex)
-    return {
-      ...acc,
-      [value]: newString.match(ActionParams).reduce(chunk(2), [])
-    }
-  }
-
-  return string
-    .match(ActionAttr)
-    .reduce(actions, {})
-
-}
-
-/**
- * Unqiue Identifier code for cached state
- *
- * NOT IN USE
- *
- * @returns {string}
- */
-export function uuid () {
-
-  return Array.apply(
-    null
-    , { length: 36 }
-  ).map((
-    _
-    , index
-  ) => (
-    (index === 8 || index === 13 || index === 18 || index === 23) ? (
-      '-'
-    ) : index === 14 ? (
-      '4'
-    ) : index === 19 ? (
-      (Math.floor(Math.random() * 4) + 8).toString(16)
-    ) : (
-      Math.floor(Math.random() * 15).toString(16)
-    )
-  )).join('')
 }
 
 /**

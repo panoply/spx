@@ -1,5 +1,44 @@
 import merge from 'mergerino'
 
+/**
+ * Snapshots Cache
+ *
+ * @exports
+ */
+export const snapshots = new Map()
+
+/**
+ * @exports
+ * @type {Map<string, number>}
+ */
+export const transit = new Map()
+
+/**
+ * Tracked Elements
+ *
+ * @exports
+ * @type {Set<string>}
+ */
+export const tracked = new Set()
+
+/**
+ * XHR Requests
+ *
+ * @type {Map<string, XMLHttpRequest>}
+ */
+export const requests = new Map()
+
+/**
+ * Cache
+ *
+ * @exports
+ * @type {Map<string, IPjax.IState>}
+ */
+export const cache = new Map()
+
+/**
+ * store
+ */
 export const store = (
 
   /**
@@ -18,8 +57,6 @@ export const store = (
 
       this.update.config(options)
       this.update.page(this.config)
-      this.update.dom()
-      this.update.request()
 
     }
 
@@ -30,6 +67,8 @@ export const store = (
     /* -------------------------------------------- */
 
     get started () {
+
+      if (state?.started) state.started = false
 
       return state.started
 
@@ -45,21 +84,13 @@ export const store = (
 
     ,
 
-    /* -------------------------------------------- */
-    /* CACHE                                        */
-    /* -------------------------------------------- */
+    get location () {
 
-    /**
-     * @return {Map<string, IPjax.IState>}
-     */
-    get cache () {
-
-      return state.cache
+      return state.page.url
 
     }
 
     ,
-
     /* -------------------------------------------- */
     /* STORE GETTERS                                */
     /* -------------------------------------------- */
@@ -86,32 +117,6 @@ export const store = (
 
     ,
 
-    /**
-     * @return {IPjax.IDom}
-     */
-    get dom () {
-
-      return state.dom
-
-    }
-
-    ,
-
-    /* -------------------------------------------- */
-    /* REQUEST GETTER                               */
-    /* -------------------------------------------- */
-
-    /**
-     * @return {IPjax.IRequest}
-     */
-    get request () {
-
-      return state.request
-
-    }
-
-    ,
-
     /* -------------------------------------------- */
     /* UPDATES                                      */
     /* -------------------------------------------- */
@@ -122,18 +127,11 @@ export const store = (
 
       config: (
         initial => patch => (
-          state.config = merge(
-            initial,
-            patch
-          )
+          state.config = merge(initial, patch)
         )
       )(
         {
-          target: [
-            'main',
-            '#navbar',
-            '[script]'
-          ],
+          target: [ 'main', '#navbar' ],
           method: 'replace',
           prefetch: true,
           cache: true,
@@ -141,7 +139,8 @@ export const store = (
           progress: false,
           threshold: {
             intersect: 250,
-            hover: 100
+            hover: 100,
+            progress: 10
           }
         }
       )
@@ -153,10 +152,12 @@ export const store = (
       page: (
         initial => patch => (
           state.page = merge(
-            state.page || initial,
+            initial,
             {
-              ...patch,
-              action: {
+              ...patch
+              , target: state.config.target
+              , action: {
+                replace: null,
                 append: null,
                 prepend: null
               }
@@ -167,25 +168,26 @@ export const store = (
         {
           url: '',
           snapshot: '',
+          captured: null,
           target: [],
-          chunks: Object.create(null),
+          title: '',
           method: 'replace',
-          prefetch: 'intersect',
+          prefetch: 'hover',
+          cache: null,
+          progress: false,
           action: {
+            replace: null,
             prepend: null,
             append: null
           },
-          cache: null,
-          progress: false,
-          reload: false,
-          throttle: 0,
           location: {
             protocol: '',
             origin: '',
             hostname: '',
             href: '',
             pathname: '',
-            search: ''
+            search: '',
+            lastPath: ''
           },
           position: {
             x: 0,
@@ -194,52 +196,10 @@ export const store = (
         }
       )
 
-      ,
-
-      /* DOM ---------------------------------------- */
-
-      dom: (
-        initial => patch => (
-          state.dom = merge(
-            state.dom || initial,
-            { ...patch, tracked: initial.tracked }
-          )
-        )
-      )(
-        {
-          tracked: new Set(),
-          head: Object.create(null)
-        }
-      )
-
-      ,
-
-      request: (
-        initial => patch => (
-          state.request = merge(
-            state.request || initial,
-            { ...patch, xhr: initial.xhr }
-          )
-        )
-      )(
-        {
-          xhr: new Map(),
-          cache: {
-            weight: '0 B',
-            total: 0,
-            limit: 50000000 // = 50 MB
-          }
-        }
-      )
     }
 
   })
 
 )(
-  Object.create(
-    {
-      started: false,
-      cache: new Map()
-    }
-  )
+  Object.create(null)
 )

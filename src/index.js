@@ -1,5 +1,8 @@
-import { Protocol, isReady } from './constants/regexp'
-import { store } from './app/store'
+import { Protocol } from './constants/regexp'
+import { store, cache } from './app/store'
+import { navigate } from './app/visit'
+import { nanoid } from 'nanoid'
+import { captureDOM } from './app/render'
 import * as controller from './app/controller'
 
 /**
@@ -23,7 +26,7 @@ export const connect = options => {
 
   if (supported) {
     if (Protocol.test(window.location.protocol)) {
-      if (isReady.test(document.readyState)) controller.initialize()
+      addEventListener('DOMContentLoaded', controller.initialize)
     } else {
       console.error('Invalid protocol, pjax expects https or http protocol')
     }
@@ -38,16 +41,33 @@ export const connect = options => {
  *
  * Reloads the current page
  */
-export const reload = () => {
+export const reload = () => {}
 
-}
+/**
+ * UUID Generator
+ */
+export const uuid = (size = 12) => nanoid(size)
+
+/**
+ * Flush Cache
+ */
+export const flush = () => cache.clear()
+
+/**
+ * Capture DOM
+ *
+ * @param {string} url
+ * @param {object} action
+ */
+export const capture = (url, action) => captureDOM(url, action)
 
 /**
  * Visit
  *
+ * @param {string} url
  * @param {IPjax.IState} state
  */
-export const visit = state => controller.navigate(state)
+export const visit = (url, state = store.page) => navigate({ ...state, url })
 
 /**
  * Disconnect

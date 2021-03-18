@@ -3,6 +3,7 @@
  */
 export type IEvents = (
   'pjax:click' |
+  'pjax:prefetch' |
   'pjax:request' |
   'pjax:cache' |
   'pjax:render' |
@@ -81,6 +82,14 @@ export interface ILocation {
    * '?param=foo&bar=baz'
    */
   search: string
+  /**
+   * The previous path href URL.
+   * This is also the cache identifier
+   *
+   * @example
+   * '/pathname' OR '/pathname?foo=bar'
+   */
+  lastPath: string
 
 }
 
@@ -130,6 +139,38 @@ export type IConfigPresets = {
    * @default 0
    */
   throttle?: number
+
+  /**
+   * Threshold Controls
+   */
+  threshold?: {
+
+    /**
+     * Define an intersection threshold timeout from
+     * which intersected elements will begin fetching
+     * after being observed
+     *
+     * @default 250
+     */
+    intersect?: number,
+
+    /**
+    * Define hover timeout from which fetching will begin
+    * after time spent on mouseover
+    *
+    * @default 100
+    */
+    hover?: number,
+
+    /**
+    * Controls the progress bar threshold, where `1` equates
+    * to 25ms, maximum of `85`
+    *
+    * @default 2
+    */
+    progress?: number
+
+  }
 
 
 }
@@ -239,15 +280,49 @@ export interface IConfig {
    *
    * (_Requests are instantaneous, generally you wont need this_)
    *
-   * @default false
+   * @default true
    */
   progress?: boolean,
+
+
+  /**
+   * Threshold Controls
+   */
+  threshold?: {
+
+    /**
+     * Define an intersection threshold timeout from
+     * which intersected elements will begin fetching
+     * after being observed
+     *
+     * @default 250
+     */
+    intersect?: number,
+
+    /**
+    * Define hover timeout from which fetching will begin
+    * after time spent on mouseover
+    *
+    * @default 100
+    */
+    hover?: number,
+
+    /**
+    * Controls the progress bar threshold, where `1` equates
+    * to 25ms, maximum of `85`
+    *
+    * @default 2
+    */
+    progress?: number
+
+  }
 
 }
 
 export interface IDom {
   readonly tracked?: Set<string>,
   head?: object
+  snapshots: Map<string, string>
 }
 
 
@@ -290,10 +365,15 @@ export interface IState extends IConfig {
   snapshot?: string
 
   /**
+   * Captured HTML response string
+   */
+  captured?: string
+
+  /**
    * The fetched HTML response string
    */
-  chunks?: {
-    [selector: string]: 'replace' | 'prepend' | 'append'
+  targets?: {
+    [selector: string]: Element[]
   }
 
   /**
@@ -307,9 +387,15 @@ export interface IState extends IConfig {
   location?: ILocation
 
   /**
+   * The Document title
+   */
+  title?: string
+
+  /**
    * Action
    */
   action?: {
+    replace?: [target:string]
     append?: Array<[from: string, to: string]>,
     prepend?: Array<[from: string, to: string]>,
   }

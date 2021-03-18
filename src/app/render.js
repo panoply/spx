@@ -1,7 +1,14 @@
-import { DOMParseFallback, isReplace } from '../constants/regexp'
-import { Implementation, ArraySlice, DomParser } from '../constants/common'
+import { isReplace } from '../constants/regexp'
 import { eachSelector, dispatchEvent, forEach } from './utils'
-import { store } from './store'
+import { store, snapshots, cache, tracked } from './store'
+import { getURL } from './location'
+import { nanoid } from 'nanoid'
+import history from 'history/browser'
+import * as progress from './progress'
+
+/* -------------------------------------------- */
+/* FUNCTIONS                                    */
+/* -------------------------------------------- */
 
 /**
  * DOM Head Nodes
@@ -58,9 +65,9 @@ function appendTrackedNode (node) {
   // tracked element must contain id
   if (!node.hasAttribute('id')) return
 
-  if (!store.dom.tracked.has(node.id)) {
+  if (!tracked.has(node.id)) {
     document.body.appendChild(node)
-    store.dom.tracked.add(node.id)
+    tracked.add(node.id)
   }
 
 }
@@ -72,32 +79,32 @@ function appendTrackedNode (node) {
  * @param {Element} target
  * @param {IPjax.IState} state
  * @returns {(DOM: Element) => void}}
- * @memberof Render
  */
-const replaceTarget = (target, element, { method }) => DOM => {
+const replaceTarget = (target, { method }) => DOM => {
 
   if (!isReplace.test(method)) {
 
-    dispatchEvent('pjax:render', { method, element, fragment: target }, true)
+    dispatchEvent('pjax:render', { method, fragment: target }, true)
 
     DOM.innerHTML = target.innerHTML
 
   } else {
 
     let fragment = document.createElement('div')
-    const nodes = ArraySlice.call(target.childNodes)
+    const nodes = [].slice.call(target.childNodes)
 
     forEach(nodes, node => fragment.appendChild(node))
 
     if (method === 'append') {
-      dispatchEvent('pjax:render', { method, element, fragment }, true)
+
+      dispatchEvent('pjax:render', { method, fragment }, true)
       DOM.appendChild(fragment)
 
       console.log(fragment)
       console.log('in append')
 
     } else {
-      dispatchEvent('pjax:render', { method, element, fragment }, true)
+      dispatchEvent('pjax:render', { method, fragment }, true)
       DOM.insertBefore(fragment, DOM.firstChild)
     }
 
@@ -106,19 +113,104 @@ const replaceTarget = (target, element, { method }) => DOM => {
   }
 }
 
+function runActions () {
+
+  Object.entries(state.action).forEach(([ action, targets ]) => {
+
+    targets.forEach((node) => {
+
+      if (action === 'replace') {
+
+        const element = document.body.querySelector(`[data-pjax-target="${node}"]`)
+        const replace = target.body.querySelector(`[data-pjax-target="${node}"]`)
+
+        element.replaceWith(replace)
+      }
+
+      if (action === 'append') {
+
+        const element = document.querySelector(`[data-pjax-target="${node[0]}"]`)
+
+        state.targets[node[1]].forEach(newnode => {
+          element.appendChild(newnode)
+          dispatchEvent('pjax:render', { node: newnode }, true)
+        })
+
+      }
+
+    })
+
+  })
+
+}
+
+/**
+ * Get targets
+ *
+ * @param {Document} element
+ * @param {IPjax.IState} state
+ */
+export function getTargets ({ body }, state) {
+
+  body.querySelectorAll(Targets).forEach(node => {
+
+    const name = node.getAttribute('data-pjax-target')
+
+    if (!state.targets[name]) state.targets[name] = []
+
+    state.targets[name].push(node)
+    // node.setAttribute('data-pjax-action', uuid)
+
+  })
+
+}
+
+/**
+ * Captures current document element and sets a
+ * record to snapshot state
+ *
+ * @export
+ * @param {Document} target
+ * @returns {string}
+ */
+export function DOMSnapshot (target) {
+
+  const uuid = nanoid(16)
+  snapshots.set(uuid, target.documentElement.outerHTML)
+
+  return uuid
+
+}
+
 /**
  * Updates cached DOM
  *
  * @export
  * @param {string} url
+ * @param {object} options
  */
-export function getActiveDOM (url) {
+export function captureDOM (url, options) {
 
-  if (store.config.cache && store.cache.has(url)) {
+  url = getURL(url)
 
-    // store.cache.get(url).snapshot = document.documentElement.outerHTML
+  if (store.config.cache && cache.has(url)) {
 
-    // console.log(store.cache.get(url).snapshot)
+    const state = cache.get(url)
+    const DOMString = snapshots.get(state.snapshot)
+    const target = DOMParse(DOMString)
+
+    console.log(url)
+    target.body.innerHTML = document.documentElement.querySelector('body').innerHTML
+
+    if (options.action === 'replace') {
+
+      snapshots.set(state.snapshot, target.documentElement.outerHTML)
+    } else if (options.action === 'capture') {
+
+      state.captured = DOMSnapshot(target)
+      history.replace(state.location.href, state)
+      console.info('Pjax: DOM Captured at: ' + state.captured)
+    }
 
   }
 
@@ -134,25 +226,7 @@ export function getActiveDOM (url) {
  */
 export function DOMParse (data) {
 
-  if (DomParser) return DomParser.parseFromString(data, 'text/html')
-
-  /**
-     * FALLBACK - Browser Does not support DOMParser
-     */
-  let DOM = Implementation.createHTMLDocument('')
-
-  if (DOMParseFallback.test(data)) {
-    DOM.documentElement.innerHTML = data
-    if (!DOM.body || !DOM.head) {
-      DOM = Implementation.createHTMLDocument('')
-      DOM.write(data)
-    }
-  } else {
-    DOM.body.innerHTML = data
-  }
-
-  return DOM
-
+  return new DOMParser().parseFromString(data, 'text/html')
 }
 
 /**
@@ -165,79 +239,58 @@ export function DOMParse (data) {
  */
 export function update (state, popstate = false) {
 
-  console.log(state)
+  const uuid = (popstate && state?.captured) ? state.captured : state.snapshot
+  const target = DOMParse(snapshots.get(uuid))
 
-  const target = DOMParse(state.snapshot)
-  const title = document.title = target.title || ''
+  state.title = document.title = target?.title || ''
 
   if (!popstate) {
-    history.pushState(state, title, state.location.href)
-  }
 
-  if (target.head) {
-    DOMHead(target.head)
-  }
+    const { pathname, search } = history.location
 
-  // APPEND TRACKED NODES
-  //
-  eachSelector(target, '[data-pjax-track]', appendTrackedNode)
-
-  eachSelector(document, '[data-pjax-replace]', element => {
-
-    element.replaceWith(target.getElementById(element.id))
-
-  })
-
-  Object.keys(state.action).forEach(prop => {
-
-    if (state.action[prop]) {
-
-      forEach(state.action[prop], ([ from, to ]) => {
-
-        const nodes = target.body.querySelectorAll(from)
-        const frag = document.body.querySelector(to)
-
-        console.log(nodes)
-        nodes.forEach(node => {
-          frag.appendChild(node)
-          dispatchEvent('pjax:render', { node }, true)
-        })
-
-      })
+    if ((pathname + search) === state.url) {
+      history.replace(state.location.href, state)
+    } else {
+      history.push(state.location.href, state)
     }
 
-  })
+  } else if (typeof state?.captured === 'string') {
 
-  const fallback = 1
+    if (snapshots.delete(uuid)) {
+      state.captured = null
+      history.replace(state.location.href, state)
+      console.info('Pjax: Captured snapshot removed at: ' + state.url)
+    }
 
-  // REPLACE TARGETS
-  //
-  /* forEach(state.target, element => {
+  }
+
+  if (target?.head) DOMHead(target.head)
+
+  // APPEND TRACKED NODES
+  eachSelector(target, '[data-pjax-track]', appendTrackedNode)
+
+  let fallback = 1
+
+  forEach(state.target, element => {
 
     const node = target.body.querySelector(element)
-
-    // if (node && node.hasAttribute('data-pjax-class')) setTargetClass(node)
 
     return node ? eachSelector(
       document,
       element,
-      replaceTarget(node, element, state)
+      replaceTarget(node, state)
     ) : fallback++
 
   })
-*/
-  // when no targets are found we will replace the
-  // entire document body
+
   if (fallback === state.target.length) {
-    // replaceTarget(target.body, state)(document.body)
+    replaceTarget(target.body, state)(document.body)
   }
 
-  // SET SCROLL POSITION
-  //
-  // window.scrollTo(state.position.x, state.position.y)
+  window.scrollTo(state.position.x, state.position.y)
 
-  console.log(store.dom)
+  progress.hide()
 
-  dispatchEvent('pjax:load', { state, target })
+  dispatchEvent('pjax:load', state)
 
 }
