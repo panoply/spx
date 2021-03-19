@@ -1,6 +1,6 @@
 import { LinkPrefetchIntersect } from '../constants/common'
-import { getURL } from '../app/location'
-import { transit, cache, store } from '../app/store'
+import { getTargets } from '../app/utils'
+import { transit, store } from '../app/store'
 import { getPageState, getVisitConfig } from '../app/visit'
 import * as request from '../app/request'
 
@@ -22,7 +22,8 @@ let started = false
  * Starts prefetch, will initialize `IntersectionObserver` and
  * add event listeners and other logics.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function start () {
 
@@ -39,7 +40,8 @@ export function start () {
  * Stops prefetch, will disconnect `IntersectionObserver` and
  * remove any event listeners or transits.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function stop () {
 
@@ -56,7 +58,7 @@ export function stop () {
  * Begin Observing `href` links
  *
  * @param {Element} target
- * @memberof PrefetchObserver
+ * @returns {void}
  */
 function observe (target) {
 
@@ -67,6 +69,7 @@ function observe (target) {
  * Start Intersection Observer and iterate over entries.
  *
  * @type {IntersectionObserverCallback}
+ * @returns {void}
  */
 function intersect (entries) {
 
@@ -77,6 +80,7 @@ function intersect (entries) {
  * Intersection callback when entries are in viewport.
  *
  * @param {IntersectionObserverEntry} params
+ * @returns {Promise<void>}
  */
 async function onIntersection ({ isIntersecting, target }) {
 
@@ -95,26 +99,4 @@ async function onIntersection ({ isIntersecting, target }) {
     }
 
   }
-}
-
-/**
- * Link is not cached and can be fetched
- *
- * @param {Element} target
- * @returns {boolean}
- */
-function canFetch (target) {
-
-  return !cache.has(getURL(target))
-}
-
-/**
- * Returns a list of link elements to be prefetched. Filters out
- * any links which exist in cache to prevent extrenous transit.
- *
- * @param {string} selector
- */
-function getTargets (selector) {
-
-  return [ ...document.body.querySelectorAll(selector) ].filter(canFetch)
 }

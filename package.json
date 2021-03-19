@@ -24,7 +24,10 @@
   "eslintConfig": {
     "extends": [
       "@brixtol/eslint-config-javascript"
-    ]
+    ],
+    "rules": {
+      "multiline-ternary": "off"
+    }
   },
   "ava": {
     "files": [

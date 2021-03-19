@@ -6,7 +6,8 @@ import * as intersect from '../observers/intersect'
  * Starts prefetch, will initialize `IntersectionObserver` and
  * add event listeners and other logics.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function start () {
 
@@ -20,7 +21,8 @@ export function start () {
  * Stops prefetch, will disconnect `IntersectionObserver` and
  * remove any event listeners or transits.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function stop () {
 

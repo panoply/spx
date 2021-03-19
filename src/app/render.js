@@ -5,6 +5,7 @@ import { getURL } from './location'
 import { nanoid } from 'nanoid'
 import history from 'history/browser'
 import * as progress from './progress'
+import * as prefetch from './prefetch'
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -147,6 +148,7 @@ function runActions () {
 /**
  * Get targets
  *
+ * @exports
  * @param {Document} element
  * @param {IPjax.IState} state
  */
@@ -169,7 +171,7 @@ export function getTargets ({ body }, state) {
  * Captures current document element and sets a
  * record to snapshot state
  *
- * @export
+ * @exports
  * @param {Document} target
  * @returns {string}
  */
@@ -185,7 +187,7 @@ export function DOMSnapshot (target) {
 /**
  * Updates cached DOM
  *
- * @export
+ * @exports
  * @param {string} url
  * @param {object} options
  */
@@ -221,6 +223,7 @@ export function captureDOM (url, options) {
  * using `DomParser()` method. Cached pages will pass
  * the saved response here.
  *
+ * @exports
  * @param {string} data
  * @return {Document}
  */
@@ -233,9 +236,9 @@ export function DOMParse (data) {
  * Update the DOM and execute page adjustments
  * to new navigation point
  *
+ * @exports
  * @param {IPjax.IState} state
  * @param {boolean} [popstate=false]
- * @memberof Render
  */
 export function update (state, popstate = false) {
 
@@ -290,5 +293,7 @@ export function update (state, popstate = false) {
   progress.hide()
 
   dispatchEvent('pjax:load', state)
+
+  prefetch.start()
 
 }

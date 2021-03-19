@@ -1,3 +1,8 @@
+import { cache } from '../app/store'
+
+/* -------------------------------------------- */
+/* LETTINGS                                     */
+/* -------------------------------------------- */
 
 /**
  * @type {boolean}
@@ -7,7 +12,7 @@ let started = false
 /**
  * @type {IPjax.IPosition}
  */
-const position = { x: 0, y: 0 }
+let position = { x: 0, y: 0 }
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -16,7 +21,8 @@ const position = { x: 0, y: 0 }
 /**
  * Attached `scroll` event listener.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function start () {
 
@@ -31,19 +37,60 @@ export function start () {
 /**
  * Removed `scroll` event listener.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function stop () {
   if (started) {
     removeEventListener('scroll', onScroll, false)
+    position = { x: 0, y: 0 }
     started = false
   }
 }
 
 /**
- * Returns to current scroll position
+ * Sets scroll position to the cache reference and
+ * returns a reset position.
  *
- * @export
+ * This function is called before a new page visit
+ * navigation begins, as it will assert the current
+ * position to the current page and return the reset
+ * position, ie: `{x: 0, y: 0 }`) to new page visit.
+ *
+ * If the passed in page state object position was modified
+ * via attributes, eg: `data-pjax-position="x:number y:number"`
+ * then position will be adjusted to match attribute config and
+ * additionally returned.
+ *
+ *
+ * @exports
+ * @param {IPjax.IState} state
+ * @returns {IPjax.IPosition}
+ */
+export function setPosition ({
+  location: { lastUrl },
+  position: { x, y }
+}) {
+
+  // We assert current position here
+  cache.get(lastUrl).position = getPosition()
+
+  if ((x === 0 && y === 0)) return reset()
+
+  position.x = x === 0 ? 0 : x
+  position.y = y === 0 ? 0 : x
+
+  return position
+
+}
+
+/**
+ * Returns to current scroll position, the `reset()`
+ * function **MUST** be called after referencing this
+ * to reset position.
+ *
+ * @exports
+ * @returns {IPjax.IPosition}
  */
 export function getPosition () {
 
@@ -51,9 +98,11 @@ export function getPosition () {
 }
 
 /**
- * Resets scroll position
+ * Resets the scroll position`of the document, applying
+ * a `x`and `y` positions to `0`
  *
- * @export
+ * @exports
+ * @returns {IPjax.IPosition}
  */
 export function reset () {
 
@@ -65,9 +114,11 @@ export function reset () {
 }
 
 /**
- * onScroll event
+ * onScroll event, asserts the current X and Y page
+ * offset position of the document
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function onScroll () {
 

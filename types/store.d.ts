@@ -34,6 +34,15 @@ export type IPosition = {
 }
 
 /**
+ * Scroll position records
+ */
+export type ICacheSize = {
+  requests: number
+  total: number
+  weight: string
+}
+
+/**
  * The URL location object
  */
 export interface ILocation {
@@ -404,8 +413,11 @@ export interface IState extends IConfig {
   * Threshold
   */
   threshold?: {
-    intersect?: number,
+    intersect?: number
+    mouseover?: number
     hover?: number
+
+
   }
 
 }

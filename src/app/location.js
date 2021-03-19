@@ -3,15 +3,16 @@ import history from 'history/browser'
 /**
  * Expands URL href location.
  *
- * @param {string} anchor
+ * @export
+ * @param {string} url
  * @returns {IPjax.ILocation}
  */
-export function expandURL (anchor) {
+export function expandURL (url) {
 
   const lastUrl = history.createHref(window.location)
   const location = document.createElement('a')
 
-  location.href = anchor.toString()
+  location.href = url.toString()
 
   const {
     origin,
@@ -37,7 +38,9 @@ export function expandURL (anchor) {
 /**
  * Returns the current URL
  *
+ * @export
  * @param {Element|string} target
+ * @return {string}
  */
 export function getURL (target) {
 
@@ -50,7 +53,9 @@ export function getURL (target) {
 /**
  * Returns the pathname from `href` target used for cache key.
  *
+ * @export
  * @param {Element} target
+ * @return {string}
  */
 export const getCacheKeyFromTarget = target => getURL(target)
 

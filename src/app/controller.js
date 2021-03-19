@@ -9,10 +9,11 @@ import * as render from './render'
 
 /**
  * Sets initial page state on landing page and
- * caches it so return navigation don't perform an extrenous
- * request
+ * caches it so return navigation don't perform
+ * an extrenous request.
  *
  * @param {Event} event
+ * @returns {Map<string, IPjax.IState>}
  */
 function setInitialCache (event) {
 
@@ -24,14 +25,15 @@ function setInitialCache (event) {
     location
   })
 
-  console.log(state)
-
-  cache.set(state.url, state)
+  return cache.set(state.url, state)
 
 }
 
 /**
  * Initialize
+ *
+ * @exports
+ * @returns {void}
  */
 export function initialize () {
 
@@ -45,10 +47,8 @@ export function initialize () {
 
     addEventListener('load', setInitialCache, false)
 
-    console.info('Pjax: Connection Established ⚡')
-
     store.started = true
-
+    console.info('Pjax: Connection Established ⚡')
   }
 
 }
@@ -57,6 +57,7 @@ export function initialize () {
  * Destory Pjax instances
  *
  * @exports
+ * @returns {void}
  */
 export function destroy () {
 
@@ -68,7 +69,6 @@ export function destroy () {
     mouseover.start()
     intersect.start()
     cache.clear()
-
     store.started = false
 
     console.warn('Pjax: Instance has been disconnected! 😔')

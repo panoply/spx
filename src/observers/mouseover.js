@@ -1,8 +1,8 @@
 import { LinkPrefetchHover } from '../constants/common'
-import { getCacheKeyFromTarget, getURL } from '../app/location'
+import { getURL } from '../app/location'
 import { transit, cache, store } from '../app/store'
-import { linkEventValidate, linkLocator } from '../app/utils'
-import { getPageState, getVisitConfig } from '../app/visit'
+import { linkEvent, linkLocate, getTargets } from '../app/utils'
+import * as visit from '../app/visit'
 import * as request from '../app/request'
 
 /**
@@ -15,10 +15,12 @@ let started = false
 /* -------------------------------------------- */
 
 /**
- * Starts prefetch, will initialize `IntersectionObserver` and
- * add event listeners and other logics.
+ * Starts mouseovers, will attach mouseover events
+ * to all elements which contain a `data-pjax-prefetch="hover"`
+ * data attribute
  *
  * @export
+ * @returns {void}
  */
 export function start () {
 
@@ -31,10 +33,12 @@ export function start () {
 }
 
 /**
- * Stops prefetch, will disconnect `IntersectionObserver` and
- * remove any event listeners or transits.
+ * Stops mouseovers, will remove all mouseover and mouseout
+ * events on elements which contains a `data-pjax-prefetch="hover"`
+ * unless target href already exists in cache.
  *
  * @export
+ * @returns {void}
  */
 export function stop () {
 
@@ -52,13 +56,14 @@ export function stop () {
  * concludes. This prevents fetches being made for hovers that
  * do not exceeds threshold.
  *
+ * @exports
  * @param {MouseEvent} event
  */
 export function onMouseleave (event) {
 
-  if (linkEventValidate(event)) {
+  if (linkEvent(event)) {
 
-    const target = linkLocator(event.target, LinkPrefetchHover)
+    const target = linkLocate(event.target, LinkPrefetchHover)
 
     if (target) {
       cleanup(getURL(target))
@@ -77,13 +82,13 @@ export function onMouseleave (event) {
  */
 function onMouseover (event) {
 
-  if (linkEventValidate(event)) {
+  if (linkEvent(event)) {
 
-    const target = linkLocator(event.target, LinkPrefetchHover)
+    const target = linkLocate(event.target, LinkPrefetchHover)
 
     if (target) {
 
-      const state = getPageState(target)
+      const state = visit.getPageState(target)
 
       if (cache.has(state.url)) return disconnect(target)
 
@@ -92,12 +97,8 @@ function onMouseover (event) {
       throttle(state.url, () => {
 
         state.method = 'prefetch'
-        target.removeEventListener('mouseleave', onMouseleave, true)
 
-        prefetch(getVisitConfig(state, target), newState => {
-          console.log('prefetch')
-          target.removeEventListener('mouseover', onMouseover, true)
-        })
+        prefetch(visit.getVisitConfig(state, target), target)
 
       }, store.config.threshold.hover)
 
@@ -109,6 +110,7 @@ function onMouseover (event) {
  * Attach mouseover events to all defined element targets
  *
  * @param {EventTarget} target
+ * @returns {void}
  */
 function observe (target) {
 
@@ -120,12 +122,13 @@ function observe (target) {
  * Cleanup throttlers
  *
  * @param {string} url
- * @memberof PrefetchObserver
+ * @returns {boolean}
  */
 function cleanup (url) {
 
   clearTimeout(transit.get(url))
-  transit.delete(url)
+
+  return transit.delete(url)
 
 }
 
@@ -135,11 +138,12 @@ function cleanup (url) {
  * @param {string} url
  * @param {function} fn
  * @param {number} delay
+ * @returns {Map<string, number>}
  */
 function throttle (url, fn, delay) {
 
   if (!cache.has(url) && !transit.has(url)) {
-    transit.set(url, setTimeout(fn, delay))
+    return transit.set(url, setTimeout(fn, delay))
   }
 }
 
@@ -148,23 +152,17 @@ function throttle (url, fn, delay) {
  * Lifecycle event `pjax:cache` will fire upon completion.
  *
  * @param {IPjax.IState} state
- * The navigation configuration state for the requestd page
- *
- * @param {(status: IPjax.IState) => void} callback
- * The `href` link target the prefetch was issued for
+ * @param {Element} target
+ * @returns{Promise<void>}
  */
-async function prefetch (state, callback) {
+async function prefetch (state, target) {
 
-  // console.log('prefetch', state.url)
-  try {
+  const response = await request.get(state)
 
-    const response = await request.get(state)
-
-    callback(response)
-
-  } catch (error) {
-    console.error(error)
-    console.info(`Endpoint "${state.url}" failed, will retry prefetch again`)
+  if (response) {
+    disconnect(target)
+  } else {
+    console.warn(`Pjax: Prefetch will retry on next mouseover for: ${state.url}`)
   }
 
   cleanup(state.url)
@@ -172,35 +170,13 @@ async function prefetch (state, callback) {
 }
 
 /**
- * Link is not cached and can be fetched
- *
- * @param {Element} target
- * @returns {boolean}
- */
-function canFetch (target) {
-
-  return !cache.has(getCacheKeyFromTarget(target))
-}
-
-/**
- * Returns a list of link elements to be prefetched. Filters out
- * any links which exist in cache to prevent extrenous transit.
- *
- * @param {string} selector
- */
-function getTargets (selector) {
-
-  return [ ...document.body.querySelectorAll(selector) ].filter(canFetch)
-}
-
-/**
  * Adds and/or Removes click events.
  *
  * @param {EventTarget} target
+ * @returns {void}
  */
 function disconnect (target) {
 
   target.removeEventListener('mouseleave', onMouseleave, false)
   target.removeEventListener('mouseover', onMouseover, false)
-
 }

@@ -16,33 +16,27 @@ let storage = 0
 /**
  * Executes on request end. Removes the XHR recrod and update
  * the response DOMString cache size record.
-
+ *
+ * @exports
  * @param {string} url
- * DOM string, equivelent to`document.documentElement.outerHTML`
- *
  * @param {string} DOMString
- * DOM string, equivelent to`document.documentElement.outerHTML`
- *
- * @returns {void}
- * Executes asynchronously, to prevent any delayed between requests
+ * @returns {boolean}
  */
 function HttpRequestEnd (url, DOMString) {
 
   storage = storage + byteSize(DOMString)
-  requests.delete(url)
+
+  return requests.delete(url)
 
 }
 
 /**
  * Fetch XHR Request wrapper function
  *
+ * @exports
  * @param {IPjax.IState} state
- * The `location.href`request address
- *
  * @param {boolean} [async=false]
- * The XHR request is a asynchronous request or not
- *
- * DOM string, equivelent to `document.documentElement.outerHTML`
+ * @returns {Promise<string>}
  */
 async function HttpRequest ({
   url,
@@ -86,6 +80,8 @@ async function HttpRequest ({
 /**
  * Returns request cache metrics
  *
+ * @exports
+ * @returns {IPjax.ICacheSize}
  */
 export function cacheSize () {
 
@@ -100,11 +96,9 @@ export function cacheSize () {
 /**
  * Cancels the request in transit
  *
+ * @exports
  * @param {string} url
- * The `cacheKey` url identifier
- *
  * @returns {void}
- * The request will either be aborted or warn in console if failed
  */
 export function cancel (url) {
 
@@ -124,15 +118,15 @@ export function cancel (url) {
  * event dispatched this will prevent multiple requests and
  * instead wait for initial fetch to complete.
  *
- * @param {string} url
- * The `cacheKey` url identifier
- *
- * @param {number} [limit=0]
  * Number of recursive runs to make, set this to 85 to disable,
  * else just leave it to execute as is.
  *
- * @return {Promise<boolean>}
  * Returns `true` if request resolved in `850ms` else `false`
+ *
+ * @exports
+ * @param {string} url
+ * @param {number} [limit=0]
+ * @return {Promise<boolean>}
  */
 export async function inFlight (url, limit = 0) {
 
@@ -153,14 +147,10 @@ export async function inFlight (url, limit = 0) {
  * Fetches documents and guards from duplicated requests
  * from being dispatched if an indentical fetch is in flight.
  *
+ * @exports
  * @param {IPjax.IState} state
- * The page state object acquired from link
- *
  * @param {boolean} [async=false]
- * The XHR request is a asynchronous request or not
- *
  * @return {Promise<IPjax.IState|false>}
- * A boolean response representing a successful or failed fetch
  */
 export async function get (state, async = true) {
 

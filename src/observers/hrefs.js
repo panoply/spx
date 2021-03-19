@@ -1,5 +1,5 @@
 import { navigate, visitClickState } from '../app/visit'
-import { dispatchEvent, linkEventValidate, linkLocator } from '../app/utils'
+import { dispatchEvent, linkEvent, linkLocate } from '../app/utils'
 import { Link } from '../constants/common'
 import { onMouseleave } from './mouseover'
 
@@ -15,7 +15,8 @@ let started = false
 /**
  * Attached `click` event listener.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function start () {
 
@@ -30,6 +31,7 @@ export function start () {
  * Removed `click` event listener.
  *
  * @export
+ * @returns {void}
  */
 export function stop () {
 
@@ -41,19 +43,32 @@ export function stop () {
 }
 
 /**
+ * Adds and/or Removes click events.
+ *
+ * @returns {void}
+ */
+function observe () {
+
+  removeEventListener('click', onClick, false)
+  addEventListener('click', onClick, false)
+
+}
+
+/**
  * Attempts to visit href location, Handles click bubbles and
  * Dispatches a `pjax:click` event respecting the cancelable
  * `preventDefault()` from user event
  *
  * @param {MouseEvent} event
+ * @returns {Promise<void>}
  */
 function onClick (event) {
 
-  if (linkEventValidate(event)) {
+  if (linkEvent(event)) {
 
     event.preventDefault()
 
-    const target = linkLocator(event.target, Link)
+    const target = linkLocate(event.target, Link)
 
     if (target && target.tagName === 'A') {
 
@@ -65,16 +80,4 @@ function onClick (event) {
       }
     }
   }
-}
-
-/**
- * Adds and/or Removes click events.
- *
- * @private
- */
-function observe () {
-
-  removeEventListener('click', onClick, false)
-  addEventListener('click', onClick, false)
-
 }

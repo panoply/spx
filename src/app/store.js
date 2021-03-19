@@ -118,9 +118,10 @@ export const store = (
       /* CONFIG ------------------------------------- */
 
       config: (
-        initial => patch => (
-          state.config = merge(initial, patch)
-        )
+        initial =>
+          patch => (
+            state.config = merge(initial, patch)
+          )
       )(
         {
           target: [ 'main', '#navbar' ],
@@ -142,20 +143,21 @@ export const store = (
       /* PAGE --------------------------------------- */
 
       page: (
-        initial => patch => (
-          state.page = merge(
-            initial,
-            {
-              ...patch
-              , target: state.config.target
-              , action: {
-                replace: null,
-                append: null,
-                prepend: null
+        initial =>
+          patch => (
+            state.page = merge(
+              initial,
+              {
+                ...patch
+                , target: state.config.target
+                , action: {
+                  replace: null,
+                  append: null,
+                  prepend: null
+                }
               }
-            }
+            )
           )
-        )
       )(
         {
           url: '',

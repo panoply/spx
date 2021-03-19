@@ -32,7 +32,7 @@ export let loading = false
 /**
  * Show Progress Bar
  *
- * @export
+ * @exports
  */
 export function show () {
 
@@ -66,7 +66,7 @@ export function show () {
 /**
  * Hide Progress Bar
  *
- * @export
+ * @exports
  */
 export function hide () {
 

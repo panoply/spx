@@ -1,9 +1,9 @@
+import history from 'history/browser'
 import { store, cache } from '../app/store'
 import { expandURL } from '../app/location'
 import * as prefetch from '../app/prefetch'
 import * as render from '../app/render'
 import * as request from '../app/request'
-import history from 'history/browser'
 
 /**
  * @type {boolean}
@@ -27,7 +27,8 @@ let inTransit = null
 /**
  * Attached `history` event listener.
  *
- * @export
+ * @exports
+ * @returns {void}
  */
 export function start () {
 
@@ -41,6 +42,7 @@ export function start () {
  * Removed `history` event listener.
  *
  * @export
+ * @returns {void}
  */
 export function stop () {
 
@@ -51,9 +53,24 @@ export function stop () {
 }
 
 /**
+ * Event History dispatch controller, handles popstate,
+ * push and replace events via third party module
+ *
+ * @param {import('history').BrowserHistory} event
+ */
+function listener ({ action, location }) {
+
+  if (action === 'POP') return popstate(history.createHref(location))
+
+  console.log(action, location.state)
+
+}
+
+/**
  * Popstate Navigations
  *
  * @param {string} url
+ * @returns {Promise<void>}
  */
 async function popstate (url) {
 
@@ -77,19 +94,5 @@ async function popstate (url) {
   }
 
   prefetch.start()
-
-}
-
-/**
- * Event History dispatch controller, handles popstate,
- * push and replace events via third party module
- *
- * @param {import('history').BrowserHistory} event
- */
-async function listener ({ action, location }) {
-
-  if (action === 'POP') return popstate(history.createHref(location))
-
-  console.log(action, location.state)
 
 }

@@ -1,13 +1,16 @@
 import { isNumber } from '../constants/regexp'
 import { Units } from './../constants/common'
+import { getURL } from './location'
+import { cache } from './store'
 
 /**
  * Handles a clicked link, prevents special click types.
  *
+ * @exports
  * @param {MouseEvent} event
  * @return {boolean}
  */
-export function linkEventValidate (event) {
+export function linkEvent (event) {
 
   // @ts-ignore
   return !((event.target && event.target.isContentEditable) ||
@@ -23,15 +26,12 @@ export function linkEventValidate (event) {
 /**
  * Locted the closest link when click bubbles.
  *
+ * @exports
  * @param {EventTarget} target
- * The link `href` element target
- *
  * @param {string} selector
- * The selector query name, eg: `[data-pjax]`
- *
  * @return {Element|false}
  */
-export function linkLocator (target, selector) {
+export function linkLocate (target, selector) {
 
   return target instanceof Element ? target.closest(selector) : false
 }
@@ -40,6 +40,7 @@ export function linkLocator (target, selector) {
  * Constructs a JSON object from HTML `data-pjax-*` attributes.
  * Attributes are passed in as array items
  *
+ * @exports
  * @param {object} accumulator
  * @param {string} current
  * @param {number} index
@@ -59,7 +60,7 @@ export function linkLocator (target, selector) {
  * { string: 'foo', number: 200 }
  *
  */
-export function jsonAttrs (accumulator, current, index, source) {
+export function jsonattrs (accumulator, current, index, source) {
 
   return (index % 2 ? ({
     ...accumulator
@@ -73,7 +74,7 @@ export function jsonAttrs (accumulator, current, index, source) {
 /**
  * Array Chunk function
  *
- * @export
+ * @exports
  * @param {number} [size=2]
  * @return {(acc: any[], value: string) => any[]}
  */
@@ -90,17 +91,10 @@ export function chunk (size = 2) {
 /**
  * Dispatches lifecycle events on the document.
  *
- * @export
- *
+ * @exports
  * @param {IPjax.IEvents} eventName
- * The event name to be created
- *
  * @param {object} detail
- * Details to be passed to event dispatch
- *
  * @param {boolean} cancelable
- * Whether the event can be cancelled via `preventDefault()`
- *
  * @return {boolean}
  */
 export function dispatchEvent (eventName, detail, cancelable = false) {
@@ -115,7 +109,9 @@ export function dispatchEvent (eventName, detail, cancelable = false) {
 /**
  * Returns the byte size of a string value
  *
+ * @exports
  * @param {string} string
+ * @returns {number}
  */
 export function byteSize (string) {
 
@@ -123,10 +119,37 @@ export function byteSize (string) {
 }
 
 /**
+ * Link is not cached and can be fetched
+ *
+ * @exports
+ * @param {Element} target
+ * @returns {boolean}
+ */
+export function canFetch (target) {
+
+  return !cache.has(getURL(target))
+}
+
+/**
+ * Returns a list of link elements to be prefetched. Filters out
+ * any links which exist in cache to prevent extrenous transit.
+ *
+ * @exports
+ * @param {string} selector
+ * @returns {Element[]}
+ */
+export function getTargets (selector) {
+
+  return [ ...document.body.querySelectorAll(selector) ].filter(canFetch)
+}
+
+/**
  * Converts byte size to killobyte, megabyre,
  * gigabyte or terrabyte
  *
+ * @exports
  * @param {number} bytes
+ * @returns {string}
  */
 export function byteConvert (bytes) {
 
@@ -144,8 +167,10 @@ export function byteConvert (bytes) {
 /**
  * Async Timeout
  *
+ * @exports
  * @param {function} callback
  * @param {number} ms
+ * @returns {Promise<boolean>}
  */
 export function asyncTimeout (callback, ms = 0) {
 
@@ -156,15 +181,10 @@ export function asyncTimeout (callback, ms = 0) {
  * Each iterator helper function. Provides a util function
  * for loop iterations
  *
- *
+ * @exports
  * @param {any} list
- * An array list of items to iterate over
- *
- * @param {(item: Element | any, index?: number) => any} fn
- * Callback function to be executed for each iteration
- *
+ * @param {(item: Element | any, index?: number) => any} fn *
  * @param {{index?: boolean  }} [index=flase]
- *
  * @return {void}
  */
 export function forEach (list, fn, { index = false } = {}) {
@@ -176,12 +196,10 @@ export function forEach (list, fn, { index = false } = {}) {
 /**
  * Get Element attributes
  *
+ * @exports
  * @param {Element} element
- * The element to parse for attributes
- *
  * @param {string[]} exclude
- * List of attributes to be excluded
- *
+ * @returns {[name:string, value: string][]}
  */
 export function getElementAttrs ({ attributes }, exclude = []) {
 
@@ -202,17 +220,14 @@ export function getElementAttrs ({ attributes }, exclude = []) {
 /**
  * Each Selector
  *
+ * @exports
  * @param {Document} document
- * The document Element
- *
- * @param {string} query
- * The element selector
- *
+ * @param {string} query *
  * @param {(element: Element) => void} callback
- * The callback function
+ * @returns {void}
  */
 export function eachSelector ({ body }, query, callback) {
 
-  return [].slice.call(body.querySelectorAll(query)).forEach(callback)
+  return [ ...body.querySelectorAll(query) ].forEach(callback)
 
 }
