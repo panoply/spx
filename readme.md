@@ -33,6 +33,7 @@ pnpm i @brixtol/pjax
 
 You do not create a class instance, the module has no classes or any of that oop shit but you do need to call `connect` to initialize.
 
+<!-- prettier-ignore -->
 ```js
 import * as Pjax from "@brixtol/pjax";
 
@@ -40,49 +41,115 @@ import * as Pjax from "@brixtol/pjax";
 /* -------------------------------------------- */
 
 Pjax.connect({
-  fragments: ["main"],
-  action: "replace",
-  prefetch: true,
-  cache: true,
-  throttle: 0,
-  progress: false,
-  threshold: {
-    intersect: 250,
-    hover: 100,
+  targets: ["body"],
+  cache: {
+    enable: true,
+    limit: 25,
+  },
+  requests: {
+    timeout: 1500,
+    poll: 150,
+    async: true,
+  },
+  prefetch: {
+    mouseover: {
+      enable: true,
+      threshold: 100,
+      proximity: 0,
+    },
+    intersect: {
+      enable: true,
+      options: {
+        rootMargin: "0px",
+        threshold: 1.0,
+      },
+    },
+  },
+  progress: {
+    enable: true,
+    threshold: 500,
+    options: {
+      minimum: 0.25,
+      easing: "ease",
+      speed: 200,
+      trickle: true,
+      trickleSpeed: 200,
+      showSpinner: false,
+    },
   },
 });
 
 /* LIFECYCLE EVENTS
 /* -------------------------------------------- */
 
-document.addEventListener("pjax:load", ({ detail }) => {});
+document.addEventListener("pjax:click", ({ detail: { target, options } }) => {});
 
-document.addEventListener("pjax:click", (event) => {});
+document.addEventListener("pjax:request", ({ detail: { url, type } }) => {});
 
-document.addEventListener("pjax:request", (event) => {});
+document.addEventListener("pjax:cache", ({ detail: { record } }) => {});
 
-document.addEventListener("pjax:cache", (event) => {});
+document.addEventListener("pjax:render", ({ detail: { actions } }) => {});
 
-document.addEventListener("pjax:render", ({ detail }) => {});
-```
+document.addEventListener("pjax:load", ({ detail: { targets, location } }) => {});
 
-You can also cherry-pick the export methods:
+/* HOOKS
+/* -------------------------------------------- */
 
-```js
-import { connect } from "@brixtol/pjax";
+Pjax.on('request', (state) => {})
 
-connect({
-  target: ["main", "#navbar"],
-  action: "replace",
-  prefetch: true,
-  cache: true,
-  throttle: 0,
-  progress: false,
-  threshold: {
-    intersect: 250,
-    hover: 100,
+Pjax.on('cache', (state) => {})
+
+Pjax.on('render', (state) => {})
+
+Pjax.on('load', (state) => {})
+
+/* ROUTING
+/* -------------------------------------------- */
+
+Pjax.route({
+  '/:path': {
+    initialize() {},
+    connect() {},
+    disconnect() {},
+  }
+})
+
+/* METHODS
+/* -------------------------------------------- */
+
+Pjax.supported: boolean
+
+Pjax.metrics: object
+
+Pjax.visit(url?, { cache, position, action, progress })
+
+Pjax.cache(url?)
+
+Pjax.flush()
+
+Pjax.capture(url?, { action })
+
+Pjax.uuid(size = 16)
+
+Pjax.reload()
+
+Pjax.disconnect()
+
+
+/* GLOBAL CONTEXT
+/* -------------------------------------------- */
+
+window.Pjax = {
+  session: {
+    '/': {
+      uuid: string,
+      cached: boolean,
+      history: boolean,
+      visits: number
+    }
   },
-});
+}
+
 ```
 
 ## Define Presets
