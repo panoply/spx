@@ -1,39 +1,25 @@
 import { isNumber } from '../constants/regexp'
 import { Units } from './../constants/common'
-import { getURL } from './location'
-import { cache } from './store'
-
-/**
- * Handles a clicked link, prevents special click types.
- *
- * @exports
- * @param {MouseEvent} event
- * @return {boolean}
- */
-export function linkEvent (event) {
-
-  // @ts-ignore
-  return !((event.target && event.target.isContentEditable) ||
-    event.defaultPrevented ||
-    event.which > 1 ||
-    event.altKey ||
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey)
-
-}
+import path from './path'
+import { store } from './store'
 
 /**
  * Locted the closest link when click bubbles.
  *
  * @exports
- * @param {EventTarget} target
+ * @param {EventTarget|MouseEvent} target
  * @param {string} selector
  * @return {Element|false}
  */
-export function linkLocate (target, selector) {
+export function getLink (target, selector) {
 
-  return target instanceof Element ? target.closest(selector) : false
+  if (target instanceof Element) {
+    const element = target.closest(selector)
+    if (element && element.tagName === 'A') return element
+  }
+
+  return false
+
 }
 
 /**
@@ -127,7 +113,7 @@ export function byteSize (string) {
  */
 export function canFetch (target) {
 
-  return !cache.has(getURL(target))
+  return !store.has(path.get(target), { snapshot: true })
 }
 
 /**
@@ -174,7 +160,10 @@ export function byteConvert (bytes) {
  */
 export function asyncTimeout (callback, ms = 0) {
 
-  return new Promise(resolve => setTimeout(() => resolve(callback()), ms))
+  return new Promise(resolve => setTimeout(() => {
+    const fn = callback()
+    resolve(fn)
+  }, ms))
 }
 
 /**

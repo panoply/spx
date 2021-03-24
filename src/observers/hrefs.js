@@ -1,83 +1,239 @@
-import { navigate, visitClickState } from '../app/visit'
-import { dispatchEvent, linkEvent, linkLocate } from '../app/utils'
+import { dispatchEvent, getLink, chunk } from '../app/utils'
 import { Link } from '../constants/common'
-import { onMouseleave } from './mouseover'
+import { store } from '../app/store'
+import path from '../app/path'
+import scroll from './scroll'
+import request from '../app/request'
+import render from '../app/render'
+import * as regexp from '../constants/regexp'
 
 /**
- * @type {boolean}
- */
-let started = false
-
-/* -------------------------------------------- */
-/* FUNCTIONS                                    */
-/* -------------------------------------------- */
-
-/**
- * Attached `click` event listener.
+ * Link (href) handler
  *
- * @exports
- * @returns {void}
+ * @typedef {string|Store.IPage} clickState
+ * @param {boolean} connected
  */
-export function start () {
+export default (function (connected) {
 
-  if (!started) {
-    addEventListener('click', observe, true)
-    started = true
+  /**
+   * Constructs a JSON object from HTML `data-pjax-*` attributes.
+   * Attributes are passed in as array items
+   *
+   * @exports
+   * @param {object} accumulator
+   * @param {string} current
+   * @param {number} index
+   * @param {object} source
+   *
+   * @example
+   *
+   * // Attribute values are seperated by whitespace
+   * // For example, a HTML attribute would look like:
+   * <data-pjax-prop="string:foo number:200">
+   *
+   * // Attribute values are split into an Array
+   * // The array is passed to this reducer function
+   * ["string", "foo", "number", "200"]
+   *
+   * // This reducer function will return:
+   * { string: 'foo', number: 200 }
+   *
+   */
+  const jsonattrs = (accumulator, current, index, source) => {
+
+    return (index % 2 ? ({
+      ...accumulator
+      , [source[(source.length - 1) >= index ? (
+        index - 1
+      ) : index]]: regexp.isNumber.test(current) ? Number(current) : current
+    }) : accumulator)
+
   }
 
-}
+  /**
+   * Handles a clicked link, prevents special click types.
+   *
+   * @exports
+   * @param {MouseEvent} event
+   * @return {boolean}
+   */
+  const linkEvent = (event) => {
 
-/**
- * Removed `click` event listener.
- *
- * @export
- * @returns {void}
- */
-export function stop () {
+    // @ts-ignore
+    return !((event.target && event.target.isContentEditable) ||
+      event.defaultPrevented ||
+      event.which > 1 ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey)
 
-  if (started) {
-    removeEventListener('click', observe, true)
-    started = false
   }
 
-}
+  /**
+   * Executes a pjax navigation.
+   *
+   * @param {string} url
+   * @param {Store.IPage|false} [state=false]
+   * @export
+   */
+  const navigate = async (url, state = false) => {
 
-/**
- * Adds and/or Removes click events.
- *
- * @returns {void}
- */
-function observe () {
+    if (state) {
 
-  removeEventListener('click', onClick, false)
-  addEventListener('click', onClick, false)
+      console.log(state)
+      if (store.has(url, { snapshot: true })) return render.update(state)
 
-}
+      const page = await request.get(state)
+      if (page) return render.update(page)
 
-/**
- * Attempts to visit href location, Handles click bubbles and
- * Dispatches a `pjax:click` event respecting the cancelable
- * `preventDefault()` from user event
- *
- * @param {MouseEvent} event
- * @returns {Promise<void>}
- */
-function onClick (event) {
-
-  if (linkEvent(event)) {
-
-    event.preventDefault()
-
-    const target = linkLocate(event.target, Link)
-
-    if (target && target.tagName === 'A') {
-
-      const state = visitClickState(target)
-
-      if (dispatchEvent('pjax:click', state, true)) {
-        if (state.method === 'prefetch') onMouseleave(event)
-        return navigate(state)
+    } else {
+      if ((await request.inFlight(url))) {
+        return render.update(store.cache(url))
+      } else {
+        request.cancel(url)
       }
     }
+
+    return window.location.replace(url)
+
   }
-}
+
+  /**
+   * Parses link `href` attributes and assigns them to
+   * configuration options.
+   *
+   * @export
+   * @param {Element} target
+   * @param {Store.IPage} [state]
+   * @returns {Store.IPage}
+   */
+  const attrparse = (
+    { attributes }
+    , state = {}
+  ) => ([ ...attributes ].reduce((
+    config
+    , {
+      nodeName,
+      nodeValue
+    }
+  ) => {
+
+    if (!regexp.Attr.test(nodeName)) return config
+
+    const value = nodeValue.replace(/\s+/g, '')
+
+    config[nodeName.substring(10)] = regexp.isArray.test(value) ? (
+      value.match(regexp.ActionParams)
+    ) : regexp.isPenderValue.test(value) ? (
+      value.match(regexp.ActionParams).reduce(chunk(2), [])
+    ) : regexp.isPosition.test(value) ? (
+      value.match(regexp.inPosition).reduce(jsonattrs, {})
+    ) : regexp.isBoolean.test(value) ? (
+      value === 'true'
+    ) : regexp.isNumber.test(value) ? (
+      Number(value)
+    ) : (
+      value
+    )
+
+    return config
+
+  }, state))
+
+  /**
+   * Triggers click event
+   *
+   * @param {Element} target
+   * @returns {(state: clickState) => (event: MouseEvent) => void}
+   */
+  const handleClick = target => state => function click (event) {
+
+    event.preventDefault()
+    event.stopPropagation()
+    target.removeEventListener('click', click, false)
+
+    if (!dispatchEvent('pjax:click', {}, true)) return undefined
+
+    return typeof state === 'object'
+      ? render.update(state)
+      : typeof state === 'string'
+        ? navigate(state)
+        : window.location.replace(path.absolute(path.url))
+
+  }
+
+  /**
+   * Triggers a page fetch
+   *
+   * @param {MouseEvent} event
+   */
+  const onMousedown = event => {
+
+    // window.performance.mark('started')
+
+    if (!linkEvent(event)) return undefined
+
+    const target = getLink(event.target, Link)
+
+    if (!target) return undefined
+
+    store.history(path.url)
+
+    const url = path.get(target, true)
+    const click = handleClick(target)
+
+    if (request.transit.has(url)) {
+      target.addEventListener('click', click(url), false)
+    } else {
+
+      const state = attrparse(target, {
+        url,
+        location: path.parse(url),
+        position: scroll.set(path.url)
+      })
+
+      if (store.has(url, { snapshot: true })) {
+        target.addEventListener('click', click(store.update(state)), false)
+      } else {
+        request.get(state) // TRIGGER FETCH
+        target.addEventListener('click', click(url), false)
+      }
+    }
+
+  }
+
+  return {
+
+    attrparse,
+    navigate,
+
+    /**
+     * Attached `click` event listener.
+     *
+     * @returns {void}
+     */
+    start: () => {
+
+      if (!connected) {
+        addEventListener('mousedown', onMousedown, true)
+        connected = true
+      }
+    },
+
+    /**
+     * Removed `click` event listener.
+     *
+     * @returns {void}
+     */
+    stop: () => {
+
+      if (connected) {
+        removeEventListener('mousedown', onMousedown, true)
+        connected = false
+      }
+    }
+
+  }
+
+})(false)

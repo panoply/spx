@@ -1,33 +1,11 @@
-import { store, cache } from './store'
-import { expandURL } from './location'
-import * as hrefs from '../observers/hrefs'
-import * as mouseover from '../observers/mouseover'
-import * as intersect from '../observers/intersect'
-import * as scroll from '../observers/scrolling'
-import * as history from '../observers/history'
-import * as render from './render'
+import hrefs from '../observers/hrefs'
+import hover from '../observers/hover'
+import intersect from '../observers/intersect'
+import scroll from '../observers/scroll'
+import history from '../observers/history'
+import { store } from './store'
 
-/**
- * Sets initial page state on landing page and
- * caches it so return navigation don't perform
- * an extrenous request.
- *
- * @param {Event} event
- * @returns {Map<string, IPjax.IState>}
- */
-function setInitialCache (event) {
-
-  const location = expandURL(window.location.href)
-  const state = store.update.page({
-    url: location.lastUrl,
-    snapshot: render.DOMSnapshot(document),
-    title: document.title,
-    location
-  })
-
-  return cache.set(state.url, state)
-
-}
+let started = false
 
 /**
  * Initialize
@@ -37,20 +15,19 @@ function setInitialCache (event) {
  */
 export function initialize () {
 
-  if (!store.started) {
+  if (!started) {
 
     history.start()
     hrefs.start()
     scroll.start()
-    mouseover.start()
-    intersect.start()
+    hover.start()
+    intersect.stop()
 
-    addEventListener('load', setInitialCache, false)
+    addEventListener('load', store.initialize)
+    started = true
 
-    store.started = true
     console.info('Pjax: Connection Established ⚡')
   }
-
 }
 
 /**
@@ -61,15 +38,16 @@ export function initialize () {
  */
 export function destroy () {
 
-  if (store.started) {
+  if (started) {
 
     history.stop()
     hrefs.stop()
     scroll.stop()
-    mouseover.start()
-    intersect.start()
-    cache.clear()
-    store.started = false
+    hover.stop()
+    intersect.stop()
+    store.clear()
+
+    started = false
 
     console.warn('Pjax: Instance has been disconnected! 😔')
   } else {

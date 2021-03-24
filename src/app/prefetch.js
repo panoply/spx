@@ -1,6 +1,6 @@
 import { store } from './store'
-import * as mouseover from '../observers/mouseover'
-import * as intersect from '../observers/intersect'
+import mouseover from '../observers/hover'
+import intersect from '../observers/intersect'
 
 /**
  * Starts prefetch, will initialize `IntersectionObserver` and
@@ -11,10 +11,9 @@ import * as intersect from '../observers/intersect'
  */
 export function start () {
 
-  if (store.config.prefetch) {
-    mouseover.start()
-    intersect.start()
-  }
+  if (store.config.prefetch.mouseover.enable) mouseover.start()
+  if (store.config.prefetch.intersect.enable) intersect.start()
+
 }
 
 /**
@@ -26,8 +25,6 @@ export function start () {
  */
 export function stop () {
 
-  if (store.config.prefetch) {
-    mouseover.stop()
-    intersect.stop()
-  }
+  if (store.config.prefetch.mouseover.enable) mouseover.stop()
+  if (store.config.prefetch.intersect.enable) intersect.stop()
 }

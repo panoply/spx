@@ -1,102 +1,95 @@
 import { LinkPrefetchIntersect } from '../constants/common'
 import { getTargets } from '../app/utils'
-import { transit, store } from '../app/store'
-import { getPageState, getVisitConfig } from '../app/visit'
-import * as request from '../app/request'
+import hrefs from './hrefs'
+import path from '../app/path'
+import request from '../app/request'
 
 /**
- * @type IntersectionObserver
+ * @param {boolean} connect
  */
-let entries = null
+export default (function (connect) {
 
-/**
- * @type Boolean
- */
-let started = false
+  /**
+   * @type IntersectionObserver
+   */
+  let entries = null
 
-/* -------------------------------------------- */
-/* FUNCTIONS                                    */
-/* -------------------------------------------- */
+  /**
+   * Intersection callback when entries are in viewport.
+   *
+   * @param {IntersectionObserverEntry} params
+   * @returns {Promise<void>}
+   */
+  const onIntersect = async ({ isIntersecting, target }) => {
 
-/**
- * Starts prefetch, will initialize `IntersectionObserver` and
- * add event listeners and other logics.
- *
- * @exports
- * @returns {void}
- */
-export function start () {
+    if (isIntersecting) {
 
-  if (store.config.prefetch) {
-    if (!started) {
-      entries = new IntersectionObserver(intersect)
-      getTargets(LinkPrefetchIntersect).forEach(observe)
-      started = true
+      const url = path.get(target)
+      const state = hrefs.attrparse(target, { url, location: path.parse(target) })
+
+      const response = await request.get(state)
+
+      if (response) {
+        entries.unobserve(target)
+      } else {
+        console.warn(`Pjax: Prefetch will retry at next intersect for: ${state.url}`)
+        entries.observe(target)
+      }
+
     }
   }
-}
 
-/**
- * Stops prefetch, will disconnect `IntersectionObserver` and
- * remove any event listeners or transits.
- *
- * @exports
- * @returns {void}
- */
-export function stop () {
+  /**
+   * Begin Observing `href` links
+   *
+   * @param {Element} target
+   * @returns {void}
+   */
+  const observe = target => entries.observe(target)
 
-  if (store.config.prefetch) {
-    if (started) {
-      transit.clear()
-      entries.disconnect()
-      started = false
-    }
-  }
-}
+  /**
+   * Start Intersection Observer and iterate over entries.
+   *
+   * @type {IntersectionObserverCallback}
+   * @returns {void}
+   */
+  const intersect = entries => entries.forEach(onIntersect)
 
-/**
- * Begin Observing `href` links
- *
- * @param {Element} target
- * @returns {void}
- */
-function observe (target) {
+  return {
 
-  return entries.observe(target)
-}
+    /**
+     * Starts prefetch, will initialize `IntersectionObserver` and
+     * add event listeners and other logics.
+     *
+     * @exports
+     * @returns {void}
+     */
+    start: () => {
 
-/**
- * Start Intersection Observer and iterate over entries.
- *
- * @type {IntersectionObserverCallback}
- * @returns {void}
- */
-function intersect (entries) {
+      if (!connect) {
+        entries = new IntersectionObserver(intersect)
+        getTargets(LinkPrefetchIntersect).forEach(observe)
+        connect = true
+      }
 
-  return entries.forEach(onIntersection)
-}
+    },
 
-/**
- * Intersection callback when entries are in viewport.
- *
- * @param {IntersectionObserverEntry} params
- * @returns {Promise<void>}
- */
-async function onIntersection ({ isIntersecting, target }) {
+    /**
+     * Stops prefetch, will disconnect `IntersectionObserver` and
+     * remove any event listeners or transits.
+     *
+     * @exports
+     * @returns {void}
+     */
+    stop: () => {
 
-  if (isIntersecting) {
+      if (connect) {
+        entries.disconnect()
+        connect = false
+      }
 
-    const state = getVisitConfig(getPageState(target), target)
-    state.method = 'prefetch'
-
-    const response = await request.get(state)
-
-    if (response) {
-      entries.unobserve(target)
-    } else {
-      console.warn(`Pjax: Prefetch will retry at next intersect for: ${state.url}`)
-      entries.observe(target)
     }
 
   }
-}
+
+})(false)

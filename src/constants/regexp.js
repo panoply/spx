@@ -1,4 +1,24 @@
 /**
+ * Attribute Configuration
+ *
+ * Used to match Pjax data attribute names
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const Attr = /^data-pjax-(append|prepend|replace|prefetch|progress|threshold|position)$/i
+
+/**
+ * URL Pathname
+ *
+ * Used to match first pathname from a URL (group 1)
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const Pathname = /\/\/[^/]*(\/[^;]*)/
+
+/**
  * Form Inputs
  *
  * Used to match Form Input elements
@@ -16,7 +36,7 @@ export const FormInputs = /^(input|textarea|select|datalist|button|output)$/i
  * @exports
  * @type {RegExp}
  */
-export const isReady = /^(?:interactive|complete)$/
+export const isReady = /^(interactive|complete)$/i
 
 /**
  * Boolean Attribute value
@@ -26,7 +46,7 @@ export const isReady = /^(?:interactive|complete)$/
  * @exports
  * @type {RegExp}
  */
-export const isBoolean = /\b(true|false)\b/
+export const isBoolean = /^(true|false)$/i
 
 /**
  * Matches decimal number
@@ -69,6 +89,16 @@ export const isAction = /\b(?:ap|pre)pend|replace/g
 export const isReplace = /\b(?:append|prepend)\b/
 
 /**
+ * Cache Attribute
+ *
+ * Used to match and validate a cache attribute config
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const isCache = /\b(?:false|true|reset|flush)\b/
+
+/**
  * Threshold Attribute Value
  *
  * Used to match threshold JSON attributes
@@ -99,6 +129,45 @@ export const isThreshold = /\b(?:intersect|mouseover|progress)\b|(?<=[:])[^\s][0
 export const ActionParams = /[^,'"[\]()\s]+/g
 
 /**
+ * Array Value
+ *
+ * Used to test value for a string array attribute value, like data-pjax-replace.
+ *
+ * @example
+ * https://regex101.com/r/I77U9B/1
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const isArray = /\(?\[['"].*?['"],?\]\)?/
+
+/**
+ * Append or Prepend attribute value
+ *
+ * Used to test value for append or prepend, array within array
+ *
+ * @example
+ * https://regex101.com/r/QDSRBK/1
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const isPenderValue = /\(?(\[(['"].*?['"],?){2}\],?)\1?\)?/
+
+/**
+ * Test Position Attributes
+ *
+ * Tests attribute values for a position config
+ *
+ * @example
+ * https://regex101.com/r/DG2LI1/1
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const isPosition = /[xy]:[0-9.]+/
+
+/**
  * Mached Position Attributes
  *
  * Used to match `x:0` and `y:0` JSON space separated attributes
@@ -106,7 +175,7 @@ export const ActionParams = /[^,'"[\]()\s]+/g
  * @exports
  * @type {RegExp}
  */
-export const isPosition = /[xy]|(?<=[:])[0-9]+/g
+export const inPosition = /[xy]|\d*\.?\d+/g
 
 /**
  * Protocol

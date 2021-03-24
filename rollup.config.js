@@ -70,7 +70,8 @@ export default [
         ],
         plugins: [
           [ '@babel/plugin-transform-runtime' ],
-          [ '@babel/plugin-syntax-dynamic-import' ]
+          [ '@babel/plugin-syntax-dynamic-import' ],
+          [ '@babel/plugin-proposal-class-properties' ]
         ]
       }),
       filesize()
@@ -119,8 +120,9 @@ export default [
         compact: true,
         plugins: [
           [ '@babel/plugin-transform-runtime', { absoluteRuntime: true } ],
-          '@babel/plugin-transform-property-mutators',
-          '@babel/plugin-syntax-dynamic-import'
+          [ '@babel/plugin-transform-property-mutators' ],
+          [ '@babel/plugin-syntax-dynamic-import' ],
+          [ '@babel/plugin-proposal-class-properties' ]
         ]
       }),
       filesize()

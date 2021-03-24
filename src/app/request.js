@@ -1,204 +1,203 @@
-import { store, snapshots, requests, cache } from './store'
+import { store, snapshots } from './store'
 import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
-import { nanoid } from 'nanoid'
-import * as progress from './progress'
-
-/* -------------------------------------------- */
-/* LETTINGS                                     */
-/* -------------------------------------------- */
-
-let storage = 0
-
-/* -------------------------------------------- */
-/* FUNCTIONS                                    */
-/* -------------------------------------------- */
+import { progress } from './progress'
 
 /**
- * Executes on request end. Removes the XHR recrod and update
- * the response DOMString cache size record.
+ * Requests Handler
  *
- * @exports
- * @param {string} url
- * @param {string} DOMString
- * @returns {boolean}
+ * @param {boolean} connected
  */
-function HttpRequestEnd (url, DOMString) {
+export default (function () {
 
-  storage = storage + byteSize(DOMString)
+  /**
+   * @type {number}
+   */
+  let ratelimit = 0
 
-  return requests.delete(url)
+  /**
+   * @type {number}
+   */
+  let storage = 0
 
-}
+  /**
+   * XHR Requests
+   *
+   * @type {Map<string, XMLHttpRequest>}
+   */
+  const transit = new Map()
 
-/**
- * Fetch XHR Request wrapper function
- *
- * @exports
- * @param {IPjax.IState} state
- * @param {boolean} [async=false]
- * @returns {Promise<string>}
- */
-async function HttpRequest ({
-  url,
-  prefetch,
-  target,
-  location: {
-    href
-  }
-}, async) {
+  /**
+   * Executes on request end. Removes the XHR recrod and update
+   * the response DOMString cache size record.
+   *
+   * @exports
+   * @param {string} url
+   * @param {string} DOMString
+   * @returns {boolean}
+   */
+  const HttpRequestEnd = (url, DOMString) => {
 
-  const xhr = new XMLHttpRequest()
+    storage = storage + byteSize(DOMString)
 
-  return new Promise((resolve, reject) => {
+    return transit.delete(url)
 
-    // OPEN
-    //
-    xhr.open('GET', href, async)
-
-    // HEADERS
-    //
-    xhr.setRequestHeader('X-Pjax', 'true')
-    xhr.setRequestHeader('X-Pjax-Prefetch', `${prefetch}`)
-    xhr.setRequestHeader('X-Pjax-Target', JSON.stringify(target))
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-
-    // EVENTS
-    //
-    xhr.onloadstart = e => requests.set(url, xhr)
-    xhr.onload = e => xhr.status === 200 ? resolve(xhr.responseText) : null
-    xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText)
-    xhr.onerror = reject
-
-    // SEND
-    //
-    xhr.send(null)
-
-  })
-
-}
-
-/**
- * Returns request cache metrics
- *
- * @exports
- * @returns {IPjax.ICacheSize}
- */
-export function cacheSize () {
-
-  return {
-    requests: snapshots.size,
-    total: storage,
-    weight: byteConvert(storage)
   }
 
-}
+  /**
+   * Fetch XHR Request wrapper function
+   *
+   * @exports
+   * @param {string} url
+   * @param {boolean} [async=true]
+   * @returns {Promise<string>}
+   */
+  const HttpRequest = async (url, async = true) => {
 
-/**
- * Cancels the request in transit
- *
- * @exports
- * @param {string} url
- * @returns {void}
- */
-export function cancel (url) {
+    const xhr = new XMLHttpRequest()
 
-  if (requests.has(url)) {
+    return new Promise((resolve, reject) => {
 
-    requests.get(url).abort()
-    requests.delete(url)
+      // OPEN
+      //
+      xhr.open('GET', url, async)
 
-    console.warn(`Pjax: XHR Request was cancelled for url: ${url}`)
+      // HEADERS
+      //
+      xhr.setRequestHeader('X-Pjax', 'true')
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+
+      // EVENTS
+      //
+      xhr.onloadstart = e => transit.set(url, xhr)
+      xhr.onload = e => xhr.status === 200 ? resolve(xhr.responseText) : null
+      xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText)
+      xhr.onerror = reject
+
+      // SEND
+      //
+      xhr.send(null)
+
+    })
 
   }
-}
 
-/**
- * Prevents repeated requests from being executed.
- * When prefetching, if a request is in transit and a click
- * event dispatched this will prevent multiple requests and
- * instead wait for initial fetch to complete.
- *
- * Number of recursive runs to make, set this to 85 to disable,
- * else just leave it to execute as is.
- *
- * Returns `true` if request resolved in `850ms` else `false`
- *
- * @exports
- * @param {string} url
- * @param {number} [limit=0]
- * @return {Promise<boolean>}
- */
-export async function inFlight (url, limit = 0) {
+  /**
+   * Cancels the request in transit
+   *
+   * @exports
+   * @param {string} url
+   * @returns {void}
+   */
+  const cancel = (url) => {
 
-  if (requests.has(url) && limit <= 85) {
-    if (store.config.progress && !progress.loading) {
-      if (limit === store.config.threshold.progress) progress.show()
+    if (transit.has(url)) {
+
+      transit.get(url).abort()
+      transit.delete(url)
+
+      console.warn(`Pjax: XHR Request was cancelled for url: ${url}`)
+
+    }
+  }
+
+  /**
+   * Prevents repeated requests from being executed.
+   * When prefetching, if a request is in transit and a click
+   * event dispatched this will prevent multiple requests and
+   * instead wait for initial fetch to complete.
+   *
+   * Number of recursive runs to make, set this to 85 to disable,
+   * else just leave it to execute as is.
+   *
+   * Returns `true` if request resolved in `850ms` else `false`
+   *
+   * @exports
+   * @param {string} url
+   * @return {Promise<boolean>}
+   */
+  const inFlight = async (url) => {
+
+    if (transit.has(url) && ratelimit <= store.config.request.throttle) {
+      // console.log('Request in flight', ratelimit * 25)
+
+      if ((ratelimit * 10) >= store.config.progress.threshold) progress.start()
+
+      return asyncTimeout(() => {
+        ratelimit++
+        return inFlight(url)
+      }, 10)
     }
 
-    return asyncTimeout(() => inFlight(url, (limit + 1)), 25)
+    ratelimit = 0
+
+    return !transit.has(url)
 
   }
 
-  return !requests.has(url)
+  /**
+   * Fetches documents and guards from duplicated requests
+   * from being dispatched if an indentical fetch is in flight.
+   * Requests will always save responses and snapshots.
+   *
+   * @exports
+   * @param {object} state
+   * @return {Promise<Store.IPage|false>}
+   */
+  const get = async (state) => {
 
-}
+    if (transit.has(state.url)) {
+      console.warn(`Pjax: XHR Request is already in transit for: ${state.url}`)
+      return false
+    }
 
-/**
- * Fetches documents and guards from duplicated requests
- * from being dispatched if an indentical fetch is in flight.
- *
- * @exports
- * @param {IPjax.IState} state
- * @param {boolean} [async=false]
- * @return {Promise<IPjax.IState|false>}
- */
-export async function get (state, async = true) {
+    if (!dispatchEvent('pjax:request', state.url, true)) {
+      console.warn(`Pjax: Request cancelled via dispatched event for: ${state.url}`)
+      return false
+    }
 
-  if (requests.has(state.url)) {
-    console.warn(`Pjax: XHR Request is already in transit for: ${state.url}`)
-    return false
-  }
+    try {
 
-  if (!dispatchEvent('pjax:request', state.location, true)) {
-    console.warn(`Pjax: Request cancelled via dispatched event for: ${state.url}`)
-    return false
-  }
+      const response = await HttpRequest(state.url)
 
-  if (state.method !== 'prefetch') {
-    if (store.config.progress && !progress.loading) progress.show()
-  }
-
-  try {
-
-    const response = await HttpRequest(state, async)
-
-    if (typeof response === 'string' && response.length > 0) {
-
-      if (!state.snapshot) state.snapshot = nanoid(16)
-
-      snapshots.set(state.snapshot, response)
-
-      if (store.config.cache && !cache.has(state.url)) {
-        if (dispatchEvent('pjax:cache', state, true)) {
-          cache.set(state.url, state)
-        }
+      if (typeof response === 'string') {
+        return store.create(state, response)
       }
 
-      if (store.config.progress && progress.loading) progress.hide()
-
-      return Promise.resolve(state)
-
-    } else {
       console.warn(`Pjax: Failed to receive response at: ${state.url}`)
+
+    } catch (error) {
+
+      transit.delete(state.url)
+      console.error(error)
+
     }
 
-  } catch (error) {
-
-    requests.delete(state.url)
-    console.error(error)
+    return false
 
   }
 
-  return false
+  return {
+    get,
+    inFlight,
+    cancel,
+    transit,
 
-}
+    /**
+     * Returns request cache metrics
+     *
+     * @exports
+     * @returns {IPjax.ICacheSize}
+     */
+    get cacheSize () {
+
+      return {
+        requests: snapshots.size,
+        total: storage,
+        weight: byteConvert(storage)
+      }
+
+    }
+
+  }
+
+})()

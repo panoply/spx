@@ -1,86 +1,26 @@
-import { store } from './store'
+import nprogress from 'nprogress'
 
 /* -------------------------------------------- */
 /* LETTINGS                                     */
 /* -------------------------------------------- */
 
 /**
- * Timer Reference
- *
- * @type {any}
+ * @type {nprogress.NProgress}
  */
-let timer
-
-/**
- * Progress Element
- *
- * @type {Element}
- */
-let element
-
-/**
- * Loading
- *
- * @type {boolean}
- */
-export let loading = false
+export let progress = null
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
 /* -------------------------------------------- */
 
 /**
- * Show Progress Bar
+ * Setup nprogress
  *
- * @exports
+ * @export
+ * @param {IPjax.IProgress} options
  */
-export function show () {
+export function config (options) {
 
-  if (store.config.progress) {
-
-    if (timer) {
-      clearTimeout(timer)
-      timer = 0
-      element.className = 'pjax-loader pjax-hide'
-      setTimeout(show, 25)
-      return
-    }
-
-    if (!element) {
-      element = document.createElement('div')
-      element.innerHTML = '<div class="pjax-progress"></div>'
-      element.setAttribute('data-pjax-track', 'true')
-      document.body.appendChild(element)
-    }
-
-    element.className = 'pjax-loader pjax-start'
-
-    timer = setTimeout(() => {
-      timer = 0
-      loading = true
-      element.classList.add('pjax-inload')
-    }, 15)
-  }
-}
-
-/**
- * Hide Progress Bar
- *
- * @exports
- */
-export function hide () {
-
-  if (store.config.progress) {
-    if (timer) clearTimeout(timer)
-
-    element.classList.add('pjax-end')
-
-    timer = setTimeout(() => {
-      timer = 0
-      element.classList.add('pjax-hide')
-    }, 800)
-
-    loading = false
-  }
+  progress = nprogress.configure(options)
 
 }

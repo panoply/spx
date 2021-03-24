@@ -1,98 +1,101 @@
 import history from 'history/browser'
-import { store, cache } from '../app/store'
-import { expandURL } from '../app/location'
-import * as prefetch from '../app/prefetch'
-import * as render from '../app/render'
-import * as request from '../app/request'
-
-/**
- * @type {boolean}
- */
-let started = false
-
-/**
- * @type {function}
- */
-let unlisten = null
-
-/**
- * @type {string}
- */
-let inTransit = null
+import { store } from '../app/store'
+import { createPath } from 'history'
+import render from '../app/render'
+import request from '../app/request'
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
 /* -------------------------------------------- */
-
 /**
- * Attached `history` event listener.
+ * Link (href) handler
  *
- * @exports
- * @returns {void}
+ * @typedef {Store.IPage|string|boolean} click
+ * @param {boolean} connected
  */
-export function start () {
+export default (function (connected) {
 
-  if (!started) {
-    unlisten = history.listen(listener)
-    started = false
-  }
-}
-
-/**
- * Removed `history` event listener.
- *
- * @export
- * @returns {void}
+  /**
+ * @type {function}
  */
-export function stop () {
+  let unlisten = null
 
-  if (!started) {
-    unlisten()
-    started = true
-  }
-}
+  /**
+   * @type {string}
+   */
+  let inTransit = null
 
-/**
- * Event History dispatch controller, handles popstate,
- * push and replace events via third party module
- *
- * @param {import('history').BrowserHistory} event
- */
-function listener ({ action, location }) {
+  /**
+   * Popstate Navigation
+   *
+   * @param {string} url
+   * @param {Store.IPage} state
+   * @returns {Promise<void>}
+   */
+  const popstate = async (url, state) => {
 
-  if (action === 'POP') return popstate(history.createHref(location))
+    // console.log(state)
 
-  console.log(action, location.state)
+    if (url !== inTransit) request.cancel(inTransit)
 
-}
-
-/**
- * Popstate Navigations
- *
- * @param {string} url
- * @returns {Promise<void>}
- */
-async function popstate (url) {
-
-  prefetch.stop()
-
-  if (inTransit && url !== inTransit) request.cancel(inTransit)
-
-  if (cache.has(url)) {
-
-    render.update(cache.get(url), true)
-
-  } else {
+    if (store.has(url, { snapshot: true })) {
+      return render.update(store.cache(url), true)
+    }
 
     inTransit = url
 
-    const state = store.update.page({ location: expandURL(url), url })
-    const response = await request.get(state)
+    const page = await request.get(state)
 
-    if (response && response.url === url) render.update(response, true)
+    return page
+      ? render.update(page, true)
+      : window.location.replace(url)
 
   }
 
-  prefetch.start()
+  /**
+   * Event History dispatch controller, handles popstate,
+   * push and replace events via third party module
+   *
+   * @param {import('history').BrowserHistory} event
+   */
+  const listener = ({ action, location }) => {
 
-}
+    // console.log(action, location)
+
+    if (action === 'POP') {
+      return popstate(createPath(location), location.state)
+    }
+
+  }
+
+  return {
+
+    /**
+     * Attached `history` event listener.
+     *
+     * @returns {void}
+     */
+    start: () => {
+
+      if (!connected) {
+        unlisten = history.listen(listener)
+        connected = false
+      }
+    },
+
+    /**
+     * Removed `history` event listener.
+     *
+     * @returns {void}
+     */
+    stop: () => {
+
+      if (!connected) {
+        unlisten()
+        connected = true
+      }
+    }
+
+  }
+
+})(false)

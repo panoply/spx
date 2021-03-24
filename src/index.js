@@ -1,8 +1,9 @@
 import { Protocol } from './constants/regexp'
-import { store, cache } from './app/store'
-import { navigate } from './app/visit'
+import { store } from './app/store'
 import { nanoid } from 'nanoid'
-import { captureDOM } from './app/render'
+import render from './app/render'
+import path from './app/path'
+import hrefs from './observers/hrefs'
 import * as controller from './app/controller'
 
 /**
@@ -19,7 +20,7 @@ export const supported = !!(
 /**
  * Connect Pjax
  *
- * @param {IPjax.IConfigPresets} options
+ * @param {Store.IPresets} options
  */
 export const connect = options => {
 
@@ -52,7 +53,7 @@ export const uuid = (size = 12) => nanoid(size)
 /**
  * Flush Cache
  */
-export const flush = () => cache.clear()
+export const flush = () => store.clear()
 
 /**
  * Capture DOM
@@ -60,15 +61,21 @@ export const flush = () => cache.clear()
  * @param {string} url
  * @param {object} action
  */
-export const capture = (url, action) => captureDOM(url, action)
+export const capture = (url, action) => render.captureDOM(path.get(url), action)
 
 /**
  * Visit
  *
  * @param {string} url
- * @param {IPjax.IState} state
+ * @param {Store.IPage} state
  */
-export const visit = (url, state = store.page) => navigate({ ...state, url })
+export const visit = (url, state) => {
+
+  url = path.get(url, true)
+
+  return hrefs.navigate(url, { ...state, url, location: path.parse(url) })
+
+}
 
 /**
  * Disconnect

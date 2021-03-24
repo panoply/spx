@@ -1,3 +1,5 @@
+import { NProgressOptions } from 'nprogress'
+
 /**
  * Pjax Events
  */
@@ -40,6 +42,46 @@ export type ICacheSize = {
   requests: number
   total: number
   weight: string
+}
+
+export interface IProgress {
+  /**
+   * Changes the minimum percentage used upon starting.
+   *
+   * @default 0.08
+   */
+  minimum?: number
+  /**
+   * CSS Easing String
+   *
+   * @default cubic-bezier(0,1,0,1)
+   */
+  easing?: string
+  /**
+   * Animation Speed
+   *
+   * @default 200
+   */
+  speed?: number
+  /**
+   * Turn off the automatic incrementing behavior
+   * by setting this to false.
+   *
+   * @default true
+   */
+  trickle?: boolean
+  /**
+   * Adjust how often to trickle/increment, in ms.
+   *
+   * @default 200
+   */
+  trickleSpeed?: number
+  /**
+   * Turn on loading spinner by setting it to `true`
+   *
+   * @default false
+   */
+  showSpinner?: boolean
 }
 
 /**
@@ -132,13 +174,13 @@ export type IConfigPresets = {
    */
   cache?: boolean,
   /**
-   * Enable or Disable progres bar indicator
-   *
-   * (_Requests are instantaneous, generally you wont need this_)
-   *
-   * @default false
+   * [NProgress](https://github.com/rstacruz/nprogress) provides the
+   * progress bar feature which is displayed between page visits. This pjax
+   * module does not expose all configuration options of nprogress, but does allow
+   * control of some internals. Any configuration options defined here will be
+   * passed to nprogress.
    */
-  progress?: boolean,
+  progress?: IProgress,
   /**
    * Throttle delay between navigations, set this option if
    * you want to delay the time between visits, helpful if
@@ -192,7 +234,7 @@ export interface IConfig {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  target?: string[]
+  targets?: string[]
 
   /**
    * Default method to be applied.
@@ -247,24 +289,6 @@ export interface IConfig {
    */
   position?: IPosition
 
-  /**
-   * Prefetch option to execute for each link
-   *
-   * ---
-   * `intersect`
-   *
-   * Pages will be fetched upon `IntersectionObserve()` threshold.
-   * ie: when they become visible in viewport.
-   *
-   * `hover`
-   *
-   * Pages will be fetched upon `mouseover` on a pjax href link.
-   * Try and avoid this, just use __intersect__ instead.
-   *
-   * > _On mobile devices the hover value will execute on a
-   * touch event._
-   */
-  prefetch?: string
 
   /**
    * List array of tracked elements pretaining to this link page
@@ -282,16 +306,6 @@ export interface IConfig {
    * @default 0
    */
   throttle?: number
-
-  /**
-   * Enable or Disable progres bar indicator
-   *
-   * (_Requests are instantaneous, generally you wont need this_)
-   *
-   * @default true
-   */
-  progress?: boolean,
-
 
   /**
    * Threshold Controls
