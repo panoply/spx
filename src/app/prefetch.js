@@ -1,4 +1,4 @@
-import { store } from './store'
+import store from './store'
 import mouseover from '../observers/hover'
 import intersect from '../observers/intersect'
 
