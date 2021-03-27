@@ -12,7 +12,97 @@ export default (function ({ location, location: { origin, hostname } }) {
   let next = createPath(location)
   let path = next
 
+  /**
+   * Returns the pathname cache key URL
+   *
+   * @param {string} link
+   * @returns {string}
+   */
+  const key = link => {
+
+    return link.charCodeAt(0) === 47 // 47 is unicode value for '/'
+      ? link
+      : (link.match(regexp.Pathname) || [])[1] || '/'
+  }
+
+  /**
+   * Returns the absolute URL
+   *
+   * @param {string} link
+   * @returns {string}
+   */
+  const absolute = link => {
+
+    const location = document.createElement('a')
+    location.href = link.toString()
+
+    return location.href
+
+  }
+
+  /**
+   * Parses link and returns an ILocation.
+   * Accepts either a `href` target or `string`.
+   * If no parameter value is passed, the
+   * current location pathname (string) is used.
+   *
+   *
+   * @export
+   * @param {Element|string} link
+   * @returns {Store.ILocation}
+   */
+  const parse = (link) => {
+
+    const location = parsePath(
+      link instanceof Element
+        ? link.getAttribute('href')
+        : link
+    )
+
+    return {
+      lastpath: createPath(history.location)
+      , search: ''
+      , origin
+      , hostname
+      , ...location
+    }
+  }
+
+  /**
+   * Parses link and returns a location.
+   *
+   * **IMPORTANT**
+   *
+   * This function will modify the next url value
+   *
+   * @export
+   * @param {Element|string} link
+   * @param {{ update?: boolean, parse?: boolean }} options
+   * @returns {({url: string, location: Store.ILocation})}
+   */
+  const get = (link, options = { update: false }) => {
+
+    const url = key(link instanceof Element ? link.getAttribute('href') : link)
+
+    if (options.update) {
+      path = createPath(history.location)
+      next = url
+    }
+
+    return { url, location: parse(url) }
+
+  }
+
   return {
+
+    /* EXPORTS ------------------------------------ */
+
+    get
+    , key
+    , parse
+    , absolute
+
+    /* GETTERS ------------------------------------ */
 
     /**
      * Returns the last parsed url value.
@@ -26,11 +116,7 @@ export default (function ({ location, location: { origin, hostname } }) {
      *
      * @returns {string}
      */
-    get url () {
-
-      return path
-
-    },
+    , get url () { return path },
 
     /**
      * Returns the next parsed url value.
@@ -46,84 +132,7 @@ export default (function ({ location, location: { origin, hostname } }) {
      *
      * @returns {string}
      */
-    get next () {
-
-      return next
-
-    },
-
-    /**
-     * Parses link and returns a location.
-     *
-     * **IMPORTANT**
-     *
-     * This function will modify the next url value
-     *
-     * @export
-     * @param {Element|string} link
-     * @param {boolean} [isNext=true]
-     * @returns {string}
-     */
-    get: (link, isNext = false) => {
-
-      const href = link instanceof Element ? link.getAttribute('href') : link
-
-      // 47 is unicode value for '/'
-      const url = href.charCodeAt(0) === 47
-        ? href
-        : (href.match(regexp.Pathname) || [])[1] || '/'
-
-      if (isNext) {
-        path = createPath(history.location)
-        next = url
-      }
-
-      return url
-
-    },
-
-    /**
-     * Returns the absolute URL
-     *
-     * @param {string} link
-     * @returns {string}
-     */
-    absolute: link => {
-
-      const location = document.createElement('a')
-      location.href = link.toString()
-
-      return location.href
-
-    },
-
-    /**
-     * Parses link and returns an ILocation.
-     * Accepts either a `href` target or `string`.
-     * If no parameter value is passed, the
-     * current location pathname (string) is used.
-     *
-     *
-     * @export
-     * @param {Element|string} link
-     * @returns {Store.ILocation}
-     */
-    parse (link) {
-
-      const location = parsePath(
-        link instanceof Element
-          ? link.getAttribute('href')
-          : link
-      )
-
-      return {
-        lastpath: createPath(history.location)
-        , search: ''
-        , origin
-        , hostname
-        , ...location
-      }
-    }
+    get next () { return next }
 
   }
 
