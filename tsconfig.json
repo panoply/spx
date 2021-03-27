@@ -1,9 +1,6 @@
 {
-  "exclude": [
-    "node_modules"
-  ],
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES6",
     "lib": [
       "es2020",
       "dom",
@@ -11,6 +8,7 @@
     ],
     "module": "esnext",
     "checkJs": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "keyofStringsOnly": true,
     "esModuleInterop": true,
@@ -31,7 +29,7 @@
         "src/*",
         "tests/*"
       ],
-      "~application": [
+      "~app": [
         "./src/app/*"
       ],
       "~constant": [
