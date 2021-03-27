@@ -1,15 +1,6 @@
 ## @brixtol/pjax
 
-A new generation pjax solution for SSR web applications.
-
-### Key Features
-
-✓ Drop-in solution<br>
-✓ Multiple fragments<br>
-✓ Lifecycle events<br>
-✓ Pre-fetching capabilities<br>
-✓ Snapshot caching<br>
-✓ Lightweight, 9kb gzipped<br>
+A blazing fast, lightweight (5kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. Supports multiple fragment replacements, appends and prepends, pre-fetching capabilities via mouse, pointer, touch and intersection event and snapshot caching which prevent subsequent requests for occurring resulting in instantaneous navigation.
 
 ## Install
 
@@ -26,9 +17,6 @@ To initialize, call `Pjax.connect()` in your bundle and optionally pass preset c
 <!-- prettier-ignore -->
 ```js
 import * as Pjax from "@brixtol/pjax";
-
-/* CONNECT
-/* -------------------------------------------- */
 
 Pjax.connect({
   targets: ["body"],
