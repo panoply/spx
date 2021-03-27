@@ -1,10 +1,11 @@
 import { eachSelector, dispatchEvent, forEach } from './utils'
-import { store, snapshots } from './store'
 import { progress } from './progress'
 import history from 'history/browser'
 import { createPath } from 'history'
 import { nanoid } from 'nanoid'
 import * as prefetch from './prefetch'
+import scroll from '../observers/scroll'
+import store from './store'
 
 /**
  * Renderer
@@ -104,18 +105,16 @@ export default (function () {
 
     dispatchEvent('pjax:render', { target }, true)
 
-    if (!state?.replace && !state?.prepend && !state?.append) {
+    DOM.innerHTML = target.innerHTML
 
-      DOM.innerHTML = target.innerHTML
-
-    } else {
+    if (state?.append || state?.prepend) {
 
       const fragment = document.createElement('div')
       const nodes = [].slice.call(target.childNodes)
 
       forEach(nodes, node => fragment.appendChild(node))
 
-      state.replace ? DOM.replaceWith(fragment) : state.append
+      state.append
         ? DOM.appendChild(fragment)
         : DOM.insertBefore(fragment, DOM.firstChild)
 
@@ -130,9 +129,9 @@ export default (function () {
    * @param {Document} target
    * @returns {string}
    */
-  const DOMSnapshot = (target) => {
+  const DOMSnapshot = target => {
     const uuid = nanoid(16)
-    snapshots.set(uuid, target.documentElement.outerHTML)
+    store.set.snapshots(uuid, target.documentElement.outerHTML)
     return uuid
   }
 
@@ -141,30 +140,29 @@ export default (function () {
    *
    * @param {string} url
    * @param {{ action: 'replace' | 'capture'}} options
+   * @returns {string}
    */
-  const captureDOM = (url, options) => {
+  const captureDOM = (url, options = { action: 'capture' }) => {
 
-    if (store.config.cache && store.has(url, { snapshot: true })) {
+    if (!store.has(url, { snapshot: true })) return undefined
 
-      const state = store.cache(url)
-      const DOMString = store.snapshot(state.snapshot)
-      const target = DOMParse(DOMString)
+    const { snapshot, page } = store.get(url)
+    const target = DOMParse(snapshot)
+    target.body.innerHTML = document.documentElement.querySelector('body').innerHTML
 
-      target.body.innerHTML = document.documentElement.querySelector('body').innerHTML
+    if (options.action === 'capture') {
 
-      if (options.action === 'replace') {
-        snapshots.set(state.snapshot, target.documentElement.outerHTML)
-      } else if (options.action === 'capture') {
-        state.captured = DOMSnapshot(target)
+      page.captured = DOMSnapshot(target)
+      page.position = scroll.position
 
-        console.log(store.cache(url))
-        history.replace(state.location, store.update(state))
-        console.info('Pjax: DOM Captured at: ' + state.captured)
-      }
+      history.replace(page.location, store.update(page))
+      console.info('Pjax: DOM Captured at: ' + page.captured)
 
-      return target.documentElement.outerHTML
-
+    } else if (options.action === 'replace') {
+      store.snapshots.set(page.snapshot, target.documentElement.outerHTML)
     }
+
+    return target.documentElement.outerHTML
 
   }
 
@@ -174,6 +172,7 @@ export default (function () {
    *
    * @param {Store.IPage} state
    * @param {boolean} [popstate=false]
+   * @returns {Store.IPage}
    */
   const update = (state, popstate = false) => {
 
@@ -181,17 +180,12 @@ export default (function () {
 
     prefetch.stop()
 
-    console.log(state)
-
-    const uuid = (popstate && typeof state.captured === 'string')
-      ? state.captured
-      : state.snapshot
-
+    const uuid = (popstate && state.captured) ? state.captured : state.snapshot
     const target = DOMParse(store.snapshot(uuid))
 
     state.title = document.title = target?.title || ''
 
-    if (!popstate) {
+    if (!popstate && state.history) {
 
       if (createPath(history.location) === state.url) {
         history.replace(state.location, state)
@@ -201,8 +195,8 @@ export default (function () {
 
     } else if (state?.captured) {
 
-      if (snapshots.delete(uuid)) {
-        state.captured = false
+      if (store.delete.snapshots(uuid)) {
+        state.captured = null
         // history.replace(state.location, store.update(state))
         console.info('Pjax: Captured snapshot removed at: ' + state.url)
       }
@@ -213,7 +207,15 @@ export default (function () {
 
     let fallback = 1
 
-    forEach(state.targets, element => {
+    console.log(state.replace ? [
+      ...state.targets,
+      ...state.replace
+    ] : state.targets)
+
+    forEach(state.replace ? [
+      ...state.targets,
+      ...state.replace
+    ] : state.targets, element => {
 
       const node = target.body.querySelector(element)
 
@@ -237,6 +239,7 @@ export default (function () {
     progress.done()
     prefetch.start()
 
+    return state
     // console.log(window.performance.measure('Render Time', 'render'))
     // console.log(window.performance.measure('Total', 'started'))
 
