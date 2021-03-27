@@ -1,6 +1,8 @@
+import { supportsPointerEvents } from 'detect-it'
+import { eventFrom } from 'event-from'
 import { dispatchEvent, getLink, chunk } from '../app/utils'
 import { Link } from '../constants/common'
-import { store } from '../app/store'
+import store from '../app/store'
 import path from '../app/path'
 import scroll from './scroll'
 import request from '../app/request'
@@ -81,21 +83,25 @@ export default (function (connected) {
 
     if (state) {
 
-      console.log(state)
+      if (state.cache === 'reset') store.clear(url)
+      if (state.cache === 'clear') store.clear()
+
       if (store.has(url, { snapshot: true })) return render.update(state)
 
       const page = await request.get(state)
+
       if (page) return render.update(page)
 
     } else {
+
       if ((await request.inFlight(url))) {
-        return render.update(store.cache(url))
+        return render.update(store.get(url).page)
       } else {
         request.cancel(url)
       }
     }
 
-    return window.location.replace(url)
+    return window.location.replace(path.absolute(url))
 
   }
 
@@ -150,8 +156,8 @@ export default (function (connected) {
   const handleClick = target => state => function click (event) {
 
     event.preventDefault()
-    event.stopPropagation()
     target.removeEventListener('click', click, false)
+    target.removeAttribute('style')
 
     if (!dispatchEvent('pjax:click', {}, true)) return undefined
 
@@ -167,8 +173,9 @@ export default (function (connected) {
    * Triggers a page fetch
    *
    * @param {MouseEvent} event
+   * @returns {void}
    */
-  const onMousedown = event => {
+  const handleTrigger = (event) => {
 
     // window.performance.mark('started')
 
@@ -177,26 +184,29 @@ export default (function (connected) {
     const target = getLink(event.target, Link)
 
     if (!target) return undefined
+    if (!dispatchEvent('pjax:trigger', { target }, true)) return undefined
 
-    store.history(path.url)
+    const { url, location } = path.get(target, { update: true })
 
-    const url = path.get(target, true)
+    store.history() // PRESERVE CURRENT PAGE
+
     const click = handleClick(target)
 
     if (request.transit.has(url)) {
+
       target.addEventListener('click', click(url), false)
+
     } else {
 
-      const state = attrparse(target, {
-        url,
-        location: path.parse(url),
-        position: scroll.set(path.url)
-      })
+      const state = attrparse(target, { url, location, position: scroll.set(path.url) })
+
+      if (state.capture) render.captureDOM(state.location.lastpath)
 
       if (store.has(url, { snapshot: true })) {
         target.addEventListener('click', click(store.update(state)), false)
       } else {
-        request.get(state) // TRIGGER FETCH
+        // TRIGGERS FETCH
+        request.get(state)
         target.addEventListener('click', click(url), false)
       }
     }
@@ -205,8 +215,12 @@ export default (function (connected) {
 
   return {
 
+    /* EXPORTS ------------------------------------ */
+
     attrparse,
     navigate,
+
+    /* CONTROLS ----------------------------------- */
 
     /**
      * Attached `click` event listener.
@@ -216,8 +230,16 @@ export default (function (connected) {
     start: () => {
 
       if (!connected) {
-        addEventListener('mousedown', onMousedown, true)
+
+        if (supportsPointerEvents) {
+          addEventListener('pointerdown', handleTrigger, false)
+        } else {
+          addEventListener('mousedown', handleTrigger, false)
+          addEventListener('touchstart', handleTrigger, false)
+        }
+
         connected = true
+
       }
     },
 
@@ -229,8 +251,16 @@ export default (function (connected) {
     stop: () => {
 
       if (connected) {
-        removeEventListener('mousedown', onMousedown, true)
+
+        if (supportsPointerEvents) {
+          removeEventListener('pointerdown', handleTrigger, false)
+        } else {
+          removeEventListener('mousedown', handleTrigger, false)
+          removeEventListener('touchstart', handleTrigger, false)
+        }
+
         connected = false
+
       }
     }
 
