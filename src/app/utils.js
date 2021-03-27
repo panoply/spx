@@ -1,7 +1,7 @@
 import { isNumber } from '../constants/regexp'
 import { Units } from './../constants/common'
 import path from './path'
-import { store } from './store'
+import store from './store'
 
 /**
  * Locted the closest link when click bubbles.
@@ -78,7 +78,24 @@ export function chunk (size = 2) {
  * Dispatches lifecycle events on the document.
  *
  * @exports
- * @param {IPjax.IEvents} eventName
+ * @param {Store.IEvents} eventName
+ * @param {Element} target
+ * @return {boolean}
+ */
+export function targetedEvent (eventName, target) {
+
+  // create and dispatch the event
+  const newEvent = new CustomEvent(eventName, { cancelable: true })
+
+  return target.dispatchEvent(newEvent)
+
+}
+
+/**
+ * Dispatches lifecycle events on the document.
+ *
+ * @exports
+ * @param {Store.IEvents} eventName
  * @param {object} detail
  * @param {boolean} cancelable
  * @return {boolean}
@@ -113,7 +130,7 @@ export function byteSize (string) {
  */
 export function canFetch (target) {
 
-  return !store.has(path.get(target), { snapshot: true })
+  return !store.has(path.get(target).url, { snapshot: true })
 }
 
 /**
