@@ -6,7 +6,7 @@
  * @exports
  * @type {RegExp}
  */
-export const Attr = /^data-pjax-(append|prepend|replace|prefetch|progress|threshold|position)$/i
+export const Attr = /^data-pjax-(append|prepend|replace|history|capture|progress|threshold|position)$/i
 
 /**
  * URL Pathname
