@@ -24,9 +24,7 @@ export default (function (connect) {
 
     if (isIntersecting) {
 
-      const url = path.get(target)
-      const state = hrefs.attrparse(target, { url, location: path.parse(target) })
-
+      const state = hrefs.attrparse(target, path.get(target))
       const response = await request.get(state)
 
       if (response) {
