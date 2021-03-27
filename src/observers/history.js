@@ -1,8 +1,8 @@
 import history from 'history/browser'
-import { store } from '../app/store'
 import { createPath } from 'history'
 import render from '../app/render'
 import request from '../app/request'
+import store from '../app/store'
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -30,7 +30,7 @@ export default (function (connected) {
    *
    * @param {string} url
    * @param {Store.IPage} state
-   * @returns {Promise<void>}
+   * @returns {Promise<void|Store.IPage>}
    */
   const popstate = async (url, state) => {
 
@@ -39,7 +39,7 @@ export default (function (connected) {
     if (url !== inTransit) request.cancel(inTransit)
 
     if (store.has(url, { snapshot: true })) {
-      return render.update(store.cache(url), true)
+      return render.update(store.get(url).page, true)
     }
 
     inTransit = url
@@ -69,6 +69,8 @@ export default (function (connected) {
   }
 
   return {
+
+    /* CONTROLS ----------------------------------- */
 
     /**
      * Attached `history` event listener.
