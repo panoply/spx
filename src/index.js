@@ -1,10 +1,10 @@
 import { Protocol } from './constants/regexp'
-import { store } from './app/store'
 import { nanoid } from 'nanoid'
+import store from './app/store'
 import render from './app/render'
 import path from './app/path'
 import hrefs from './observers/hrefs'
-import * as controller from './app/controller'
+import controller from './app/controller'
 
 /**
  * @export
@@ -52,8 +52,10 @@ export const uuid = (size = 12) => nanoid(size)
 
 /**
  * Flush Cache
+ *
+ * @param {string} [url]
  */
-export const flush = () => store.clear()
+export const clear = (url) => store.clear(url)
 
 /**
  * Capture DOM
@@ -61,20 +63,20 @@ export const flush = () => store.clear()
  * @param {string} url
  * @param {object} action
  */
-export const capture = (url, action) => render.captureDOM(path.get(url), action)
+export const capture = (url, action) => render.captureDOM(path.key(url), action)
 
 /**
  * Visit
  *
- * @param {string} url
+ * @param {string|Element} link
  * @param {Store.IPage} state
+ * @returns {Promise<Store.IPage|void>}
  */
-export const visit = (url, state) => {
+export const visit = (link, state = {}) => {
 
-  url = path.get(url, true)
+  const { url, location } = path.get(link, { update: true })
 
-  return hrefs.navigate(url, { ...state, url, location: path.parse(url) })
-
+  return hrefs.navigate(url, { ...state, url, location })
 }
 
 /**
