@@ -1,10 +1,11 @@
+import { supportsPointerEvents } from 'detect-it'
+import { eventFrom } from 'event-from'
 import { LinkPrefetchHover } from '../constants/common'
-import path from '../app/path'
-import { store } from '../app/store'
-import { getLink, getTargets } from '../app/utils'
+import { getLink, getTargets, dispatchEvent } from '../app/utils'
 import hrefs from './hrefs'
 import request from '../app/request'
-
+import path from '../app/path'
+import store from '../app/store'
 /**
  * Link (href) handler
  *
@@ -20,7 +21,7 @@ export default (function (connected) {
   const transit = new Map()
 
   /**
-   * @type {IPjax.IPosition}
+   * @type {Store.IPosition}
    */
   const position = { x: 0, y: 0 }
 
@@ -44,13 +45,14 @@ export default (function (connected) {
    * @exports
    * @param {MouseEvent} event
    */
-  function onMouseleave (event) {
+  const onMouseleave = (event) => {
 
     const target = getLink(event.target, LinkPrefetchHover)
 
     if (target) {
-      cleanup(path.get(target))
-      target.removeEventListener('mouseleave', onMouseleave, true)
+
+      cleanup(path.get(target).url)
+      handleLeave(target)
     }
 
   }
@@ -98,22 +100,28 @@ export default (function (connected) {
 
     if (!target) return undefined
 
-    const url = path.get(target)
+    const { url, location } = path.get(target)
+
+    if (!dispatchEvent('pjax:prefetch', {
+      target,
+      url,
+      location
+    }, true)) return disconnect(target)
 
     if (store.has(url, { snapshot: true })) return disconnect(target)
 
-    target.addEventListener('mouseleave', onMouseleave, true)
+    handleLeave(target)
 
     const state = hrefs.attrparse(target, {
       url,
-      location: path.parse(url),
+      location,
       position: { x: 0, y: 0 }
     })
 
     throttle(url, async () => {
-      if ((await prefetch(state))) {
-        target.removeEventListener('mouseover', onMouseover, false)
-      }
+
+      if ((await prefetch(state))) handleLeave(target)
+
     }, state?.threshold || store.config.prefetch.mouseover.threshold)
   }
 
@@ -172,8 +180,28 @@ export default (function (connected) {
 
     // if (target instanceof Element) proximity(target, index)
 
-    target.addEventListener('mouseover', onMouseover, false)
+    if (supportsPointerEvents) {
+      target.addEventListener('pointerover', onMouseover, false)
+    } else {
+      target.addEventListener('mouseover', onMouseover, false)
+    }
 
+  }
+
+  /**
+   * Cancels prefetch, if mouse leaves target before threshold
+   * concludes. This prevents fetches being made for hovers that
+   * do not exceeds threshold.
+   *
+   * @param {Element} target
+   */
+  function handleLeave (target) {
+
+    if (supportsPointerEvents) {
+      target.removeEventListener('pointerout', onMouseleave, false)
+    } else {
+      target.removeEventListener('mouseleave', onMouseleave, false)
+    }
   }
 
   /**
@@ -183,8 +211,15 @@ export default (function (connected) {
    * @returns {void}
    */
   function disconnect (target) {
-    target.removeEventListener('mouseleave', onMouseleave, false)
-    target.removeEventListener('mouseover', onMouseover, false)
+
+    if (supportsPointerEvents) {
+      target.removeEventListener('pointerover', onMouseleave, false)
+      target.removeEventListener('pointerout', onMouseleave, false)
+    } else {
+      target.removeEventListener('mouseleave', onMouseleave, false)
+      target.removeEventListener('mouseover', onMouseover, false)
+    }
+
   }
 
   return {
