@@ -129,9 +129,7 @@ Pjax.disconnect(): void
 
 ```
 
-## Navigation
-
-<hr>
+## Attributes
 
 #### `data-pjax-eval="false"`
 
@@ -223,8 +221,6 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 
 </details>
 
-<hr>
-
 #### `data-pjax-replace="([])"`
 
 Executes a replacement of defined targets, where each target defined in the array is replaced.
@@ -259,8 +255,6 @@ Example
 ```
 
 </details>
-
-<hr>
 
 #### `data-pjax-prepend="([])"`
 
@@ -437,7 +431,7 @@ Example
 
 Each page has an object state value that is added to its pertaining History stack. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` value encountered in the navigation session.
 
-> Navigation sessions begin once a Pjax connection (`Pjax.connect()`) has been established and ends when a browser refresh is executed or url origin changes.
+> Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes.
 
 ### Read
 
