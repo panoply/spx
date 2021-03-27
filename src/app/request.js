@@ -1,4 +1,4 @@
-import { store, snapshots } from './store'
+import store from './store'
 import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
 import { progress } from './progress'
 
@@ -48,10 +48,9 @@ export default (function () {
    *
    * @exports
    * @param {string} url
-   * @param {boolean} [async=true]
    * @returns {Promise<string>}
    */
-  const HttpRequest = async (url, async = true) => {
+  const HttpRequest = async (url) => {
 
     const xhr = new XMLHttpRequest()
 
@@ -59,7 +58,7 @@ export default (function () {
 
       // OPEN
       //
-      xhr.open('GET', url, async)
+      xhr.open('GET', url, store.config.request.async)
 
       // HEADERS
       //
@@ -72,6 +71,7 @@ export default (function () {
       xhr.onload = e => xhr.status === 200 ? resolve(xhr.responseText) : null
       xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText)
       xhr.onerror = reject
+      xhr.timeout = store.config.request.timeout
 
       // SEND
       //
@@ -117,7 +117,7 @@ export default (function () {
    */
   const inFlight = async (url) => {
 
-    if (transit.has(url) && ratelimit <= store.config.request.throttle) {
+    if (transit.has(url) && ratelimit <= store.config.request.poll) {
       // console.log('Request in flight', ratelimit * 25)
 
       if ((ratelimit * 10) >= store.config.progress.threshold) progress.start()
@@ -159,11 +159,9 @@ export default (function () {
 
       const response = await HttpRequest(state.url)
 
-      if (typeof response === 'string') {
-        return store.create(state, response)
-      }
+      if (typeof response === 'string') return store.create(state, response)
 
-      console.warn(`Pjax: Failed to receive response at: ${state.url}`)
+      console.warn(`Pjax: Failed to retrive response at: ${state.url}`)
 
     } catch (error) {
 
@@ -186,12 +184,11 @@ export default (function () {
      * Returns request cache metrics
      *
      * @exports
-     * @returns {IPjax.ICacheSize}
+     * @returns {Store.ICacheSize}
      */
     get cacheSize () {
 
       return {
-        requests: snapshots.size,
         total: storage,
         weight: byteConvert(storage)
       }
