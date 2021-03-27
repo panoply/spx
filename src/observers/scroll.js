@@ -1,4 +1,4 @@
-import { store } from '../app/store'
+import store from '../app/store'
 
 /**
  * Scroll position handler
@@ -8,7 +8,7 @@ import { store } from '../app/store'
 export default (function (connected) {
 
   /**
-   * @type {IPjax.IPosition}
+   * @type {Store.IPosition}
    */
   let position = { x: 0, y: 0 }
 
@@ -17,7 +17,7 @@ export default (function (connected) {
    * a `x`and `y` positions to `0`
    *
    * @exports
-   * @returns {IPjax.IPosition}
+   * @returns {Store.IPosition}
    */
   const reset = () => {
 
@@ -49,12 +49,9 @@ export default (function (connected) {
      * to reset position.
      *
      * @exports
-     * @returns {IPjax.IPosition}
+     * @returns {Store.IPosition}
      */
-    get position () {
-
-      return position
-    },
+    get position () { return position },
 
     /**
      * Sets scroll position to the cache reference and
@@ -74,9 +71,7 @@ export default (function (connected) {
 
       // We assert current position here
 
-      if (store.has(url)) {
-        store.cache(url).position = this.position
-      }
+      if (store.has(url)) store.get(url).page.position = this.position
 
       return reset()
 
