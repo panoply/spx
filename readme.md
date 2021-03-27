@@ -433,11 +433,11 @@ Each page has an object state value that is added to its pertaining History stac
 
 > Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes.
 
-### Read
+#### Read
 
 You can access a readonly copy of page state via the `event.details.state` property within dispatched lifecycle events or via the `Pjax.cache()` method. The caching engine used by this Pjax variation acts as mediator when a session begins, when you access page state via the `Pjax.cache()` method you are given a bridge to the Map object where all the active current session page state exists.
 
-### Write
+#### Write
 
 State modifications are carried out via link attributes or when executing a programmatic visit using the `Pjax.visit()` method which provides an `options` parameter where you can send adjustments to be merged. This method will only allow you to modify the next navigation. You should avoid modifying state and instead treat it as readonly.
 
