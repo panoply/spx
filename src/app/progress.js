@@ -17,9 +17,9 @@ export let progress = null
  * Setup nprogress
  *
  * @export
- * @param {IPjax.IProgress} options
+ * @param {Store.IProgress} options
  */
-export function config (options) {
+export const config = options => {
 
   progress = nprogress.configure(options)
 
