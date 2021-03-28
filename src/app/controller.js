@@ -81,8 +81,12 @@ export default (function (connected) {
   }
 
   return {
-    initialize,
-    destroy
+
+    /* EXPORTS ------------------------------------ */
+
+    initialize
+    , destroy
+
   }
 
 }(false))
