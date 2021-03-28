@@ -168,22 +168,6 @@ export function byteConvert (bytes) {
 }
 
 /**
- * Async Timeout
- *
- * @exports
- * @param {function} callback
- * @param {number} ms
- * @returns {Promise<boolean>}
- */
-export function asyncTimeout (callback, ms = 0) {
-
-  return new Promise(resolve => setTimeout(() => {
-    const fn = callback()
-    resolve(fn)
-  }, ms))
-}
-
-/**
  * Each iterator helper function. Provides a util function
  * for loop iterations
  *
@@ -194,7 +178,6 @@ export function asyncTimeout (callback, ms = 0) {
  * @return {void}
  */
 export function forEach (list, fn, { index = false } = {}) {
-
   let i = list.length - 1
   for (; i >= 0; i--) index ? fn(list[i], i) : fn(list[i])
 }
@@ -221,19 +204,4 @@ export function getElementAttrs ({ attributes }, exclude = []) {
       [ name, value ]
     ]
   ) : accumulator, [])
-}
-
-/**
- * Each Selector
- *
- * @exports
- * @param {Document} document
- * @param {string} query *
- * @param {(element: Element) => void} callback
- * @returns {void}
- */
-export function eachSelector ({ body }, query, callback) {
-
-  return [ ...body.querySelectorAll(query) ].forEach(callback)
-
 }
