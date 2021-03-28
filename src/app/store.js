@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid'
 import { dispatchEvent } from './utils'
 import scroll from '../observers/scroll'
 import * as nprogress from './progress'
+import render from './render'
 
 /**
  * store
@@ -89,11 +90,6 @@ export default ((config) => {
         // EDITABLE
         //
         history: true,
-        capture: false,
-        append: null,
-        prepend: null,
-        replace: null,
-        captured: null,
         snapshot: state?.snapshot || nanoid(16),
         position: state?.position || scroll.reset(),
         cache: this.config.cache.enable,
@@ -162,7 +158,16 @@ export default ((config) => {
        * @returns {string}
        */
       get snapshot () {
-        return snapshots.get(this.page.snapshot)
+        if (this.page?.snapshot) {
+          return snapshots.get(this.page.snapshot)
+        }
+      },
+
+      /**
+       * @returns {Document}
+       */
+      get target () {
+        return render.parse(this.snapshot)
       }
 
     }),
@@ -178,13 +183,19 @@ export default ((config) => {
          * @param {string} key
          * @param {Store.IPage} value
          */
-        cache: (key, value) => cache.set(key, value),
+        cache: (key, value) => {
+          cache.set(key, value)
+          return value
+        },
 
         /**
          * @param {string} key
          * @param {string} value
          */
-        snapshots: (key, value) => snapshots.set(key, value)
+        snapshots: (key, value) => {
+          snapshots.set(key, value)
+          return key
+        }
 
       })
 
@@ -230,16 +241,19 @@ export default ((config) => {
      * Update current pushState History
      *
      * @param {string} url
-     * @returns {void}
+     * @returns {string}
      */
-    history: () => (
+    history: () => {
 
       history.replace(history.location, {
         ...history.location.state,
         position: scroll.position
       })
 
-    ),
+      // @ts-ignore
+      return history.location.state.url
+
+    },
 
     /**
      * Updates page state, this function will run a merge
@@ -269,8 +283,8 @@ export default ((config) => {
 })({
   targets: [ 'body' ],
   request: {
-    timeout: 3000,
-    poll: 150,
+    timeout: 30000,
+    poll: 250,
     async: true,
     dispatch: 'mousedown'
   },
@@ -291,7 +305,7 @@ export default ((config) => {
   },
   progress: {
     enable: true,
-    threshold: 500,
+    threshold: 850,
     options: {
       minimum: 0.10,
       easing: 'ease',
