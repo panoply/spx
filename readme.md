@@ -2,7 +2,7 @@
 
 ## @brixtol/pjax
 
-A blazing fast, lightweight (5kb gzipped), feature full drop-in next generation pjax solution for SSR web applications. Supports multiple fragment replacements, appends and prepends. Pre-fetching capabilities via mouse, pointer, touch and intersection events and snapshot caching which prevent subsequent requests for occurring that results in instantaneous navigation.
+A blazing fast, lightweight (8kb gzipped), feature full drop-in next generation pjax solution for SSR web applications. Supports multiple fragment replacements, appends and prepends. Pre-fetching capabilities via mouse, pointer, touch and intersection events and snapshot caching which prevent subsequent requests for occurring that results in instantaneous navigation.
 
 ##### Example
 

@@ -4,6 +4,7 @@ public
 package
 !src/public
 node_modules
+versions
 
 # FILES -----------------------------
 .env
