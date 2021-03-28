@@ -55,6 +55,8 @@ export default (function (connect) {
 
   return {
 
+    /* CONTROLS ----------------------------------- */
+
     /**
      * Starts prefetch, will initialize `IntersectionObserver` and
      * add event listeners and other logics.
