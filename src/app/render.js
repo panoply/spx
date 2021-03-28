@@ -1,10 +1,7 @@
-import { eachSelector, dispatchEvent, forEach } from './utils'
+import { dispatchEvent, forEach } from './utils'
 import { progress } from './progress'
 import history from 'history/browser'
-import { createPath } from 'history'
-import { nanoid } from 'nanoid'
 import * as prefetch from './prefetch'
-import scroll from '../observers/scroll'
 import store from './store'
 
 /**
@@ -15,6 +12,11 @@ import store from './store'
 export default (function () {
 
   /**
+   * @type{DOMParser} data
+   */
+  const DOMParse = new DOMParser()
+
+  /**
    * Tracked Elements
    *
    * @type {Set<string>}
@@ -23,13 +25,13 @@ export default (function () {
 
   /**
    * Parse HTML document string from request response
-   * using `DomParser()` method. Cached pages will pass
+   * using `parser()` method. Cached pages will pass
    * the saved response here.
    *
-   * @param {string} data
+   * @param {string} HTMLString
    * @return {Document}
    */
-  const DOMParse = data => new DOMParser().parseFromString(data, 'text/html')
+  const parse = HTMLString => DOMParse.parseFromString(HTMLString, 'text/html')
 
   /**
    * DOM Head Nodes
@@ -57,7 +59,7 @@ export default (function () {
    *
    * @param {HTMLHeadElement} head
    */
-  const DOMHead = ({ children }) => {
+  const DOMHead = async ({ children }) => {
 
     const targetNodes = Array.from(children).reduce((arr, node) => (
       node.tagName !== 'TITLE' ? (
@@ -103,66 +105,37 @@ export default (function () {
    */
   const replaceTarget = (target, state) => DOM => {
 
-    dispatchEvent('pjax:render', { target }, true)
+    if (dispatchEvent('pjax:render', { target }, true)) {
 
-    DOM.innerHTML = target.innerHTML
+      DOM.innerHTML = target.innerHTML
 
-    if (state?.append || state?.prepend) {
+      if (state?.append || state?.prepend) {
 
-      const fragment = document.createElement('div')
-      const nodes = [].slice.call(target.childNodes)
+        const fragment = document.createElement('div')
 
-      forEach(nodes, node => fragment.appendChild(node))
+        forEach([ ...target.childNodes ], node => fragment.appendChild(node))
 
-      state.append
-        ? DOM.appendChild(fragment)
-        : DOM.insertBefore(fragment, DOM.firstChild)
+        state.append
+          ? DOM.appendChild(fragment)
+          : DOM.insertBefore(fragment, DOM.firstChild)
 
+      }
     }
-
   }
 
   /**
    * Captures current document element and sets a
    * record to snapshot state
    *
-   * @param {Document} target
-   * @returns {string}
+   * @param {Store.IPage} state
    */
-  const DOMSnapshot = target => {
-    const uuid = nanoid(16)
-    store.set.snapshots(uuid, target.documentElement.outerHTML)
-    return uuid
-  }
+  const capture = async ({ url, snapshot }) => {
 
-  /**
-   * Updates cached DOM
-   *
-   * @param {string} url
-   * @param {{ action: 'replace' | 'capture'}} options
-   * @returns {string}
-   */
-  const captureDOM = (url, options = { action: 'capture' }) => {
-
-    if (!store.has(url, { snapshot: true })) return undefined
-
-    const { snapshot, page } = store.get(url)
-    const target = DOMParse(snapshot)
-    target.body.innerHTML = document.documentElement.querySelector('body').innerHTML
-
-    if (options.action === 'capture') {
-
-      page.captured = DOMSnapshot(target)
-      page.position = scroll.position
-
-      history.replace(page.location, store.update(page))
-      console.info('Pjax: DOM Captured at: ' + page.captured)
-
-    } else if (options.action === 'replace') {
-      store.snapshots.set(page.snapshot, target.documentElement.outerHTML)
+    if (store.has(url, { snapshot: true })) {
+      const target = parse(store.snapshot(snapshot))
+      target.body.innerHTML = document.body.innerHTML
+      store.set.snapshots(snapshot, target.documentElement.outerHTML)
     }
-
-    return target.documentElement.outerHTML
 
   }
 
@@ -172,57 +145,37 @@ export default (function () {
    *
    * @param {Store.IPage} state
    * @param {boolean} [popstate=false]
-   * @returns {Store.IPage}
    */
   const update = (state, popstate = false) => {
 
     // window.performance.mark('render')
+    // console.log(window.performance.measure('time', 'start'))
 
-    prefetch.stop()
-
-    const uuid = (popstate && state.captured) ? state.captured : state.snapshot
-    const target = DOMParse(store.snapshot(uuid))
+    const target = parse(store.snapshot(state.snapshot))
 
     state.title = document.title = target?.title || ''
 
     if (!popstate && state.history) {
-
-      if (createPath(history.location) === state.url) {
+      if (state.url === state.location.lastpath) {
         history.replace(state.location, state)
       } else {
         history.push(state.location, state)
       }
-
-    } else if (state?.captured) {
-
-      if (store.delete.snapshots(uuid)) {
-        state.captured = null
-        // history.replace(state.location, store.update(state))
-        console.info('Pjax: Captured snapshot removed at: ' + state.url)
-      }
-
     }
 
     if (target?.head) DOMHead(target.head)
 
     let fallback = 1
 
-    console.log(state.replace ? [
-      ...state.targets,
-      ...state.replace
-    ] : state.targets)
-
-    forEach(state.replace ? [
-      ...state.targets,
-      ...state.replace
-    ] : state.targets, element => {
+    forEach(state?.replace
+      ? [ ...state.targets, ...state.replace ]
+      : state.targets, element => {
 
       const node = target.body.querySelector(element)
 
-      return node
-        ? eachSelector(document, element, replaceTarget(node, state))
-        : fallback++
-
+      return node ? document.body
+        .querySelectorAll(element)
+        .forEach(replaceTarget(node, state)) : fallback++
     })
 
     if (fallback === state.targets.length) {
@@ -230,24 +183,30 @@ export default (function () {
     }
 
     // APPEND TRACKED NODES
-    eachSelector(target, '[data-pjax-track]', appendTrackedNode)
+    target.body
+      .querySelectorAll('[data-pjax-track]')
+      .forEach(appendTrackedNode)
 
     window.scrollTo(state.position.x, state.position.y)
-
-    dispatchEvent('pjax:load', state)
 
     progress.done()
     prefetch.start()
 
-    return state
+    dispatchEvent('pjax:load', state)
+
     // console.log(window.performance.measure('Render Time', 'render'))
     // console.log(window.performance.measure('Total', 'started'))
 
   }
 
   return {
-    update,
-    captureDOM
+
+    /* EXPORTS ------------------------------------ */
+
+    update
+    , parse
+    , capture
+
   }
 
 })()
