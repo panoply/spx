@@ -1,13 +1,14 @@
 import { supportsPointerEvents } from 'detect-it'
-import { eventFrom } from 'event-from'
 import { dispatchEvent, getLink, chunk } from '../app/utils'
 import { Link } from '../constants/common'
+import * as prefetch from './../app/prefetch'
+import * as regexp from '../constants/regexp'
 import store from '../app/store'
 import path from '../app/path'
 import scroll from './scroll'
 import request from '../app/request'
 import render from '../app/render'
-import * as regexp from '../constants/regexp'
+import history from './history'
 
 /**
  * Link (href) handler
@@ -83,13 +84,13 @@ export default (function (connected) {
 
     if (state) {
 
-      if (state.cache === 'reset') store.clear(url)
-      if (state.cache === 'clear') store.clear()
-
-      if (store.has(url, { snapshot: true })) return render.update(state)
+      if (typeof state.cache === 'string') {
+        state.cache === 'clear'
+          ? store.clear()
+          : store.clear(url)
+      }
 
       const page = await request.get(state)
-
       if (page) return render.update(page)
 
     } else {
@@ -101,7 +102,7 @@ export default (function (connected) {
       }
     }
 
-    return window.location.replace(path.absolute(url))
+    return location.assign(url)
 
   }
 
@@ -157,15 +158,14 @@ export default (function (connected) {
 
     event.preventDefault()
     target.removeEventListener('click', click, false)
-    target.removeAttribute('style')
-
-    if (!dispatchEvent('pjax:click', {}, true)) return undefined
+    render.capture(history.updateState) // PRESERVE CURRENT PAGE
+    prefetch.stop()
 
     return typeof state === 'object'
       ? render.update(state)
       : typeof state === 'string'
         ? navigate(state)
-        : window.location.replace(path.absolute(path.url))
+        : location.assign(path.url)
 
   }
 
@@ -177,7 +177,7 @@ export default (function (connected) {
    */
   const handleTrigger = (event) => {
 
-    // window.performance.mark('started')
+    window.performance.mark('start')
 
     if (!linkEvent(event)) return undefined
 
@@ -187,9 +187,6 @@ export default (function (connected) {
     if (!dispatchEvent('pjax:trigger', { target }, true)) return undefined
 
     const { url, location } = path.get(target, { update: true })
-
-    store.history() // PRESERVE CURRENT PAGE
-
     const click = handleClick(target)
 
     if (request.transit.has(url)) {
@@ -198,15 +195,12 @@ export default (function (connected) {
 
     } else {
 
-      const state = attrparse(target, { url, location, position: scroll.set(path.url) })
-
-      if (state.capture) render.captureDOM(state.location.lastpath)
+      const state = attrparse(target, { url, location, position: scroll.y0x0 })
 
       if (store.has(url, { snapshot: true })) {
         target.addEventListener('click', click(store.update(state)), false)
       } else {
-        // TRIGGERS FETCH
-        request.get(state)
+        request.get(state) // TRIGGERS FETCH
         target.addEventListener('click', click(url), false)
       }
     }
@@ -217,8 +211,8 @@ export default (function (connected) {
 
     /* EXPORTS ------------------------------------ */
 
-    attrparse,
-    navigate,
+    attrparse
+    , navigate
 
     /* CONTROLS ----------------------------------- */
 
@@ -227,7 +221,7 @@ export default (function (connected) {
      *
      * @returns {void}
      */
-    start: () => {
+    , start: () => {
 
       if (!connected) {
 
@@ -241,14 +235,14 @@ export default (function (connected) {
         connected = true
 
       }
-    },
+    }
 
     /**
      * Removed `click` event listener.
      *
      * @returns {void}
      */
-    stop: () => {
+    , stop: () => {
 
       if (connected) {
 
