@@ -3,6 +3,7 @@ import { eventFrom } from 'event-from'
 import { LinkPrefetchHover } from '../constants/common'
 import { getLink, getTargets, dispatchEvent } from '../app/utils'
 import hrefs from './hrefs'
+import scroll from './scroll'
 import request from '../app/request'
 import path from '../app/path'
 import store from '../app/store'
@@ -115,7 +116,7 @@ export default (function (connected) {
     const state = hrefs.attrparse(target, {
       url,
       location,
-      position: { x: 0, y: 0 }
+      position: scroll.y0x0
     })
 
     throttle(url, async () => {
@@ -223,6 +224,8 @@ export default (function (connected) {
   }
 
   return {
+
+    /* CONTROLS ----------------------------------- */
 
     /**
      * Starts mouseovers, will attach mouseover events
