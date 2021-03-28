@@ -3,6 +3,7 @@ import { createPath } from 'history'
 import render from '../app/render'
 import request from '../app/request'
 import store from '../app/store'
+import scroll from './scroll'
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -48,7 +49,7 @@ export default (function (connected) {
 
     return page
       ? render.update(page, true)
-      : window.location.replace(url)
+      : location.assign(url)
 
   }
 
@@ -61,7 +62,6 @@ export default (function (connected) {
   const listener = ({ action, location }) => {
 
     // console.log(action, location)
-
     if (action === 'POP') {
       return popstate(createPath(location), location.state)
     }
@@ -69,6 +69,27 @@ export default (function (connected) {
   }
 
   return {
+
+    /* GETTERS ------------------------------------ */
+
+    /**
+     * Execute a history state replacement for the current
+     * page location. Its intended use is to update the
+     * current scroll position and any other values stored
+     * in history state.
+     *
+     * @returns {Store.IPage} url
+     */
+    get updateState () {
+
+      history.replace(history.location, {
+        ...history.location.state
+        , position: scroll.position
+      })
+
+      return history.location.state
+
+    },
 
     /* CONTROLS ----------------------------------- */
 
