@@ -126,9 +126,7 @@ Pjax.disconnect(): void
 
 Link elements can be annotated with `data-pjax` attributes. You can control how pages are rendered by passing the below attributes on `<a>` nodes.
 
-<br>
-<strong>`data-pjax-eval="false"`</strong>
-<br>
+#### data-pjax-eval
 
 Used on resources contained within `<head>` fragment like styles and scripts. Use this attribute if you want pjax the evaluate scripts and/or stylesheets. This option accepts a `false` value so you can define which scripts to execute on each navigation. By default, pjax will run and evaluate all `<script>` tags it detects for every page visit but will not re-evaluate `<script src="*"></script>` tags.
 
