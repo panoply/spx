@@ -6,7 +6,17 @@
  * @exports
  * @type {RegExp}
  */
-export const Attr = /^data-pjax-(append|prepend|replace|history|capture|progress|threshold|position)$/i
+export const Attr = /^data-pjax-(append|prepend|replace|history|progress|threshold|position)$/i
+
+/**
+ * Form Inputs
+ *
+ * Used to match Form Input elements
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const CacheValue = /^(reset|clear)$/i
 
 /**
  * URL Pathname
