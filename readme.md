@@ -152,7 +152,7 @@ Example
 
 </details>
 
-##### data-pjax-disable
+#### data-pjax-disable
 
 Place on `href` elements you don't want pjax navigation to be executed. When a link element is annotated with `data-pjax-disable` a normal page navigation will be executed and cache will be cleared.
 
@@ -169,7 +169,7 @@ Clicking this link will clear cache and a normal page navigation will be execute
 
 </details>
 
-##### data-pjax-track
+#### data-pjax-track
 
 Place on elements to track on a per-page basis that might otherwise not be contained within target elements.
 
@@ -218,7 +218,7 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 
 </details>
 
-##### data-pjax-replace
+#### data-pjax-replace
 
 Executes a replacement of defined targets, where each target defined in the array is replaced.
 
@@ -251,7 +251,7 @@ Example
 
 </details>
 
-##### data-pjax-prepend
+#### data-pjax-prepend
 
 Executes a prepend visit, where `[0]` will prepend itself to `[1]` defined in that value. Multiple prepend actions can be defined. Each prepend action is recorded are marked.
 
@@ -310,7 +310,7 @@ Example
 
 </details>
 
-##### data-pjax-prefetch
+#### data-pjax-prefetch
 
 Prefetch option to execute. Accepts either `intersect` or `hover` value. When `intersect` is provided a request will be dispatched and cached upon visibility via Intersection Observer, whereas `hover` will dispatch a request upon a pointerover (mouseover) event.
 
@@ -331,7 +331,7 @@ Example
 
 </details>
 
-##### data-pjax-threshold
+#### data-pjax-threshold
 
 Set the threshold delay timeout for hover prefetches. By default, this will be set to `100` or whatever preset configuration was defined in `Pjax.connect()` but you can override those settings by annotating the link with this attribute.
 
@@ -351,7 +351,7 @@ Example
 
 </details>
 
-##### data-pjax-position
+#### data-pjax-position
 
 Scroll position of the next navigation. Space separated expression with colon separated prop and value.
 
@@ -368,7 +368,7 @@ Example
 
 </details>
 
-##### data-pjax-cache
+#### data-pjax-cache
 
 Controls the caching engine for the link navigation. Accepts `false`, `reset` or `clear` value. Passing in `false` will execute a pjax visit that will not be saved to cache and if the link exists in cache it will be removed. When passing `reset` the cache record will be removed, a new pjax visit will be executed and its result saved to cache. The `clear` option will clear the entire cache.
 
@@ -383,7 +383,7 @@ Example
 
 </details>
 
-##### data-pjax-history
+#### data-pjax-history
 
 Controls the history pushstate for the navigation. Accepts `false`, `replace` or `push` value. Passing in `false`will prevent this navigation from being added to history. Passing in `replace` or `push` will execute its respective value to pushstate to history.
 
@@ -399,7 +399,7 @@ Example
 
 </details>
 
-##### data-pjax-progress
+#### data-pjax-progress
 
 Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of `false` will disable the progress from showing.
 
