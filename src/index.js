@@ -1,6 +1,10 @@
-import { Protocol, isReady } from './constants/regexp'
-import { store } from './app/store'
-import * as controller from './app/controller'
+import { Protocol } from './constants/regexp'
+import { nanoid } from 'nanoid'
+import store from './app/store'
+import render from './app/render'
+import path from './app/path'
+import hrefs from './observers/hrefs'
+import controller from './app/controller'
 
 /**
  * @export
@@ -9,13 +13,14 @@ import * as controller from './app/controller'
 export const supported = !!(
   window.history.pushState &&
   window.requestAnimationFrame &&
-  window.addEventListener
+  window.addEventListener &&
+  window.DOMParser
 )
 
 /**
  * Connect Pjax
  *
- * @param {IPjax.IConfigPresets} options
+ * @param {Store.IPresets} options
  */
 export const connect = options => {
 
@@ -23,7 +28,7 @@ export const connect = options => {
 
   if (supported) {
     if (Protocol.test(window.location.protocol)) {
-      if (isReady.test(document.readyState)) controller.initialize()
+      addEventListener('DOMContentLoaded', controller.initialize)
     } else {
       console.error('Invalid protocol, pjax expects https or http protocol')
     }
@@ -38,16 +43,41 @@ export const connect = options => {
  *
  * Reloads the current page
  */
-export const reload = () => {
+export const reload = () => {}
 
-}
+/**
+ * UUID Generator
+ */
+export const uuid = (size = 12) => nanoid(size)
+
+/**
+ * Flush Cache
+ *
+ * @param {string} [url]
+ */
+export const clear = (url) => store.clear(url)
+
+/**
+ * Capture DOM
+ *
+ * @param {string} url
+ * @param {object} action
+ */
+export const capture = (url, action) => render.captureDOM(path.key(url), action)
 
 /**
  * Visit
  *
- * @param {IPjax.IState} state
+ * @param {string|Element} link
+ * @param {Store.IPage} state
+ * @returns {Promise<Store.IPage|void>}
  */
-export const visit = state => controller.navigate(state)
+export const visit = (link, state = {}) => {
+
+  const { url, location } = path.get(link, { update: true })
+
+  return hrefs.navigate(url, { ...state, url, location })
+}
 
 /**
  * Disconnect

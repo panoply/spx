@@ -1,153 +1,92 @@
-import { store } from './store'
-import { dispatchEvent } from './utils'
-import { expandURL } from './location'
-import { xhrSuccess } from '../constants/enums'
-import * as hrefs from '../observers/hrefs'
-import * as prefetch from '../observers/prefetch'
-import * as render from './render'
-import * as request from './request'
+import hrefs from '../observers/hrefs'
+import hover from '../observers/hover'
+import intersect from '../observers/intersect'
+import scroll from '../observers/scroll'
+import history from '../observers/history'
+import _history from 'history/browser'
+import path from './path'
+import store from './store'
 
-/**
- * Popstate event handler
- *
- * @param {PopStateEvent} event
- */
-function popstate (event) {
+export default (function (connected) {
 
-  if (store.config.prefetch) prefetch.stop()
+  /**
+   * Sets initial page state executing on intial load.
+   * Caches page so a return navigation does not perform
+   * an extrenous request.
+   *
+   * @returns {void}
+   */
+  const onload = () => {
 
-  if (event?.state) {
-    render.update(event.state, true)
-  } else {
+    const page = store.create({
+      url: path.url,
+      location: path.parse(path.url),
+      position: scroll.position
+    }, document.documentElement.outerHTML)
 
-    // If get here default to regular back button
-    history.back()
-  }
+    _history.replace(history.location, page)
 
-  if (store.config.prefetch) prefetch.start()
-
-}
-
-/**
- * Sets initial page state on landing page and
- * caches it so return navigation don't perform an extrenous
- * request
- *
- * @param {Window} window
- */
-function setInitialCache ({ location: { href } }) {
-
-  const location = expandURL(href)
-  const state = store.update.page({
-    location,
-    url: location.pathname + location.search,
-    snapshot: document.documentElement.outerHTML
-  })
-
-  store.cache.set(store.page.url, state)
-
-}
-
-/**
- * Initialize
- */
-export const initialize = () => {
-
-  if (!store.started) {
-
-    setInitialCache(window)
-
-    hrefs.start()
-    prefetch.start()
-
-    console.info('Pjax: Connection Established ⚡')
-
-    addEventListener('popstate', popstate)
-    dispatchEvent('pjax:load', store.page)
-
-    store.started = true
+    removeEventListener('load', onload)
 
   }
 
-}
+  /**
+   * Initialize
+   *
+   * @exports
+   * @returns {void}
+   */
+  const initialize = () => {
 
-/**
- * Destory Pjax instances
- *
- * @exports
- */
-export function destroy () {
+    if (!connected) {
 
-  if (store.started) {
+      history.start()
+      hrefs.start()
+      scroll.start()
+      hover.start()
+      intersect.stop()
 
-    removeEventListener('popstate', popstate)
+      addEventListener('load', onload)
 
-    hrefs.stop()
-    prefetch.stop()
+      connected = true
 
-    store.cache.clear()
-    store.started = false
-
-    console.info('Pjax: Instance has been disconnected! 😔')
-
-  } else {
-    console.info('Pjax: No connection made, disconnection is void 🙃')
+      console.info('Pjax: Connection Established ⚡')
+    }
   }
 
-}
+  /**
+   * Destory Pjax instances
+   *
+   * @exports
+   * @returns {void}
+   */
+  const destroy = () => {
 
-/**
- * Executes a visit by fetching the the cached response
- * from the session and passes it to the renderer.
- *
- * @param {string} url
- * @exports
- */
-export const cacheVisit = url => {
+    if (connected) {
 
-  const state = store.cache.get(url)
+      history.stop()
+      hrefs.stop()
+      scroll.stop()
+      hover.stop()
+      intersect.stop()
+      store.clear()
 
-  // console.log('cache', url)
+      connected = false
 
-  if (store.config.prefetch) prefetch.stop()
+      console.warn('Pjax: Instance has been disconnected! 😔')
+    } else {
+      console.warn('Pjax: No connection made, disconnection is void 🙃')
+    }
 
-  // ensure we have state before updating
-  if (state) render.update(state)
-
-  if (store.config.prefetch) prefetch.start()
-
-}
-
-/**
- * Pjax link handler which dispatches a fetch request
- * when `href` tag is clicked. If clicked link is in transit
- * from prefetch it will pass to cache visit
- *
- * @param {IPjax.IState} state
- */
-export async function pjaxVisit (state) {
-
-  if (prefetch.transit.has(state.url)) {
-    if ((await request.inFlight(state.url))) return cacheVisit(state.url)
-    request.cancel(state.url)
   }
 
-  if (store.config.prefetch) prefetch.stop()
+  return {
 
-  const response = await request.get(state)
+    /* EXPORTS ------------------------------------ */
 
-  if (response === xhrSuccess) render.update(store.page)
+    initialize
+    , destroy
 
-  if (store.config.prefetch) prefetch.start()
+  }
 
-}
-
-/**
- * Executes a pjax navigation.
- *
- * @param {IPjax.IState} state
- */
-export function navigate (state) {
-
-  return store.cache.has(state.url) ? cacheVisit(state.url) : pjaxVisit(state)
-}
+}(false))

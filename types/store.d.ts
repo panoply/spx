@@ -1,166 +1,424 @@
+import { PartialPath } from "history";
+
 /**
  * Pjax Events
  */
-export type IEvents = (
-  'pjax:click' |
-  'pjax:request' |
-  'pjax:cache' |
-  'pjax:render' |
-  'pjax:load'
-)
+export type IEvents =
+  | "pjax:prefetch"
+  | "pjax:trigger"
+  | "pjax:click"
+  | "pjax:request"
+  | "pjax:cache"
+  | "pjax:render"
+  | "pjax:load";
 
 /**
- * Action to be executed on navigation.
+ * Cache Size
  */
-export type IConfigMethod= 'replace' | 'prepend' | 'append'
-
-/**
- * Prefetch operation on navigation
- */
-export type IConfigPrefetch = 'intersect' | 'hover'
-
-/**
- * Cache operation on navigation
- */
-export type IConfigCache = 'false' | 'reset' | 'save'
+export type ICacheSize = {
+  total: number;
+  weight: string;
+};
 
 /**
  * Scroll position records
  */
 export type IPosition = {
-  x: number,
-  y: number
-}
+  x: number;
+  y: number;
+};
 
 /**
  * The URL location object
  */
-export interface ILocation {
-
-  /**
-   * The URL protocol
-   *
-   * @example
-   * 'https:' OR 'http:'
-   */
-  protocol: string
+export interface ILocation extends PartialPath {
   /**
    * The URL origin name
    *
    * @example
    * 'https://website.com'
    */
-  origin: string
+  origin?: string;
   /**
    * The URL Hostname
    *
    * @example
    * 'website.com'
    */
-  hostname: string
-  /**
-   * The URL href location name (full URL)
-   *
-   * @example
-   * 'https://website.com/pathname'
-   * OR
-   * 'https://website.com/pathname?param=foo&bar=baz'
-   */
-  href: string
+  hostname?: string;
+
   /**
    * The URL Pathname
    *
    * @example
    * '/pathname' OR '/pathname/foo/bar'
    */
-  pathname: string
+  pathname?: string;
+
   /**
    * The URL search params
    *
    * @example
    * '?param=foo&bar=baz'
    */
-  search: string
+  search?: string;
 
-}
-
-export type IConfigPresets = {
   /**
-   * List of target element selectors. Accepts any valid
-   * `querySelector()` string.
+   * The URL Hash
    *
    * @example
-   * ['#main', '.header', '[data-attr]', 'header']
+   * '#foo'
    */
-  target?: string[],
+  hash?: string;
+
   /**
-   * Default method to be applied.
+   * The previous page path URL, this is also the cache identifier
    *
-   * @default 'replace'
+   * @example
+   * '/pathname' OR '/pathname?foo=bar'
    */
-  method?: string,
+  lastpath?: string;
+}
+
+/**
+ * NProgress Exposed Configuration Options
+ */
+export interface IProgress {
   /**
-   * Enable/disable prefetching. Settings this option to `false`will
-   * prevent prefetches from occuring and ignore all `data-pjax-prefetch="*"`
-   * attributes.
+   * Changes the minimum percentage used upon starting.
+   *
+   * @default 0.08
+   */
+  minimum?: number;
+  /**
+   * CSS Easing String
+   *
+   * @default cubic-bezier(0,1,0,1)
+   */
+  easing?: string;
+  /**
+   * Animation Speed
+   *
+   * @default 200
+   */
+  speed?: number;
+  /**
+   * Turn off the automatic incrementing behavior
+   * by setting this to false.
    *
    * @default true
    */
-  prefetch?: boolean
+  trickle?: boolean;
   /**
-   * Enable disable request caching, setting this option to `false` will
-   * prevent cached navigations and ignore all `data-pjax-cache="*"` attributes.
+   * Adjust how often to trickle/increment, in ms.
    *
-   * @default true
+   * @default 200
    */
-  cache?: boolean,
+  trickleSpeed?: number;
   /**
-   * Enable or Disable progres bar indicator
-   *
-   * (_Requests are instantaneous, generally you wont need this_)
+   * Turn on loading spinner by setting it to `true`
    *
    * @default false
    */
-  progress?: boolean,
-  /**
-   * Throttle delay between navigations, set this option if
-   * you want to delay the time between visits, helpful if
-   * navigation is too fast.
-   *
-   * @default 0
-   */
-  throttle?: number
-
-
+  showSpinner?: boolean;
 }
 
-export interface IConfig {
+export interface IPresets {
+  /**
+   * Define page fragment targets. By default, this pjax module will replace the
+   * entire `<body>` fragment, if undefined. Its best to define specific fragments.
+   *
+   * ---
+   * @default ['body']
+   */
+  targets?: string[];
 
   /**
-   * List of target element selectors. Accepts any valid
+   * Request Configuration
+   */
+  request?: {
+    /**
+     * The timeout limit of the XHR request issued. If timeout limit is exceeded a
+     * normal page visit will be executed.
+     *
+     * ---
+     * @default 3000
+     */
+    timeout?: number;
+
+    /**
+     * Request polling limit is used when a request is already in transit. Request
+     * completion is checked every 10ms, by default this is set to 150 which means
+     * requests will wait 1500ms before being a new request is triggered.
+     *
+     * **BEWARE**
+     *
+     * Timeout limit will run precedence!
+     *
+     * ---
+     * @default 150
+     */
+    poll?: 150;
+
+    /**
+     * Determin if page requests should be fetched asynchronously or synchronously.
+     * Setting this to `false` is not reccomended.
+     *
+     * ---
+     * @default true
+     */
+    async?: boolean;
+
+    /**
+     * **FEATURE NOT YET AVAILABLE**
+     *
+     * Define the request dispatch. By default, request are fetched upon mousedown, this allows
+     * fetching to start sooner that it would from an click event.
+     *
+     * > Currently, fetches are executed on `mousedown` only. Future releases will provide click
+     * dispatches
+     *
+     * ---
+     * @default 'mousedown'
+     */
+    readonly dispatch?: "mousedown";
+  };
+
+  /**
+   * Prefetch configuration
+   */
+  prefetch?: {
+    /**
+     * Mouseover prefetching preset configuration
+     */
+    mouseover?: {
+      /**
+       * Enable or Disable mouseover (hover) prefetching. When enabled, this option
+       * will allow you to fetch pages over the wire upon mouseover and saves them to
+       * cache. When `mouseover` prefetches are disabled, all `data-pjax-prefetch="mouseover"`
+       * attribute configs will be ignored.
+       *
+       * > _If cache if disabled then prefetches will be dispatched using HTML5
+       * `<link>` prefetches, else when cache is enabled it uses XHR._
+       *
+       * ---
+       * @default true
+       */
+      enable?: boolean;
+
+      /**
+       * Controls the mouseover fetch delay threshold. Requests will fire on mouseover
+       * only after the threshold time has been exceeded. This helps limit extrenous
+       * requests from firing.
+       *
+       * ---
+       * @default 250
+       */
+      threshold?: number;
+
+      /**
+       * **FEATURE NOT YET AVAILABLE**
+       *
+       * Proximity hovers allow for prefetch hovers to be dispatched when the cursor is within
+       * a proximity range of a href link element. Coupling proximity with mouseover prefetches
+       * enable predicative fetching to occur, so a request will trigger before any interaction.
+       *
+       * ---
+       * @default 0
+       */
+      readonly proximity?: number;
+    };
+
+    /**
+     * Intersection prefetching preset configuration
+     */
+    intersect?: {
+      /**
+       * Enable or Disable intersection prefetching. Intersect prefetching leverages the
+       * Intersection Observer API to fire requests when elements become visible in viewport.
+       * When intersect prefetches are disabled, all `data-pjax-prefetch="intersect"`
+       * attribute configs will be ignored.
+       *
+       * > _If cache if disabled then prefetches will be dispatched using HTML5
+       * `<link>` prefetches, else when cache is enabled it uses XHR._
+       *
+       * ---
+       * @default true
+       */
+      enable?: boolean;
+
+      /**
+       * Partial options passed to [Intersection Observer](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
+       *
+       */
+      options?: {
+        /**
+         * An offset rectangle applied to the root's href bounding box.
+         *
+         * ---
+         * @default '0px 0px 0px 0px'
+         */
+        rootMargin?: string;
+        /**
+         * Threshold limit passed to the intersection observer instance
+         *
+         * ---
+         * @default 0
+         */
+        threshold?: number;
+      };
+    };
+  };
+
+  /**
+   * Caching engine configuration
+   */
+  cache?: {
+    /**
+     * Enable or Disable caching. Each page visit request is cached and used in
+     * subsequent visits to the same location. By disabling cache, all visits will
+     * be fetched over the network and any `data-pjax-cache` attribute configs
+     * will be ignored.
+     *
+     * ---
+     * @default true
+     */
+    enable?: boolean;
+
+    /**
+     * Cache size limit. This pjax variation limits cache size to `25mb`and once size
+     * exceeds that limit, records will be removed starting from the earliest point
+     * cache entry.
+     *
+     * _Generally speaking, leave this the fuck alone._
+     *
+     * ---
+     * @default 50
+     */
+    limit?: number;
+
+    /**
+     * FEATURE NOT YET AVAILABLE
+     *
+     * The save option will save snapshot cache to IndexedDB.
+     * This feature is not yet available.
+     *
+     * ---
+     * @default false
+     */
+    readonly save?: boolean;
+  };
+
+  /**
+   * Progress Bar configuration
+   */
+  progress?: {
+    /**
+     * Enable or Disables the progress bar globally. Setting this option
+     * to `false` will prevent progress from displaying. When disabled,
+     * all `data-pjax-progress` attribute configs will be ignored.
+     *
+     * ---
+     * @default true
+     */
+    enable?: boolean;
+
+    /**
+     * Controls the progress bar preset threshold. Defines the amount of
+     * time to delay before the progress bar is shown.
+     *
+     * ---
+     * @default 350
+     */
+    threshold?: number;
+
+    /**
+     * [N Progress](https://github.com/rstacruz/nprogress) provides the
+     * progress bar feature which is displayed between page visits.
+     *
+     * > _This pjax module does not expose all configuration options of nprogress,
+     * but does allow control of some internals. Any configuration options
+     * defined here will be passed to the nprogress instance upon initialization._
+     */
+    options?: IProgress;
+  };
+}
+
+/**
+ * Page Visit State
+ *
+ * Configuration from each page visit. For every page navigation
+ * the configuration object is generated in a immutable manner.
+ */
+export interface IPage {
+  /**
+   * The list of fragment target element selectors defined upon connection.
+   *
+   * @example
+   * ['#main', '.header', '[data-attr]', 'header']
+   */
+  readonly targets?: string[];
+
+  /**
+   * The URL cache key and current url path
+   */
+  url?: string;
+
+  /**
+   * UUID reference to the page snapshot HTML Document element
+   */
+  snapshot?: string;
+
+  /**
+   * Location URL
+   */
+  location?: ILocation;
+
+  /**
+   * The Document title
+   */
+  title?: string;
+
+  /**
+   * Should this fetch be pushed to history
+   */
+  history?: boolean;
+
+  /**
+   * List of fragment element selectors. Accepts any valid
    * `querySelector()` string.
    *
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  target?: string[]
+  replace?: null | string[];
 
   /**
-   * Default method to be applied.
-   * ---
-   * `replace` - Navigation target will be replaced
+   * List of fragments to be appened from and to. Accepts multiple.
    *
-   * `append` - Navigation target will be appened
-   *
-   * `prepend` - Navigation target will be prepended
-   *
+   * @example
+   * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  method?: string
+  append?: null | Array<[from: string, to: string]>;
+
+  /**
+   * List of fragments to be prepend from and to. Accepts multiple.
+   *
+   * @example
+   * [['#main', '.header'], ['[data-attr]', 'header']]
+   */
+  prepend?: null | Array<[from: string, to: string]>;
 
   /**
    * Controls the caching engine for the link navigation.
    * Option is enabled when `cache` preset config is `true`.
-   * Each pjax link can set a different cache option, see below:
+   * Each pjax link can set a different cache option.
+   *
+   * **IMPORTANT**
+   *
+   * Cache control is only operational on clicks, prefetches
+   * will not control cache.
+   *
    * ---
    * `false`
    *
@@ -170,23 +428,15 @@ export interface IConfig {
    *
    * `reset`
    *
-   * Passing in __reset__ the cache record will be removed,
-   * a new pjax visit will be executed and the result saved to cache.
+   * Passing in __reset__ will remove the requested page from cache
+   * (if it exsists) and the next navigation result will be saved.
    *
-   * `save`
+   * `clear`
    *
-   * Passing in __save__ will temporarily store the current
-   * cached state to session storage. It will be removed on your
-   * next navigation visit.
-   *
-   * > _The save option should be avoided unless you are executing a
-   * full page reload and wish to store your cached pages to prevent
-   * new requests being executed on next navigation. If your cache exceeds
-   * 3mb in size cache records will be removed starting from the earliest
-   * point on of entry. Use `save` in conjunction with the `data-pjax-disable`
-   * option, else do your upmost to avoid it._
+   * Passing in __clear__ will cleat the entire cache, removing all
+   * saved records.
    */
-  cache?: false | 'false' | 'reset' | 'save'
+  cache?: boolean | string;
 
   /**
    * Scroll position of the next navigation.
@@ -196,151 +446,30 @@ export interface IConfig {
    *
    * `y` - Equivalent to `scrollTop` in pixels
    */
-  position?: IPosition
+  position?: IPosition;
 
   /**
-   * Prefetch option to execute for each link
+   * Define mouseover timeout from which fetching will begin
+   * after time spent on mouseover
    *
-   * ---
-   * `intersect`
-   *
-   * Pages will be fetched upon `IntersectionObserve()` threshold.
-   * ie: when they become visible in viewport.
-   *
-   * `hover`
-   *
-   * Pages will be fetched upon `mouseover` on a pjax href link.
-   * Try and avoid this, just use __intersect__ instead.
-   *
-   * > _On mobile devices the hover value will execute on a
-   * touch event._
+   * @default 100
    */
-  prefetch?: string
+  threshold?: number;
 
   /**
-   * List array of tracked elements pretaining to this link page
-   * navigation visit (if any).
-   *
-   * @see https://github.com/panoply/pjax#data-pjax-track
-   */
-  track?: Element[]
-
-  /**
-   * Throttle delay between navigations, set this option if
-   * you want to delay the time between visits, helpful if
-   * navigation is too fast.
+   * Define proximity prefetch distance from which fetching will
+   * begin relative to the cursor offset of href elements.
    *
    * @default 0
    */
-  throttle?: number
+  proximity?: number;
 
   /**
-   * Enable or Disable progres bar indicator
+   * Progress bar threshold delay
    *
-   * (_Requests are instantaneous, generally you wont need this_)
-   *
-   * @default false
+   * @default 350
    */
-  progress?: boolean,
-
+  progress?: boolean | number;
 }
 
-export interface IDom {
-  readonly tracked?: Set<string>,
-  head?: object
-}
-
-
-export type IAttrs<T extends string[]> = {
-  [P in T as string]?: string[]
-}
-
-
-export interface IRequest {
-  readonly xhr?: Map<string, XMLHttpRequest>,
-  cache?: {
-    weight?: string,
-    total?: number,
-    readonly limit?: number
-  }
-}
-
-export interface IStoreState {
-  started: boolean
-  cache: Map<string, IState>
-  config: IConfigPresets;
-  page: IState;
-  dom: IDom;
-  request: IRequest;
-}
-
-
-export type IStoreUpdate = {
-  config: (patch?: IConfigPresets) => IConfigPresets;
-  page: (patch?: IState) => IState;
-  dom: (patch?: IDom) => IDom;
-  request: (patch?: IRequest) => IRequest;
-}
-
-export interface IState extends IConfig {
-
-  /**
-   * The fetched HTML response string
-   */
-  snapshot?: string
-
-  /**
-   * The fetched HTML response string
-   */
-  chunks?: {
-    [selector: string]: 'replace' | 'prepend' | 'append'
-  }
-
-  /**
-   * The URL cache key
-   */
-  url?: string
-
-  /**
-   * Location URL
-   */
-  location?: ILocation
-
-  /**
-   * Action
-   */
-  action?: {
-    append?: Array<[from: string, to: string]>,
-    prepend?: Array<[from: string, to: string]>,
-  }
-
-  /**
-  * Threshold
-  */
-  threshold?: {
-    intersect?: number,
-    hover?: number
-  }
-
-}
-
-
-/**
- * Event Details dispatched per lifecycle
- */
-export interface IEventDetails {
-  target?: Element,
-  state?: IConfig,
-  data?: any
-}
-
-
-
-export type IVisit = {
-  replace: boolean
-}
-
-
-
-export as namespace IPjax;
-
+export as namespace Store;

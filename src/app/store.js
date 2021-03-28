@@ -1,245 +1,318 @@
 import merge from 'mergerino'
+import history from 'history/browser'
+import { nanoid } from 'nanoid'
+import { dispatchEvent } from './utils'
+import scroll from '../observers/scroll'
+import * as nprogress from './progress'
+import render from './render'
 
-export const store = (
+/**
+ * store
+ */
+export default ((config) => {
 
   /**
-   * @param {IPjax.IStoreState} state
+   * Cache
+   *
+   * @exports
+   * @type {Map<string, Store.IPage>}
    */
-  state => ({
+  const cache = new Map()
+
+  /**
+   * Cache
+   *
+   * @exports
+   * @type {Map<string, string>}
+   */
+  const snapshots = new Map()
+
+  /**
+   * Preset Configuration
+   *
+   * @type {object}
+   */
+  let presets
+
+  return ({
 
     /**
-     * Connect Store
+     * Connects store and intialized the workable
+     * state management model. Connect MUST be called
+     * upon Pjax initialization. This function acts
+     * as a class `constructor` establishing an instance.
      *
-     * MUST BE CALLED TO UPON INITIALIZATION
+     * @param {Store.IPresets} [options]
+     */
+    connect (options = {}) {
+
+      presets = merge(config, {
+        // PRESETS PATCH COPY
+        ...options
+        , request: { ...options?.request, dispatch: undefined }
+        , cache: { ...options?.cache, save: undefined }
+      })
+
+      nprogress.config(this.config.progress.options)
+
+    },
+
+    /**
+     * Returns the Pjax preset configuration object. Presets are global
+     * configurations. This getter will give us access to the defined
+     * settings for this Pjax instance.
      *
-     * @param {IPjax.IConfigPresets} options
+     * @type {Store.IPresets}
+     * @return {Store.IPresets}
      */
-    connect (options) {
-
-      this.update.config(options)
-      this.update.page(this.config)
-      this.update.dom()
-      this.update.request()
-
-    }
-
-    ,
-
-    /* -------------------------------------------- */
-    /* STARTED                                      */
-    /* -------------------------------------------- */
-
-    get started () {
-
-      return state.started
-
-    }
-
-    ,
-
-    set started (status) {
-
-      state.started = status
-
-    }
-
-    ,
-
-    /* -------------------------------------------- */
-    /* CACHE                                        */
-    /* -------------------------------------------- */
+    get config () { return presets },
 
     /**
-     * @return {Map<string, IPjax.IState>}
+     * Indicates a new page visit or a return page visit. New visits
+     * are defined by an event dispatched from a `href` link. Both a new
+     * new page visit or subsequent visit will call this function.
+     *
+     * **Breakdown**
+     *
+     * Subsequent visits calling this function will have their per-page
+     * specifics configs (generally those configs set with attributes)
+     * reset and merged into its existing records (if it has any), otherwise
+     * a new page instance will be generated including defult preset configs.
+     *
+     * @param {Store.IPage} state
+     * @param  {string} snapshot
+     * @returns {Store.IPage}
      */
-    get cache () {
+    create (state, snapshot) {
 
-      return state.cache
+      const page = {
 
-    }
+        // EDITABLE
+        //
+        history: true,
+        snapshot: state?.snapshot || nanoid(16),
+        position: state?.position || scroll.reset(),
+        cache: this.config.cache.enable,
+        progress: this.config.progress.threshold,
+        threshold: this.config.prefetch.mouseover.threshold,
 
-    ,
+        // USER OPTIONS
+        //
+        ...state,
 
-    /* -------------------------------------------- */
-    /* STORE GETTERS                                */
-    /* -------------------------------------------- */
+        // READ ONLY
+        //
+        targets: this.config.targets
+
+      }
+
+      if (page.cache && dispatchEvent('pjax:cache', page, true)) {
+        cache.set(page.url, page)
+        snapshots.set(page.snapshot, snapshot)
+      }
+
+      return page
+
+    },
 
     /**
-     * @return {IPjax.IConfigPresets}
+     * Removes cached records. Optionally pass in URL
+     * to remove specific record.
+     *
+     * @param {string} id
      */
-    get config () {
-
-      return state.config
-
-    }
-
-    ,
+    snapshot: id => snapshots.get(id),
 
     /**
-     * @return {IPjax.IState}
+     * Removes cached records. Optionally pass in URL
+     * to remove specific record.
+     *
+     * @param {string} [url]
      */
-    get page () {
-
-      return state.page
-
-    }
-
-    ,
+    clear: url => {
+      if (typeof url === 'string') {
+        snapshots.delete(cache.get(url).snapshot)
+        cache.delete(url)
+      } else {
+        snapshots.clear()
+        cache.clear()
+      }
+    },
 
     /**
-     * @return {IPjax.IDom}
+     * Check if cache record exists with snapshot
+     *
+     * @param {string} url
+     * @param {{snapshot?: boolean}} has
      */
-    get dom () {
+    get: url => ({
 
-      return state.dom
+      /**
+       * @returns {Store.IPage}
+       */
+      get page () {
+        return cache.get(url)
+      },
 
-    }
-
-    ,
-
-    /* -------------------------------------------- */
-    /* REQUEST GETTER                               */
-    /* -------------------------------------------- */
-
-    /**
-     * @return {IPjax.IRequest}
-     */
-    get request () {
-
-      return state.request
-
-    }
-
-    ,
-
-    /* -------------------------------------------- */
-    /* UPDATES                                      */
-    /* -------------------------------------------- */
-
-    update: {
-
-      /* CONFIG ------------------------------------- */
-
-      config: (
-        initial => patch => (
-          state.config = merge(
-            initial,
-            patch
-          )
-        )
-      )(
-        {
-          target: [
-            'main',
-            '#navbar',
-            '[script]'
-          ],
-          method: 'replace',
-          prefetch: true,
-          cache: true,
-          throttle: 0,
-          progress: false,
-          threshold: {
-            intersect: 250,
-            hover: 100
-          }
+      /**
+       * @returns {string}
+       */
+      get snapshot () {
+        if (this.page?.snapshot) {
+          return snapshots.get(this.page.snapshot)
         }
+      },
+
+      /**
+       * @returns {Document}
+       */
+      get target () {
+        return render.parse(this.snapshot)
+      }
+
+    }),
+
+    /**
+     * Map setters
+     */
+    get set () {
+
+      return ({
+
+        /**
+         * @param {string} key
+         * @param {Store.IPage} value
+         */
+        cache: (key, value) => {
+          cache.set(key, value)
+          return value
+        },
+
+        /**
+         * @param {string} key
+         * @param {string} value
+         */
+        snapshots: (key, value) => {
+          snapshots.set(key, value)
+          return key
+        }
+
+      })
+
+    },
+
+    /**
+     * Map Deletions
+     */
+    get delete () {
+
+      return ({
+
+        /**
+         * @param {string} url
+         */
+        cache: url => cache.delete(url),
+
+        /**
+         * @param {string} id
+         */
+        snapshots: id => snapshots.delete(id)
+
+      })
+
+    },
+
+    /**
+     * Check if cache record exists with snapshot
+     *
+     * @param {string} url
+     * @param {{snapshot?: boolean}} has
+     * @return {boolean}
+     */
+    has: (url, has = { snapshot: false }) => (
+
+      !has.snapshot ? cache.has(url) : (
+        cache.has(url) || snapshots.has(cache.get(url)?.snapshot)
       )
 
-      ,
+    ),
 
-      /* PAGE --------------------------------------- */
+    /**
+     * Update current pushState History
+     *
+     * @param {string} url
+     * @returns {string}
+     */
+    history: () => {
 
-      page: (
-        initial => patch => (
-          state.page = merge(
-            state.page || initial,
-            {
-              ...patch,
-              action: {
-                append: null,
-                prepend: null
-              }
-            }
-          )
-        )
-      )(
-        {
-          url: '',
-          snapshot: '',
-          target: [],
-          chunks: Object.create(null),
-          method: 'replace',
-          prefetch: 'intersect',
-          action: {
-            prepend: null,
-            append: null
-          },
-          cache: null,
-          progress: false,
-          reload: false,
-          throttle: 0,
-          location: {
-            protocol: '',
-            origin: '',
-            hostname: '',
-            href: '',
-            pathname: '',
-            search: ''
-          },
-          position: {
-            x: 0,
-            y: 0
-          }
-        }
-      )
+      history.replace(history.location, {
+        ...history.location.state,
+        position: scroll.position
+      })
 
-      ,
+      // @ts-ignore
+      return history.location.state.url
 
-      /* DOM ---------------------------------------- */
+    },
 
-      dom: (
-        initial => patch => (
-          state.dom = merge(
-            state.dom || initial,
-            { ...patch, tracked: initial.tracked }
-          )
-        )
-      )(
-        {
-          tracked: new Set(),
-          head: Object.create(null)
-        }
-      )
+    /**
+     * Updates page state, this function will run a merge
+     * on the current page instance and re-assign the `pageState`
+     * letting to updated config.
+     *
+     * If newState contains a different `ILocation.url` value from
+     * that of the current page instance `url` then it will be updated
+     * to match that of the `newState.url` value.
+     *
+     * The cache will e updated accordingly, so `this.page` will provide
+     * access to the updated instance.
+     *
+     * @param {Store.IPage} state
+     * @returns {Store.IPage}
+     */
+    update: state => (
 
-      ,
+      cache
+        .set(state.url, merge(cache.get(state.url), state))
+        .get(state.url)
 
-      request: (
-        initial => patch => (
-          state.request = merge(
-            state.request || initial,
-            { ...patch, xhr: initial.xhr }
-          )
-        )
-      )(
-        {
-          xhr: new Map(),
-          cache: {
-            weight: '0 B',
-            total: 0,
-            limit: 50000000 // = 50 MB
-          }
-        }
-      )
-    }
+    )
 
   })
 
-)(
-  Object.create(
-    {
-      started: false,
-      cache: new Map()
+})({
+  targets: [ 'body' ],
+  request: {
+    timeout: 30000,
+    poll: 250,
+    async: true,
+    dispatch: 'mousedown'
+  },
+  prefetch: {
+    mouseover: {
+      enable: true,
+      threshold: 100,
+      proximity: 0
+    },
+    intersect: {
+      enable: true
     }
-  )
-)
+  },
+  cache: {
+    enable: true,
+    limit: 25,
+    save: false
+  },
+  progress: {
+    enable: true,
+    threshold: 850,
+    options: {
+      minimum: 0.10,
+      easing: 'ease',
+      speed: 225,
+      trickle: true,
+      trickleSpeed: 225,
+      showSpinner: false
+    }
+  }
+})

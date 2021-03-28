@@ -1,6 +1,17 @@
 {
-  "presets": [["@babel/preset-env"]],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "debug": true
+      }
+    ]
+  ],
   "sourceMaps": true,
   "retainLines": true,
-  "plugins": ["@babel/plugin-syntax-dynamic-import"]
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-syntax-dynamic-import",
+    "@babel/plugin-proposal-class-properties"
+  ]
 }

@@ -1,10 +1,32 @@
-import { isNumber, ActionAttr, ActionParams } from '../constants/regexp'
+import { isNumber } from '../constants/regexp'
 import { Units } from './../constants/common'
+import path from './path'
+import store from './store'
+
+/**
+ * Locted the closest link when click bubbles.
+ *
+ * @exports
+ * @param {EventTarget|MouseEvent} target
+ * @param {string} selector
+ * @return {Element|false}
+ */
+export function getLink (target, selector) {
+
+  if (target instanceof Element) {
+    const element = target.closest(selector)
+    if (element && element.tagName === 'A') return element
+  }
+
+  return false
+
+}
 
 /**
  * Constructs a JSON object from HTML `data-pjax-*` attributes.
  * Attributes are passed in as array items
  *
+ * @exports
  * @param {object} accumulator
  * @param {string} current
  * @param {number} index
@@ -24,7 +46,7 @@ import { Units } from './../constants/common'
  * { string: 'foo', number: 200 }
  *
  */
-export function jsonAttrs (accumulator, current, index, source) {
+export function jsonattrs (accumulator, current, index, source) {
 
   return (index % 2 ? ({
     ...accumulator
@@ -38,11 +60,11 @@ export function jsonAttrs (accumulator, current, index, source) {
 /**
  * Array Chunk function
  *
- * @export
- * @param {number} size
+ * @exports
+ * @param {number} [size=2]
  * @return {(acc: any[], value: string) => any[]}
  */
-export function chunk (size) {
+export function chunk (size = 2) {
 
   return (acc, value) => (!acc.length || acc[acc.length - 1].length === size ? (
     acc.push([ value ])
@@ -53,79 +75,29 @@ export function chunk (size) {
 }
 
 /**
- * Constructs a JSON object from HTML `data-pjax-*` attributes.
- * Attributes are passed in as array items
+ * Dispatches lifecycle events on the document.
  *
- * @param {string} string
- * @return {object}
+ * @exports
+ * @param {Store.IEvents} eventName
+ * @param {Element} target
+ * @return {boolean}
  */
-export function actionAttrs (string) {
+export function targetedEvent (eventName, target) {
 
-  let newString
-  let lastIndex = 0
+  // create and dispatch the event
+  const newEvent = new CustomEvent(eventName, { cancelable: true })
 
-  /**
-   * @param {object} acc
-   * @param {string} value
-   * @returns
-   */
-  const actions = (acc, value) => {
-    lastIndex = string.indexOf(')', lastIndex) + 1
-    newString = string.substring(string.indexOf(value) + value.length, lastIndex)
-    return {
-      ...acc,
-      [value]: newString.match(ActionParams).reduce(chunk(2), [])
-    }
-  }
+  return target.dispatchEvent(newEvent)
 
-  return string
-    .match(ActionAttr)
-    .reduce(actions, {})
-
-}
-
-/**
- * Unqiue Identifier code for cached state
- *
- * NOT IN USE
- *
- * @returns {string}
- */
-export function uuid () {
-
-  return Array.apply(
-    null
-    , { length: 36 }
-  ).map((
-    _
-    , index
-  ) => (
-    (index === 8 || index === 13 || index === 18 || index === 23) ? (
-      '-'
-    ) : index === 14 ? (
-      '4'
-    ) : index === 19 ? (
-      (Math.floor(Math.random() * 4) + 8).toString(16)
-    ) : (
-      Math.floor(Math.random() * 15).toString(16)
-    )
-  )).join('')
 }
 
 /**
  * Dispatches lifecycle events on the document.
  *
- * @export
- *
- * @param {IPjax.IEvents} eventName
- * The event name to be created
- *
+ * @exports
+ * @param {Store.IEvents} eventName
  * @param {object} detail
- * Details to be passed to event dispatch
- *
  * @param {boolean} cancelable
- * Whether the event can be cancelled via `preventDefault()`
- *
  * @return {boolean}
  */
 export function dispatchEvent (eventName, detail, cancelable = false) {
@@ -140,7 +112,9 @@ export function dispatchEvent (eventName, detail, cancelable = false) {
 /**
  * Returns the byte size of a string value
  *
+ * @exports
  * @param {string} string
+ * @returns {number}
  */
 export function byteSize (string) {
 
@@ -148,10 +122,37 @@ export function byteSize (string) {
 }
 
 /**
+ * Link is not cached and can be fetched
+ *
+ * @exports
+ * @param {Element} target
+ * @returns {boolean}
+ */
+export function canFetch (target) {
+
+  return !store.has(path.get(target).url, { snapshot: true })
+}
+
+/**
+ * Returns a list of link elements to be prefetched. Filters out
+ * any links which exist in cache to prevent extrenous transit.
+ *
+ * @exports
+ * @param {string} selector
+ * @returns {Element[]}
+ */
+export function getTargets (selector) {
+
+  return [ ...document.body.querySelectorAll(selector) ].filter(canFetch)
+}
+
+/**
  * Converts byte size to killobyte, megabyre,
  * gigabyte or terrabyte
  *
+ * @exports
  * @param {number} bytes
+ * @returns {string}
  */
 export function byteConvert (bytes) {
 
@@ -167,38 +168,16 @@ export function byteConvert (bytes) {
 }
 
 /**
- * Async Timeout
- *
- * @param {function} callback
- * @param {number} ms
- */
-export function asyncTimeout (callback, ms = 0) {
-
-  return new Promise(
-    resolve => setTimeout(() => {
-      const response = callback()
-      return resolve(response)
-    }, ms)
-  )
-}
-
-/**
  * Each iterator helper function. Provides a util function
  * for loop iterations
  *
- *
+ * @exports
  * @param {any} list
- * An array list of items to iterate over
- *
- * @param {(item: Element | any, index?: number) => any} fn
- * Callback function to be executed for each iteration
- *
+ * @param {(item: Element | any, index?: number) => any} fn *
  * @param {{index?: boolean  }} [index=flase]
- *
  * @return {void}
  */
 export function forEach (list, fn, { index = false } = {}) {
-
   let i = list.length - 1
   for (; i >= 0; i--) index ? fn(list[i], i) : fn(list[i])
 }
@@ -206,12 +185,10 @@ export function forEach (list, fn, { index = false } = {}) {
 /**
  * Get Element attributes
  *
+ * @exports
  * @param {Element} element
- * The element to parse for attributes
- *
  * @param {string[]} exclude
- * List of attributes to be excluded
- *
+ * @returns {[name:string, value: string][]}
  */
 export function getElementAttrs ({ attributes }, exclude = []) {
 
@@ -227,22 +204,4 @@ export function getElementAttrs ({ attributes }, exclude = []) {
       [ name, value ]
     ]
   ) : accumulator, [])
-}
-
-/**
- * Each Selector
- *
- * @param {Document} document
- * The document Element
- *
- * @param {string} query
- * The element selector
- *
- * @param {(element: Element) => void} callback
- * The callback function
- */
-export function eachSelector ({ body }, query, callback) {
-
-  return [].slice.call(body.querySelectorAll(query)).forEach(callback)
-
 }
