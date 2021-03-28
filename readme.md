@@ -582,23 +582,24 @@ interface IPage {
 }
 ```
 
-## Development
+## Contributing
 
-This module is written in ES2020 format JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. We love TS but we prefer to write pure JavaScript. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available. The project is well commented and implements a closure IIFE style programming pattern.
-
-### Contributing
+This module is written in ES2020 format JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available.
 
 This module is consumed by us for a couple of our projects, we will update it according to what we need. Feel free to suggest features or report bugs, PR's are welcome too!
 
 ## Acknowledgements
 
-The module combined concepts originally introduced by other awesome Open Source projects:
+This module combines concepts originally introduced by other awesome Open Source projects and owes its creation and overall approach to those originally creators:
 
 - [Defunkt Pjax](https://github.com/defunkt/jquery-pjax)
+- [Pjax.js](https://github.com/brcontainer/pjax.js)
+- [MoOx Pjax](https://github.com/MoOx/pjax)
 - [InstantClick](https://github.com/dieulot/instantclick)
 - [Turbo](https://github.com/hotwired/turbo)
+- [Turbolinks](https://github.com/turbolinks/turbolinks)
 
-### Licence
+## Licence
 
 Licensed under [MIT](#LICENCE)
 
