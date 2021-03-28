@@ -451,13 +451,6 @@ interface IPage {
   snapshot?: string;
 
   /**
-   * UUID to a captured snapshot HTML string. Captures are temporary
-   * snapshots used to preserve the document when navigating between history
-   * popstate. Captured snapshots are removed upon subsequent visits to location.
-   */
-  captured?: string;
-
-  /**
    * Location URL
    */
   location?: ILocation;
@@ -471,15 +464,6 @@ interface IPage {
    * Should this fetch be pushed to history
    */
   history?: boolean;
-
-  /**
-   * Whether page should execute capture. When set to `true`
-   * the snapshot reference is created and its UUID value assigned
-   * to the `captured` property value.
-   *
-   * @default false
-   */
-  capture?: boolean;
 
   /**
    * List of fragment element selectors. Accepts any valid
