@@ -1,5 +1,3 @@
-import store from '../app/store'
-
 /**
  * Scroll position handler
  *
@@ -41,7 +39,11 @@ export default (function (connected) {
 
   return {
 
+    /* EXPORTS ------------------------------------ */
+
     reset,
+
+    /* GETTERS ------------------------------------ */
 
     /**
      * Returns to current scroll position, the `reset()`
@@ -54,28 +56,15 @@ export default (function (connected) {
     get position () { return position },
 
     /**
-     * Sets scroll position to the cache reference and
-     * returns a reset position.
+     * Returns a faux scroll position. This prevents the
+     * tracked scroll position from being overwritten and is
+     * used within functions like `href.attrparse`
      *
-     * This function is called before a new page visit
-     * navigation begins, as it will assert the current
-     * position to the current page and return the reset
-     * position, ie: `{x: 0, y: 0 }`) to new page visit.
-     *
-     *
-     * @exports
-     * @param {string} url
      * @returns {Store.IPosition}
      */
-    set (url) {
+    get y0x0 () { return { x: 0, y: 0 } },
 
-      // We assert current position here
-
-      if (store.has(url)) store.get(url).page.position = this.position
-
-      return reset()
-
-    },
+    /* CONTROLS ----------------------------------- */
 
     /**
      * Attached `scroll` event listener.
