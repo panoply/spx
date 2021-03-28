@@ -1,5 +1,5 @@
 import store from './store'
-import { asyncTimeout, byteConvert, byteSize, dispatchEvent } from './utils'
+import { byteConvert, byteSize, dispatchEvent } from './utils'
 import { progress } from './progress'
 
 /**
@@ -20,6 +20,11 @@ export default (function () {
   let storage = 0
 
   /**
+   * @type {boolean}
+   */
+  let showprogress = false
+
+  /**
    * XHR Requests
    *
    * @type {Map<string, XMLHttpRequest>}
@@ -27,26 +32,36 @@ export default (function () {
   const transit = new Map()
 
   /**
+   * Async Timeout
+   *
+   * @param {function} callback
+   * @param {number} ms
+   * @returns {Promise<boolean>}
+   */
+  const asyncTimeout = (callback, ms = 0) => {
+    return new Promise(resolve => setTimeout(() => {
+      const fn = callback()
+      resolve(fn)
+    }, ms))
+  }
+
+  /**
    * Executes on request end. Removes the XHR recrod and update
    * the response DOMString cache size record.
    *
-   * @exports
    * @param {string} url
    * @param {string} DOMString
-   * @returns {boolean}
    */
   const HttpRequestEnd = (url, DOMString) => {
 
+    transit.delete(url)
     storage = storage + byteSize(DOMString)
-
-    return transit.delete(url)
 
   }
 
   /**
    * Fetch XHR Request wrapper function
    *
-   * @exports
    * @param {string} url
    * @returns {Promise<string>}
    */
@@ -72,6 +87,7 @@ export default (function () {
       xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText)
       xhr.onerror = reject
       xhr.timeout = store.config.request.timeout
+      xhr.responseType = 'text'
 
       // SEND
       //
@@ -117,18 +133,22 @@ export default (function () {
    */
   const inFlight = async (url) => {
 
-    if (transit.has(url) && ratelimit <= store.config.request.poll) {
-      // console.log('Request in flight', ratelimit * 25)
+    if (transit.has(url) && ratelimit <= store.config.request.timeout) {
 
-      if ((ratelimit * 10) >= store.config.progress.threshold) progress.start()
+      if (!showprogress && (ratelimit * 10) === store.config.progress.threshold) {
+        progress.start()
+        showprogress = true
+      }
 
       return asyncTimeout(() => {
         ratelimit++
         return inFlight(url)
-      }, 10)
+      }, 1)
+
     }
 
     ratelimit = 0
+    showprogress = false
 
     return !transit.has(url)
 
@@ -175,10 +195,15 @@ export default (function () {
   }
 
   return {
-    get,
-    inFlight,
-    cancel,
-    transit,
+
+    /* EXPORTS ------------------------------------ */
+
+    get
+    , cancel
+    , transit
+    , inFlight
+
+    /* GETTERS ------------------------------------ */
 
     /**
      * Returns request cache metrics
@@ -186,7 +211,7 @@ export default (function () {
      * @exports
      * @returns {Store.ICacheSize}
      */
-    get cacheSize () {
+    , get cacheSize () {
 
       return {
         total: storage,
