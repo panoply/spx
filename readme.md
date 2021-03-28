@@ -1,6 +1,12 @@
 ## @brixtol/pjax
 
-A blazing fast, lightweight (5kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. Supports multiple fragment replacements, appends and prepends, pre-fetching capabilities via mouse, pointer, touch and intersection event and snapshot caching which prevent subsequent requests for occurring resulting in instantaneous navigation.
+A blazing fast, lightweight (5kb gzipped), feature full drop-in next generation pjax solution for SSR web applications. Supports multiple fragment replacements, appends and prepends. Pre-fetching capabilities via mouse, pointer, touch and intersection events and snapshot caching which prevent subsequent requests for occurring that results in instantaneous navigation.
+
+**Note:** _This is still in beta stage, use it with care, expect some changes to be shipped before official release._
+
+### Example
+
+We are using this module live on our [webshop](https://brixtoltextiles.com).
 
 ## Install
 
@@ -8,11 +14,11 @@ A blazing fast, lightweight (5kb gzipped), feature full drop-in new generation p
 pnpm i @brixtol/pjax
 ```
 
-> Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit.
+> _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
 
 ## Usage
 
-To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default Pjax will replace the entire `<body>` fragments upon each navigation, so it is recommended that you define a set of `targets[]` whose inner contents will change on per-page basis.
+To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default Pjax will replace the entire `<body>` fragment upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis.
 
 <!-- prettier-ignore -->
 ```js
@@ -25,8 +31,7 @@ Pjax.connect({
     limit: 25,
   },
   requests: {
-    timeout: 1500,
-    poll: 150,
+    timeout: 30000,
     async: true,
   },
   prefetch: {
@@ -61,7 +66,7 @@ Pjax.connect({
 
 ## Lifecycle Events
 
-Lifecycle events are dispatched to the document upon each navigation. You access context information from within `event.detail` and also cancel events with `preventDefault()` if you wish to prevent execution.
+Lifecycle events are dispatched to the document upon each navigation. You can access context information from within `event.detail` or cancel events with `preventDefault()` and prevent execution.
 
 <!-- prettier-ignore -->
 ```javascript
@@ -87,7 +92,7 @@ document.addEventListener("pjax:load");
 
 ## Methods
 
-In addition to Lifecycle events, a list of methods are available. Methods will allow you some basic programmatic control.
+In addition to Lifecycle events, a list of methods are available. Methods will allow you some basic programmatic control of the Pjax session.
 
 ```javascript
 
@@ -119,7 +124,11 @@ Pjax.disconnect(): void
 
 ## Attributes
 
-#### `data-pjax-eval="false"`
+Link elements can be annotated with `data-pjax` attributes. You can control how pages are rendered by passing the below attributes on `<a>` nodes.
+
+<br>
+<strong>`data-pjax-eval="false"`</strong>
+<br>
 
 Used on resources contained within `<head>` fragment like styles and scripts. Use this attribute if you want pjax the evaluate scripts and/or stylesheets. This option accepts a `false` value so you can define which scripts to execute on each navigation. By default, pjax will run and evaluate all `<script>` tags it detects for every page visit but will not re-evaluate `<script src="*"></script>` tags.
 
@@ -143,7 +152,7 @@ Example
 
 </details>
 
-#### `data-pjax-disable`
+##### data-pjax-disable
 
 Place on `href` elements you don't want pjax navigation to be executed. When a link element is annotated with `data-pjax-disable` a normal page navigation will be executed and cache will be cleared.
 
@@ -160,7 +169,7 @@ Clicking this link will clear cache and a normal page navigation will be execute
 
 </details>
 
-#### `data-pjax-track`
+##### data-pjax-track
 
 Place on elements to track on a per-page basis that might otherwise not be contained within target elements.
 
@@ -171,7 +180,7 @@ Example
 
 Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped which are not contained within `#main`. Element located outside of target/s that do no exist on previous or future pages will be added.
 
-###### Page 1
+**Page 1**
 
 ```html
 <nav>
@@ -184,7 +193,7 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 </div>
 ```
 
-###### Page 2
+**Page 2**
 
 ```html
 <nav>
@@ -209,11 +218,9 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 
 </details>
 
-#### `data-pjax-replace="([])"`
+##### data-pjax-replace
 
 Executes a replacement of defined targets, where each target defined in the array is replaced.
-
-###### VALUE ATTRIBUTE
 
 - `(['target'])`
 - `(['target' , 'target'])`
@@ -244,11 +251,9 @@ Example
 
 </details>
 
-#### `data-pjax-prepend="([])"`
+##### data-pjax-prepend
 
 Executes a prepend visit, where `[0]` will prepend itself to `[1]` defined in that value. Multiple prepend actions can be defined. Each prepend action is recorded are marked.
-
-###### VALUE EXPRESSION
 
 - `(['target' , 'target'])`
 - `(['target' , 'target'], ['target' , 'target'])`
@@ -258,7 +263,7 @@ Executes a prepend visit, where `[0]` will prepend itself to `[1]` defined in th
 Example
 </summary>
 
-###### PAGE 1
+**PAGE 1**
 
 <!-- prettier-ignore -->
 ```html
@@ -279,7 +284,7 @@ Example
 
 ```
 
-###### PAGE 2
+**PAGE 2**
 
 <!-- prettier-ignore -->
 ```html
@@ -305,7 +310,7 @@ Example
 
 </details>
 
-#### `data-pjax-prefetch="*"`
+##### data-pjax-prefetch
 
 Prefetch option to execute. Accepts either `intersect` or `hover` value. When `intersect` is provided a request will be dispatched and cached upon visibility via Intersection Observer, whereas `hover` will dispatch a request upon a pointerover (mouseover) event.
 
@@ -326,7 +331,7 @@ Example
 
 </details>
 
-#### `data-pjax-threshold="*"`
+##### data-pjax-threshold
 
 Set the threshold delay timeout for hover prefetches. By default, this will be set to `100` or whatever preset configuration was defined in `Pjax.connect()` but you can override those settings by annotating the link with this attribute.
 
@@ -346,14 +351,9 @@ Example
 
 </details>
 
-#### `data-pjax-position="*"`
+##### data-pjax-position
 
 Scroll position of the next navigation. Space separated expression with colon separated prop and value.
-
-###### VALUE EXPRESSION
-
-- `x:0 y:100`
-- `y:200`
 
 <details>
 <summary>
@@ -368,7 +368,7 @@ Example
 
 </details>
 
-#### `data-pjax-cache="*"`
+##### data-pjax-cache
 
 Controls the caching engine for the link navigation. Accepts `false`, `reset` or `clear` value. Passing in `false` will execute a pjax visit that will not be saved to cache and if the link exists in cache it will be removed. When passing `reset` the cache record will be removed, a new pjax visit will be executed and its result saved to cache. The `clear` option will clear the entire cache.
 
@@ -383,7 +383,7 @@ Example
 
 </details>
 
-#### `data-pjax-history="*"`
+##### data-pjax-history
 
 Controls the history pushstate for the navigation. Accepts `false`, `replace` or `push` value. Passing in `false`will prevent this navigation from being added to history. Passing in `replace` or `push` will execute its respective value to pushstate to history.
 
@@ -399,7 +399,7 @@ Example
 
 </details>
 
-#### `data-pjax-progress="*"`
+##### data-pjax-progress
 
 Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of `false` will disable the progress from showing.
 
@@ -417,17 +417,17 @@ Example
 
 ## State
 
-Each page has an object state value that is added to its pertaining History stack. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` value encountered in the navigation session.
+Each page has an object state value. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` value encountered throughout a pjax navigation session. The state value of each page is added to its pertaining History stack record.
 
 > Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes.
 
 #### Read
 
-You can access a readonly copy of page state via the `event.details.state` property within dispatched lifecycle events or via the `Pjax.cache()` method. The caching engine used by this Pjax variation acts as mediator when a session begins, when you access page state via the `Pjax.cache()` method you are given a bridge to the Map object where all the active current session page state exists.
+You can access a readonly copy of page state via the `event.details.state` property within dispatched lifecycle events or via the `Pjax.cache()` method. The caching engine used by this Pjax variation acts as mediator when a session begins, so when you access page state via the `Pjax.cache()` method you are given a bridge to the Map object of all active sessions cache data.
 
 #### Write
 
-State modifications are carried out via link attributes or when executing a programmatic visit using the `Pjax.visit()` method which provides an `options` parameter where you can send adjustments to be merged. This method will only allow you to modify the next navigation. You should avoid modifying state and instead treat it as readonly.
+State modifications are carried out via link attributes or when executing a programmatic visit using the `Pjax.visit()` method. The visit method provides an `options` parameter for adjustments to be merged, please note that this method will only allow you to modify the next navigation. Generally speaking, you should avoid modifying state outside of the available methods, instead treat it as readonly.
 
 ```typescript
 interface IPage {
@@ -449,11 +449,6 @@ interface IPage {
    * UUID reference to the page snapshot HTML Document element
    */
   snapshot?: string;
-
-  /**
-   * Location URL
-   */
-  location?: ILocation;
 
   /**
    * The Document title
@@ -498,19 +493,6 @@ interface IPage {
   cache?: boolean | "reset" | "clear";
 
   /**
-   * Scroll position of the next navigation.
-   *
-   * ---
-   * `x` - Equivalent to `scrollLeft` in pixels
-   *
-   * `y` - Equivalent to `scrollTop` in pixels
-   */
-  position?: {
-    y: number;
-    x: number;
-  };
-
-  /**
    * Define mouseover timeout from which fetching will begin
    * after time spent on mouseover
    *
@@ -532,17 +514,94 @@ interface IPage {
    * @default 350
    */
   progress?: boolean | number;
+
+  /**
+   * Scroll position of the next navigation.
+   *
+   * ---
+   * `x` - Equivalent to `scrollLeft` in pixels
+   *
+   * `y` - Equivalent to `scrollTop` in pixels
+   */
+  position?: {
+    y: number;
+    x: number;
+  };
+
+  /**
+   * Location URL
+   */
+  location?: {
+    /**
+     * The URL origin name
+     *
+     * @example
+     * 'https://website.com'
+     */
+    origin?: string;
+    /**
+     * The URL Hostname
+     *
+     * @example
+     * 'website.com'
+     */
+    hostname?: string;
+
+    /**
+     * The URL Pathname
+     *
+     * @example
+     * '/pathname' OR '/pathname/foo/bar'
+     */
+    pathname?: string;
+
+    /**
+     * The URL search params
+     *
+     * @example
+     * '?param=foo&bar=baz'
+     */
+    search?: string;
+
+    /**
+     * The URL Hash
+     *
+     * @example
+     * '#foo'
+     */
+    hash?: string;
+
+    /**
+     * The previous page path URL, this is also the cache identifier
+     *
+     * @example
+     * '/pathname' OR '/pathname?foo=bar'
+     */
+    lastpath?: string;
+  };
 }
 ```
 
 ## Development
 
-This module is written in ES2020 format JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. This project leverages JSDocs and Type Definition files for its typechecking. If you have an editor that supports IntelliSense features, all TS features are available using this method.
+This module is written in ES2020 format JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. We love TS but we prefer to write pure JavaScript. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available. The project is well commented and implements a closure IIFE style programming pattern.
 
 ### Contributing
 
-Generally speaking, this module is consumed by us for a couple of our projects, we will update it according to what we need it for. If you wish to contribute, have a feature suggestion or bug, PR's are welcome!
+This module is consumed by us for a couple of our projects, we will update it according to what we need. Feel free to suggest features or report bugs, PR's are welcome too!
+
+## Acknowledgements
+
+The module combined concepts originally introduced by other awesome Open Source projects:
+
+- [Defunkt Pjax](https://github.com/defunkt/jquery-pjax)
+- [InstantClick](https://github.com/dieulot/instantclick)
+- [Turbo](https://github.com/hotwired/turbo)
 
 ### Licence
 
-[MIT](LICENCE)
+Licensed under [MIT](#LICENCE)
+
+---
+
+We [♡](https://www.brixtoltextiles.com/discount/4D3V3L0P3RS]) open source!
