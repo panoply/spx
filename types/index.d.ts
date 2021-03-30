@@ -12,6 +12,8 @@ declare module "@brixtol/pjax" {
   export function connect(options?: IPresets): IPage;
 
   /**
+   * **NOT YET AVAILABLE**
+   *
    * Fetches state page by url. Pass `false` to clear cache
    */
   export function cache(ref?: string | false): IPage;
@@ -23,6 +25,8 @@ declare module "@brixtol/pjax" {
   export function clear(url?: string): IPage;
 
   /**
+   * **NOT YET AVAILABLE**
+   *
    * Reloads the current page
    */
   export function reload(): void;
@@ -31,12 +35,6 @@ declare module "@brixtol/pjax" {
    * Shortcut helper function for generating a UUID using nanoid.
    */
   export function uuid(size?: string): string;
-
-  /**
-   * Captures current `<body>` element and upon next history visit
-   * will use the capture as replacement.
-   */
-  export function capture(url: string): string;
 
   /**
    * Programmatic visit to location
