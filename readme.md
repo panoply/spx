@@ -81,7 +81,7 @@ Example
 The first thing we want to do is make a connection with Pjax. In your JavaScript bundle, we need to initialize. Our example web application has 3 pages, the home page, about page and contact page. We are going to instruct pjax to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-pjax` attributes to replace an additional fragment when we navigate to the contact page.
 
 <br>
-**JavaScript Bundle**
+<strong>JavaScript Bundle</strong>
 <br>
 
 <!-- prettier-ignore -->
@@ -102,6 +102,7 @@ export default () => {
 ```
 
 **Home Page**
+
 <br>
 Below we have a very basic Home Page with pjax wired up and all `<a>` elements will be intercepted and cached. SSR web application (in most cases) will only ever have a couple of fragments that change between navigation, so keeping to that logic lets begin..
 
@@ -470,15 +471,15 @@ Example
 
 <a
  href="*"
- data-pjax-replace="(['target1', 'target2'])">
+ data-pjax-replace="(['#target1', '#target2'])">
  Link
 </a>
 
-<div data-pjax-target="target1">
+<div id="target1">
   I will be replaced on next navigation
 </div>
 
-<div data-pjax-target="target2">
+<div id="target2">
   I will be replaced on next navigation
 </div>
 
@@ -505,15 +506,15 @@ Example
 
 <a
  href="*"
- data-pjax-prepend="(['target-1', 'target-2'])">
+ data-pjax-prepend="(['#target-1', '#target-2'])">
  Page 2
 </a>
 
-<div data-pjax-target="target-1">
+<div id="target-1">
   I will prepend to target-2 on next navigation
 </div>
 
-<div data-pjax-target="target-2">
+<div id="target-2">
   <p>target-1 will prepended to me on next navigation</p>
 </div>
 
@@ -526,11 +527,11 @@ Example
 
 <a
  href="*"
- data-pjax-prepend="(['target-1', 'target-2'])">
+ data-pjax-prepend="(['#target-1', '#target-2'])">
  Page 2
 </a>
 
-<div data-pjax-target="target-2">
+<div id="target-2">
 
   <!-- An action reference record is applied -->
   <div data-pjax-action="xxxxxxx">
@@ -581,7 +582,10 @@ Example
 <a data-pjax-prefetch="hover" href="*"></a>
 
 <!-- prefetch will begin 500ms after hover but will cancel if mouse existed before threshold -->
-<a data-pjax-prefetch="intersect" data-pjax-threshold="500" href="*"></a>
+<a data-pjax-prefetch="hover" data-pjax-threshold="500" href="*"></a>
+
+<!-- Prefetch will begin once this link becomes visible in viewport -->
+<a data-pjax-prefetch="intersect" href="*"></a>
 ```
 
 </details>
