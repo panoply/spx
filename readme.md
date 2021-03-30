@@ -1,12 +1,16 @@
-> _This is still in beta stages, use it with care and expect some changes to be shipped before official release. Tests are still being worked on and will be pushed at v1, sit tight._
+> _This is still in beta stages, use it with care and expect some changes to be shipped before official release. Tests are still being worked on and will be pushed at official v1, sit tight._
 
 ## @brixtol/pjax
 
-A blazing fast, lightweight (8kb gzipped), feature full drop-in next generation pjax solution for SSR web applications. Supports multiple fragment replacements, appends and prepends. Pre-fetching capabilities via mouse, pointer, touch and intersection events and snapshot caching which prevent subsequent requests for occurring that results in instantaneous navigation.
+A blazing fast, lightweight (8kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
 
-##### Example
+##### Demo
 
 We are using this module live on our [webshop](https://brixtoltextiles.com).
+
+### Why?
+
+The landscape of pjax based solution has become rather scarce. The current bread winners either offer the same thing or for our use cases were vastly over engineered. We wanted to couple together various techniques we found to be the most effective in enhancing the performance of SSR rendered web application.
 
 ## Install
 
@@ -18,14 +22,16 @@ pnpm i @brixtol/pjax
 
 ## Usage
 
-To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default Pjax will replace the entire `<body>` fragment upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis.
+To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default, Pjax will replace the entire `<body>` fragment upon each navigation, so you should define a set of `targets[]` whose inner contents change on a per-page basis.
+
+> The typings provided in this package will describe each option in good detail
 
 <!-- prettier-ignore -->
 ```js
 import * as Pjax from "@brixtol/pjax";
 
 Pjax.connect({
-  targets: ["body"],
+  targets: ["body"], // Define fragments to be replaced here!
   cache: {
     enable: true,
     limit: 25,
@@ -38,7 +44,6 @@ Pjax.connect({
     mouseover: {
       enable: true,
       threshold: 100,
-      proximity: 0,
     },
     intersect: {
       enable: true,
@@ -63,6 +68,238 @@ Pjax.connect({
 });
 
 ```
+
+#### Real World
+
+Below is a real world example you can use to better understand how this module works so you can apply it into your web application. We are working on providing a live demonstration for more advanced use cases, but the below example should give you a good understanding and help you in understanding how to leverage the module.
+
+<details>
+<summary>
+Example
+</summary>
+
+The first thing we want to do is make a connection with Pjax. In your JavaScript bundle, we need to initialize. Our example web application has 3 pages, the home page, about page and contact page. We are going to instruct pjax to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-pjax` attributes to replace an additional fragment when we navigate to the contact page.
+
+<br>
+**JavaScript Bundle**
+<br>
+
+<!-- prettier-ignore -->
+```javascript
+import * as Pjax from "@brixtol/pjax";
+
+export default () => {
+
+  Pjax.connect({
+    targets: [
+      "nav",
+      "main"
+    ],
+  })
+
+}
+
+```
+
+**Home Page**
+<br>
+Below we have a very basic Home Page with pjax wired up and all `<a>` elements will be intercepted and cached. SSR web application (in most cases) will only ever have a couple of fragments that change between navigation, so keeping to that logic lets begin..
+
+<!-- prettier-ignore -->
+```html
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <script src="/bundle.js"></script>
+  </head>
+  <body>
+
+    <header>
+
+      <h1>@brixtol/pjax</h1>
+
+      <!-- THIS FRAGMENT WILL BE REPLACED -->
+      <nav>
+
+        <!-- This link will be intercepted -->
+        <a
+         href="/home"
+         class="active">Home</a>
+
+        <!-- These links will be pe-fetched on hover -->
+        <a
+         href="/about"
+         data-pjax-prefetch="hover">About</a>
+
+        <!-- This link will replace the #foo fragment -->
+        <a
+         href="/contact"
+         data-pjax-replace="(['#foo'])"
+         data-pjax-prefetch="hover">Faq</a>
+      </nav>
+
+    </header>
+
+    <!-- THIS FRAGMENT WILL BE REPLACED -->
+    <main>
+
+      <h1>Welcome to the home page</h1>
+
+      <div class="container">
+        Brixtol Textiles is a Swedish apparel brand!
+      </div>
+
+    </main>
+
+    <div id="foo">
+      This fragment will not be touched until /contact is clicked
+    </div>
+
+    <footer>
+      This will not be touched during navigation
+    </footer>
+
+  </body>
+</html>
+
+```
+
+**About Page**
+<br>
+The about page in our web application would look practically identical to the home page. We instructed pjax to pre-fetch this page upon hover, so navigating to this page will be instantaneous. The about page only has some minor differences, but for the sake of clarity, lets have look:
+
+<!-- prettier-ignore -->
+```html
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>About Page</title>
+    <script src="/bundle.js"></script>
+  </head>
+  <body>
+
+    <header>
+
+      <h1>@brixtol/pjax</h1>
+
+      <!-- THIS FRAGMENT WILL BE REPLACED -->
+      <nav>
+
+        <!-- This link will be intercepted -->
+        <a
+         href="/home">Home</a>
+
+        <!-- These links will be pe-fetched on hover -->
+        <a
+         href="/about"
+         class="active"
+         data-pjax-prefetch="hover">About</a>
+
+        <!-- This link will replace the #foo fragment -->
+        <a
+         href="/contact"
+         data-pjax-replace="(['#foo'])"
+         data-pjax-prefetch="hover">Contact</a>
+      </nav>
+
+    </header>
+
+    <!-- THIS FRAGMENT WILL BE REPLACED -->
+    <main>
+
+      <h1>Welcome to the About Page</h1>
+
+      <div class="container">
+        Brixtol Textiles makes jackets out of recycled PET bottles.
+        <p>Producing clothing in a sustainable way is the future!</p>
+      </div>
+
+    </main>
+
+    <div id="foo">
+      This fragment will not be touched until /contact is clicked
+    </div>
+
+    <footer>
+      This will not be touched during navigation
+    </footer>
+
+  </body>
+</html>
+```
+
+**Contact Page**
+<br>
+The contact page will replace an additional fragment with the id value of `foo` which we instructed via attribute annotation. When the contact page link is hovered the page will be saved to cache, upon visit the `<nav>`, `<main>` and `<div id="foo">` fragments will be replaced.
+
+<!-- prettier-ignore -->
+```html
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Contact Page</title>
+    <script src="/bundle.js"></script>
+  </head>
+  <body>
+
+    <header>
+
+      <h1>@brixtol/pjax</h1>
+
+      <!-- THIS FRAGMENT WILL BE REPLACED -->
+      <nav>
+
+        <!-- This link will be intercepted -->
+        <a
+         href="/home">Home</a>
+
+        <!-- These links will be pe-fetched on hover -->
+        <a
+         href="/about"
+         data-pjax-prefetch="hover">About</a>
+
+        <!-- This link will replace the #foo fragment -->
+        <a
+         href="/contact"
+         class="active"
+         data-pjax-replace="(['#foo'])"
+         data-pjax-prefetch="hover">Contact</a>
+      </nav>
+
+    </header>
+
+    <!-- THIS FRAGMENT WILL BE REPLACED -->
+    <main>
+
+      <h1>Welcome to the Contact Page</h1>
+
+      <div class="container">
+        This is contact page of our example! The below fragment was replaced too!
+      </div>
+
+    </main>
+
+    <!-- THIS FRAGMENT WAS REPLACE VIA ATTRIBUTE INSTRUCTION -->
+    <div id="foo">
+      This fragment was replaced!
+    </div>
+
+    <footer>
+      This will not be touched during navigation
+    </footer>
+
+  </body>
+</html>
+```
+
+</details>
 
 ## Lifecycle Events
 
@@ -92,7 +329,7 @@ document.addEventListener("pjax:load");
 
 ## Methods
 
-In addition to Lifecycle events, a list of methods are available. Methods will allow you some basic programmatic control of the Pjax session.
+In addition to Lifecycle events, a list of methods are available. Methods will allow you some basic programmatic control of a Pjax session.
 
 ```javascript
 
@@ -415,7 +652,7 @@ Example
 
 ## State
 
-Each page has an object state value. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` value encountered throughout a pjax navigation session. The state value of each page is added to its pertaining History stack record.
+Each page has an object state value. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` value encountered throughout a pjax session. The state value of each page is added to its pertaining History stack record.
 
 > Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes.
 
@@ -582,9 +819,9 @@ interface IPage {
 
 ## Contributing
 
-This module is written in ES2020 format JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available.
+This module is written in ES2020 JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available.
 
-This module is consumed by us for a couple of our projects, we will update it according to what we need. Feel free to suggest features or report bugs, PR's are welcome too!
+This module is consumed by us for a couple of our projects and has been open sourced but exists as part of a mono/multi repo. We will update it according to what we need. Feel free to suggest features or report bugs, PR's are of course welcome!
 
 ## Acknowledgements
 

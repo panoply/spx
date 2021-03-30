@@ -1,7 +1,6 @@
 import { supportsPointerEvents } from 'detect-it'
 import { dispatchEvent, getLink, chunk } from '../app/utils'
 import { Link } from '../constants/common'
-import * as prefetch from './../app/prefetch'
 import * as regexp from '../constants/regexp'
 import store from '../app/store'
 import path from '../app/path'
@@ -159,7 +158,6 @@ export default (function (connected) {
     event.preventDefault()
     target.removeEventListener('click', click, false)
     render.capture(history.updateState) // PRESERVE CURRENT PAGE
-    prefetch.stop()
 
     return typeof state === 'object'
       ? render.update(state)

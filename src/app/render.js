@@ -150,6 +150,7 @@ export default (function () {
 
     // window.performance.mark('render')
     // console.log(window.performance.measure('time', 'start'))
+    prefetch.stop()
 
     const target = parse(store.snapshot(state.snapshot))
 

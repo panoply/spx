@@ -1,5 +1,4 @@
 import { supportsPointerEvents } from 'detect-it'
-import { eventFrom } from 'event-from'
 import { LinkPrefetchHover } from '../constants/common'
 import { getLink, getTargets, dispatchEvent } from '../app/utils'
 import hrefs from './hrefs'
@@ -127,12 +126,17 @@ export default (function (connected) {
   }
 
   /**
+   * NOT YET IMPLEMENTED
+   *
    * Attempts to visit location, Handles bubbled mousovers and
    * Dispatches to the fetcher. Once item is cached, the mouseover
    * event is removed.
    *
    * @param {MouseEvent} event
    */
+
+  // @ts-ignore
+  // eslint-disable-next-line
   const onMouseMove = event => {
 
     position.x = event.pageX
@@ -141,10 +145,14 @@ export default (function (connected) {
   }
 
   /**
+   * NOT YET IMPLEMENTED
    *
    * @param {Element} target
    * @param {number} index
    */
+
+  // @ts-ignore
+  // eslint-disable-next-line
   const proximity = (target, index) => {
 
     const { top, left } = target.getBoundingClientRect()
