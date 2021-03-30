@@ -1,6 +1,6 @@
 {
   "name": "@brixtol/pjax",
-  "version": "0.1.1-beta.1",
+  "version": "0.1.2-beta.1",
   "private": false,
   "description": "A modern next generation pjax solution for SSR web applications",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
