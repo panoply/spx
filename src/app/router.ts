@@ -3,15 +3,15 @@ export default (function () {
 
   const modules = () => {
 
-  }
+  };
 
   const connect = () => {
 
-  }
+  };
 
   const disconnect = () => {
 
-  }
+  };
 
   return {
 
@@ -19,5 +19,5 @@ export default (function () {
     disconnect,
     modules
 
-  }
-}())
+  };
+}());

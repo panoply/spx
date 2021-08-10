@@ -1,13 +1,7 @@
-import nprogress from 'nprogress'
+import nprogress from 'nprogress';
+import { IProgress } from '../types';
 
-/* -------------------------------------------- */
-/* LETTINGS                                     */
-/* -------------------------------------------- */
-
-/**
- * @type {nprogress.NProgress}
- */
-export let progress = null
+export let progress: nprogress.NProgress;
 
 /* -------------------------------------------- */
 /* FUNCTIONS                                    */
@@ -19,11 +13,11 @@ export let progress = null
  * @export
  * @param {Store.IProgress} options
  */
-export const config = ({ style, options }) => {
+export function config ({ options }: IProgress): void {
 
   progress = nprogress.configure({
     ...options,
     template: '<div class="bar" role="bar"><div class="peg"></div></div>'
-  })
+  });
 
-}
+};
