@@ -2,7 +2,16 @@
 
 ## @brixtol/pjax
 
-A blazing fast, lightweight (8kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
+A blazing fast, lightweight (14kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
+
+### Features
+
+- Simple and painless integration
+- Pre-fetching capabilities
+- Snapshot caching engine
+- Lifecycle event dispatching
+- Routing and Hook strategy
+- Dependency management system
 
 ##### Demo
 
@@ -326,6 +335,9 @@ document.addEventListener("pjax:render");
 
 // called after a page has rendered
 document.addEventListener("pjax:load");
+
+// called when a module is loaded
+document.addEventListener("pjax:module");
 ```
 
 ## Methods
@@ -339,6 +351,9 @@ Pjax.supported: boolean
 
 // Connects Pjax, called upon initialization
 Pjax.connect(options?): void
+
+// Provides routing features
+Pjax.route(routes?): void
 
 // Execute a programmatic visit
 Pjax.visit(url?, options?): Promise<Page{}>
@@ -357,6 +372,47 @@ Pjax.reload(): Page{}
 
 // Disconnects Pjax
 Pjax.disconnect(): void
+
+```
+
+## Routing
+
+Hooks expose 2 lifecycle methods to provide a basic routing strategy for fine grained control over rendering. The `connect` and `disconnect` hooks execute between page visits. The `modules` property provides streamlined access to the powerful [loadjs](https://github.com/muicss/loadjs) dependency management system which allows you to progressively load dependencies on per-route basis.
+
+<!-- prettier-ignore -->
+```javascript
+
+Pjax.route({
+
+  '/:path': {
+
+    modules: ([
+      {
+        id: '',
+        path: [''],
+        async: true,
+        defer: false,
+      }
+    ]),
+
+    connected({
+      dom,
+      targets,
+      tracked,
+      state,
+      location
+    }) {
+
+
+    },
+
+    disconnect() {
+
+    },
+  }
+
+  },
+});
 
 ```
 

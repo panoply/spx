@@ -1,5 +1,5 @@
 import { LinkPrefetchIntersect } from '../constants/common'
-import { getTargets } from '../app/utils'
+import { getTargets, forEach } from '../app/utils'
 import hrefs from './hrefs'
 import path from '../app/path'
 import request from '../app/request'
@@ -43,7 +43,7 @@ export default (function (connect) {
    * @param {Element} target
    * @returns {void}
    */
-  const observe = target => entries.observe(target)
+  // const observe = target => entries.observe(target)
 
   /**
    * Start Intersection Observer and iterate over entries.
@@ -51,7 +51,7 @@ export default (function (connect) {
    * @type {IntersectionObserverCallback}
    * @returns {void}
    */
-  const intersect = entries => entries.forEach(onIntersect)
+  // const intersect = entries => entries.forEach(onIntersect)
 
   return {
 
@@ -67,8 +67,8 @@ export default (function (connect) {
     start: () => {
 
       if (!connect) {
-        entries = new IntersectionObserver(intersect)
-        getTargets(LinkPrefetchIntersect).forEach(observe)
+        entries = new IntersectionObserver(forEach(onIntersect))
+        forEach(target => entries.observe(target))(getTargets(LinkPrefetchIntersect))
         connect = true
       }
 

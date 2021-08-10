@@ -1,11 +1,11 @@
-import { supportsPointerEvents } from 'detect-it'
-import { LinkPrefetchHover } from '../constants/common'
-import { getLink, getTargets, dispatchEvent } from '../app/utils'
-import hrefs from './hrefs'
-import scroll from './scroll'
-import request from '../app/request'
-import path from '../app/path'
-import store from '../app/store'
+import { supportsPointerEvents } from 'detect-it';
+import { LinkPrefetchHover } from '../constants/common';
+import { getLink, getTargets, dispatchEvent, forEach } from '../app/utils';
+import hrefs from './hrefs';
+import scroll from './scroll';
+import request from '../app/request';
+import path from '../app/path';
+import store from '../app/store';
 /**
  * Link (href) handler
  *
@@ -18,12 +18,12 @@ export default (function (connected) {
    * @exports
    * @type {Map<string, number>}
    */
-  const transit = new Map()
+  const transit = new Map();
 
   /**
    * @type {Store.IPosition}
    */
-  const position = { x: 0, y: 0 }
+  const position = { x: 0, y: 0 };
 
   /**
    * Cleanup throttlers
@@ -33,9 +33,9 @@ export default (function (connected) {
    */
   const cleanup = (url) => {
 
-    clearTimeout(transit.get(url))
-    return transit.delete(url)
-  }
+    clearTimeout(transit.get(url));
+    return transit.delete(url);
+  };
 
   /**
    * Cancels prefetch, if mouse leaves target before threshold
@@ -47,15 +47,15 @@ export default (function (connected) {
    */
   const onMouseleave = (event) => {
 
-    const target = getLink(event.target, LinkPrefetchHover)
+    const target = getLink(event.target, LinkPrefetchHover);
 
     if (target) {
 
-      cleanup(path.get(target).url)
-      handleLeave(target)
+      cleanup(path.get(target).url);
+      handleLeave(target);
     }
 
-  }
+  };
 
   /**
    * Fetch Throttle
@@ -67,9 +67,9 @@ export default (function (connected) {
    */
   const throttle = (url, fn, delay) => {
     if (!store.has(url) && !transit.has(url)) {
-      transit.set(url, setTimeout(fn, delay))
+      transit.set(url, setTimeout(fn, delay));
     }
-  }
+  };
 
   /**
    * Fetch document and add the response to session cache.
@@ -81,11 +81,11 @@ export default (function (connected) {
   const prefetch = async state => {
 
     if (!(await request.get(state))) {
-      console.warn(`Pjax: Prefetch will retry on next mouseover for: ${state.url}`)
+      console.warn(`Pjax: Prefetch will retry on next mouseover for: ${state.url}`);
     }
 
-    return cleanup(state.url)
-  }
+    return cleanup(state.url);
+  };
 
   /**
    * Attempts to visit location, Handles bubbled mousovers and
@@ -96,34 +96,34 @@ export default (function (connected) {
    */
   const onMouseover = (event) => {
 
-    const target = getLink(event.target, LinkPrefetchHover)
+    const target = getLink(event.target, LinkPrefetchHover);
 
-    if (!target) return undefined
+    if (!target) return undefined;
 
-    const { url, location } = path.get(target)
+    const { url, location } = path.get(target);
 
     if (!dispatchEvent('pjax:prefetch', {
       target,
       url,
       location
-    }, true)) return disconnect(target)
+    }, true)) return disconnect(target);
 
-    if (store.has(url, { snapshot: true })) return disconnect(target)
+    if (store.has(url, { snapshot: true })) return disconnect(target);
 
-    handleLeave(target)
+    handleLeave(target);
 
     const state = hrefs.attrparse(target, {
       url,
       location,
       position: scroll.y0x0
-    })
+    });
 
     throttle(url, async () => {
 
-      if ((await prefetch(state))) handleLeave(target)
+      if ((await prefetch(state))) handleLeave(target);
 
-    }, state?.threshold || store.config.prefetch.mouseover.threshold)
-  }
+    }, state?.threshold || store.config.prefetch.mouseover.threshold);
+  };
 
   /**
    * NOT YET IMPLEMENTED
@@ -139,10 +139,10 @@ export default (function (connected) {
   // eslint-disable-next-line
   const onMouseMove = event => {
 
-    position.x = event.pageX
-    position.y = event.pageY
+    position.x = event.pageX;
+    position.y = event.pageY;
 
-  }
+  };
 
   /**
    * NOT YET IMPLEMENTED
@@ -155,8 +155,8 @@ export default (function (connected) {
   // eslint-disable-next-line
   const proximity = (target, index) => {
 
-    const { top, left } = target.getBoundingClientRect()
-    const { scrollTop, scrollLeft } = document.body
+    const { top, left } = target.getBoundingClientRect();
+    const { scrollTop, scrollLeft } = document.body;
 
     // @ts-ignore
     target.proximity = Math.floor(
@@ -164,18 +164,18 @@ export default (function (connected) {
         Math.pow(position.x - ((left + scrollLeft) + (target.clientWidth / 2)), 2) +
         Math.pow(position.y - ((top + scrollTop) + (target.clientHeight / 2)), 2)
       )
-    )
+    );
 
     // @ts-ignore
-    console.log(target.proximity)
+    console.log(target.proximity);
 
     // @ts-ignore
     if (target.proximity < 100) {
-      console.log(index, target)
+      console.log(index, target);
       // elements.splice(index, 1)
     }
 
-  }
+  };
 
   /**
    * Attach mouseover events to all defined element targets
@@ -190,12 +190,12 @@ export default (function (connected) {
     // if (target instanceof Element) proximity(target, index)
 
     if (supportsPointerEvents) {
-      target.addEventListener('pointerover', onMouseover, false)
+      target.addEventListener('pointerover', onMouseover, false);
     } else {
-      target.addEventListener('mouseover', onMouseover, false)
+      target.addEventListener('mouseover', onMouseover, false);
     }
 
-  }
+  };
 
   /**
    * Cancels prefetch, if mouse leaves target before threshold
@@ -207,9 +207,9 @@ export default (function (connected) {
   function handleLeave (target) {
 
     if (supportsPointerEvents) {
-      target.removeEventListener('pointerout', onMouseleave, false)
+      target.removeEventListener('pointerout', onMouseleave, false);
     } else {
-      target.removeEventListener('mouseleave', onMouseleave, false)
+      target.removeEventListener('mouseleave', onMouseleave, false);
     }
   }
 
@@ -222,11 +222,11 @@ export default (function (connected) {
   function disconnect (target) {
 
     if (supportsPointerEvents) {
-      target.removeEventListener('pointerover', onMouseleave, false)
-      target.removeEventListener('pointerout', onMouseleave, false)
+      target.removeEventListener('pointerover', onMouseleave, false);
+      target.removeEventListener('pointerout', onMouseleave, false);
     } else {
-      target.removeEventListener('mouseleave', onMouseleave, false)
-      target.removeEventListener('mouseover', onMouseover, false)
+      target.removeEventListener('mouseleave', onMouseleave, false);
+      target.removeEventListener('mouseover', onMouseover, false);
     }
 
   }
@@ -246,9 +246,9 @@ export default (function (connected) {
     start: () => {
 
       if (!connected) {
-        getTargets(LinkPrefetchHover).forEach(handleHover)
+        forEach(handleHover)(getTargets(LinkPrefetchHover));
         // addEventListener('mousemove', onMouseMove, false)
-        connected = true
+        connected = true;
       }
     },
 
@@ -263,13 +263,13 @@ export default (function (connected) {
     stop: () => {
 
       if (connected) {
-        transit.clear()
-        getTargets(LinkPrefetchHover).forEach(disconnect)
+        transit.clear();
+        forEach(disconnect)(getTargets(LinkPrefetchHover));
         // removeEventListener('mousemove', onMouseMove, false)
-        connected = false
+        connected = false;
       }
     }
 
-  }
+  };
 
-})(false)
+})(false);

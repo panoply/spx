@@ -7,7 +7,7 @@
   "owner": "BRIXTOL TEXTILES",
   "license": "MIT",
   "type": "module",
-  "types": "./types/index.d.ts",
+  "types": "./package/index.d.ts",
   "main": "./package/pjax.esm.js",
   "module": "./package/pjax.esm.js",
   "browser": "./package/pjax.umd.js",
@@ -23,7 +23,7 @@
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
     "extends": [
-      "@brixtol/eslint-config-javascript"
+      "@brixtol/eslint-config-typescript"
     ],
     "rules": {
       "multiline-ternary": "off"
@@ -49,10 +49,13 @@
     "event-from": "^0.6.0",
     "history": "^5.0.0",
     "intersection-observer": "^0.12.0",
+    "loadjs": "^4.2.0",
+    "matchit": "^1.1.0",
     "mdn-polyfills": "^5.20.0",
     "mergerino": "^0.4.0",
     "nanoid": "^3.1.21",
     "nprogress": "^0.2.0",
+    "rambda": "^6.7.0",
     "regexp.prototype.match": "^0.1.0",
     "url-polyfill": "^1.1.12"
   },
@@ -66,6 +69,7 @@
     "@babel/runtime-corejs3": "^7.13.10",
     "@brixtol/browserslist-config": "^1.0.3",
     "@brixtol/eslint-config-javascript": "^2.0.1",
+    "@brixtol/eslint-config-typescript": "workspace:^1.0.0",
     "@brixtol/prettier-config": "^1.0.3",
     "@brixtol/rollup-utils": "^0.1.0",
     "@rollup/plugin-alias": "^3.1.2",
@@ -76,6 +80,7 @@
     "@types/aws-lambda": "^8.10.72",
     "@types/facebook-js-sdk": "^3.3.2",
     "@types/isomorphic-fetch": "^0.0.35",
+    "@types/loadjs": "^4.0.0",
     "@types/lodash": "^4.14.168",
     "@types/mithril": "^2.0.6",
     "@types/node": "^14.14.34",
@@ -85,7 +90,9 @@
     "rollup-plugin-filesize": "^9.1.1",
     "rollup-plugin-globlin": "^0.1.3",
     "rollup-plugin-livereload": "^2.0.0",
-    "rollup-plugin-node-polyfills": "^0.2.1"
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "typescript": "^4.3.5"
   },
   "peerDependencies": {
     "ava": "^3.13.0",

@@ -1,9 +1,10 @@
 import merge from 'mergerino'
 import history from 'history/browser'
+import { parse, match } from 'matchit'
 import { nanoid } from 'nanoid'
 import { dispatchEvent } from './utils'
 import scroll from '../observers/scroll'
-import * as nprogress from './progress'
+import * as progress from './progress'
 import render from './render'
 
 /**
@@ -20,12 +21,18 @@ export default ((config) => {
   const cache = new Map()
 
   /**
-   * Cache
+   * Snapshots
    *
    * @exports
    * @type {Map<string, string>}
    */
   const snapshots = new Map()
+
+  /**
+   * Routes
+   *
+   */
+  let routes
 
   /**
    * Preset Configuration
@@ -49,11 +56,18 @@ export default ((config) => {
       presets = merge(config, {
         // PRESETS PATCH COPY
         ...options
-        , request: { ...options?.request, dispatch: undefined }
-        , cache: { ...options?.cache, save: undefined }
+        , request: {
+          ...options?.request,
+          dispatch: undefined
+        }
+        , cache: {
+          ...options?.cache,
+          save: undefined
+        }
       })
 
-      nprogress.config(this.config.progress.options)
+      // Assert Progress
+      if (presets.progress.enable) progress.config(presets.progress)
 
     },
 
@@ -110,6 +124,8 @@ export default ((config) => {
         cache.set(page.url, page)
         snapshots.set(page.snapshot, snapshot)
       }
+
+      // console.log(cache, snapshot)
 
       return page
 
@@ -306,6 +322,11 @@ export default ((config) => {
   progress: {
     enable: true,
     threshold: 850,
+    style: {
+      render: true,
+      colour: '#111',
+      height: '2px'
+    },
     options: {
       minimum: 0.10,
       easing: 'ease',
