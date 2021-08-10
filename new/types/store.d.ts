@@ -503,5 +503,3 @@ export interface IPage {
    */
   progress?: boolean | number;
 }
-
-export as namespace Store;

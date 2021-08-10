@@ -1,4 +1,5 @@
-import { dispatchEvent, forEach } from './utils'
+import loadjs from 'loadjs'
+import { dispatchEvent, forEach, getElementAttrs } from './utils'
 import { progress } from './progress'
 import history from 'history/browser'
 import * as prefetch from './prefetch'
@@ -24,6 +25,29 @@ export default (function () {
   const tracked = new Set()
 
   /**
+   *
+   * @type {MutationCallback}
+   */
+  const observeHead = (mutationsList, observer) => {
+    // Use traditional 'for loops' for IE 11
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(node => {
+
+          if (node.nodeName === 'SCRIPT') {
+            if (node instanceof HTMLElement) {
+              node.setAttribute('data-pjax-eval', 'false')
+              console.log(node)
+            }
+          }
+
+        })
+      } else if (mutation.type === 'attributes') {
+        console.log('The ' + mutation.attributeName + ' attribute was modified.')
+      }
+    }
+  }
+  /**
    * Parse HTML document string from request response
    * using `parser()` method. Cached pages will pass
    * the saved response here.
@@ -34,21 +58,42 @@ export default (function () {
   const parse = HTMLString => DOMParse.parseFromString(HTMLString, 'text/html')
 
   /**
+   * DOM Scripts
+   *
+   * @param {HTMLScriptElement} src
+   */
+  const DOMScripts = ({ src, id = src }) => {
+
+    if (!loadjs.isDefined(id)) {
+      loadjs(src, id, {
+        before: (_, script) => script.setAttribute('data-pjax-eval', 'false'),
+        success: () => dispatchEvent('pjax:script', { id }),
+        error: (path) => console.error(`Pjax: Failed to load script ${path} `),
+        numRetries: 1
+      })
+    }
+
+  }
+
+  /**
    * DOM Head Nodes
    *
    * @param {string[]} nodes
    * @param {HTMLHeadElement} head
    * @return {string}
    */
-  const DOMHeadNodes = (nodes, { children }) => {
+  const DOMHeadNodes = (nodes, { ...children }) => {
 
-    forEach(children, DOMNode => {
+    forEach(DOMNode => {
+
       if (DOMNode.tagName === 'TITLE') return null
       if (DOMNode.getAttribute('data-pjax-eval') !== 'false') {
         const index = nodes.indexOf(DOMNode.outerHTML)
-        index === -1 ? DOMNode.parentNode.removeChild(DOMNode) : nodes.splice(index, 1)
+        index === -1
+          ? DOMNode.parentNode.removeChild(DOMNode)
+          : nodes.splice(index, 1)
       }
-    })
+    })(children)
 
     return nodes.join('')
 
@@ -59,22 +104,37 @@ export default (function () {
    *
    * @param {HTMLHeadElement} head
    */
-  const DOMHead = async ({ children }) => {
+  const DOMHead = ({ children }) => {
 
-    const targetNodes = Array.from(children).reduce((arr, node) => (
-      node.tagName !== 'TITLE' ? (
-        [ ...arr, node.outerHTML ]
+    const targetNodes = Array.from(children).reduce((arr, node) => {
+
+      if (node.tagName === 'SCRIPT' && node.hasAttribute('src')) {
+        if (node.getAttribute('data-pjax-eval') !== 'false') {
+          if (node instanceof HTMLScriptElement) {
+            DOMScripts(node)
+            node.parentNode.removeChild(node)
+          }
+        }
+      }
+
+      return node.tagName !== 'TITLE' && node.tagName !== 'SCRIPT' ? (
+        [
+          ...arr,
+          node.outerHTML
+        ]
       ) : arr
-    ), [])
+    }, [])
 
     const fragment = document.createElement('div')
+
     fragment.innerHTML = DOMHeadNodes(targetNodes, document.head)
 
-    forEach(fragment.children, DOMNode => {
+    console.log(fragment.children)
+    forEach(DOMNode => {
       if (!DOMNode.hasAttribute('data-pjax-eval')) {
         document.head.appendChild(DOMNode)
       }
-    })
+    })(Array.from(fragment.children))
 
   }
 
@@ -113,7 +173,7 @@ export default (function () {
 
         const fragment = document.createElement('div')
 
-        forEach([ ...target.childNodes ], node => fragment.appendChild(node))
+        forEach(node => fragment.appendChild(node))([ ...target.childNodes ])
 
         state.append
           ? DOM.appendChild(fragment)
@@ -140,6 +200,16 @@ export default (function () {
   }
 
   /**
+   * Observe Head Element
+   */
+  // const observer = new MutationObserver(observeHead)
+
+  /**
+     * Observe Head Element
+     */
+  // observer.observe(document.head, { attributes: true, childList: true, subtree: true })
+
+  /**
    * Update the DOM and execute page adjustments
    * to new navigation point
    *
@@ -148,9 +218,12 @@ export default (function () {
    */
   const update = (state, popstate = false) => {
 
+    // console.log(state)
     // window.performance.mark('render')
     // console.log(window.performance.measure('time', 'start'))
+
     prefetch.stop()
+    // observer.disconnect()
 
     const target = parse(store.snapshot(state.snapshot))
 
@@ -166,18 +239,22 @@ export default (function () {
 
     if (target?.head) DOMHead(target.head)
 
+    // Later, you can stop observing
+
     let fallback = 1
 
-    forEach(state?.replace
-      ? [ ...state.targets, ...state.replace ]
-      : state.targets, element => {
+    forEach(element => {
 
       const node = target.body.querySelector(element)
 
-      return node ? document.body
-        .querySelectorAll(element)
-        .forEach(replaceTarget(node, state)) : fallback++
-    })
+      node ? forEach(
+        replaceTarget(node, state)
+      )(document.body.querySelectorAll(element)) : fallback++
+
+    }, state?.replace ? [
+      ...state.targets,
+      ...state.replace
+    ] : state.targets)
 
     if (fallback === state.targets.length) {
       replaceTarget(target.body, state)(document.body)

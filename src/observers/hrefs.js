@@ -148,7 +148,7 @@ export default (function (connected) {
   }, state))
 
   /**
-   * Triggers click event
+   * Triggers click events
    *
    * @param {Element} target
    * @returns {(state: clickState) => (event: MouseEvent) => void}
@@ -175,7 +175,7 @@ export default (function (connected) {
    */
   const handleTrigger = (event) => {
 
-    window.performance.mark('start')
+    // window.performance.mark('start')
 
     if (!linkEvent(event)) return undefined
 

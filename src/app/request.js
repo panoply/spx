@@ -170,7 +170,7 @@ export default (function () {
       return false
     }
 
-    if (!dispatchEvent('pjax:request', state.url, true)) {
+    if (!dispatchEvent('pjax:request', { state }, true)) {
       console.warn(`Pjax: Request cancelled via dispatched event for: ${state.url}`)
       return false
     }

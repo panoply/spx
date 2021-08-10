@@ -209,3 +209,43 @@ export const Protocol = /^https?:$/
  * @type {RegExp}
  */
 export const XHRHeaders = /^(.*?):[^\S\n]*([\s\S]*?)$/gm
+
+/**
+ * Route Parameter
+ *
+ * Used for router
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const OptionalParam = /\((.*?)\)/g
+
+/**
+ * Route Named Parameter
+ *
+ * Used for router
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const NamedParam = /(\(\?)?:\w+/g
+
+/**
+ * Route Splat Parameter
+ *
+ * Used for router
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const SplatParam = /\*/g
+
+/**
+ * Route Escape Expression
+ *
+ * Used for router
+ *
+ * @exports
+ * @type {RegExp}
+ */
+export const EscapeExp = /[\-{}\[\]+?.,\\\^$|#\s]/g // eslint-disable-line

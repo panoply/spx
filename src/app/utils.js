@@ -172,14 +172,23 @@ export function byteConvert (bytes) {
  * for loop iterations
  *
  * @exports
+ * @param {(item: Element | any, index?: number, array?: any) => any} fn
  * @param {any} list
- * @param {(item: Element | any, index?: number) => any} fn *
- * @param {{index?: boolean  }} [index=flase]
- * @return {void}
+ * @return {((_list: any ) => any)}
  */
-export function forEach (list, fn, { index = false } = {}) {
-  let i = list.length - 1
-  for (; i >= 0; i--) index ? fn(list[i], i) : fn(list[i])
+export function forEach (fn, list) {
+
+  if (arguments.length === 1) return _list => forEach(fn, _list)
+
+  let i = 0
+
+  const len = list.length
+
+  while (i < len) {
+    fn(list[i], i, list)
+    i++
+  }
+
 }
 
 /**
@@ -187,10 +196,13 @@ export function forEach (list, fn, { index = false } = {}) {
  *
  * @exports
  * @param {Element} element
- * @param {string[]} exclude
+ * @param {{exclude?: string[], include?: [name: string, value: string ][]}} params
  * @returns {[name:string, value: string][]}
  */
-export function getElementAttrs ({ attributes }, exclude = []) {
+export function getElementAttrs ({ attributes }, {
+  exclude = [],
+  include = []
+}) {
 
   return Array.from(attributes).reduce((
     accumulator
@@ -203,5 +215,5 @@ export function getElementAttrs ({ attributes }, exclude = []) {
       ...accumulator,
       [ name, value ]
     ]
-  ) : accumulator, [])
+  ) : accumulator, include)
 }

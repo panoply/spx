@@ -1,6 +1,6 @@
-import { IPage, IPresets } from "./store";
+import { IPage, IPresets } from './store';
 
-declare module "@brixtol/pjax" {
+declare module '@brixtol/pjax' {
   /**
    * Pjax Support
    */

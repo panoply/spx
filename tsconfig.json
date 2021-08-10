@@ -1,4 +1,13 @@
 {
+  "exclude": [
+    "node_modules/**",
+    "package",
+    "test",
+    "src/**"
+  ],
+  "include": [
+    "new/**/*.ts"
+  ],
   "compilerOptions": {
     "target": "ES6",
     "lib": [
@@ -6,9 +15,11 @@
       "dom",
       "dom.iterable"
     ],
-    "module": "esnext",
-    "checkJs": true,
-    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "module": "es2015",
+    "outDir": "package",
+    "declarationDir": "package",
     "allowSyntheticDefaultImports": true,
     "keyofStringsOnly": true,
     "esModuleInterop": true,
@@ -26,17 +37,7 @@
     "baseUrl": ".",
     "paths": {
       "*": [
-        "src/*",
-        "tests/*"
-      ],
-      "~app": [
-        "./src/app/*"
-      ],
-      "~constant": [
-        "./src/constants/*"
-      ],
-      "~observer/*": [
-        "./src/observers/*"
+        "new/*"
       ]
     }
   }

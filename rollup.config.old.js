@@ -1,12 +1,12 @@
-import { terser } from 'rollup-plugin-terser'
-import noderesolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import filesize from 'rollup-plugin-filesize'
-import replace from '@rollup/plugin-replace'
-import babel, { getBabelOutputPlugin } from '@rollup/plugin-babel'
-import inject from '@rollup/plugin-inject'
+import { terser } from 'rollup-plugin-terser';
+import noderesolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import filesize from 'rollup-plugin-filesize';
+import replace from '@rollup/plugin-replace';
+import babel, { getBabelOutputPlugin } from '@rollup/plugin-babel';
+import inject from '@rollup/plugin-inject';
 
-const { prod } = process.env
+const { prod } = process.env;
 
 const plugins = [
   replace({
@@ -17,7 +17,7 @@ const plugins = [
   }),
   noderesolve({ browser: true }),
   commonjs()
-]
+];
 
 export default [
   {
@@ -98,13 +98,13 @@ export default [
               }
             ]
           ]
-        }),
-        prod ? terser({
+        })
+        /* prod ? terser({
           ecma: 5,
           compress: {
             passes: 2
           }
-        }) : null
+        }) : null */
       ]
     },
     plugins: [
@@ -128,4 +128,4 @@ export default [
       filesize()
     ]
   }
-]
+];
