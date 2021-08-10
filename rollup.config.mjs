@@ -1,3 +1,4 @@
+import { defineConfig as Rollup } from 'rollup';
 import { terser } from 'rollup-plugin-terser';
 import noderesolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -8,8 +9,8 @@ import typescript from 'typescript';
 
 const { prod } = process.env;
 
-export default {
-  input: 'new/index.ts',
+export default Rollup({
+  input: 'src/index.ts',
   output: [
     {
       format: 'es',
@@ -17,15 +18,16 @@ export default {
       file: 'package/pjax.esm.js',
       sourcemap: false,
       preferConst: true,
-      plugins: [
-        prod
-          ? terser({
+      plugins: prod ? [
+        terser(
+          {
             compress: {
               passes: 2
             }
-          })
-          : null
-      ]
+          }
+        )
+      ] : null
+
     },
     {
       format: 'umd',
@@ -33,31 +35,35 @@ export default {
       file: 'package/pjax.umd.js',
       sourcemap: false,
       preferConst: true,
-      plugins: [
-        prod
-          ? terser({
+      plugins: prod ? [
+        terser(
+          {
             compress: {
               passes: 2
             }
-          })
-          : null
-      ]
+          }
+        )
+      ] : null
     }
   ],
   plugins: [
-    replace({
-      preventAssignment: true,
-      values: {
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    replace(
+      {
+        preventAssignment: true,
+        values: {
+          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+        }
       }
-    }),
-    noderesolve({
-      browser: true,
-      extensions: [
-        '.ts',
-        '.js'
-      ]
-    }),
+    ),
+    noderesolve(
+      {
+        browser: true,
+        extensions: [
+          '.ts',
+          '.js'
+        ]
+      }
+    ),
     ts(
       {
         check: false,
@@ -65,13 +71,14 @@ export default {
         typescript
       }
     ),
-    commonjs({
-      extensions: [
-        '.ts',
-        '.js'
-      ]
-    }),
+    commonjs(
+      {
+        extensions: [
+          '.ts',
+          '.js'
+        ]
+      }
+    ),
     filesize()
   ]
-
-};
+});
