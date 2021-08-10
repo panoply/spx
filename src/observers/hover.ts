@@ -6,7 +6,7 @@ import { y0x0 } from './scroll';
 import { store } from '../app/store';
 import * as request from '../app/request';
 import * as path from '../app/path';
-import { IPage } from '../types/store';
+import { IPage } from '../types';
 
 let connected: boolean = false;
 

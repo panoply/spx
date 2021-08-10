@@ -8,7 +8,7 @@ import { y0x0 } from './scroll';
 import * as request from '../app/request';
 import * as render from '../app/render';
 import { updateState } from './history';
-import { IPage } from '../types/store';
+import { IPage } from '../types';
 
 /**
  * Handles a clicked link, prevents special click types.

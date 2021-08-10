@@ -2,7 +2,7 @@ import loadjs from 'loadjs';
 import { forEach } from './utils';
 import { dispatchEvent } from './events';
 import { progress } from './progress';
-import { IPage } from '../types/store';
+import { IPage } from '../types';
 import history from 'history/browser';
 import { store } from './store';
 import * as mouseover from '../observers/hover';

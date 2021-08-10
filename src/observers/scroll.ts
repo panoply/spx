@@ -1,4 +1,4 @@
-import { IPosition } from '../types/store';
+import { IPosition } from '../types';
 
 let connected: boolean = false;
 

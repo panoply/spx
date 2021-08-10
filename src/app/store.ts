@@ -1,7 +1,7 @@
 import merge from 'mergerino';
 import history from 'history/browser';
 import { nanoid } from 'nanoid';
-import { IPage, IPresets } from '../types/store';
+import { IPage, IOptions } from '../types';
 import { dispatchEvent } from './events';
 import * as scroll from '../observers/scroll';
 import * as progress from './progress';
@@ -72,7 +72,7 @@ export const store = new class Store {
    * upon Pjax initialization. This function acts
    * as a class `constructor` establishing an instance.
    */
-  public connect (options: IPresets = {}) {
+  public connect (options: IOptions = {}) {
 
     this.config = merge(this.config, {
       // PRESETS PATCH COPY

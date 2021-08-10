@@ -1,7 +1,7 @@
 import * as path from './path';
 import { store } from './store';
 import * as regexp from '../constants/regexp';
-import { IPage } from '../types/store';
+import { IPage } from '../types';
 
 /**
  * Array Chunk function

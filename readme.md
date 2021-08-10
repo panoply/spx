@@ -2,7 +2,7 @@
 
 ## @brixtol/pjax
 
-A blazing fast, lightweight (14kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
+A blazing fast, lightweight (9.5kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
 
 ### Features
 
@@ -344,7 +344,7 @@ document.addEventListener("pjax:module");
 
 In addition to Lifecycle events, a list of methods are available. Methods will allow you some basic programmatic control of a Pjax session.
 
-```javascript
+```typescript
 
 // Check to see if Pjax is supported by the browser
 Pjax.supported: boolean
@@ -372,47 +372,6 @@ Pjax.reload(): Page{}
 
 // Disconnects Pjax
 Pjax.disconnect(): void
-
-```
-
-## Routing
-
-Hooks expose 2 lifecycle methods to provide a basic routing strategy for fine grained control over rendering. The `connect` and `disconnect` hooks execute between page visits. The `modules` property provides streamlined access to the powerful [loadjs](https://github.com/muicss/loadjs) dependency management system which allows you to progressively load dependencies on per-route basis.
-
-<!-- prettier-ignore -->
-```javascript
-
-Pjax.route({
-
-  '/:path': {
-
-    modules: ([
-      {
-        id: '',
-        path: [''],
-        async: true,
-        defer: false,
-      }
-    ]),
-
-    connected({
-      dom,
-      targets,
-      tracked,
-      state,
-      location
-    }) {
-
-
-    },
-
-    disconnect() {
-
-    },
-  }
-
-  },
-});
 
 ```
 
@@ -879,7 +838,7 @@ interface IPage {
 
 ## Contributing
 
-This module is written in ES2020 JavaScript. Production bundles export in ES6 format. Legacy support is provided as an ES5 UMD bundle. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available.
+This module is written in TypeScript. Production bundles export in ES2015 format. Legacy support is provided as an ES5 UMD bundle. This project leverages JSDocs and Type Definition files for its type checking, so all features you enjoy with TypeScript are available.
 
 This module is consumed by us for a couple of our projects and has been open sourced but exists as part of a mono/multi repo. We will update it according to what we need. Feel free to suggest features or report bugs, PR's are of course welcome!
 

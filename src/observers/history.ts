@@ -4,7 +4,7 @@ import * as render from '../app/render';
 import * as request from '../app/request';
 import { store } from '../app/store';
 import { position } from './scroll';
-import { IPage } from '../types/store';
+import { IPage } from '../types';
 
 let connected: boolean = false;
 let unlisten: ()=> void = null;

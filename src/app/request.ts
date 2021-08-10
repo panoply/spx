@@ -1,4 +1,4 @@
-import { IPage, ICacheSize } from '../types/store';
+import { IPage, ICacheSize } from '../types';
 import { store } from './store';
 import { dispatchEvent } from './events';
 import { byteConvert, byteSize } from './utils';

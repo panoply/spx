@@ -1,4 +1,8 @@
 {
+  "[typescript]": {
+    "editor.parameterHints.enabled": true,
+    "editor.suggest.showModules": true
+  },
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,

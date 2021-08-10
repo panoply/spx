@@ -4,8 +4,16 @@ import { store } from './app/store';
 import * as path from './app/path';
 import * as hrefs from './observers/hrefs';
 import * as controller from './app/controller';
-import { IPage, IPresets } from '../types/store';
+import { IPage, IOptions } from './types';
 
+/**
+ * Exported Types
+ */
+export * from './types';
+
+/**
+ * Supported
+ */
 export const supported = !!(
   window.history.pushState &&
   window.requestAnimationFrame &&
@@ -16,7 +24,7 @@ export const supported = !!(
 /**
  * Connect Pjax
  */
-export const connect = (options: IPresets) => {
+export const connect = (options: IOptions) => {
 
   store.connect(options);
 

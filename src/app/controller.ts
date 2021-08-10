@@ -31,7 +31,7 @@ function onload (): void {
 /**
  * Initialize
  */
-export function initialize ():void {
+export function initialize (): void {
 
   if (!connected) {
 
