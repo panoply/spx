@@ -22,9 +22,8 @@
   ],
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
-    "extends": [
-      "@brixtol/eslint-config-typescript"
-    ],
+    "ignorePatterns": "package",
+    "extends": "@brixtol/eslint-config",
     "rules": {
       "multiline-ternary": "off"
     }
@@ -51,9 +50,11 @@
     "nprogress": "^0.2.0"
   },
   "devDependencies": {
-    "@brixtol/eslint-config-typescript": "workspace:^1.0.0",
-    "@brixtol/prettier-config": "workspace:^1.0.3",
-    "@brixtol/rollup-utils": "workspace:^0.1.0",
+    "@brixtol/browserslist-config": "^1.0.3",
+    "@brixtol/eslint-config": "^1.0.1",
+    "@brixtol/prettier-config": "^1.0.3",
+    "@brixtol/rollup-utils": "^0.2.0",
+    "@brixtol/tsconfig": "^1.0.0",
     "@rollup/plugin-alias": "^3.1.5",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "^3.0.0",
