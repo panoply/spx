@@ -1,4 +1,4 @@
-import { IEvents } from '../types';
+import { IEvents } from '../types/page';
 
 /**
  * Dispatches lifecycle events on the document.
