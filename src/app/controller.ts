@@ -3,11 +3,9 @@ import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
 import * as scroll from '../observers/scroll';
 import * as history from '../observers/history';
-import _history from 'history/browser';
+import browser from 'history/browser';
 import { url, parse } from './path';
-import { store } from './store';
-
-let connected: boolean = false;
+import * as store from './store';
 
 /**
  * Sets initial page state executing on intial load.
@@ -16,13 +14,13 @@ let connected: boolean = false;
  */
 function onload (): void {
 
-  const page = store.create({
+  const page = store.capture({
     url,
     location: parse(url),
     position: scroll.position
   }, document.documentElement.outerHTML);
 
-  _history.replace(window.location, page);
+  browser.replace(window.location, page);
 
   removeEventListener('load', onload);
 
@@ -33,7 +31,7 @@ function onload (): void {
  */
 export function initialize (): void {
 
-  if (!connected) {
+  if (!store.ready.controller) {
 
     history.start();
     hrefs.start();
@@ -43,7 +41,7 @@ export function initialize (): void {
 
     addEventListener('load', onload);
 
-    connected = true;
+    store.ready.controller = true;
 
     console.info('Pjax: Connection Established ⚡');
   }
@@ -54,7 +52,7 @@ export function initialize (): void {
  */
 export function destroy (): void {
 
-  if (connected) {
+  if (store.ready.controller) {
 
     history.stop();
     hrefs.stop();
@@ -63,7 +61,7 @@ export function destroy (): void {
     intersect.stop();
     store.clear();
 
-    connected = false;
+    store.ready.controller = false;
 
     console.warn('Pjax: Instance has been disconnected! 😔');
 
