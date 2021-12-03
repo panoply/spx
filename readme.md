@@ -2,7 +2,7 @@
 
 ## @brixtol/pjax
 
-A blazing fast, lightweight (9.5kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
+A blazing fast, lightweight (9kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
 
 ### Features
 
@@ -24,7 +24,7 @@ The landscape of pjax based solution has become rather scarce. The current bread
 ## Install
 
 ```cli
-pnpm i @brixtol/pjax
+pnpm add @brixtol/pjax
 ```
 
 > _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
@@ -392,12 +392,12 @@ Example
 
 ```html
 <script>
-  console.log("I will run on every navigation");
+  console.log('I will run on every navigation');
 </script>
 
 <!-- script will also run once if detected on pjax navigation -->
 <script data-pjax-eval="false">
-  console.log("I will run on initialization only!");
+  console.log('I will run on initialization only!');
 </script>
 ```
 
@@ -744,7 +744,7 @@ interface IPage {
    * Option is enabled when `cache` preset config is `true`.
    * Each pjax link can set a different cache option.
    */
-  cache?: boolean | "reset" | "clear";
+  cache?: boolean | 'reset' | 'clear';
 
   /**
    * Define mouseover timeout from which fetching will begin
@@ -853,7 +853,7 @@ This module combines concepts originally introduced by other awesome Open Source
 - [Turbo](https://github.com/hotwired/turbo)
 - [Turbolinks](https://github.com/turbolinks/turbolinks)
 
-## Licence
+## License
 
 Licensed under [MIT](#LICENCE)
 
