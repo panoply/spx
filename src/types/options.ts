@@ -35,7 +35,7 @@ export interface IOptions {
      * ---
      * @default 150
      */
-    poll?: 150;
+    poll?: number;
 
     /**
      * Determin if page requests should be fetched asynchronously or synchronously.

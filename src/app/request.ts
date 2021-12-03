@@ -1,8 +1,9 @@
-import { IPage, ICacheSize } from '../types';
-import { store } from './store';
+import { IPage, ICacheSize } from '../types/page';
 import { dispatchEvent } from './events';
 import { byteConvert, byteSize } from './utils';
 import { progress } from './progress';
+import * as store from './store';
+import { is } from '../constants/native';
 
 let ratelimit: number = 0;
 let storage: number = 0;
@@ -112,7 +113,7 @@ export async function inFlight (url: string): Promise<boolean> {
 
   if (transit.has(url) && ratelimit <= store.config.request.timeout) {
 
-    if (!showprogress && Object.is((ratelimit * 10), store.config.progress.threshold)) {
+    if (!showprogress && is((ratelimit * 10), store.config.progress.threshold)) {
       progress.start();
       showprogress = true;
     }
@@ -152,7 +153,7 @@ export async function get (state: IPage): Promise<IPage|false> {
 
     const response = await HttpRequest(state.url);
 
-    if (typeof response === 'string') return store.create(state, response);
+    if (typeof response === 'string') return store.capture(state, response);
 
     console.warn(`Pjax: Failed to retrive response at: ${state.url}`);
 

@@ -1,13 +1,12 @@
-import { Common } from '../constants/common';
 import { getTargets, forEach, attrparse } from '../app/utils';
 import * as path from '../app/path';
 import * as request from '../app/request';
+import * as store from '../app/store';
 
 /**
  * @type IntersectionObserver
  */
 let entries: IntersectionObserver;
-let connected: boolean = false;
 
 /**
  * Intersection callback when entries are in viewport.
@@ -35,10 +34,10 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
  */
 export function start (): void {
 
-  if (!connected) {
+  if (!store.ready.intersect) {
     entries = new IntersectionObserver(forEach(onIntersect));
-    forEach(target => entries.observe(target))(getTargets(Common.LinkPrefetchIntersect));
-    connected = true;
+    forEach(target => entries.observe(target))(getTargets('a[data-pjax-prefetch="intersect"]'));
+    store.ready.intersect = true;
   }
 
 }
@@ -49,9 +48,9 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (connected) {
+  if (store.ready.intersect) {
     entries.disconnect();
-    connected = false;
+    store.ready.intersect = false;
   }
 
 };

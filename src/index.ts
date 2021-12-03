@@ -1,15 +1,11 @@
 import { Protocol } from './constants/regexp';
 import { nanoid } from 'nanoid';
-import { store } from './app/store';
+import * as store from './app/store';
 import * as path from './app/path';
 import * as hrefs from './observers/hrefs';
 import * as controller from './app/controller';
-import { IPage, IOptions } from './types';
-
-/**
- * Exported Types
- */
-export * from './types';
+import { IOptions } from './types/options';
+import { IPage } from './types/page';
 
 /**
  * Supported

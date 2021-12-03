@@ -2,9 +2,9 @@ import loadjs from 'loadjs';
 import { forEach } from './utils';
 import { dispatchEvent } from './events';
 import { progress } from './progress';
-import { IPage } from '../types';
+import { IPage } from '../types/page';
 import history from 'history/browser';
-import { store } from './store';
+import * as store from './store';
 import * as mouseover from '../observers/hover';
 import * as intersect from '../observers/intersect';
 
@@ -23,21 +23,31 @@ const tracked: Set<string> = new Set();
 // eslint-disable-next-line
 function observeHead (mutations: MutationRecord[], observer: MutationObserver): void {
 
-  for (const mutation of mutations) {
+  forEach((mutation: MutationRecord) => {
 
     if (mutation.type === 'childList') {
 
       mutation.addedNodes.forEach(node => {
         if (node.nodeName === 'SCRIPT') {
+          console.log(node);
           if (node instanceof HTMLElement) {
-            node.setAttribute('data-pjax-eval', 'false');
+            if (node.getAttribute('data-pjax-eval') !== 'false') {
+              node.setAttribute('data-pjax-eval', 'false');
+            }
           }
         }
       });
+
     } else if (mutation.type === 'attributes') {
+
+      console.log(mutation.target);
+
       console.log('The ' + mutation.attributeName + ' attribute was modified.');
+
     }
-  }
+
+  })(mutations);
+
 };
 
 /**
@@ -166,12 +176,12 @@ export function parse (HTMLString: string): Document {
  * Captures current document element and sets a
  * record to snapshot state
  */
-export async function capture ({ url, snapshot }: IPage) {
+export async function capture (state: IPage) {
 
-  if (store.has(url, { snapshot: true })) {
-    const target = parse(store.snapshot(snapshot));
+  if (store.has(state.url, { snapshot: true })) {
+    const target = parse(store.snapshot(state.snapshot));
     target.body.innerHTML = document.body.innerHTML;
-    store.set.snapshots(snapshot, target.documentElement.outerHTML);
+    store.snapshots.set(state.snapshot, target.documentElement.outerHTML);
   }
 
 };
@@ -179,12 +189,16 @@ export async function capture ({ url, snapshot }: IPage) {
 /**
  * Observe Head Element
  */
-// const observer = new MutationObserver(observeHead)
+// const observer = new MutationObserver(observeHead);
 
 /**
    * Observe Head Element
    */
-// observer.observe(document.head, { attributes: true, childList: true, subtree: true })
+// observer.observe(document.head, {
+//  attributes: true,
+//  childList: true,
+//  subtree: true
+// });
 
 /**
  * Update the DOM and execute page adjustments
@@ -198,7 +212,7 @@ export function update (state: IPage, popstate?: boolean): void {
 
   if (store.config.prefetch.mouseover.enable) mouseover.stop();
   if (store.config.prefetch.intersect.enable) intersect.stop();
-  // observer.disconnect()
+  // observer.disconnect();
 
   const target = parse(store.snapshot(state.snapshot));
   state.title = document.title = target?.title || '';
@@ -212,8 +226,6 @@ export function update (state: IPage, popstate?: boolean): void {
   }
 
   if (target?.head) DOMHead(target.head);
-
-  // Later, you can stop observing
 
   let fallback = 1;
 

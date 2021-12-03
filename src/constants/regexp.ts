@@ -16,7 +16,6 @@ export const CacheValue: RegExp = /^(reset|clear)$/i;
  * URL Pathname
  *
  * Used to match first pathname from a URL (group 1)
-
  */
 export const Pathname: RegExp = /\/\/[^/]*(\/[^;]*)/;
 

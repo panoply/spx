@@ -1,4 +1,4 @@
-import { IPosition } from '../types';
+import { IPosition } from '../types/page';
 
 let connected: boolean = false;
 
@@ -7,7 +7,7 @@ let connected: boolean = false;
  * function **MUST** be called after referencing this
  * to reset position.
  */
-export let position: IPosition = { x: 0, y: 0 };
+export const position: IPosition = { x: 0, y: 0 };
 
 /**
  * onScroll event, asserts the current X and Y page
@@ -15,8 +15,8 @@ export let position: IPosition = { x: 0, y: 0 };
  */
 function onScroll (): void {
 
-  position.x = window.screenX ?? window.pageXOffset;
-  position.y = window.screenY ?? window.pageYOffset;
+  position.x = window.screenX || window.pageXOffset;
+  position.y = window.screenY || window.pageYOffset;
 
 };
 
@@ -52,7 +52,7 @@ export function y0x0 (): IPosition {
 export function start (): void {
 
   if (!connected) {
-    addEventListener('scroll', onScroll, false);
+    addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     connected = true;
   }
@@ -66,7 +66,7 @@ export function stop (): void {
 
   if (connected) {
     removeEventListener('scroll', onScroll, false);
-    position = y0x0();
+    reset();
     connected = false;
   }
 };

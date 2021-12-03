@@ -1,5 +1,5 @@
 import nprogress from 'nprogress';
-import { IProgress } from '../types';
+import { IProgress } from '../types/progress';
 
 export let progress: nprogress.NProgress;
 

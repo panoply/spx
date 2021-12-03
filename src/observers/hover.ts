@@ -1,14 +1,11 @@
 import { supportsPointerEvents } from 'detect-it';
-import { Common } from '../constants/common';
 import { getLink, getTargets, forEach, attrparse } from '../app/utils';
 import { dispatchEvent } from '../app/events';
 import { y0x0 } from './scroll';
-import { store } from '../app/store';
+import * as store from '../app/store';
 import * as request from '../app/request';
 import * as path from '../app/path';
-import { IPage } from '../types';
-
-let connected: boolean = false;
+import { IPage } from '../types/page';
 
 const transit: Map<string, number> = new Map();
 
@@ -29,7 +26,7 @@ function cleanup (url: string): boolean {
  */
 function onMouseleave (event: MouseEvent) {
 
-  const target = getLink(event.target, Common.LinkPrefetchHover);
+  const target = getLink(event.target, 'a[data-pjax-prefetch="hover"]');
 
   if (target) {
     cleanup(path.get(target).url);
@@ -72,7 +69,7 @@ async function prefetch (state: IPage): Promise<boolean> {
  */
 function onMouseover (event: MouseEvent): void {
 
-  const target = getLink(event.target, Common.LinkPrefetchHover);
+  const target = getLink(event.target, 'a[data-pjax-prefetch="hover"]');
 
   if (!target) return undefined;
 
@@ -144,9 +141,9 @@ function disconnect (target: EventTarget): void {
  */
 export function start (): void {
 
-  if (!connected) {
-    forEach(handleHover)(getTargets(Common.LinkPrefetchHover));
-    connected = true;
+  if (!store.ready.hover) {
+    forEach(handleHover)(getTargets('a[data-pjax-prefetch="hover"]'));
+    store.ready.hover = true;
   }
 }
 
@@ -157,11 +154,9 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (connected) {
-
+  if (store.ready.hover) {
     transit.clear();
-
-    forEach(disconnect)(getTargets(Common.LinkPrefetchHover));
-    connected = false;
+    forEach(disconnect)(getTargets('a[data-pjax-prefetch="hover"]'));
+    store.ready.hover = false;
   }
 };

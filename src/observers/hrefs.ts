@@ -1,30 +1,29 @@
 import { supportsPointerEvents } from 'detect-it';
 import { dispatchEvent } from '../app/events';
 import { getLink, attrparse } from '../app/utils';
-import { Common } from '../constants/common';
-import { store } from '../app/store';
-import * as path from '../app/path';
 import { y0x0 } from './scroll';
+import { updateState } from './history';
+import { IPage } from '../types/page';
+import * as store from '../app/store';
+import * as path from '../app/path';
 import * as request from '../app/request';
 import * as render from '../app/render';
-import { updateState } from './history';
-import { IPage } from '../types';
 
 /**
  * Handles a clicked link, prevents special click types.
  */
 function linkEvent (event: MouseEvent): boolean {
-
+  return !(
   // @ts-ignore
-  return !((event.target && event.target.isContentEditable) ||
+    (event.target && event.target.isContentEditable) ||
     event.defaultPrevented ||
     event.which > 1 ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
-    event.shiftKey);
-
-};
+    event.shiftKey
+  );
+}
 
 /**
  * Triggers click events
@@ -32,11 +31,9 @@ function linkEvent (event: MouseEvent): boolean {
  * @param {Element} target
  * @returns {(state: clickState) => (event: MouseEvent) => void}
  */
-function handleClick (target: Element): (
-  state: any
-) => (
-  event: MouseEvent
-) => void | Promise<void> {
+function handleClick (
+  target: Element
+): (state: any) => (event: MouseEvent) => void | Promise<void> {
 
   return (state: any) => function click (event: MouseEvent): void | Promise<void> {
 
@@ -50,8 +47,7 @@ function handleClick (target: Element): (
         ? navigate(state)
         : location.assign(path.url);
   };
-
-};
+}
 
 /**
  * Triggers a page fetch
@@ -60,36 +56,40 @@ function handleClick (target: Element): (
  * @returns {void}
  */
 function handleTrigger (event: MouseEvent): void {
-
   if (!linkEvent(event)) return undefined;
 
-  const target = getLink(event.target, Common.Link);
+  const target = getLink(event.target, 'a:not([data-pjax-disable]):not([href^="#"])');
 
   if (!target) return undefined;
-  if (!dispatchEvent('pjax:trigger', { target }, true)) return undefined;
+  if (!dispatchEvent('pjax:trigger', { target }, true)) {
+    return undefined;
+  }
 
   const { url, location } = path.get(target, true);
   const click = handleClick(target);
 
   if (request.transit.has(url)) {
-
     target.addEventListener('click', click(url), false);
-
   } else {
 
-    const state = attrparse(target, { url, location, position: y0x0() });
+    const state = attrparse(target, {
+      url,
+      location,
+      position: y0x0()
+    });
 
     if (store.has(url, { snapshot: true })) {
-      target.addEventListener('click', click(store.update(state)), false);
+      target.addEventListener(
+        'click',
+        click(store.update(state)),
+        false
+      );
     } else {
       request.get(state); // TRIGGERS FETCH
       target.addEventListener('click', click(url), false);
     }
   }
-
-};
-
-let connected: boolean = false;
+}
 
 /**
  * Executes a pjax navigation.
@@ -98,21 +98,15 @@ export async function navigate (
   url: string,
   state: IPage | false = false
 ): Promise<void> {
-
   if (state) {
-
     if (typeof state.cache === 'string') {
-      state.cache === 'clear'
-        ? store.clear()
-        : store.clear(url);
+      state.cache === 'clear' ? store.clear() : store.clear(url);
     }
 
     const page = await request.get(state);
     if (page) return render.update(page);
-
   } else {
-
-    if ((await request.inFlight(url))) {
+    if (await request.inFlight(url)) {
       return render.update(store.get(url).page);
     } else {
       request.cancel(url);
@@ -120,18 +114,15 @@ export async function navigate (
   }
 
   return location.assign(url);
-
-};
+}
 
 /**
  * Attached `click` event listener.
  *
  * @returns {void}
  */
-export function start ():void {
-
-  if (!connected) {
-
+export function start (): void {
+  if (!store.ready.href) {
     if (supportsPointerEvents) {
       addEventListener('pointerdown', handleTrigger, false);
     } else {
@@ -139,8 +130,7 @@ export function start ():void {
       addEventListener('touchstart', handleTrigger, false);
     }
 
-    connected = true;
-
+    store.ready.href = true;
   }
 }
 
@@ -148,8 +138,7 @@ export function start ():void {
  * Removed `click` event listener.
  */
 export function stop (): void {
-
-  if (connected) {
+  if (store.ready.href) {
 
     if (supportsPointerEvents) {
       removeEventListener('pointerdown', handleTrigger, false);
@@ -158,7 +147,6 @@ export function stop (): void {
       removeEventListener('touchstart', handleTrigger, false);
     }
 
-    connected = false;
-
+    store.ready.href = false;
   }
 }

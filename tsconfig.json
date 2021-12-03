@@ -1,44 +1,27 @@
 {
-  "exclude": [
-    "node_modules/**",
-    "package",
-    "test"
-  ],
-  "include": [
-    "src/**/*.ts"
-  ],
+  "exclude": ["node_modules/**", "package", "test"],
+  "include": ["src/**/*.ts"],
   "compilerOptions": {
     "target": "ES6",
-    "lib": [
-      "es2020",
-      "dom",
-      "dom.iterable"
-    ],
+    "lib": ["es2020", "dom", "dom.iterable"],
     "declaration": true,
     "declarationMap": true,
     "declarationDir": "package/@types",
     "module": "es2015",
-    "outDir": "package",
     "allowSyntheticDefaultImports": true,
     "keyofStringsOnly": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "noStrictGenericChecks": true,
-    "incremental": true,
     "noEmit": true,
     "suppressExcessPropertyErrors": true,
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "pretty": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "baseUrl": ".",
     "paths": {
-      "*": [
-        "src/*"
-      ]
+      "*": ["src/*"]
     }
   }
 }

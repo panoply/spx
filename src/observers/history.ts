@@ -1,12 +1,12 @@
-import history from 'history/browser';
+import browser from 'history/browser';
 import { BrowserHistory, createPath } from 'history';
 import * as render from '../app/render';
 import * as request from '../app/request';
-import { store } from '../app/store';
+import * as store from '../app/store';
 import { position } from './scroll';
-import { IPage } from '../types';
+import { IPage } from '../types/page';
+import { assign } from '../constants/native';
 
-let connected: boolean = false;
 let unlisten: ()=> void = null;
 let inTransit: string;
 
@@ -48,9 +48,9 @@ function listener ({ action, location }: BrowserHistory) {
  */
 export function start (): void {
 
-  if (!connected) {
-    unlisten = history.listen(listener);
-    connected = false;
+  if (!store.ready.history) {
+    unlisten = browser.listen(listener);
+    store.ready.history = true;
   }
 
 }
@@ -60,9 +60,9 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (!connected) {
+  if (store.ready.history) {
     unlisten();
-    connected = true;
+    store.ready.history = false;
   }
 }
 
@@ -75,8 +75,11 @@ export function stop (): void {
  */
 export function updateState (): IPage {
 
-  history.replace(history.location, { ...history.location.state, position });
+  const { location } = browser;
+  const updated = assign({}, location.state, { position });
 
-  return history.location.state;
+  browser.replace(location, updated);
+
+  return updated;
 
 }

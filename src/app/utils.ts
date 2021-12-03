@@ -1,7 +1,8 @@
 import * as path from './path';
-import { store } from './store';
-import * as regexp from '../constants/regexp';
-import { IPage } from '../types';
+import * as store from './store';
+import * as exp from '../constants/regexp';
+import { assign, from, is } from '../constants/native';
+import { IPage } from '../types/page';
 
 /**
  * Array Chunk function
@@ -13,7 +14,7 @@ function chunk (size: number = 2): (acc: any[], value: string) => any[] {
     const length: number = acc.length;
 
     return (
-      !length || Object.is(acc[length - 1].length, size)
+      !length || is(acc[length - 1].length, size)
         ? acc.push([ value ])
         : acc[length - 1].push(value)
     ) && acc;
@@ -50,16 +51,13 @@ function jsonattrs (
 
   const prop = (source.length - 1) >= index ? (index - 1) : index;
 
-  return (
-    index % 2 ? (
-      {
-        ...accumulator,
-        [source[prop]]: regexp.isNumber.test(current)
-          ? Number(current)
-          : current
-      }
-    ) : accumulator
-  );
+  if (index % 2) {
+    assign(accumulator, {
+      [source[prop]]: exp.isNumber.test(current) ? Number(current) : current
+    });
+  }
+
+  return accumulator;
 
 };
 
@@ -71,19 +69,19 @@ export function attrparse ({ attributes }: Element, state: IPage = {}): IPage {
 
   return ([ ...attributes ].reduce((config, { nodeName, nodeValue }) => {
 
-    if (!regexp.Attr.test(nodeName)) return config;
+    if (!exp.Attr.test(nodeName)) return config;
 
     const value = nodeValue.replace(/\s+/g, '');
 
-    config[nodeName.slice(10)] = regexp.isArray.test(value) ? (
-      value.match(regexp.ActionParams)
-    ) : regexp.isPenderValue.test(value) ? (
-      value.match(regexp.ActionParams).reduce(chunk(2), [])
-    ) : regexp.isPosition.test(value) ? (
-      value.match(regexp.inPosition).reduce(jsonattrs, {})
-    ) : regexp.isBoolean.test(value) ? (
+    config[nodeName.slice(10)] = exp.isArray.test(value) ? (
+      value.match(exp.ActionParams)
+    ) : exp.isPenderValue.test(value) ? (
+      value.match(exp.ActionParams).reduce(chunk(2), [])
+    ) : exp.isPosition.test(value) ? (
+      value.match(exp.inPosition).reduce(jsonattrs, {})
+    ) : exp.isBoolean.test(value) ? (
       value === 'true'
-    ) : regexp.isNumber.test(value) ? (
+    ) : exp.isNumber.test(value) ? (
       Number(value)
     ) : (
       value
@@ -134,7 +132,7 @@ export function getTargets (selector: string): Element[] {
 
   const targets = document.body.querySelectorAll(selector);
 
-  return Array.from(targets).filter(canFetch);
+  return from(targets).filter(canFetch);
 
 }
 
@@ -196,17 +194,19 @@ export function getElementAttrs (
   value: string
 ]> {
 
-  return Array.from(attributes).reduce((
-    accumulator,
+  const arr = from(attributes);
+
+  return arr.reduce((
+    acc,
     {
       name = null,
       value = null
     }
-  ) => name && value && !exclude.includes(name) ? [
-    ...accumulator,
-    [
-      name,
-      value
-    ]
-  ] : accumulator, include);
+  ) => {
+
+    if (name && value && !exclude.includes(name)) acc.push([ name, value ]);
+
+    return acc;
+
+  }, include);
 }

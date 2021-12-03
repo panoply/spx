@@ -1,7 +1,7 @@
 import history from 'history/browser';
 import { parsePath, createPath } from 'history';
 import * as regexp from '../constants/regexp';
-import { ILocation } from '../types';
+import { ILocation } from '../types/location';
 
 const { origin, hostname } = window.location;
 
