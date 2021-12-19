@@ -4,6 +4,7 @@ import { dispatchEvent } from './events';
 import { progress } from './progress';
 import { IPage } from '../types/page';
 import history from 'history/browser';
+import { from, is } from '../constants/native';
 import * as store from './store';
 import * as mouseover from '../observers/hover';
 import * as intersect from '../observers/intersect';
@@ -21,15 +22,14 @@ const tracked: Set<string> = new Set();
  */
 // @ts-ignore
 // eslint-disable-next-line
-function observeHead (mutations: MutationRecord[], observer: MutationObserver): void {
-
+function observeHead(
+  mutations: MutationRecord[],
+  observer: MutationObserver
+): void {
   forEach((mutation: MutationRecord) => {
-
     if (mutation.type === 'childList') {
-
       mutation.addedNodes.forEach(node => {
         if (node.nodeName === 'SCRIPT') {
-          console.log(node);
           if (node instanceof HTMLElement) {
             if (node.getAttribute('data-pjax-eval') !== 'false') {
               node.setAttribute('data-pjax-eval', 'false');
@@ -37,18 +37,15 @@ function observeHead (mutations: MutationRecord[], observer: MutationObserver): 
           }
         }
       });
-
     } else if (mutation.type === 'attributes') {
-
       console.log(mutation.target);
 
-      console.log('The ' + mutation.attributeName + ' attribute was modified.');
-
+      console.log(
+        'The ' + mutation.attributeName + ' attribute was modified.'
+      );
     }
-
   })(mutations);
-
-};
+}
 
 /**
  * DOM Scripts elements, eg: `<script>` - We will parse
@@ -57,40 +54,44 @@ function observeHead (mutations: MutationRecord[], observer: MutationObserver): 
  * execution and tracking
  */
 function DOMScripts ({ src, id = src }: HTMLScriptElement): void {
-
   if (!loadjs.isDefined(id)) {
     loadjs(src, id, {
-      before: (_, script) => script.setAttribute('data-pjax-eval', 'false'),
+      before: (_, script) =>
+        script.setAttribute('data-pjax-eval', 'false'),
       success: () => dispatchEvent('pjax:script', { id }),
-      error: (path) => console.error(`Pjax: Failed to load script ${path} `),
+      error: path =>
+        console.error(`Pjax: Failed to load script ${path} `),
       numRetries: 1
     });
   }
-};
+}
 
 /**
  * DOM Head Nodes
  */
-function DOMHeadNodes (nodes: string[], { ...children }: HTMLHeadElement): string {
-
+function DOMHeadNodes (
+  nodes: string[],
+  { ...children }: HTMLHeadElement
+): string {
   forEach(DOMNode => {
     if (DOMNode.tagName === 'TITLE') return null;
     if (DOMNode.getAttribute('data-pjax-eval') !== 'false') {
       const index = nodes.indexOf(DOMNode.outerHTML);
-      index === -1 ? DOMNode.parentNode.removeChild(DOMNode) : nodes.splice(index, 1);
+      index === -1
+        ? DOMNode.parentNode.removeChild(DOMNode)
+        : nodes.splice(index, 1);
     }
   })(children);
 
   return nodes.join('');
-
-};
+}
 
 /**
  * DOM Head
  */
 function DOMHead ({ children }: HTMLHeadElement): void {
 
-  const targetNodes = Array.from(children).reduce((arr, node) => {
+  const targetNodes = from(children).reduce((arr, node) => {
 
     if (node.tagName === 'SCRIPT' && node.hasAttribute('src')) {
       if (node.getAttribute('data-pjax-eval') !== 'false') {
@@ -114,12 +115,9 @@ function DOMHead ({ children }: HTMLHeadElement): void {
   // console.log(fragment.children);
 
   forEach(DOMNode => {
-
     if (!DOMNode.hasAttribute('data-pjax-eval')) document.head.appendChild(DOMNode);
-
-  })(Array.from(fragment.children));
-
-};
+  }, from(fragment.children));
+}
 
 /**
  * Append Tracked Node
@@ -134,7 +132,7 @@ function appendTrackedNode (node: Element): void {
     tracked.add(node.id);
   }
 
-};
+}
 
 /**
  * Apply actions to the documents target fragments
@@ -148,19 +146,16 @@ function replaceTarget (target: Element, state: IPage): (DOM: Element) => void {
 
       DOM.innerHTML = target.innerHTML;
 
-      if (state?.append || state?.prepend) {
+      if (state.append || state.prepend) {
         const fragment = document.createElement('div');
-
-        forEach(node => fragment.appendChild(node))([ ...target.childNodes ]);
-
-        state.append
-          ? DOM.appendChild(fragment)
-          : DOM.insertBefore(fragment, DOM.firstChild);
-
+        forEach(fragment.appendChild)(from(target.childNodes));
+        if (state.append) DOM.appendChild(fragment);
+        else DOM.insertBefore(fragment, DOM.firstChild);
       }
     }
+
   };
-};
+}
 
 /**
  * Parse HTML document string from request response
@@ -170,6 +165,7 @@ function replaceTarget (target: Element, state: IPage): (DOM: Element) => void {
 export function parse (HTMLString: string): Document {
 
   return DOMParse.parseFromString(HTMLString, 'text/html');
+
 }
 
 /**
@@ -178,13 +174,29 @@ export function parse (HTMLString: string): Document {
  */
 export async function capture (state: IPage) {
 
-  if (store.has(state.url, { snapshot: true })) {
-    const target = parse(store.snapshot(state.snapshot));
-    target.body.innerHTML = document.body.innerHTML;
-    store.snapshots.set(state.snapshot, target.documentElement.outerHTML);
-  }
+  if (store.has(state.url)) {
 
-};
+    const target = parse(store.snaps.get(state.snapshot));
+
+    target.body.innerHTML = document.body.innerHTML;
+    store.snaps.set(state.snapshot, target.documentElement.outerHTML);
+
+  }
+}
+
+function renderNodes (state: IPage, target: Document, nodes: string[]) {
+
+  let fallback = 1;
+
+  forEach(element => {
+    const node = target.body.querySelector(element);
+    if (node) forEach(replaceTarget(node, state))(document.body.querySelectorAll(element));
+    else fallback++;
+  }, nodes);
+
+  if (is(fallback, state.targets.length)) replaceTarget(target.body, state)(document.body);
+
+}
 
 /**
  * Observe Head Element
@@ -192,8 +204,8 @@ export async function capture (state: IPage) {
 // const observer = new MutationObserver(observeHead);
 
 /**
-   * Observe Head Element
-   */
+ * Observe Head Element
+ */
 // observer.observe(document.head, {
 //  attributes: true,
 //  childList: true,
@@ -204,49 +216,52 @@ export async function capture (state: IPage) {
  * Update the DOM and execute page adjustments
  * to new navigation point
  */
-export function update (state: IPage, popstate?: boolean): void {
-
-  // console.log(state)
-  // window.performance.mark('render')
-  // console.log(window.performance.measure('time', 'start'))
+export function update (state: IPage, popstate?: boolean): IPage {
 
   if (store.config.prefetch.mouseover.enable) mouseover.stop();
   if (store.config.prefetch.intersect.enable) intersect.stop();
-  // observer.disconnect();
 
-  const target = parse(store.snapshot(state.snapshot));
-  state.title = document.title = target?.title || '';
+  const target = parse(store.snaps.get(state.snapshot));
 
-  if (!popstate && state.history) {
-    if (state.url === state.location.lastpath) {
-      history.replace(state.location, state);
-    } else {
-      history.push(state.location, state);
+  state.title = document.title = target.title || '';
+
+  if (target.head) DOMHead(target.head);
+
+  if (state.hydrate) {
+
+    renderNodes(state, target, state.hydrate);
+
+    const capture = { ...state, hydrate: undefined };
+    store.clear();
+
+    const page = store.capture(capture, document.documentElement.outerHTML);
+
+    history.replace(capture.location, page);
+
+  } else {
+
+    renderNodes(state, target, state.replace ? [
+      ...state.targets,
+      ...state.replace
+    ] : state.targets);
+
+    target.body.querySelectorAll('[data-pjax-track]').forEach(appendTrackedNode);
+
+    if (state.history) {
+
+      if (!popstate) {
+        if (state.url === state.location.lastpath) {
+          history.replace(state.location, state);
+        } else {
+          history.push(state.location, state);
+        }
+      }
+
+      scrollTo(state.position.x, state.position.y);
+
     }
+
   }
-
-  if (target?.head) DOMHead(target.head);
-
-  let fallback = 1;
-
-  forEach(element => {
-
-    const node = target.body.querySelector(element);
-
-    node
-      ? forEach(replaceTarget(node, state))(document.body.querySelectorAll(element))
-      : fallback++;
-
-  }, state?.replace ? [ ...state.targets, ...state.replace ] : state.targets);
-
-  if (Object.is(fallback, state.targets.length)) {
-    replaceTarget(target.body, state)(document.body);
-  }
-
-  // APPEND TRACKED NODES
-  target.body.querySelectorAll('[data-pjax-track]').forEach(appendTrackedNode);
-
-  window.scrollTo(state.position.x, state.position.y);
 
   progress.done();
 
@@ -255,7 +270,8 @@ export function update (state: IPage, popstate?: boolean): void {
 
   dispatchEvent('pjax:load', state);
 
+  return state;
+
   // console.log(window.performance.measure('Render Time', 'render'))
   // console.log(window.performance.measure('Total', 'started'))
-
-};
+}
