@@ -21,7 +21,7 @@ export let next: string = createPath(window.location);
 
 /**
  * Returns the last parsed url value.
- * Prev URL is the current URL. Calling this will
+ * Previous URL is the current URL. Calling this will
  * return the same value as it would `window.location.pathname`
  *
  * **BEWARE**
@@ -94,5 +94,8 @@ export function get (link: Element | string, update?: boolean): {
     next = path;
   }
 
-  return { url: path, location: parse(path) };
+  return {
+    url: path,
+    location: parse(path)
+  };
 };
