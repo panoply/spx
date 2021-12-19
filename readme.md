@@ -2,7 +2,9 @@
 
 ## @brixtol/pjax
 
-A blazing fast, lightweight (9kb gzipped), feature full drop-in new generation pjax solution for SSR web applications. This Pjax variation supports multiple fragment replacements, it ships with advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching feature which prevents subsequent requests for occurring resulting in instantaneous page navigation.
+##### _THE PJAX SOLUTION TO RULE THEM ALL_
+
+Blazing fast, lightweight (9kb gzipped), feature full drop-in next generation pjax for SSR web applications. This pjax variation supports multiple fragment replacements, advanced pre-fetching capabilities executing via mouse/pointer/touch or intersection events and provides a snapshot caching engine which prevents subsequent requests from occurring resulting in instantaneous page navigations.
 
 ### Features
 
@@ -11,6 +13,7 @@ A blazing fast, lightweight (9kb gzipped), feature full drop-in new generation p
 - Snapshot caching engine
 - Lifecycle event dispatching
 - Routing and Hook strategy
+- Preemptive fetch capability
 - Dependency management system
 
 ##### Demo
@@ -19,7 +22,7 @@ We are using this module live on our [webshop](https://brixtoltextiles.com).
 
 ### Why?
 
-The landscape of pjax based solution has become rather scarce. The current bread winners either offer the same thing or for our use cases were vastly over engineered. We wanted to couple together various techniques we found to be the most effective in enhancing the performance of SSR rendered web application.
+The landscape of pjax based solution has become rather scarce. The current bread winners either offer the same thing or for our use cases were vastly over engineered and rather shitty tbh. This pjax variation couples together various techniques I found to be the most effective in enhancing the performance of SSR rendered web application that fetch pages over the wire. The pjax approach is tried and tested in the web nexus and while many folks tend to dismiss this tactic for improving TTFB load times of web applications there is actually very little difference in terms of rendering speed when this technique is appropriated correctly and in some cases it can outperform the rendering performance of a virtual dom library.
 
 ## Install
 
@@ -31,9 +34,9 @@ pnpm add @brixtol/pjax
 
 ## Usage
 
-To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default, Pjax will replace the entire `<body>` fragment upon each navigation, so you should define a set of `targets[]` whose inner contents change on a per-page basis.
+To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default it will replace the entire `<body>` fragment upon each navigation. You should define a set of `targets[]` whose inner contents should change on a per-page basis for the most optimal performance.
 
-> The typings provided in this package will describe each option in good detail
+> The typings provided in this package will describe each option in good detail, below are the defaults
 
 <!-- prettier-ignore -->
 ```js
@@ -43,21 +46,24 @@ Pjax.connect({
   targets: ["body"], // Define fragments to be replaced here!
   cache: {
     enable: true,
-    limit: 25,
+    reverse: true,
+    limit: 50
   },
   requests: {
     timeout: 30000,
     async: true,
+    poll: 150 // You should leave this alone.
   },
   prefetch: {
+    preempt: undefined, // Accepts [] or { '/path': [] }
     mouseover: {
-      enable: true,
+      enable: true, // You want the speed? leave this as true.
       threshold: 100,
     },
     intersect: {
       enable: true,
       options: {
-        rootMargin: "0px",
+        rootMargin: "0px 0px 0px 0px",
         threshold: 1.0,
       },
     },
@@ -66,14 +72,22 @@ Pjax.connect({
     enable: true,
     threshold: 500,
     options: {
-      minimum: 0.25,
-      easing: "ease",
-      speed: 200,
-      trickle: true,
-      trickleSpeed: 200,
-      showSpinner: false,
+    enable: true,
+    threshold: 850,
+    style: {
+      render: true,
+      colour: 'black',
+      height: '2px'
     },
-  },
+    options: {
+      minimum: 0.1,
+      easing: 'ease',
+      speed: 225,
+      trickle: true,
+      trickleSpeed: 225,
+      showSpinner: false
+    }
+  }
 });
 
 ```
@@ -318,25 +332,25 @@ Lifecycle events are dispatched to the document upon each navigation. You can ac
 <!-- prettier-ignore -->
 ```javascript
 
-// called when a prefetch is triggered
+// Triggered when a prefetch is triggered
 document.addEventListener("pjax:prefetch");
 
-// called when a mousedown event occurs on a link
+// Triggered when a mousedown event occurs on a link
 document.addEventListener("pjax:trigger");
 
-// called before a page is fetched over XHR
+// Triggered before a page is fetched over XHR
 document.addEventListener("pjax:request");
 
-// called before a page is cached
+// Triggered before a page is cached
 document.addEventListener("pjax:cache");
 
-// called before a page is rendered
+// Triggered before a page is rendered
 document.addEventListener("pjax:render");
 
-// called after a page has rendered
+// Triggered after a page has rendered
 document.addEventListener("pjax:load");
 
-// called when a module is loaded
+// Triggered when a JavaScript module is loaded
 document.addEventListener("pjax:module");
 ```
 
@@ -351,9 +365,6 @@ Pjax.supported: boolean
 
 // Connects Pjax, called upon initialization
 Pjax.connect(options?): void
-
-// Provides routing features
-Pjax.route(routes?): void
 
 // Execute a programmatic visit
 Pjax.visit(url?, options?): Promise<Page{}>
@@ -429,7 +440,7 @@ Place on elements to track on a per-page basis that might otherwise not be conta
 Example
 </summary>
 
-Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped which are not contained within `#main`. Element located outside of target/s that do no exist on previous or future pages will be added.
+Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped which are not contained within `#main`. Elements located outside of target/s that do no exist on previous or future pages will be added.
 
 **Page 1**
 
@@ -466,6 +477,56 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 ```
 
 > If pjax was initialized on `Page 2` then Pjax would have knowledge of its existence before navigation. In such a situation, pjax will mark the tracked element internally.
+
+</details>
+
+#### data-pjax-hydrate
+
+Executes a replacement of the defined elements. Hydrate is different from `replace`, `append` and `prepend` methods in the sense that the those are combined with your defined `targets`. When calling Hydrate, it will run precedence over `targets` and for the visit it will replace only the element/s provided.
+
+- `(['target'])`
+- `(['target' , 'target'])`
+
+<details>
+<summary>
+Example
+</summary>
+
+<!-- prettier-ignore -->
+```html
+
+<a
+ href="*"
+ data-pjax-hydrate="(['.price', '.cart-count'])">
+ Link
+</a>
+
+<div>
+  The next navigation will replace all elements with class "price"
+  and the elements with class "cart-count" - If you have defined
+  the element "#main" as a "target" in your connection, a replacement
+  will not be made on that element, instead the elements defined in
+  "data-pjax-hydrate" will become the target/s.
+</div>
+
+
+<span class="cart-count">1</span>
+<span class="price">€ 450</span>
+
+<div id="main">
+  <img src="*">
+  <ul>
+    <li>Great Product</li>
+    <li class="price">€ 100</li>
+    <li>Awesome Product</li>
+    <li class="price">€ 200</li>
+    <li>Cool Product</li>
+    <li class="price">€ 300</li>
+  </ul>
+</div>
+
+
+```
 
 </details>
 
@@ -681,13 +742,16 @@ You can access a readonly copy of page state via the `event.details.state` prope
 
 #### Write
 
-State modifications are carried out via link attributes or when executing a programmatic visit using the `Pjax.visit()` method. The visit method provides an `options` parameter for adjustments to be merged, please note that this method will only allow you to modify the next navigation. Generally speaking, you should avoid modifying state outside of the available methods, instead treat it as readonly.
+State modifications are carried out via link attributes or when executing a programmatic visit using the `Pjax.visit()` method. The visit method provides an `options` parameter for adjustments to be merged. Though this method will only allow you to modify the next navigation you should avoid modifying state outside of the available methods, instead treat it as readonly.
 
 ```typescript
 interface IPage {
   /**
    * The list of fragment target element selectors defined upon connection.
    * Targets are inherited from `Pjax.connect()` presets.
+   *
+   * > You cannot override the targets but you can skip replacements using
+   * `hydrate` to replace specific fragments.
    *
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
@@ -713,6 +777,16 @@ interface IPage {
    * Should this fetch be pushed to history
    */
   history?: boolean;
+
+  /**
+   * List of fragments to replace. When `hydrate` is used,
+   * it will run precedence over `targets` and execute replacements
+   * on the triggered page fragments.
+   *
+   * @example
+   * ['#main', '.header', '[data-attr]', 'header']
+   */
+  hyrdate?: null | string[];
 
   /**
    * List of fragment element selectors. Accepts any valid
@@ -826,7 +900,9 @@ interface IPage {
     hash?: string;
 
     /**
-     * The previous page path URL, this is also the cache identifier
+     * The previous page path URL, this is also the cache identifier.
+     * If `cache.reverse` is `true` then preemptive fetches will be
+     * executed to this location.
      *
      * @example
      * '/pathname' OR '/pathname?foo=bar'
