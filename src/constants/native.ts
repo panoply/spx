@@ -1,19 +1,19 @@
 /**
- * Object Create
+ * Object Methods
  */
-export const { create } = Object;
-
-/**
- * Object Assign
- */
-export const { assign } = Object;
-
-/**
- * Object is
- */
-export const { is } = Object;
+export const {
+  create,
+  assign,
+  is,
+  keys,
+  defineProperty,
+  getOwnPropertyNames
+} = Object;
 
 /**
  * Array from
  */
-export const { from } = Array;
+export const {
+  from,
+  isArray
+} = Array;
