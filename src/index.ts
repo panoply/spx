@@ -44,7 +44,7 @@ export const connect = (options: IOptions) => {
  *
  * Reloads the current page
  */
-export const reload = async () => {
+export async function reload () {
 
   const page = await request.get(store.pages.get(path.url));
 
@@ -60,24 +60,38 @@ export const reload = async () => {
 };
 
 /**
- * UUID Generator
+ * Cache
  */
-export const cache = (path?: string) => path ? store.pages.get(path) : store.pages.all;
+export function cache (path?: string) {
 
+  return path ? store.pages.get(path) : store.pages.all;
+
+}
 /**
  * UUID Generator
  */
-export const uuid = (size: number = 12) => nanoid(size);
+export function uuid (size: number = 12) {
+
+  return nanoid(size);
+
+}
 
 /**
  * Flush Cache
  */
-export const clear = (url?: string) => store.clear(url);
+export function clear (url?: string) {
+
+  return store.clear(url);
+
+}
 
 /**
  * Visit
  */
-export const visit = async (link: string | Element, state: IPage = {}): Promise<void|IPage> => {
+export async function visit (
+  link: string | Element,
+  state: IPage = {}
+): Promise<void|IPage> {
 
   const p = path.get(link, true);
 
@@ -92,4 +106,8 @@ export const visit = async (link: string | Element, state: IPage = {}): Promise<
 /**
  * Disconnect
  */
-export const disconnect = () => controller.destroy();
+export function disconnect () {
+
+  controller.destroy();
+
+}
