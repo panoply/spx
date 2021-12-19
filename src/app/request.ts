@@ -1,28 +1,26 @@
 import { IPage, ICacheSize } from '../types/page';
 import { dispatchEvent } from './events';
 import { byteConvert, byteSize } from './utils';
+import { object } from './object';
 import { progress } from './progress';
-import * as store from './store';
 import { is } from '../constants/native';
+import * as store from './store';
+import * as path from './path';
 
 let ratelimit: number = 0;
 let storage: number = 0;
 let showprogress: boolean = false;
 
-/**
- * XHR Requests
- */
-export const transit: Map<string, XMLHttpRequest> = new Map();
+export const transit = object<{ [url: string]: XMLHttpRequest }>({
+  configurable: true
+});
 
 /**
  * Async Timeout
  */
 function asyncTimeout (callback: Function, ms = 0): Promise<boolean> {
 
-  return new Promise(resolve => setTimeout(() => {
-    const fn = callback();
-    resolve(fn);
-  }, ms));
+  return new Promise(resolve => setTimeout(() => resolve(callback()), ms));
 
 };
 
@@ -30,7 +28,7 @@ function asyncTimeout (callback: Function, ms = 0): Promise<boolean> {
  * Executes on request end. Removes the XHR recrod and update
  * the response DOMString cache size record.
  */
-function HttpRequestEnd (url: string, DOMString: string): void {
+function HttpRequestEnd (url: string, DOMString: string) {
 
   transit.delete(url);
   storage = storage + byteSize(DOMString);
@@ -40,7 +38,7 @@ function HttpRequestEnd (url: string, DOMString: string): void {
 /**
  * Fetch XHR Request wrapper function
  */
-function HttpRequest (url: string): Promise<string> {
+export function HttpRequest (url: string): Promise<string | false> {
 
   const xhr = new XMLHttpRequest();
 
@@ -58,8 +56,9 @@ function HttpRequest (url: string): Promise<string> {
     // EVENTS
     //
     xhr.onloadstart = e => transit.set(url, xhr);
-    xhr.onload = e => xhr.status === 200 ? resolve(xhr.responseText) : null;
+    xhr.onload = e => resolve(is(xhr.status, 200) ? xhr.responseText : false);
     xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText);
+
     xhr.onerror = reject;
     xhr.timeout = store.config.request.timeout;
     xhr.responseType = 'text';
@@ -137,7 +136,11 @@ export async function inFlight (url: string): Promise<boolean> {
  * from being dispatched if an indentical fetch is in flight.
  * Requests will always save responses and snapshots.
  */
-export async function get (state: IPage): Promise<IPage|false> {
+export async function get (state: string | IPage, type?: string): Promise<IPage|false> {
+
+  if (typeof state === 'string') state = path.get(state);
+
+  if (type) state.type = type;
 
   if (transit.has(state.url)) {
     console.warn(`Pjax: XHR Request is already in transit for: ${state.url}`);
@@ -151,9 +154,9 @@ export async function get (state: IPage): Promise<IPage|false> {
 
   try {
 
-    const response = await HttpRequest(state.url);
+    const dom = await HttpRequest(state.url);
 
-    if (typeof response === 'string') return store.capture(state, response);
+    if (dom) return state.hydrate ? store.hydrate(state, dom) : store.capture(state, dom);
 
     console.warn(`Pjax: Failed to retrive response at: ${state.url}`);
 
