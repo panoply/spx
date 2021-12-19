@@ -1,11 +1,15 @@
 import * as hrefs from '../observers/hrefs';
 import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
+import * as request from '../app/request';
 import * as scroll from '../observers/scroll';
 import * as history from '../observers/history';
 import browser from 'history/browser';
 import { url, parse } from './path';
+import { isArray } from '../constants/native';
+import { connect } from './connects';
 import * as store from './store';
+import { forEach } from './utils';
 
 /**
  * Sets initial page state executing on intial load.
@@ -20,6 +24,17 @@ function onload (): void {
     position: scroll.position
   }, document.documentElement.outerHTML);
 
+  if (store.config.prefetch.preempt !== null) {
+    const { preempt } = store.config.prefetch;
+    if (isArray(preempt)) forEach(path => request.get(path, 'preempt'))(preempt);
+    else if (preempt?.[url]) delete preempt[url];
+  }
+
+  if (store.config.cache.reverse) {
+    const previous = browser.location.state.location;
+    if (previous.lastpath) request.get(previous.lastpath, 'reverse');
+  }
+
   browser.replace(window.location, page);
 
   removeEventListener('load', onload);
@@ -31,7 +46,7 @@ function onload (): void {
  */
 export function initialize (): void {
 
-  if (!store.ready.controller) {
+  if (!connect.controller) {
 
     history.start();
     hrefs.start();
@@ -41,7 +56,7 @@ export function initialize (): void {
 
     addEventListener('load', onload);
 
-    store.ready.controller = true;
+    connect.controller = true;
 
     console.info('Pjax: Connection Established ⚡');
   }
@@ -52,7 +67,7 @@ export function initialize (): void {
  */
 export function destroy (): void {
 
-  if (store.ready.controller) {
+  if (connect.controller) {
 
     history.stop();
     hrefs.stop();
@@ -61,7 +76,7 @@ export function destroy (): void {
     intersect.stop();
     store.clear();
 
-    store.ready.controller = false;
+    connect.controller = false;
 
     console.warn('Pjax: Instance has been disconnected! 😔');
 
