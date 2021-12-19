@@ -1,13 +1,20 @@
 import { supportsPointerEvents } from 'detect-it';
 import { getLink, getTargets, forEach, attrparse } from '../app/utils';
+import { object } from '../app/object';
 import { dispatchEvent } from '../app/events';
 import { y0x0 } from './scroll';
 import * as store from '../app/store';
 import * as request from '../app/request';
 import * as path from '../app/path';
 import { IPage } from '../types/page';
+import { connect } from '../app/connects';
 
-const transit: Map<string, number> = new Map();
+const transit = object<{
+  [url: string]: NodeJS.Timeout
+}>({
+  writable: true,
+  configurable: true
+});
 
 /**
  * Cleanup throttlers
@@ -17,6 +24,7 @@ function cleanup (url: string): boolean {
   clearTimeout(transit.get(url));
 
   return transit.delete(url);
+
 };
 
 /**
@@ -41,8 +49,7 @@ function onMouseleave (event: MouseEvent) {
 function throttle (url: string, fn: ()=> void, delay: number): void {
 
   if (!store.has(url) && !transit.has(url)) {
-    const timeout: any = setTimeout(fn, delay);
-    transit.set(url, timeout);
+    transit.set(url, setTimeout(fn, delay));
   }
 };
 
@@ -79,23 +86,26 @@ function onMouseover (event: MouseEvent): void {
     return disconnect(target);
   }
 
-  if (store.has(url, { snapshot: true })) return disconnect(target);
+  if (store.has(url)) return disconnect(target);
 
   handleLeave(target);
 
-  const state = attrparse(target, { url, location, position: y0x0() });
+  const state = attrparse(target, {
+    url,
+    location,
+    position: y0x0()
+  });
 
   throttle(url, async () => {
-    if ((await prefetch(state))) handleLeave(target);
-  }, state?.threshold || store.config.prefetch.mouseover.threshold);
+    if (await prefetch(state)) handleLeave(target);
+  }, state.threshold || store.config.prefetch.mouseover.threshold);
+
 };
 
 /**
  * Attach mouseover events to all defined element targets
  */
-function handleHover (target: EventTarget, index: number, items: Element[]): void {
-
-  // if (target instanceof Element) proximity(target, index)
+function handleHover (target: EventTarget): void {
 
   if (supportsPointerEvents) {
     target.addEventListener('pointerover', onMouseover, false);
@@ -141,9 +151,9 @@ function disconnect (target: EventTarget): void {
  */
 export function start (): void {
 
-  if (!store.ready.hover) {
+  if (!connect.hover) {
     forEach(handleHover)(getTargets('a[data-pjax-prefetch="hover"]'));
-    store.ready.hover = true;
+    connect.hover = true;
   }
 }
 
@@ -154,9 +164,9 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (store.ready.hover) {
+  if (connect.hover) {
     transit.clear();
     forEach(disconnect)(getTargets('a[data-pjax-prefetch="hover"]'));
-    store.ready.hover = false;
+    connect.hover = false;
   }
 };
