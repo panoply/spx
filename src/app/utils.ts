@@ -40,24 +40,34 @@ function chunk (size: number = 2): (acc: any[], value: string) => any[] {
  * { string: 'foo', number: 200 }
  *
  */
-function jsonattrs (
-  accumulator: { [key: string]: string | number },
-  current: string,
-  index:number,
-  source: string[]
+function jsonAttrs (
+  list: any[],
+  type: { [key: string]: string | number }
 ): {
   [key: string]: string | number
 } {
 
-  const prop = (source.length - 1) >= index ? (index - 1) : index;
+  forEach((
+    current: string,
+    index: number,
+    source: string[]
+  ) => {
 
-  if (index % 2) {
-    assign(accumulator, {
-      [source[prop]]: exp.isNumber.test(current) ? Number(current) : current
-    });
-  }
+    const prop = (source.length - 1) >= index
+      ? (index - 1)
+      : index;
 
-  return accumulator;
+    if (index % 2) {
+      assign(type, {
+        [source[prop]]: exp.isNumber.test(current)
+          ? Number(current)
+          : current
+      });
+    }
+
+  }, list);
+
+  return type;
 
 };
 
@@ -67,18 +77,18 @@ function jsonattrs (
  */
 export function attrparse ({ attributes }: Element, state: IPage = {}): IPage {
 
-  return ([ ...attributes ].reduce((config, { nodeName, nodeValue }) => {
+  for (const { nodeName, nodeValue } of attributes) {
 
-    if (!exp.Attr.test(nodeName)) return config;
+    if (!exp.Attr.test(nodeName)) continue;
 
     const value = nodeValue.replace(/\s+/g, '');
 
-    config[nodeName.slice(10)] = exp.isArray.test(value) ? (
+    state[nodeName.slice(10)] = exp.isArray.test(value) ? (
       value.match(exp.ActionParams)
     ) : exp.isPenderValue.test(value) ? (
       value.match(exp.ActionParams).reduce(chunk(2), [])
     ) : exp.isPosition.test(value) ? (
-      value.match(exp.inPosition).reduce(jsonattrs, {})
+      jsonAttrs(value.match(exp.inPosition), {})
     ) : exp.isBoolean.test(value) ? (
       value === 'true'
     ) : exp.isNumber.test(value) ? (
@@ -87,9 +97,18 @@ export function attrparse ({ attributes }: Element, state: IPage = {}): IPage {
       value
     );
 
-    return config;
+  }
 
-  }, state));
+  return state;
+
+}
+
+/**
+ * A setTimeout as promise that resolves after `x` milliseconds.
+ */
+export function delay (ms: number) {
+
+  return new Promise(resolve => setTimeout(() => resolve('DELAY'), ms));
 
 }
 
@@ -117,11 +136,22 @@ export function byteSize (string: string): number {
 }
 
 /**
+ * Clear Object properties
+ */
+export function clearObject (object: object): boolean {
+
+  for (const prop in object) delete object[prop];
+
+  return true;
+
+}
+
+/**
  * Link is not cached and can be fetched
  */
 export function canFetch (target: Element): boolean {
 
-  return !store.has(path.get(target).url, { snapshot: true });
+  return !store.has(path.get(target).url);
 }
 
 /**
@@ -158,17 +188,19 @@ export function byteConvert (bytes: number): string {
  */
 export function forEach (
   fn: (item: Element | any, index?: number, array?: any) => any,
-  list?: any
-): (arr: any) => any {
+  array?: any
+): (
+  array: any
+) => any {
 
-  if (arguments.length === 1) return (_list: any) => forEach(fn, _list);
+  if (arguments.length === 1) return (array: any) => forEach(fn, array);
 
   let i = 0;
 
-  const len = list.length;
+  const len = array.length;
 
   while (i < len) {
-    fn(list[i], i, list);
+    fn(array[i], i, array);
     i++;
   }
 
