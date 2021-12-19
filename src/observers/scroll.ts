@@ -1,6 +1,5 @@
 import { IPosition } from '../types/page';
-
-let connected: boolean = false;
+import { connect } from '../app/connects';
 
 /**
  * Returns to current scroll position, the `reset()`
@@ -13,12 +12,13 @@ export const position: IPosition = { x: 0, y: 0 };
  * onScroll event, asserts the current X and Y page
  * offset position of the document
  */
-function onScroll (): void {
+export function onScroll (): IPosition {
 
-  position.x = window.screenX || window.pageXOffset;
-  position.y = window.screenY || window.pageYOffset;
+  position.x = window.scrollX || window.pageXOffset;
+  position.y = window.scrollY || window.pageYOffset;
 
-};
+  return position;
+}
 
 /**
  * Resets the scroll position`of the document, applying
@@ -30,8 +30,7 @@ export function reset (): IPosition {
   position.y = 0;
 
   return position;
-
-};
+}
 
 /**
  * Returns a faux scroll position. This prevents the
@@ -40,10 +39,8 @@ export function reset (): IPosition {
  */
 export function y0x0 (): IPosition {
 
-  return {
-    x: 0,
-    y: 0
-  };
+  return { x: 0, y: 0 };
+
 }
 
 /**
@@ -51,10 +48,10 @@ export function y0x0 (): IPosition {
  */
 export function start (): void {
 
-  if (!connected) {
-    addEventListener('scroll', onScroll, { passive: true });
+  if (!connect.scroll) {
     onScroll();
-    connected = true;
+    addEventListener('scroll', onScroll, { passive: true });
+    connect.scroll = true;
   }
 
 }
@@ -64,9 +61,10 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (connected) {
+  if (connect.scroll) {
     removeEventListener('scroll', onScroll, false);
     reset();
-    connected = false;
+    connect.scroll = false;
   }
-};
+
+}
