@@ -5,9 +5,11 @@ import * as request from '../app/request';
 import * as store from '../app/store';
 import { position } from './scroll';
 import { IPage } from '../types/page';
-import { assign } from '../constants/native';
+import { connect } from '../app/connects';
+import merge from 'mergerino';
 
-let unlisten: ()=> void = null;
+let unlisten: () => void = null;
+
 let inTransit: string;
 
 /**
@@ -17,17 +19,19 @@ async function popstate (url: string, state: IPage): Promise<void|IPage> {
 
   if (url !== inTransit) request.cancel(inTransit);
 
-  if (store.has(url, { snapshot: true })) {
-    return render.update(store.get(url).page, true);
+  if (store.has(url)) {
+    if (state.type === 'reverse') {
+      return render.update(store.pages.update(url, { position: state.position }), true);
+    } else {
+      return render.update(store.pages.get(url), true);
+    }
   }
 
   inTransit = url;
 
   const page = await request.get(state);
 
-  return page
-    ? render.update(page, true)
-    : location.assign(url);
+  return page ? render.update(page, true) : location.assign(url);
 
 };
 
@@ -37,9 +41,7 @@ async function popstate (url: string, state: IPage): Promise<void|IPage> {
  */
 function listener ({ action, location }: BrowserHistory) {
 
-  if (action === 'POP') {
-    return popstate(createPath(location), location.state);
-  }
+  if (action === 'POP') return popstate(createPath(location), location.state);
 
 };
 
@@ -48,9 +50,9 @@ function listener ({ action, location }: BrowserHistory) {
  */
 export function start (): void {
 
-  if (!store.ready.history) {
+  if (!connect.history) {
     unlisten = browser.listen(listener);
-    store.ready.history = true;
+    connect.history = true;
   }
 
 }
@@ -60,10 +62,11 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (store.ready.history) {
+  if (connect.history) {
     unlisten();
-    store.ready.history = false;
+    connect.history = false;
   }
+
 }
 
 /**
@@ -76,7 +79,9 @@ export function stop (): void {
 export function updateState (): IPage {
 
   const { location } = browser;
-  const updated = assign({}, location.state, { position });
+  const updated = merge(location.state, { position });
+
+  console.log(location);
 
   browser.replace(location, updated);
 
