@@ -7,7 +7,7 @@
   "owner": "BRIXTOL TEXTILES",
   "license": "MIT",
   "type": "module",
-  "types": "./package/@types/index.d.ts",
+  "types": "./package/index.d.ts",
   "main": "./package/pjax.esm.js",
   "module": "./package/pjax.esm.js",
   "browser": "./package/pjax.umd.js",
@@ -45,7 +45,7 @@
   "dependencies": {
     "detect-it": "^4.0.1",
     "event-from": "^1.0.0",
-    "history": "^5.1.0",
+    "history": "^5.2.0",
     "loadjs": "^4.2.0",
     "matchit": "^1.1.0",
     "mergerino": "^0.4.0",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@brixtol/browserslist-config": "workspace:^1.0.3",
-    "@brixtol/eslint-config": "workspace:^1.0.1",
+    "@brixtol/eslint-config": "workspace:^1.1.0",
     "@brixtol/prettier-config": "workspace:^1.2.0",
     "@brixtol/rollup-utils": "workspace:^1.0.0",
     "@brixtol/tsconfig": "workspace:^1.2.0",
