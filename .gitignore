@@ -5,6 +5,7 @@ package
 !src/public
 node_modules
 versions
+demo
 
 # FILES -----------------------------
 .env

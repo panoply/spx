@@ -6,6 +6,7 @@ export interface IOptions {
    * entire `<body>` fragment, if undefined. Its best to define specific fragments.
    *
    * ---
+   *
    * @default ['body']
    */
   targets?: string[];
@@ -14,6 +15,7 @@ export interface IOptions {
    * Request Configuration
    */
   request?: {
+
     /**
      * The timeout limit of the XHR request issued. If timeout limit is exceeded a
      * normal page visit will be executed.
@@ -35,7 +37,7 @@ export interface IOptions {
      * ---
      * @default 150
      */
-    poll?: 150;
+    poll?: number;
 
     /**
      * Determin if page requests should be fetched asynchronously or synchronously.
@@ -49,7 +51,7 @@ export interface IOptions {
     /**
      * **FEATURE NOT YET AVAILABLE**
      *
-     * Define the request dispatch. By default, request are fetched upon mousedown, this allows
+     * Define the request dispatch. By default, requests are fetched upon mousedown, this allows
      * fetching to start sooner that it would from an click event.
      *
      * > Currently, fetches are executed on `mousedown` only. Future releases will provide click
@@ -66,6 +68,21 @@ export interface IOptions {
    * Prefetch configuration
    */
   prefetch?: {
+
+    /**
+     * Anticipatory prefetches. Values defined here will be fetched preemptively
+     * and saved to cache either upon initial load or when a specific path is
+     * visited. If you provide an array list of paths those pages will be visited
+     * asynchronously in the order they were passed after. If you provide an object,
+     * preemptive fetches will be carried out when path match occurs based on the
+     * `key` entry provided.
+     *
+     * ---
+     *
+     * @default nul
+     */
+    preempt?: string[] | { [path: string]: string[] }
+
     /**
      * Mouseover prefetching preset configuration
      */
@@ -145,6 +162,7 @@ export interface IOptions {
          */
         threshold?: number;
       };
+
     };
   };
 
@@ -171,20 +189,39 @@ export interface IOptions {
      * _Generally speaking, leave this the fuck alone._
      *
      * ---
+     *
      * @default 50
      */
     limit?: number;
 
     /**
-     * FEATURE NOT YET AVAILABLE
+     * Reverse caching. This will execute a premptive fetch of the previous
+     * pages in the history stack when no snapshot exists in cache. Snapshots cache
+     * is purged if a browser refresh occurs and when navigating backwards or
+     * pages will need to be re-fetched resulting in minor delays if a refresh
+     * was triggered between browsing.
+     *
+     * By default, the last known previous page in the history stack is fetched
+     * and re-cached when no snapshot exists.
+     *
+     * ---
+     *
+     * @default true
+     */
+    reverse?: boolean;
+
+    /**
+     * **FEATURE NOT YET AVAILABLE**
      *
      * The save option will save snapshot cache to IndexedDB.
      * This feature is not yet available.
      *
      * ---
+     *
      * @default false
      */
     readonly save?: boolean;
+
   };
 
   /**

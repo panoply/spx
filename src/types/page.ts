@@ -4,26 +4,27 @@ import { ILocation } from './location';
  * Pjax Events
  */
 export type IEvents =
- | 'pjax:prefetch'
- | 'pjax:trigger'
- | 'pjax:click'
- | 'pjax:request'
- | 'pjax:cache'
- | 'pjax:render'
- | 'pjax:script'
- | 'pjax:load';
+  | 'pjax:prefetch'
+  | 'pjax:trigger'
+  | 'pjax:click'
+  | 'pjax:request'
+  | 'pjax:cache'
+  | 'pjax:hydrate'
+  | 'pjax:render'
+  | 'pjax:script'
+  | 'pjax:load';
 
 /**
-* Cache Size
-*/
+ * Cache Size
+ */
 export type ICacheSize = {
   total: number;
   weight: string;
 };
 
 /**
-* Scroll position records
-*/
+ * Scroll position records
+ */
 export type IPosition = {
   x: number;
   y: number;
@@ -65,9 +66,25 @@ export interface IPage {
   title?: string;
 
   /**
+   * A temporary field value the infers upon an action that has or is
+   * taking place. It can be referenced within dispatched events.
+   */
+  type?: string;
+
+  /**
    * Should this fetch be pushed to history
    */
   history?: boolean;
+
+  /**
+   * List of fragments to replace. When `hydrate` is used,
+   * it will run precedence over `targets` and only execute
+   * a replacement on the elements defined.
+   *
+   * @example
+   * ['#main', '.header', '[data-attr]', 'header']
+   */
+  hydrate?: null | string[];
 
   /**
    * List of fragment element selectors. Accepts any valid
@@ -105,6 +122,7 @@ export interface IPage {
    * will not control cache.
    *
    * ---
+   *
    * `false`
    *
    * Passing in __false__ will execute a pjax visit that will
@@ -118,10 +136,11 @@ export interface IPage {
    *
    * `clear`
    *
-   * Passing in __clear__ will cleat the entire cache, removing all
+   * Passing in __clear__ will clear the entire cache, removing all
    * saved records.
+   *
    */
-  cache?: boolean | string;
+  cache?: boolean | string | number;
 
   /**
    * Scroll position of the next navigation.

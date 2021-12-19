@@ -1,7 +1,7 @@
-import { IEvents } from '../types';
+import { IEvents } from '../types/page';
 
 /**
- * Dispatches lifecycle events on the document.
+ * Dispatches lifecycle events on target elements
  */
 export function targetedEvent (eventName: IEvents, target: Element): boolean {
 
@@ -9,6 +9,7 @@ export function targetedEvent (eventName: IEvents, target: Element): boolean {
   const newEvent = new CustomEvent(eventName, { cancelable: true });
 
   return target.dispatchEvent(newEvent);
+
 }
 
 /**

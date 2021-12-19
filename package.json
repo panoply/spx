@@ -7,12 +7,13 @@
   "owner": "BRIXTOL TEXTILES",
   "license": "MIT",
   "type": "module",
-  "types": "./package/@types/index.d.ts",
+  "types": "./package/index.d.ts",
   "main": "./package/pjax.esm.js",
   "module": "./package/pjax.esm.js",
   "browser": "./package/pjax.umd.js",
   "scripts": {
     "dev": "rollup -c -w",
+    "prod": "rollup -c -w --environment prod",
     "build": "rollup -c --environment prod",
     "deploy": "pnpm run build && netlify deploy -p",
     "test": "ava --color --verbose --watch --timeout=2m"
@@ -22,9 +23,10 @@
   ],
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
-    "extends": [
-      "@brixtol/eslint-config-typescript"
+    "ignorePatterns": [
+      "package"
     ],
+    "extends": "@brixtol/eslint-config",
     "rules": {
       "multiline-ternary": "off"
     }
@@ -43,30 +45,25 @@
   "dependencies": {
     "detect-it": "^4.0.1",
     "event-from": "^1.0.0",
-    "history": "^5.0.0",
+    "history": "^5.2.0",
     "loadjs": "^4.2.0",
     "matchit": "^1.1.0",
     "mergerino": "^0.4.0",
-    "nanoid": "^3.1.23",
+    "nanoid": "^3.1.30",
     "nprogress": "^0.2.0"
   },
   "devDependencies": {
-    "@brixtol/eslint-config-typescript": "workspace:^1.0.0",
-    "@brixtol/prettier-config": "workspace:^1.0.3",
-    "@brixtol/rollup-utils": "workspace:^0.1.0",
-    "@rollup/plugin-alias": "^3.1.5",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "@rollup/plugin-replace": "^3.0.0",
+    "@brixtol/browserslist-config": "workspace:^1.0.3",
+    "@brixtol/eslint-config": "workspace:^1.1.0",
+    "@brixtol/prettier-config": "workspace:^1.2.0",
+    "@brixtol/rollup-utils": "workspace:^1.0.0",
+    "@brixtol/tsconfig": "workspace:^1.2.0",
     "@types/loadjs": "^4.0.1",
     "@types/nprogress": "^0.2.0",
     "ava": "^3.15.0",
     "esm": "^3.2.25",
-    "rollup": "^2.56.2",
-    "rollup-plugin-filesize": "^9.1.1",
-    "rollup-plugin-livereload": "^2.0.5",
-    "rollup-plugin-node-polyfills": "^0.2.1",
-    "rollup-plugin-typescript2": "^0.30.0",
-    "typescript": "^4.3.5"
+    "rollup": "^2.60.2",
+    "typescript": "^4.5.2"
   },
   "peerDependencies": {
     "ava": "^3.13.0",

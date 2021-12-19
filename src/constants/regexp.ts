@@ -3,7 +3,7 @@
  *
  * Used to match Pjax data attribute names
  */
-export const Attr: RegExp = /^data-pjax-(append|prepend|replace|history|progress|threshold|position)$/i;
+export const Attr: RegExp = /^data-pjax-(hydrate|append|prepend|replace|history|progress|threshold|position)$/i;
 
 /**
  * Form Inputs
@@ -16,7 +16,6 @@ export const CacheValue: RegExp = /^(reset|clear)$/i;
  * URL Pathname
  *
  * Used to match first pathname from a URL (group 1)
-
  */
 export const Pathname: RegExp = /\/\/[^/]*(\/[^;]*)/;
 
@@ -60,14 +59,14 @@ export const isWhitespace: RegExp = /\s+/g;
  *
  * Used to match the event caller for attribute actions
  */
-export const isAction: RegExp = /\b(?:ap|pre)pend|replace/g;
+export const isAction: RegExp = /\b(?:ap|pre)pend|replace|hydrate/g;
 
 /**
  * Append or Prepend
  *
  * Used to match append or prepend insertion
  */
-export const isReplace: RegExp = /\b(?:append|prepend)\b/;
+export const isReplace: RegExp = /\b(?:append|prepend|hydrate)\b/;
 
 /**
  * Cache Attribute
