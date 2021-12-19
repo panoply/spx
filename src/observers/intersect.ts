@@ -1,7 +1,7 @@
 import { getTargets, forEach, attrparse } from '../app/utils';
+import { connect } from '../app/connects';
 import * as path from '../app/path';
 import * as request from '../app/request';
-import * as store from '../app/store';
 
 /**
  * @type IntersectionObserver
@@ -34,10 +34,10 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
  */
 export function start (): void {
 
-  if (!store.ready.intersect) {
+  if (!connect.intersect) {
     entries = new IntersectionObserver(forEach(onIntersect));
-    forEach(target => entries.observe(target))(getTargets('a[data-pjax-prefetch="intersect"]'));
-    store.ready.intersect = true;
+    forEach(entries.observe)(getTargets('a[data-pjax-prefetch="intersect"]'));
+    connect.intersect = true;
   }
 
 }
@@ -48,9 +48,9 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (store.ready.intersect) {
+  if (connect.intersect) {
     entries.disconnect();
-    store.ready.intersect = false;
+    connect.intersect = false;
   }
 
 };
