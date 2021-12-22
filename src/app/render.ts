@@ -4,7 +4,7 @@ import { dispatchEvent } from './events';
 import { progress } from './progress';
 import { IPage } from '../types/page';
 import history from 'history/browser';
-import { from, is } from '../constants/native';
+import { from } from '../constants/native';
 import * as store from './store';
 import * as mouseover from '../observers/hover';
 import * as intersect from '../observers/intersect';
@@ -135,29 +135,6 @@ function appendTrackedNode (node: Element): void {
 }
 
 /**
- * Apply actions to the documents target fragments
- * with the request response.
- */
-function replaceTarget (target: Element, state: IPage): (DOM: Element) => void {
-
-  return DOM => {
-
-    if (dispatchEvent('pjax:render', { target }, true)) {
-
-      DOM.innerHTML = target.innerHTML;
-
-      if (state.append || state.prepend) {
-        const fragment = document.createElement('div');
-        forEach(fragment.appendChild)(from(target.childNodes));
-        if (state.append) DOM.appendChild(fragment);
-        else DOM.insertBefore(fragment, DOM.firstChild);
-      }
-    }
-
-  };
-}
-
-/**
  * Parse HTML document string from request response
  * using `parser()` method. Cached pages will pass
  * the saved response here.
@@ -184,17 +161,47 @@ export async function capture (state: IPage) {
   }
 }
 
-function renderNodes (state: IPage, target: Document, nodes: string[]) {
+function renderNodes (state: IPage, target: Document) {
 
-  let fallback = 1;
+  const nodes = state.replace ? [ ...state.targets, ...state.replace ] : state.targets;
+  const selector = nodes.join(',');
+  const current = document.body.querySelectorAll(selector);
 
-  forEach(element => {
-    const node = target.body.querySelector(element);
-    if (node) forEach(replaceTarget(node, state))(document.body.querySelectorAll(element));
-    else fallback++;
-  }, nodes);
+  if (current.length === 0) return document.body.replaceWith(target.body);
 
-  if (is(fallback, state.targets.length)) replaceTarget(target.body, state)(document.body);
+  const fetched = target.body.querySelectorAll(selector);
+
+  current.forEach((node, i) => {
+
+    if (!node.matches(nodes[i])) return;
+    if (!dispatchEvent('pjax:render', { target: nodes[i] }, true)) return;
+
+    node.replaceWith(fetched[i]);
+
+    if (state.append || state.prepend) {
+
+      const fragment = document.createElement('div');
+      target.childNodes.forEach(fragment.appendChild);
+
+      return state.append
+        ? node.appendChild(fragment)
+        : node.insertBefore(fragment, node.firstChild);
+
+    }
+
+  });
+
+}
+
+function hydrateNodes (target: Document, selectors: string[]) {
+
+  const nodes = selectors.join(',');
+  const current = document.body.querySelectorAll(nodes);
+
+  if (current.length > 0) {
+    const fetched = target.body.querySelectorAll(nodes);
+    current.forEach((node, i) => node.replaceWith(fetched[i]));
+  }
 
 }
 
@@ -229,21 +236,16 @@ export function update (state: IPage, popstate?: boolean): IPage {
 
   if (state.hydrate) {
 
-    renderNodes(state, target, state.hydrate);
+    hydrateNodes(target, state.hydrate);
 
-    const capture = { ...state, hydrate: undefined };
-    store.clear();
+    const { url } = store.pages.update(state.url, { hydrate: undefined });
+    store.snaps.clear(store.pages.clear([ url ]));
 
-    const page = store.capture(capture, document.documentElement.outerHTML);
-
-    history.replace(capture.location, page);
+    console.log(store.pages.all);
 
   } else {
 
-    renderNodes(state, target, state.replace ? [
-      ...state.targets,
-      ...state.replace
-    ] : state.targets);
+    renderNodes(state, target);
 
     target.body.querySelectorAll('[data-pjax-track]').forEach(appendTrackedNode);
 
