@@ -6,6 +6,7 @@ export const {
   assign,
   is,
   keys,
+  values,
   defineProperty,
   getOwnPropertyNames
 } = Object;
