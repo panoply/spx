@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { object } from './object';
 import { IPage } from '../types/page';
 import { IOptions } from '../types/options';
-import { assign } from '../constants/native';
+import { assign, isArray } from '../constants/native';
 import { dispatchEvent } from './events';
 import * as scroll from '../observers/scroll';
 import * as progress from './progress';
@@ -150,17 +150,22 @@ export function hydrate (state: IPage, snapshot: string): IPage {
  * Removes cached records. Optionally pass in URL
  * to remove specific record.
  */
-export function clear (url?: string): void {
+export function clear (url?: string[] | string): void {
 
-  if (typeof url === 'string') {
+  if (typeof url === 'undefined') {
+
+    pages.clear();
+    snaps.clear();
+
+  } else if (typeof url === 'string') {
 
     snaps.delete(pages.get(url).snapshot);
     pages.delete(url);
 
-  } else {
+  } else if (isArray(url)) {
 
-    pages.clear();
-    snaps.clear();
+    const saved = pages.clear(url);
+    snaps.clear(saved as any);
 
   }
 
@@ -201,5 +206,5 @@ export function history (): string {
 
   browser.replace(location, updated);
 
-  return location.state.url;
+  return (location.state as any).url;
 }

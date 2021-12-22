@@ -10,6 +10,7 @@ import { isArray } from '../constants/native';
 import { connect } from './connects';
 import * as store from './store';
 import { forEach } from './utils';
+import { ILocation } from '../types/location';
 
 /**
  * Sets initial page state executing on intial load.
@@ -31,11 +32,15 @@ function onload (): void {
   }
 
   if (store.config.cache.reverse) {
-    const previous = browser.location.state.location;
-    if (previous.lastpath) request.get(previous.lastpath, 'reverse');
+    const previous: { location?: ILocation } = browser.location.state;
+    if (previous?.location?.lastpath) {
+      request.get(previous.location.lastpath, 'reverse').then(() => {
+        browser.replace(window.location, page);
+      });
+    }
+  } else {
+    browser.replace(window.location, page);
   }
-
-  browser.replace(window.location, page);
 
   removeEventListener('load', onload);
 

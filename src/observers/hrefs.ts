@@ -70,25 +70,27 @@ function handleTrigger (event: MouseEvent): void {
   const target = getLink(event.target, 'a:not([data-pjax-disable]):not([href^="#"])');
 
   if (!target) return undefined;
-  if (!dispatchEvent('pjax:trigger', { target }, true)) return undefined;
 
-  const { url, location } = path.get(target, true);
-  const click = handleClick(target);
+  if (dispatchEvent('pjax:trigger', { target }, true)) {
 
-  if (request.transit.has(url)) {
+    const { url, location } = path.get(target, true);
+    const click = handleClick(target);
 
-    target.addEventListener('click', click(url), false);
+    if (request.transit.has(url)) {
 
-  } else {
-
-    const state = attrparse(target, { url, location, position: y0x0() });
-
-    if (store.has(url)) {
-      const page = store.pages.update(state.url, state);
-      target.addEventListener('click', click(page), false);
-    } else {
-      request.get(state); // TRIGGERS FETCH
       target.addEventListener('click', click(url), false);
+
+    } else {
+
+      const state = attrparse(target, { url, location, position: y0x0() });
+
+      if (store.has(url)) {
+        const page = store.pages.update(state.url, state);
+        target.addEventListener('click', click(page), false);
+      } else {
+        request.get(state); // TRIGGERS FETCH
+        target.addEventListener('click', click(url), false);
+      }
     }
   }
 }

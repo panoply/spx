@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### 18/12/2012
+### 21/12/2012 | v0.3.0-beta.1
 
 ##### Internal Improvements
 
@@ -16,7 +16,7 @@ This is a new render method that will override defined `targets` which is helpfu
 
 This version provides a preemptive fetches. There are 2 additions exposed in the version, which need a little more work but can be used. A new options for **reverse** caching is available which will execute a preemptive fetch of the previous page in the history stack when no snapshot exists in cache. Snapshot cache is purged if a browser refresh occurs and when navigating backwards or pages will need to be re-fetched resulting in minor delays if a refresh was triggered between browsing. By default, the last known previous page in the history stack is now fetched.
 
-In addition to the reverse cache feature, a **preemptive** option is now available to the `prefetch` config. This option currently accepts a string list of paths only. Values defined here will be fetched preemptively and saved to cache either upon initial load anf those pages will be visited in background asynchronously in the order they were passed. In the next release preemptive fetches will be made possible according to a specific path.
+In addition to the reverse cache feature, a **preemptive** option is now available to the `prefetch` config. This option currently accepts a string list of paths only. Values defined here will be fetched preemptively and saved to cache either upon initial load and those pages will be visited in background asynchronously in the order they were passed. In the next release preemptive fetches will be made possible according to a specific path.
 
 ##### Methods
 
@@ -33,6 +33,10 @@ Below is a the complete list of changes applied in this release
 - Fixed scroll position preservation between no-cached navigations
 - Promise methods resolve page state correctly.
 - Improved `<head>` node replacements between navigations.
+- Replaced how fragments are replaced between visits.
+- Added a hydration support for partial replacements
+- Overhauled the store engine
+- Clean up various other areas.
 
 #### 10/08/2021 | v0.2.0-beta.1
 
