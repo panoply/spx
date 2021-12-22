@@ -1,5 +1,9 @@
 import merge from 'mergerino';
-import { assign, defineProperty, getOwnPropertyNames, create } from '../constants/native';
+import {
+  defineProperty,
+  getOwnPropertyNames,
+  create
+} from '../constants/native';
 
 /**
  * Object
@@ -10,7 +14,7 @@ import { assign, defineProperty, getOwnPropertyNames, create } from '../constant
  */
 export function object <T> ({
   writable,
-  configurable = true,
+  configurable,
   enumerable
 }: Omit<PropertyDescriptor, 'value'> = {
   writable: false,
@@ -68,7 +72,9 @@ export function object <T> ({
      */
     update <K extends keyof T> (prop: K, ...value: T[K][]): T[K] {
 
-      return assign(o[prop], merge(o[prop] as any, ...value));
+      o[prop] = merge(o[prop] || {} as any, value);
+
+      return o[prop];
 
     },
 
@@ -109,13 +115,16 @@ export function object <T> ({
      * will only clear that specific record. Returns
      * boolean when sucessful clear is executed.
      */
-    clear (exclude: string[] = []): boolean {
+    clear (exclude: string[] = []): any[] {
+
+      const snapshots = [];
 
       getOwnPropertyNames(o).forEach(url => {
-        if (exclude.indexOf(url) !== -1) delete o[url];
+        if (!exclude.includes(url)) delete o[url];
+        else snapshots.push(o[url].snapshot);
       });
 
-      return true;
+      return snapshots;
 
     }
 
