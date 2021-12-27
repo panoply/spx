@@ -37,7 +37,7 @@ pnpm add @brixtol/pjax
 
 To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default it will replace the entire `<body>` fragment upon each navigation. You should define a set of `targets[]` whose inner contents should change on a per-page basis for optimal performance.
 
-> The typings provided in this package will describe each option in good detail, below are the defaults
+> The typings provided in this package will describe each option in good detail, below are the defaults and all options are optional.
 
 <!-- prettier-ignore -->
 ```js
