@@ -188,7 +188,6 @@ export function clear (url?: string[] | string): void {
  * Check if cache record exists with snapshot
  *
  * @param {string} url
- * @param {{snapshot?: boolean}} has
  */
 export function get (url: string) {
 
