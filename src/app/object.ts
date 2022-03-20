@@ -48,16 +48,9 @@ export function object <T> ({
     set <K extends keyof T> (prop: K, value: unknown): T[K] {
 
       if (this.has(prop)) {
-        defineProperty(o, prop, {
-          value
-        });
+        defineProperty(o, prop, { value });
       } else {
-        defineProperty(o, prop, {
-          value,
-          writable,
-          configurable,
-          enumerable
-        });
+        defineProperty(o, prop, { value, writable, configurable, enumerable });
       }
 
       return o[prop];
@@ -65,7 +58,21 @@ export function object <T> ({
     },
 
     /**
-     * Set Value
+     * Update Store Async
+     *
+     * Same as `update` but returns a promise
+     */
+    updateAsync <K extends keyof T> (prop: K, ...value: T[K][]): Promise<T[K]> {
+
+      return new Promise((resolve) => {
+        o[prop] = merge(o[prop] || {} as any, value);
+        return resolve(o[prop]);
+      });
+
+    },
+
+    /**
+     * Update Store
      *
      * Updates an existing property value, merging
      * the passed value with the current record.
@@ -98,9 +105,8 @@ export function object <T> ({
     /**
      * Delete
      *
-     * Clears all snapshots or if an `id` is provided,
-     * will only clear that specific record. Returns
-     * boolean when sucessful clear is executed.
+     * Deletes a specific record from store. Returns
+     * boolean when sucessful removal is executed.
      */
     delete (id: string): boolean {
 
@@ -109,18 +115,18 @@ export function object <T> ({
     },
 
     /**
-     * clear
+     * Clear
      *
-     * Clears all snapshots or if an `id` is provided,
-     * will only clear that specific record. Returns
-     * boolean when sucessful clear is executed.
+     * Clears all records from store. Optionally provide a list
+     * of targets to be cleared. Returns a list of snapshots
+     * that remain.
      */
-    clear (exclude: string[] = []): any[] {
+    clear (targets: string[] = []): any[] {
 
       const snapshots = [];
 
       getOwnPropertyNames(o).forEach(url => {
-        if (!exclude.includes(url)) delete o[url];
+        if (!targets.includes(url)) delete o[url];
         else snapshots.push(o[url].snapshot);
       });
 
