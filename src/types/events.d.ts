@@ -64,7 +64,17 @@ export interface IHydrate {
   /**
    * The new target document
    */
-  hydration: HTMLElement;
+  newTarget: HTMLElement;
+}
+
+/**
+ * Tracked Event
+ */
+export interface ITracked {
+  /**
+   * The node element marked tracked
+   */
+  target: HTMLElement
 }
 
 /**
@@ -98,11 +108,15 @@ export namespace PjaxEvent {
    */
   export type Render = CustomEvent<IRender>;
   /**
+   * `pjax:tracked`
+   */
+  export type Tracked = CustomEvent<ITracked>;
+  /**
    * `pjax:hydrate`
    */
-   export type Hydrate = CustomEvent<IHydrate>;
+  export type Hydrate = CustomEvent<IHydrate>;
   /**
    * `pjax:load`
    */
-   export type Load = CustomEvent<ILoad>;
+  export type Load = CustomEvent<ILoad>;
 }
