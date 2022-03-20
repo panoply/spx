@@ -106,7 +106,9 @@ export async function navigate (
   if (state) {
 
     if (typeof state.cache === 'string') {
-      if (!state.hydrate) state.cache === 'clear' ? store.clear() : store.clear(url);
+      if (!state.hydrate) {
+        state.cache === 'clear' ? store.clear() : store.clear(url);
+      }
     }
 
     const page = await request.get(state);
