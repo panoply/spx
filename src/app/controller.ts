@@ -22,7 +22,7 @@ function onload (): void {
   const page = store.capture({
     url,
     location: parse(url),
-    position: scroll.position
+    position: scroll.position()
   }, document.documentElement.outerHTML);
 
   if (store.config.prefetch.preempt !== null) {
