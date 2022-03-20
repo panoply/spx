@@ -4,11 +4,14 @@ import { dispatchEvent } from './events';
 import { progress } from './progress';
 import { IPage } from '../types/page';
 import history from 'history/browser';
-import { from, is } from '../constants/native';
+import { from } from '../constants/native';
 import * as store from './store';
 import * as mouseover from '../observers/hover';
 import * as intersect from '../observers/intersect';
 
+/**
+ * DOM Parser
+ */
 const DOMParse: DOMParser = new DOMParser();
 
 /**
@@ -77,7 +80,7 @@ function DOMHeadNodes (nodes: string[], { ...children }: HTMLHeadElement): strin
         ? DOMNode.parentNode.removeChild(DOMNode)
         : nodes.splice(index, 1);
     }
-  })(children);
+  }, children);
 
   return nodes.join('');
 
@@ -120,18 +123,22 @@ function DOMHead ({ children }: HTMLHeadElement): void {
 /**
  * Append Tracked Node
  */
-function appendTrackedNode (node: Element): void {
+function trackedNodes (target: HTMLElement): void {
 
-  // tracked element must contain id
-  if (!node.hasAttribute('id')) return;
+  const nodes = target.querySelectorAll('[data-pjax-track]:not([data-pjax-track="hydrate"])');
 
-  // skip hydration trackers
-  if (node.getAttribute('data-pjax-track') === 'hydrate') return;
+  forEach((node) => {
 
-  if (!tracked.has(node.id)) {
-    document.body.appendChild(node);
-    tracked.add(node.id);
-  }
+    // tracked element must contain id
+    if (node.hasAttribute('id')) {
+      if (!tracked.has(node.id)) {
+        document.body.appendChild(node);
+        dispatchEvent('pjax:tracked', { target: node }, true);
+        tracked.add(node.id);
+      }
+    }
+
+  }, nodes);
 
 }
 
@@ -153,26 +160,26 @@ export function parse (HTMLString: string): Document {
 export async function capture (state: IPage) {
 
   if (store.has(state.url)) {
-
     const target = parse(store.snaps.get(state.snapshot));
-
     target.body.innerHTML = document.body.innerHTML;
     store.snaps.set(state.snapshot, target.documentElement.outerHTML);
-
   }
 }
 
 function renderNodes (state: IPage, target: Document) {
 
-  const nodes = state.replace ? [ ...state.targets, ...state.replace ] : state.targets;
+  const nodes = state.replace
+    ? [ ...state.targets, ...state.replace ]
+    : state.targets;
+
   const selector = nodes.join(',');
   const current = document.body.querySelectorAll(selector);
 
-  if (is(current.length, 0)) return document.body.replaceWith(target.body);
+  if (current.length === 0) return document.body.replaceWith(target.body);
 
   const fetched = target.body.querySelectorAll(selector);
 
-  current.forEach((node, i) => {
+  forEach((node, i) => {
 
     if (!node.matches(nodes[i])) return;
     if (!dispatchEvent('pjax:render', { target: node, newTarget: fetched[i] }, true)) return;
@@ -180,17 +187,16 @@ function renderNodes (state: IPage, target: Document) {
     node.replaceWith(fetched[i]);
 
     if (state.append || state.prepend) {
-
       const fragment = document.createElement('div');
       target.childNodes.forEach(fragment.appendChild);
-
       return state.append
         ? node.appendChild(fragment)
         : node.insertBefore(fragment, node.firstChild);
-
     }
 
-  });
+  }, current);
+
+  return trackedNodes(target.body);
 
 }
 
@@ -203,26 +209,34 @@ function renderNodes (state: IPage, target: Document) {
  * will be swapped out via `innerHTML` to prevent missing replacements
  * for occuring.
  */
-function hydrateNodes (target: Document, selectors: string[]) {
+async function hydrateNodes (state: IPage, target: Document): Promise<any> {
 
-  const nodes = selectors.join(',');
+  const nodes = [ ...state.hydrate, '[data-pjax-track="hydrate"]' ].join(',');
   const current = document.body.querySelectorAll<HTMLElement>(nodes);
 
   if (current.length > 0) {
 
     const fetched = target.body.querySelectorAll<HTMLElement>(nodes);
 
-    current.forEach((node, i) => {
+    forEach((node, i) => {
+
       if (dispatchEvent('pjax:hydrate', { target: node, newTarget: fetched[i] }, true)) {
+
         // InnerHTML replacment on text nodes
-        if (is(node.firstChild.nodeType, Node.TEXT_NODE)) {
+        if (node.firstChild.nodeType === Node.TEXT_NODE) {
           node.innerHTML = fetched[i].innerHTML;
         } else {
           node.replaceWith(fetched[i]);
         }
+
       }
-    });
+    }, current);
+
   }
+
+  const { url } = await store.pages.updateAsync(state.url, { hydrate: undefined });
+
+  return store.snaps.clear(store.pages.clear([ url ]));
 
 }
 
@@ -256,22 +270,11 @@ export function update (state: IPage, popstate?: boolean): IPage {
   if (target.head) DOMHead(target.head);
 
   if (state.hydrate) {
-
-    state.hydrate.push('[data-pjax-track="hydrate"]');
-
-    hydrateNodes(target, state.hydrate);
-
-    const { url } = store.pages.update(state.url, { hydrate: undefined });
-    store.snaps.clear(store.pages.clear([ url ]));
-
+    hydrateNodes(state, target);
   } else {
-
     renderNodes(state, target);
 
-    target.body.querySelectorAll('[data-pjax-track]').forEach(appendTrackedNode);
-
     if (state.history) {
-
       if (!popstate) {
         if (state.url === state.location.lastpath) {
           history.replace(state.location, state);
@@ -283,7 +286,6 @@ export function update (state: IPage, popstate?: boolean): IPage {
       scrollTo(state.position.x, state.position.y);
 
     }
-
   }
 
   progress.done();
@@ -295,6 +297,4 @@ export function update (state: IPage, popstate?: boolean): IPage {
 
   return state;
 
-  // console.log(window.performance.measure('Render Time', 'render'))
-  // console.log(window.performance.measure('Total', 'started'))
 }
