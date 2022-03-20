@@ -67,6 +67,16 @@ export function cache (path?: string) {
   return path ? store.pages.get(path) : store.pages.all;
 
 }
+
+/**
+ * Snapshot
+ */
+export function snapshot (path?: string) {
+
+  return path ? render.parse(store.snaps.get(path)) : store.snaps.all;
+
+}
+
 /**
  * UUID Generator
  */
