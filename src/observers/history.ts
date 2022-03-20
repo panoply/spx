@@ -78,7 +78,7 @@ export function stop (): void {
  */
 export function updateState (): IPage {
 
-  const updated = merge(browser.location.state as IPage, { position });
+  const updated = merge(browser.location.state as IPage, { position: position() });
 
   browser.replace(browser.location, updated);
 
