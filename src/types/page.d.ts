@@ -10,6 +10,7 @@ export type IEvents =
   | 'pjax:request'
   | 'pjax:cache'
   | 'pjax:hydrate'
+  | 'pjax:tracked'
   | 'pjax:render'
   | 'pjax:script'
   | 'pjax:load';
