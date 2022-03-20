@@ -1,7 +1,6 @@
 import { IPage, ICacheSize } from '../types/page';
 import { dispatchEvent } from './events';
 import { byteConvert, byteSize } from './utils';
-import { object } from './object';
 import { progress } from './progress';
 import { is } from '../constants/native';
 import * as store from './store';
@@ -11,7 +10,7 @@ let ratelimit: number = 0;
 let storage: number = 0;
 let showprogress: boolean = false;
 
-export const transit = object<{ [url: string]: XMLHttpRequest }>({ configurable: true });
+export const transit: Map<string, XMLHttpRequest> = new Map();
 
 /**
  * Async Timeout
@@ -26,7 +25,7 @@ function asyncTimeout (callback: Function, ms = 0): Promise<boolean> {
  * Executes on request end. Removes the XHR recrod and update
  * the response DOMString cache size record.
  */
-function HttpRequestEnd (url: string, DOMString: string) {
+function httpRequestEnd (url: string, DOMString: string) {
 
   transit.delete(url);
   storage = storage + byteSize(DOMString);
@@ -36,7 +35,7 @@ function HttpRequestEnd (url: string, DOMString: string) {
 /**
  * Fetch XHR Request wrapper function
  */
-export function HttpRequest (url: string): Promise<string | false> {
+export function httpRequest (url: string): Promise<string | false> {
 
   const xhr = new XMLHttpRequest();
 
@@ -55,7 +54,7 @@ export function HttpRequest (url: string): Promise<string | false> {
     //
     xhr.onloadstart = e => transit.set(url, xhr);
     xhr.onload = e => resolve(is(xhr.status, 200) ? xhr.responseText : false);
-    xhr.onloadend = e => HttpRequestEnd(url, xhr.responseText);
+    xhr.onloadend = e => httpRequestEnd(url, xhr.responseText);
 
     xhr.onerror = reject;
     xhr.timeout = store.config.request.timeout;
@@ -150,7 +149,7 @@ export async function get (state: string | IPage, type?: string): Promise<IPage|
 
   try {
 
-    const dom = await HttpRequest(state.url);
+    const dom = await httpRequest(state.url);
 
     if (dom) return state.hydrate ? store.hydrate(state, dom) : store.capture(state, dom);
 
