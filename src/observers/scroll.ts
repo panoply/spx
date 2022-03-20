@@ -6,18 +6,34 @@ import { connect } from '../app/connects';
  * function **MUST** be called after referencing this
  * to reset position.
  */
-export const position: IPosition = { x: 0, y: 0 };
+let y: number = 0;
+let x: number = 0;
+let ticking: boolean = false;
+
+/**
+ * Set the current scroll position offset
+ * and update the X and Y page references.
+ */
+export function position () {
+
+  return { x, y };
+
+}
 
 /**
  * onScroll event, asserts the current X and Y page
  * offset position of the document
  */
-export function onScroll (): IPosition {
+export function scroll (): void {
 
-  position.x = window.scrollX || window.pageXOffset;
-  position.y = window.scrollY || window.pageYOffset;
+  y = window.scrollY;
+  x = window.scrollX;
 
-  return position;
+  if (!ticking) {
+    window.requestAnimationFrame(position);
+    ticking = true;
+  }
+
 }
 
 /**
@@ -26,10 +42,13 @@ export function onScroll (): IPosition {
  */
 export function reset (): IPosition {
 
-  position.x = 0;
-  position.y = 0;
+  ticking = false;
 
-  return position;
+  x = 0;
+  y = 0;
+
+  return { x, y };
+
 }
 
 /**
@@ -49,8 +68,8 @@ export function y0x0 (): IPosition {
 export function start (): void {
 
   if (!connect.scroll) {
-    onScroll();
-    addEventListener('scroll', onScroll, { passive: true });
+    scroll();
+    addEventListener('scroll', scroll, { passive: true });
     connect.scroll = true;
   }
 
@@ -62,7 +81,7 @@ export function start (): void {
 export function stop (): void {
 
   if (connect.scroll) {
-    removeEventListener('scroll', onScroll, false);
+    removeEventListener('scroll', scroll, false);
     reset();
     connect.scroll = false;
   }
