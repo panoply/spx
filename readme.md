@@ -2,9 +2,7 @@
 
 ## @brixtol/pjax
 
-##### _THE PJAX SOLUTION TO RULE THEM ALL_
-
-Functional, blazing fast, lightweight (9kb gzipped) and feature full new generation pjax solution for instantaneous page navigation of SSR web applications. This pjax variation supports multiple fragment replacements, advanced pre-fetching capabilities which execute via mouse, pointer, touch or intersection events and employs a snapshot caching engine to prevent subsequent requests from occurring.
+Functional, blazing fast, lightweight (9kb gzipped) and feature full new generation pjax solution for instantaneous page navigation of SSR web applications. This pjax variation supports multiple fragment replacements, advanced pre-fetching capabilities executing via mouse, pointer, touch or intersection events and employs a snapshot caching engine to prevent subsequent requests from occurring.
 
 ### Features
 
@@ -35,60 +33,43 @@ pnpm add @brixtol/pjax
 
 ## Usage
 
-To initialize, call `Pjax.connect()` in your bundle and optionally pass preset configuration. By default it will replace the entire `<body>` fragment upon each navigation. You should define a set of `targets[]` whose inner contents should change on a per-page basis for optimal performance.
+To initialize, call `pjax.connect()` in your bundle and optionally pass preset configuration. By default it will replace the entire `<body>` fragment upon each navigation. You should define a set of `targets[]` whose inner contents should change on a per-page basis for optimal performance.
 
 > The typings provided in this package will describe each option in good detail, below are the defaults and all options are optional.
 
 <!-- prettier-ignore -->
 ```js
-import * as Pjax from "@brixtol/pjax";
+import * as pjax from "@brixtol/pjax";
 
-Pjax.connect({
-  targets: ["body"], // Define fragments to be replaced here!
-  cache: {
-    enable: true,
-    reverse: true,
-    limit: 50
+pjax.connect({
+  targets: [ 'body' ],
+  schema: 'pjax',
+  timeout: 30000,
+  poll: 15,
+  async: true,
+  cache: true,
+  reverse: true,
+  limit: 25,
+  mouseover: {
+    trigger: 'href',
+    threshold: 100
   },
-  requests: {
-    timeout: 30000,
-    async: true,
-    poll: 150 // You should leave this alone.
+  intersect: {
+    rootMargin: '',
+    threshold: 0
   },
-  prefetch: {
-    preempt: undefined, // Accepts [] or { '/path': [] }
-    mouseover: {
-      enable: true, // You want the speed? leave this as true.
-      trigger: 'attribute',
-      threshold: 100,
-    },
-    intersect: {
-      enable: true,
-      options: {
-        rootMargin: "0px 0px 0px 0px",
-        threshold: 1.0,
-      },
-    },
+  proximity: {
+    bounding: 0,
+    threshold: 100
   },
   progress: {
-    enable: true,
-    threshold: 500,
-    options: {
-    enable: true,
     threshold: 850,
-    style: {
-      render: true,
-      colour: 'black',
-      height: '2px'
-    },
-    options: {
-      minimum: 0.1,
-      easing: 'ease',
-      speed: 225,
-      trickle: true,
-      trickleSpeed: 225,
-      showSpinner: false
-    }
+    minimum: 0.1,
+    speed: 225,
+    trickle: true,
+    colour: '#111',
+    height: '2px',
+    easing: 'ease'
   }
 });
 
@@ -329,7 +310,43 @@ The contact page will replace an additional fragment with the id value of `foo` 
 
 ## Lifecycle Events
 
-Lifecycle events are dispatched to the document upon each navigation. You can access contextual information from within `event.detail` or cancel events with `preventDefault()` or by returning boolean `false` to prevent execution from occurring.
+Lifecycle events are dispatched to the document upon each navigation. You can access contextual information from within `event.detail`, cancel events with `preventDefault()` or by returning boolean `false` to prevent execution from occurring.
+
+#### Execution Order
+
+The Pjax lifecycle events are dispatched in the following order of execution:
+
+**pjax:prefetch**
+
+Triggered when a prefetch is triggered
+
+**pjax:trigger**
+
+Triggered when a mousedown event occurs on a link
+
+**pjax:request**
+
+Triggered before a page is fetched over XHR
+
+**pjax:cache**
+
+Triggered before a page is cached
+
+**pjax:render**
+
+Triggered before a page or fragment is rendered
+
+**pjax:load**
+
+Triggered after a page has rendered
+
+#### Operation Events
+
+**pjax:module**
+
+Triggered when a JavaScript module is loaded
+
+## Events
 
 <!-- prettier-ignore -->
 ```javascript
@@ -366,34 +383,85 @@ In addition to Lifecycle events, you also have a list of methods available. Meth
 ```typescript
 
 // Check to see if Pjax is supported by the browser
-Pjax.supported: boolean
+pjax.supported: boolean
 
 // Connects Pjax, called upon initialization
-Pjax.connect(options?): void
+pjax.connect(options?): void
 
 // Execute a programmatic visit
-Pjax.visit(url?, options?): Promise<Page{}>
+pjax.visit(url?, options?): Promise<Page{}>
 
 // Access the cache, pass in href for specific record
-Pjax.cache(url?): Page{}
+pjax.cache(url?): Page{}
 
-// Clears the cache, pass in href to clear specific record
-Pjax.clear(url?): void
+// Returns a snapshot
+pjax.snapshot(url?, options?): Document | { [id: string]: string }
+
+// Clears the cache, pass in url to clear specific record
+pjax.clear(url?): void
 
 // Returns a UUID string via nanoid
-Pjax.uuid(size = 16): string
+pjax.uuid(size = 16): string
 
 // Reloads the current page
-Pjax.reload(): Page{}
+pjax.reload(): Page{}
 
 // Disconnects Pjax
-Pjax.disconnect(): void
+pjax.disconnect(): void
 
 ```
 
 ## Attributes
 
 Link elements can be annotated with `data-pjax` attributes. You can control how pages are rendered by passing the below attributes on `<a>` elements.
+
+<!-- prettier-ignore -->
+```html
+<a href="*" data-pjax-disable></a>
+
+<!-- Mousedown Pre-fetching -->
+<a href="*" data-pjax-mousedown="true"></a>
+
+<!-- Intersection Pre-fetching -->
+<a href="*" data-pjax-intersect="true"></a>
+
+<!-- Proximity Pre-fetching -->
+<a href="*" data-pjax-proximity="true"></a>
+
+<!-- Hydration Navigation -->
+<a href="*" data-pjax-hydrate="(['.foo'])"></a>
+
+<!-- Replacer Navigation -->
+<a href="*" data-pjax-replace="(['#foo', '#bar'])"></a>
+
+<!-- Prepends Navigation -->
+<a href="*" data-pjax-prepend="(['#foo', '#bar'])"></a>
+
+<!-- Position Control -->
+<a href="*" data-pjax-position="y:1000 x:0"></a>
+
+<!-- History Control -->
+<a href="*" data-pjax-history="false"></a>
+
+<!-- Threshold Control -->
+<a href="*" data-pjax-threshold="500"></a>
+
+<!-- Cache Control -->
+<a href="*" data-pjax-cache="false"></a>
+
+<!-- Progress Control -->
+<a href="*" data-pjax-progress="500"></a>
+
+<!-- Track Control -->
+<div id="x" data-pjax-track></div>
+
+<!-- Intersect Element (href nodes within) -->
+<div id="x" data-pjax-intersect></div>
+
+<!-- Intersect Element (href nodes within) -->
+<script src="*" data-pjax-eval="true"></script>
+
+```
 
 #### data-pjax-eval
 
@@ -627,7 +695,7 @@ Example
 
 </details>
 
-#### data-pjax-prefetch
+#### data-pjax-mousedown
 
 Prefetch option to execute. Accepts either `intersect` or `hover` value. When `intersect` is provided a request will be dispatched and cached upon visibility via Intersection Observer, whereas `hover` will dispatch a request upon a pointerover (mouseover) event.
 
