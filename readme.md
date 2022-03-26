@@ -389,7 +389,19 @@ pjax.disconnect(): void
 
 Elements can be annotated with `data-pjax-*` attributes which you can leverage to customize how visits are rendered between navigations. By default, attributes are using a `-pjax-` schema but you can optionally provide a custom schema upon `connect` via the `schema` option.
 
-### data-pjax-eval
+- [data-pjax-eval](#data-pjax-eval)
+- [data-pjax-disable](#data-pjax-disable)
+- [data-pjax-hydrate](#data-pjax-hydrate)
+- [data-pjax-replace](#data-pjax-replace)
+- [data-pjax-prepend](#data-pjax-prepend)
+- [data-pjax-append](#data-pjax-append)
+- [data-pjax-mouseover](#data-pjax-mouseover)
+- [data-pjax-threshold](#data-pjax-threshold)
+- [data-pjax-position](#data-pjax-position)
+- [data-pjax-cache](#data-pjax-cache)
+- [data-pjax-history](#data-pjax-history)
+
+## data-pjax-eval
 
 Used on resources contained within the `<head>` fragment like styles, scripts or meta tags. Use this attribute if you want pjax to evaluate scripts and/or stylesheets. This option accepts a `false` value so you can define which scripts to execute on each navigation. By default, pjax will run and evaluate all `<script>` tags it detects for every page visit but will not re-evaluate `<script src="*"></script>` tags.
 
@@ -429,7 +441,7 @@ Example
 
 </details>
 
-### data-pjax-disable
+## data-pjax-disable
 
 Use on `<a>` elements to disable pjax navigation. When a link element is annotated with `data-pjax-disable` a normal page navigation will be executed and cache will be cleared. You can optionally restore the cache using the `data-pjax-cache="restore"` attribute when navigating back to a pjax enabled url.
 
@@ -464,7 +476,7 @@ Clicking this link will execute a normal page navigation but will inform pjax to
 
 </details>
 
-### data-pjax-track
+## data-pjax-track
 
 Place on elements to track on a per-page basis that might otherwise not be contained within target elements.
 
@@ -523,7 +535,7 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 
 </details>
 
-### data-pjax-hydrate
+## data-pjax-hydrate
 
 Executes a controlled replacement of the defined elements. You should perform hydration when server side logic is required to adjust or apply changes to a visitors session as it will allow your application to seamlessly adapt and progressively align the UI without having to trigger a full-page reload. Hydration incurs side effects and the pjax session will be augmented, see below:
 
@@ -621,7 +633,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 
 </details>
 
-### data-pjax-replace
+## data-pjax-replace
 
 Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit.
 
@@ -666,7 +678,7 @@ Example
 
 </details>
 
-### data-pjax-prepend
+## data-pjax-prepend
 
 Executes a prepend visit, where the array list values are used as targets. Index `[0]` will prepend itself to the index `[1]` value. Multiple prepend actions can be defined. Each prepend action is recorded are marked after execution.
 
@@ -737,7 +749,7 @@ Example
 
 </details>
 
-### data-pjax-mouseover
+## data-pjax-mouseover
 
 Performs a prefetch of the `href` url upon mouseover (hover). By default, mouseover pre-fetching is enabled but expects attribute annotation on links. You can have pjax execute pre-fetching on all `<a>` links by setting `trigger` to `href` in `pjax.connect()`. If you have set `trigger` to `href`then you you do not need to define the attribute on links, unless you wish to skip executing the pre-fetch, eg: `<a data-pjax-mouseover="false">`. If you set mouseover pre-fetching to `false` in your `pjax.connect()` settings then annotations will be ignored and mouseover pre-fetching will be disabled.
 
@@ -771,7 +783,7 @@ Example
 
 </details>
 
-### data-pjax-threshold
+## data-pjax-threshold
 
 By default, this will be set to `100` or whatever preset configuration was defined in `pjax.connect()` but you can override those settings by annotating the link with this attribute. The `data-pjax-threshold` attribute should be used together attributes that accept threshold control.
 
@@ -844,7 +856,7 @@ Example
 
 </details>
 
-### data-pjax-position
+## data-pjax-position
 
 Sets the scroll position of the next navigation. This is a space separated expression with colon separated prop and value.
 
@@ -883,22 +895,23 @@ Example
 
 </details>
 
-### data-pjax-cache
+## data-pjax-cache
 
 Controls the caching engine of each pjax navigation. When using `data-pjax-cache` together with prefetch attributes like `data-pjax-mouseover` the action is respected.
 
-**`false`**
+#### `false`
+
 Passing a `false` value will execute a pjax visit that will not be saved to cache and if the link exists in cache it will be removed.
 
-**`reset`**
+#### `reset`
 
 Passing a `reset` value will remove the cache reference existing at the location of the trigger. A new pjax visit will be executed and the response will saved to cache, replacing the previous record.
 
-**`clear`**
+#### `clear`
 
 Passing a `clear` value will purge the entire cache store and all records will be removed.
 
-**`restore`**
+#### `restore`
 
 Passing a `restore` value will save the current cache to session storage which allows the store to be maintained during page a refresh. The cache will exist in session storage and be restored to memory when another pjax visit is triggered. The restore method can be used together with `data-pjax-disable` or when navigating to an external webpage. If the tab or browser is closed then session storage is purged.
 
@@ -952,7 +965,7 @@ Example
 
 </details>
 
-### data-pjax-history
+## data-pjax-history
 
 Controls the history pushstate for the navigation. Accepts `false`, `replace` or `push` value. Passing in `false` will prevent the navigation from being added to history. Passing in `replace` or `push` will execute its respective value to pushstate to history.
 
@@ -982,7 +995,7 @@ Example
 
 </details>
 
-#### data-pjax-progress
+## data-pjax-progress
 
 Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of `false` will disable the progress from showing.
 
