@@ -407,7 +407,10 @@ Used on resources contained within the `<head>` fragment like styles, scripts or
 
 > When a `<script>` tag is detected on a pjax navigation and annotated with `data-pjax-eval="false"` then execution will be triggered only once upon but never again after that.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-eval` attribute can be annotated on any of the below HTML tags:
 
@@ -416,16 +419,23 @@ The `data-pjax-eval` attribute can be annotated on any of the below HTML tags:
 - `<style>`
 - `<script>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `boolean` type. Passing the `true` value is optional as `data-pjax-eval` infers truthy.
 
 - `true`
 - `false`
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 ```html
@@ -445,21 +455,31 @@ Example
 
 Use on `<a>` elements to disable pjax navigation. When a link element is annotated with `data-pjax-disable` a normal page navigation will be executed and cache will be cleared. You can optionally restore the cache using the `data-pjax-cache="restore"` attribute when navigating back to a pjax enabled url.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-disable` attribute can be used on the following tags:
 
 - `<a>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `truthy` type. Passing the `true` value is optional as `data-pjax-disable` infers truthy.
 
 - `true`
 
+</details>
+
 <details>
 <summary>
-Examples
+<strong>Examples</strong>
 </summary>
 
 Clicking this link will clear cache and a normal page navigation will be executed.
@@ -480,19 +500,29 @@ Clicking this link will execute a normal page navigation but will inform pjax to
 
 Place on elements to track on a per-page basis that might otherwise not be contained within target elements.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-track` attribute can be annotated on any HTML contained within `<body>` but cannot be applied to `<a>` href links.
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `truthy` type. Passing the `true` value is optional as `data-pjax-track` infers truthy.
 
 - `true`
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped that are not contained within the `#main` HTML tag. When annotating `data-pjax-track` to elements located outside of target/s which will be added and persisted on all future navigations.
@@ -544,7 +574,10 @@ Executes a controlled replacement of the defined elements. You should perform hy
 3. Hydration is skipped when target location pathname does not match trigger location pathname.
 4. History stack will not be touched, the visit is executed in the background.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-hydrate` attribute can be used on the following tags:
 
@@ -555,7 +588,12 @@ The `data-pjax-hydrate` attribute can be used on the following tags:
 
 > Triggering via an annotated `<button>` element will execute hydration on current url.
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `string[]` type and expects a list of valid element selectors to be provided.
 
@@ -564,9 +602,11 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 > The surrounding parenthesis `()` characters are optional and can be omitted.
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 Lets assume we informed pjax to trigger replacements on the `#menu`, `#main` and `#note` between navigations upon connection, for example:
@@ -637,13 +677,21 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 
 Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-replace` attribute can be used on the following tags:
 
 - `<a>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `string[]` type and expects a list of valid element selectors to be provided.
 
@@ -652,9 +700,11 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 > The surrounding parenthesis `()` characters are optional and can be omitted.
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 <!-- prettier-ignore -->
@@ -682,13 +732,21 @@ Example
 
 Executes a prepend visit, where the array list values are used as targets. Index `[0]` will prepend itself to the index `[1]` value. Multiple prepend actions can be defined. Each prepend action is recorded are marked after execution.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-prepend` attribute can be used on the following tags:
 
 - `<a>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `string[][]` type and expects a list of valid element selectors to be provided.
 
@@ -697,9 +755,11 @@ This attribute is a `string[][]` type and expects a list of valid element select
 
 > The surrounding parenthesis `()` characters are optional and can be omitted.
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 **PAGE 1**
@@ -755,22 +815,32 @@ Performs a prefetch of the `href` url upon mouseover (hover). By default, mouseo
 
 > On mobile devices the `mouseover` value will execute on the `touchstart` event
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-mouseover` attribute can be used on the following tags:
 
 - `<a>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `boolean` type. Passing the `true` value is optional as `data-pjax-mouseover` infers truthy.
 
 - `true`
 - `false`
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 ```html
@@ -778,6 +848,7 @@ Example
 <a href="*" data-pjax-mouseover></a>
 
 <!-- This link will be excluded from prefetch when hovered -->
+
 <a href="*" data-pjax-mouseover="false"></a>
 ```
 
@@ -787,7 +858,10 @@ Example
 
 By default, this will be set to `100` or whatever preset configuration was defined in `pjax.connect()` but you can override those settings by annotating the link with this attribute. The `data-pjax-threshold` attribute should be used together attributes that accept threshold control.
 
-#### Attributes
+<details>
+<summary>
+<strong>Attributes</strong>
+</summary>
 
 The `data-pjax-threshold` attribute can be used together with the following attributes:
 
@@ -795,13 +869,20 @@ The `data-pjax-threshold` attribute can be used together with the following attr
 - `data-pjax-intersect`
 - `data-pjax-proximity`
 
-#### Values
-
-This attribute either a `number` type. You can optionally pass a key reference to target specific attributes when an element is using multiple attribute annotations. Threshold accepts number with decimals, negative numbers will be ignored.
+</details>
 
 <details>
 <summary>
-Example
+<strong>Values</strong>
+</summary>
+
+This attribute either a `number` type. You can optionally pass a key reference to target specific attributes when an element is using multiple attribute annotations. Threshold accepts number with decimals, negative numbers will be ignored.
+
+</details>
+
+<details>
+<summary>
+<strong>Example</strong>
 </summary>
 
 <!-- prettier-ignore -->
@@ -852,6 +933,7 @@ Example
    data-pjax-mouseover>link</a>
 
 </div>
+
 ```
 
 </details>
@@ -860,13 +942,21 @@ Example
 
 Sets the scroll position of the next navigation. This is a space separated expression with colon separated prop and value.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-threshold` attribute can be used on the following tags:
 
 - `<a>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `number` type. The value requires a key definition to be defined to inform upon position.
 
@@ -874,9 +964,11 @@ This attribute is a `number` type. The value requires a key definition to be def
 - `x:0`
 - `y:0 x:0`
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 <!-- prettier-ignore -->
@@ -915,7 +1007,10 @@ Passing a `clear` value will purge the entire cache store and all records will b
 
 Passing a `restore` value will save the current cache to session storage which allows the store to be maintained during page a refresh. The cache will exist in session storage and be restored to memory when another pjax visit is triggered. The restore method can be used together with `data-pjax-disable` or when navigating to an external webpage. If the tab or browser is closed then session storage is purged.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-cache` attribute can be used on the following tags:
 
@@ -924,7 +1019,12 @@ The `data-pjax-cache` attribute can be used on the following tags:
 
 > When annotating `<button>` elements the action is triggered on current location.
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `string` type and expects on the following values.
 
@@ -933,9 +1033,11 @@ This attribute is a `string` type and expects on the following values.
 - `clear`
 - `restore`
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 <!-- prettier-ignore -->
@@ -969,13 +1071,21 @@ Example
 
 Controls the history pushstate for the navigation. Accepts `false`, `replace` or `push` value. Passing in `false` will prevent the navigation from being added to history. Passing in `replace` or `push` will execute its respective value to pushstate to history.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-history` attribute can be used on the following tags:
 
 - `<a>`
 
-#### Values
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
 
 This attribute is a `string` type and expects on the following values.
 
@@ -983,9 +1093,11 @@ This attribute is a `string` type and expects on the following values.
 - `replace`
 - `push`
 
+</details>
+
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 ```html
@@ -999,7 +1111,10 @@ Example
 
 Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of `false` will disable the progress from showing.
 
-#### Tags
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
 
 The `data-pjax-progress` attribute can be used on the following tags:
 
@@ -1008,13 +1123,20 @@ The `data-pjax-progress` attribute can be used on the following tags:
 - `<form>`
 - `<input>`
 
-#### Values
-
-This attribute can be `number` or boolean `false` type. You must provide a number greater than or equal to 100, negative numbers will be ignored.
+</details>
 
 <details>
 <summary>
-Example
+<strong>Values</strong>
+</summary>
+
+This attribute can be `number` or boolean `false` type. You must provide a number greater than or equal to 100, negative numbers will be ignored.
+
+</details>
+
+<details>
+<summary>
+<strong>Example</strong>
 </summary>
 
 ```html
