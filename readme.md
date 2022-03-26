@@ -498,7 +498,7 @@ Clicking this link will execute a normal page navigation but will inform pjax to
 
 ## data-pjax-track
 
-Place on elements to track on a per-page basis that might otherwise not be contained within target elements.
+Place on elements to track on a per-page basis that might otherwise not be contained within target elements. This methods will append nodes to the document `<body>` and placement is not certain. This is helpful when you need to reference an `svg` sprite of template or some sort.
 
 <details>
 <summary>
@@ -675,7 +675,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 
 ## data-pjax-replace
 
-Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit.
+Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in `pjax.connect()` will be merged with those defined on this attribute.
 
 <details>
 <summary>
@@ -991,19 +991,19 @@ This attribute is a `number` type. The value requires a key definition to be def
 
 Controls the caching engine of each pjax navigation. When using `data-pjax-cache` together with prefetch attributes like `data-pjax-mouseover` the action is respected.
 
-#### `false`
+### false
 
 Passing a `false` value will execute a pjax visit that will not be saved to cache and if the link exists in cache it will be removed.
 
-#### `reset`
+### reset
 
 Passing a `reset` value will remove the cache reference existing at the location of the trigger. A new pjax visit will be executed and the response will saved to cache, replacing the previous record.
 
-#### `clear`
+### clear
 
 Passing a `clear` value will purge the entire cache store and all records will be removed.
 
-#### `restore`
+### restore
 
 Passing a `restore` value will save the current cache to session storage which allows the store to be maintained during page a refresh. The cache will exist in session storage and be restored to memory when another pjax visit is triggered. The restore method can be used together with `data-pjax-disable` or when navigating to an external webpage. If the tab or browser is closed then session storage is purged.
 
@@ -1149,19 +1149,21 @@ This attribute can be `number` or boolean `false` type. You must provide a numbe
 
 </details>
 
-## State
+# State
 
 Each page visited has a state value. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` location that has been encountered throughout the pjax session. The state value of each page is added to its pertaining History stack record and it will be referenced on subsequent visits. This approach drastically improves TTFB and provides a specific store for every page.
 
 > Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes. You can maintain and restore sessions using cache methods.
 
-#### Read
+## Read
 
 You can access page state via the `event.details.state` property provided in certain dispatched lifecycle events or via the `pjax.cache()` method. The caching engine used by this Pjax variation acts as mediator when a session begins, when you access page state via the `pjax.cache()` method you are given a bridge to the object that holds all active sessions of the cache store kept in browser memory.
 
-#### Write
+## Write
 
 State modifications can be carried out using attributes, method or from within dispatched events. When using the `Pjax.visit()` method you can apply state modification to the `options` parameter and changes will be merged before a visit begins. You should avoid modifying state outside of the available methods, treat state as **read only** and architect your application to prevent direct augmentation.
+
+## Model
 
 ```typescript
 interface IPage {
