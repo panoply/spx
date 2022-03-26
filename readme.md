@@ -1,6 +1,4 @@
-> _This is still in beta stages, use it with care and expect some changes to be shipped before official release. Tests are still being worked on and will be pushed at official v1, sit tight._
-
-## @brixtol/pjax
+# @brixtol/pjax
 
 Functional, blazing fast, lightweight (9kb gzipped) and feature full new generation pjax solution for instantaneous page navigation of SSR web applications. This pjax variation supports multiple fragment replacements, advanced pre-fetching capabilities executing via mouse, pointer, touch or intersection events and employs a snapshot caching engine to prevent subsequent requests from occurring.
 
@@ -15,7 +13,7 @@ Functional, blazing fast, lightweight (9kb gzipped) and feature full new generat
 - Dependency management system
 - Couples perfectly with [stimulus.js](https://stimulusjs.org/).
 
-##### Demo
+### Demo
 
 We are using this module live on our [webshop](https://brixtoltextiles.com).
 
@@ -23,7 +21,7 @@ We are using this module live on our [webshop](https://brixtoltextiles.com).
 
 The landscape of pjax based solution has become rather scarce. The current bread winners either offer the same thing or for our use case were vastly over engineered. This pjax variation couples together various techniques found to be the most effective in enhancing the performance of SSR rendered web application which are fetching pages over the wire.
 
-## Install
+# Install
 
 ```cli
 pnpm add @brixtol/pjax
@@ -42,26 +40,44 @@ To initialize, call `pjax.connect()` in your bundle, preferably before anything 
 import * as pjax from "@brixtol/pjax";
 
 pjax.connect({
+  // Define fragments to replace
   targets: [ 'body' ],
+  // Set attribute schema reference, eg: data-pjax-*
   schema: 'pjax',
+  // Request timeouts
   timeout: 30000,
+  // Request polling
   poll: 15,
+  // Request asynchronously
   async: true,
+  // Enable a cache store
   cache: true,
+  // Fetch previous on initialization
   reverse: true,
+  // Cache limit in mb
   limit: 25,
+  // mouseover pre-fetching options, pass false to disable
   mouseover: {
-    trigger: 'href',
+    // The trigger reference, accepts: 'href' or 'attribute'
+    trigger: 'attribute',
+    // The amount of time to wait before executing pre-fetch
     threshold: 100
   },
+  // intersect pre-fetching options, pass false to disable (false is default)
   intersect: {
+    // root margin (passed to Intersection Observer)
     rootMargin: '',
+    // threshold (passed to Intersection Observer)
     threshold: 0
   },
+  // Proximity pre-fetching options, pass false to disable (false is default)
   proximity: {
-    bounding: 0,
+    // The distance range before triggering fetch
+    distance: 100,
+    // The amount of time to wait before executing pre-fetch
     threshold: 100
   },
+   // Progress bar options
   progress: {
     threshold: 850,
     minimum: 0.1,
@@ -75,7 +91,7 @@ pjax.connect({
 
 ```
 
-#### Real World
+# Real World
 
 Below is a real world example you can use to better understand how this module works and how it can be applied to your web application. We are working on providing a live demonstration for more advanced use cases but the below example should give you a good understanding of how to leverage this module.
 
@@ -314,37 +330,77 @@ The Pjax lifecycle events are dispatched in the following order of execution:
 3. **pjax:request**
 4. **pjax:cache**
 5. **pjax:render**
-6. **pjax:load**
+6. **pjax:hydrate**
 7. **pjax:module**
+8. **pjax:load**
 
-## Events
+> When a hydrate event is triggered the `pjax:hydrate` method will be fired instead of the `pjax:render`.
+
+### Events
 
 <!-- prettier-ignore -->
-```javascript
+```typescript
+import type { Events } from '@brixtol/pjax'
 
 // Triggered when a prefetch is triggered
-document.addEventListener("pjax:prefetch");
+document.addEventListener<Events.Prefetch>("pjax:prefetch", ({
+  detail: {
+    target: HTMLElement,
+    location: ILocation
+    }
+}) => void | false)
 
 // Triggered when a mousedown event occurs on a link
-document.addEventListener("pjax:trigger");
+document.addEventListener<Events.Trigger>("pjax:trigger", ({
+  detail: {
+    target: HTMLElement
+  }
+}) => void | false)
 
 // Triggered before a page is fetched over XHR
-document.addEventListener("pjax:request");
+document.addEventListener<Events.Request>("pjax:request", ({
+  detail: {
+    state: IPage
+  }
+}) => void | false)
 
 // Triggered before a page is cached
-document.addEventListener("pjax:cache");
+document.addEventListener<Events.Cache>("pjax:cache", ({
+  detail: {
+    state: IPage
+  }
+}) => void | false)
 
 // Triggered before a page or fragment is rendered
-document.addEventListener("pjax:render");
+document.addEventListener<Events.Render>("pjax:render", ({
+  detail: {
+    target: HTMLElement,
+    newTarget: HTMLElement
+  }
+}) => void | false)
 
 // Triggered before a fragment is hydrated
-document.addEventListener("pjax:hydrate"); // { detail: { target: HTMLElement } }
-
-// Triggered after a page has rendered
-document.addEventListener("pjax:load");
+document.addEventListener<Events.Hydrate>("pjax:hydrate", ({
+  detail: {
+    target: HTMLElement,
+    newTarget: HTMLElement
+  }
+}) => void | false)
 
 // Triggered when a JavaScript module is loaded
-document.addEventListener("pjax:module");
+document.addEventListener<Events.Module>("pjax:module", ({
+  detail: {
+    src: string,
+    id: string
+  }
+}) => void | false)
+
+// Triggered after a page has rendered
+document.addEventListener<Events.Load>("pjax:load", ({
+  detail: {
+    state: IPage
+  }
+}) => void)
 ```
 
 # Methods
@@ -352,6 +408,7 @@ document.addEventListener("pjax:module");
 In addition to Lifecycle events, you also have a list of methods available. Methods will allow you some basic programmatic control of the Pjax session occurring, provides access to the cache store and various other operational utilities.
 
 ```typescript
+import * as pjax from '@brixtol/pjax'
 
 // Check to see if Pjax is supported by the browser
 pjax.supported: boolean
@@ -730,7 +787,7 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 ## data-pjax-prepend
 
-Executes a prepend visit, where the array list values are used as targets. Index `[0]` will prepend itself to the index `[1]` value. Multiple prepend actions can be defined. Each prepend action is recorded are marked after execution.
+Executes a prepend replacement on visit, where the array list values are used as targets. Index `[0]` will prepend itself to the index `[1]` value. Multiple prepend actions can be defined. Each prepend action is recorded are marked after execution.
 
 <details>
 <summary>
@@ -738,6 +795,35 @@ Executes a prepend visit, where the array list values are used as targets. Index
 </summary>
 
 The `data-pjax-prepend` attribute can be used on the following tags:
+
+- `<a>`
+
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+
+This attribute is a `string[][]` type and expects a list of valid element selectors to be provided.
+
+- `(['.foo', '.bar'])`
+- `(['.foo' , '.bar'], ['#baz', '#qux'])`
+
+> The surrounding parenthesis `()` characters are optional and can be omitted.
+
+</details>
+
+## data-pjax-append
+
+Executes a append replacement on visit, where the array list values are used as targets. Index `[0]` will append itself to the index `[1]` value. Multiple append actions can be defined. Each append action is recorded are marked after execution.
+
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+
+The `data-pjax-append` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -1169,7 +1255,7 @@ State modifications can be carried out using attributes, method or from within d
 interface IPage {
   /**
    * The list of fragment target element selectors defined upon connection.
-   * Targets are inherited from `Pjax.connect()` presets.
+   * Targets are inherited from `pjax.connect()` presets.
    *
    * > You cannot override the targets but you can skip replacements using
    * `hydrate` to replace specific fragments.
@@ -1177,22 +1263,27 @@ interface IPage {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  readonly targets?: string[];
+  readonly targets: string[];
 
   /**
    * The URL cache key and current url path
    */
-  url?: string;
+  url: string;
 
   /**
    * The Document title
    */
-  title?: string;
+  title: string;
 
   /**
    * Should this fetch be pushed to history
    */
-  history?: boolean;
+  history: boolean;
+
+  /**
+   * UUID reference to the page snapshot HTML Document element
+   */
+  snapshot: string;
 
   /**
    * List of fragments to replace. When `hydrate` is used,
@@ -1202,7 +1293,7 @@ interface IPage {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  hyrdate?: null | string[];
+  hyrdate: null | string[];
 
   /**
    * List of fragment element selectors. Accepts any valid
@@ -1211,7 +1302,7 @@ interface IPage {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  replace?: null | string[];
+  replace: null | string[];
 
   /**
    * List of fragments to append from and to. Accepts multiple.
@@ -1220,7 +1311,7 @@ interface IPage {
    *
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  append?: null | Array<[from: string, to: string]>;
+  append: null | Array<[from: string, to: string]>;
 
   /**
    * List of fragments to be prepend from and to. Accepts multiple.
@@ -1229,14 +1320,14 @@ interface IPage {
    *
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  prepend?: null | Array<[from: string, to: string]>;
+  prepend: null | Array<[from: string, to: string]>;
 
   /**
    * Controls the caching engine for the link navigation.
    * Option is enabled when `cache` preset config is `true`.
    * Each pjax link can set a different cache option.
    */
-  cache?: boolean | 'reset' | 'clear' | 'restore';
+  cache: boolean | 'reset' | 'clear' | 'restore';
 
   /**
    * Define mouseover timeout from which fetching will begin
@@ -1244,7 +1335,7 @@ interface IPage {
    *
    * @default 100
    */
-  threshold?: number;
+  threshold: number;
 
   /**
    * Define proximity prefetch distance from which fetching will
@@ -1252,14 +1343,14 @@ interface IPage {
    *
    * @default 0
    */
-  proximity?: number;
+  proximity: number;
 
   /**
    * Progress bar threshold delay
    *
    * @default 350
    */
-  progress?: boolean | number;
+  progress: boolean | number;
 
   /**
    * Scroll position of the next navigation.
@@ -1269,7 +1360,7 @@ interface IPage {
    *
    * `y` - Equivalent to `scrollTop` in pixels
    */
-  position?: {
+  position: {
     y: number;
     x: number;
   };
@@ -1284,14 +1375,14 @@ interface IPage {
      * @example
      * 'https://website.com'
      */
-    origin?: string;
+    origin: string;
     /**
      * The URL Hostname
      *
      * @example
      * 'website.com'
      */
-    hostname?: string;
+    hostname: string;
 
     /**
      * The URL Pathname
@@ -1299,7 +1390,7 @@ interface IPage {
      * @example
      * '/pathname' OR '/pathname/foo/bar'
      */
-    pathname?: string;
+    pathname: string;
 
     /**
      * The URL search params
@@ -1307,7 +1398,7 @@ interface IPage {
      * @example
      * '?param=foo&bar=baz'
      */
-    search?: string;
+    search: string;
 
     /**
      * The URL Hash
@@ -1315,7 +1406,7 @@ interface IPage {
      * @example
      * '#foo'
      */
-    hash?: string;
+    hash: string;
 
     /**
      * The previous page path URL, this is also the cache identifier.
@@ -1325,13 +1416,8 @@ interface IPage {
      * @example
      * '/pathname' OR '/pathname?foo=bar'
      */
-    lastpath?: string;
+    lastpath: string;
   };
-
-  /**
-   * HTML string of the page
-   */
-  get snapshot(): string;
 }
 ```
 
