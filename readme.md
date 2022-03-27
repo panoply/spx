@@ -1241,15 +1241,24 @@ This attribute is a `number` type or a boolean `false`
 
 <!-- prettier-ignore -->
 ```html
-<!-- This next navigation will load at 1000px from top of page  -->
+<!-- This activates proximity based pre-fetch and uses the connection present defaults -->
 <a
  href="*"
- data-pjax-position="y:1000 x:0"></a>
+ data-pjax-proximity></a>
 
-<!-- This next navigation will load at 250px from top of page  -->
+<!-- This url will begin fetching when the mouse is within 100px of the element -->
 <a
  href="*"
- data-pjax-position="y:250"></a>
+ data-pjax-proximity="100"></a>
+
+<!-- All <a href="*"> elements will be triggered via proximity -->
+<div data-pjax-proximity>
+
+ <!-- These urls will pre-fetch and uses the connection present defaults -->
+ <a href="*" ></a>
+ <a href="*" ></a>
+
+</div>
 
 ```
 
