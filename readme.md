@@ -265,14 +265,12 @@ An offset rectangle applied to the root's href bounding box. The option is passe
 **Type:** `string` <br>
 **Default:** `0px 0px 0px 0px` <br>
 
-### `proximity.throttle`
+### `intersect.throttle`
 
-Threshold limit passed to the intersection observer instance.
+Throttle limit passed to the intersection observer instance.
 
 **Type:** `number` <br>
 **Default:** `500` <br>
-
-### `proximity.threshold`
 
 # Real World
 
@@ -280,7 +278,7 @@ Below is a real world example you can use to better understand how this module w
 
 <details>
 <summary>
-Example
+<strong>Example</strong>
 </summary>
 
 The first thing we want to do is make a connection with Pjax. In your JavaScript bundle we need to initialize it (connect). Our example web application has 3 pages, the **home** page, **about** page and **contact** page. We are going to instruct pjax to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-pjax` attributes to replace an additional fragment when we navigate to the contact page.
