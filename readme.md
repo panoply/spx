@@ -133,39 +133,39 @@ pjax.connect({
 
 # Options
 
-#### `targets`
+### `targets`
 
 Define page fragment targets which are expected to change on a per-page basis. By default, this pjax module will replace the entire `<body>` fragment. It's best to define specific fragments.
 
 **Type:** `string[]` <br>
 **Default:** `['body']` <br>
 
-#### `schema`
+### `schema`
 
 By default, attribute identifiers use a `-pjax-` identifier. You can use a custom attribute identifier.
 
 **Type:** `string` <br>
 **Default:** `pjax` <br>
 
-#### `timeout`
+### `timeout`
 
 Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `30000` which means requests will wait `30s` before being a new request is triggered.
 
-#### `poll`
+### `poll`
 
 Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `1000` which means requests will wait `1s` before being a new request is triggered.
 
 **Type:** `number` <br>
 **Default:** `1000` <br>
 
-#### `async`
+### `async`
 
 Determine if page requests should be fetched asynchronously or synchronously. Setting this to `false` is not recommended.
 
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-#### `cache`
+### `cache`
 
 Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discourage as all visits will be fetched over the network and `data-pjax-cache` attribute configs will be ignored.
 
@@ -174,35 +174,35 @@ Enable or Disable caching. Each page visit request is cached and used in subsequ
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-#### `persist`
+### `persist`
 
 The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
 
 **Type:** `boolean` <br>
 **Default:** `false` <br>
 
-#### `reverse`
+### `reverse`
 
 Reverse caching. This will execute a pre-emptive fetch of the previous pages in the history stack when no snapshot exists in cache. Snapshots cache is purged when browser refresh occurs (unless `persist` is enabled) so when navigating backwards or pages will need to be re-fetched and this results in minor delays due to the refresh which was triggered.
 
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-#### `limit`
+### `limit`
 
 Cache size limit. This pjax variation limits cache size to `50mb`and once it exceeds that limit, records will be removed starting from the earliest point of known cache entries.
 
 **Type:** `number` <br>
 **Default:** `50` <br>
 
-#### `mouseover`
+### `mouseover`
 
 Mouseover pre-fetching. You can disable mouseover (hover) pre-fetching by setting this to `false` which will prevent observers from executing and any `data-pjax-mouseover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
 
 **Type:** `boolean` or `object` <br>
 **Default:** `{ trigger: 'attribute', threshold: 250 }` <br>
 
-#### `mouseover.trigger`
+### `mouseover.trigger`
 
 How mouseover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-pjax-mouseover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-pjax-mouseover="false"`.
 
@@ -210,14 +210,14 @@ How mouseover prefetches should be triggered. By default this option is set to t
 **Accepts:** `attribute` or `href` <br>
 **Default:** `attribute` <br>
 
-#### `mouseover.threshold`
+### `mouseover.threshold`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
 
 **Type:** `number` <br>
 **Default:** `250` <br>
 
-#### `proximity`
+### `proximity`
 
 Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `data-pjax-proximity` attribute will be pre-fetched.
 
@@ -226,28 +226,28 @@ Proximity pre-fetching allow for requests to be dispatched when the cursor is wi
 **Type:** `boolean` or `object` <br>
 **Default:** `{ distance: 75, throttle: 500, threshold: 250 }` <br>
 
-#### `proximity.distance`
+### `proximity.distance`
 
 The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-pjax-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
 
 **Type:** `number` <br>
 **Default:** `75` <br>
 
-#### `proximity.throttle`
+### `proximity.throttle`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
 
 **Type:** `number` <br>
 **Default:** `500` <br>
 
-#### `proximity.threshold`
+### `proximity.threshold`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse has exceeded the range and the threshold time limit defined here has been exceeded.
 
 **Type:** `number` <br>
 **Default:** `250` <br>
 
-#### `intersect`
+### `intersect`
 
 Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `data-pjax-intersect` or `data-pjax-intersect="true"` attribute will be pre-fetched. You can annotate nodes containing href links or `<a>` directly.
 
@@ -256,21 +256,21 @@ Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Ob
 **Type:** `boolean` or `object` <br>
 **Default:** `{ rootMargin: '0px 0px 0px 0px', throttle: 0 }` <br>
 
-#### `intersect.rootMargin`
+### `intersect.rootMargin`
 
 An offset rectangle applied to the root's href bounding box. The option is passed to the Intersection Observer.
 
 **Type:** `string` <br>
 **Default:** `0px 0px 0px 0px` <br>
 
-#### `proximity.throttle`
+### `proximity.throttle`
 
 Threshold limit passed to the intersection observer instance.
 
 **Type:** `number` <br>
 **Default:** `500` <br>
 
-#### `proximity.threshold`
+### `proximity.threshold`
 
 # Real World
 
