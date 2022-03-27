@@ -46,7 +46,7 @@ This module is distributed as ESM and designed to work in the browser environmen
 pnpm add @brixtol/pjax
 ```
 
-> _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
+_Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
 
 ### Yarn
 
@@ -54,7 +54,7 @@ pnpm add @brixtol/pjax
 yarn add @brixtol/pjax
 ```
 
-> _Stop using Yarn, choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
+_Stop using Yarn, choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
 
 ### npm
 
@@ -62,13 +62,15 @@ yarn add @brixtol/pjax
 npm i @brixtol/pjax
 ```
 
-> _Okay, Boomer..._
+_Okay, Boomer..._
 
 ### cdn
 
 ```
 https://unpkg.com/@brixtol/pjax
 ```
+
+_Be as you are.._
 
 # Recommendations
 
