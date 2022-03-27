@@ -283,23 +283,25 @@ Below is a real world example you can use to better understand how this module w
 
 The first thing we want to do is make a connection with Pjax. In your JavaScript bundle we need to initialize it (connect). Our example web application has 3 pages, the **home** page, **about** page and **contact** page. We are going to instruct pjax to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-pjax` attributes to replace an additional fragment when we navigate to the contact page.
 
-<br>
-<strong>JavaScript Bundle</strong>
-<br>
+### JavaScript Bundle
 
 <!-- prettier-ignore -->
 ```javascript
 import * as Pjax from "@brixtol/pjax";
 
 
-Pjax.connect({ targets: ["nav", "main"] });
+Pjax.connect({
+  targets: [
+    "nav",
+    "main"
+  ]
+});
 
 
 ```
 
-**Home Page**
+### Home Page
 
-<br>
 Below we have a very basic Home Page with pjax wired up. All `<a>` elements will be intercepted and cached as per the default configuration. SSR web applications (in most cases) will only ever have a couple of fragments that change between navigation.
 
 <!-- prettier-ignore -->
@@ -364,7 +366,8 @@ Below we have a very basic Home Page with pjax wired up. All `<a>` elements will
 
 ```
 
-**About Page**
+### About Page
+
 <br>
 
 The about page in our web application would look practically identical to the home page. We instructed pjax to pre-fetch this page upon hover by annotating the `<a>` href link with `data-pjax-mouseover` attribute. This attribute informs pjax to being fetching the page the moment the user hovers over the `<a>` link which results in the visit being instantaneous. The **about** page only has some minor differences, but for the sake of clarity, lets have look:
@@ -431,8 +434,7 @@ The about page in our web application would look practically identical to the ho
 </html>
 ```
 
-**Contact Page**
-<br>
+### Contact Page
 
 The contact page will replace an additional fragment with the id value of `foo` which we informed upon via attribute annotation. Upon visiting this page the `<nav>`, `<main>` and `<div id="foo">` fragments will be replaced.
 
