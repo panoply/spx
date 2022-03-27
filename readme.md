@@ -54,7 +54,7 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
 yarn add @brixtol/pjax
 ```
 
-_Stop using Yarn, choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
+_Choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
 
 ### npm
 
@@ -624,7 +624,7 @@ pjax.uuid(size = 16): string
 // Reloads the current page
 pjax.reload(): Page{}
 
-// Disconnects Pjax
+// Disconnects Pjax, ie: destroy the instance
 pjax.disconnect(): void
 
 ```
@@ -1481,15 +1481,15 @@ Each page visited has a state value. Page state is immutable and created for eve
 
 > Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes. You can maintain and restore sessions using cache methods.
 
-## Read
+### Read
 
 You can access page state via the `event.details.state` property provided in certain dispatched lifecycle events or via the `pjax.cache()` method. The caching engine used by this Pjax variation acts as mediator when a session begins, when you access page state via the `pjax.cache()` method you are given a bridge to the object that holds all active sessions of the cache store kept in browser memory.
 
-## Write
+### Write
 
 State modifications can be carried out using attributes, method or from within dispatched events. When using the `Pjax.visit()` method you can apply state modification to the `options` parameter and changes will be merged before a visit begins. You should avoid modifying state outside of the available methods, treat state as **read only** and architect your application to prevent direct augmentation.
 
-## Model
+### Model
 
 ```typescript
 interface IPage {
@@ -1670,7 +1670,11 @@ This pjax variation is leveraging modern browser capabilities. What makes this p
 
 ### Fetching
 
-Pages are fetches using XHR opposed to the Fetch API. Because we are dealing with HTML there is no benefit of using Fetch over XHR. The main
+Pages are fetches using XHR opposed to the Fetch API as we are dealing with HTML requests there is no benefit of using Fetch over XHR.
+
+### Pre-fetching
+
+TODO
 
 ### Rendering
 
@@ -1679,7 +1683,6 @@ Pages are fetches using XHR opposed to the Fetch API. Because we are dealing wit
 3. Stored pages (snapshots) are re-used when returning visits to cached (stored) locations occur.
 4. The DOM Parser API is used in the rendering cycle, only specific elements (targets) are replaced.
 5. The state model of the History API is used maintain page specific configuration references.
-6.
 
 # Contributing
 
@@ -1687,7 +1690,7 @@ This module is written in TypeScript. Production bundles exports to ES2015. This
 
 ### Development
 
-The projects is functional, there are no classes, just functions. Application state considered as global is exported from [app/state.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/store.ts) and the rendering apparatus is contained within [app/render.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/render.ts). The [observers](https://github.com/BRIXTOL/pjax/blob/master/src/observers) directory contains the various fetch and pre-fetch logics. Objects avoid the prototype and `Object.create(null)` is the preferred approach.
+The projects is functional, there are no classes, just functions. Application state considered as global is exported from [state.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/store.ts) and the rendering apparatus is contained within [render.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/render.ts). The [observers](https://github.com/BRIXTOL/pjax/blob/master/src/observers) directory contains the various fetch and pre-fetch logics. Objects avoid the prototype and `Object.create(null)` is the preferred approach.
 
 The project is fairly each to understand, there are no complexities and over-engineering. The Pjax method is simple, you fetch pages over the wire and replace elements in the rendering cycle.
 
@@ -1704,7 +1707,7 @@ This module combines concepts originally introduced by other awesome Open Source
 
 # License
 
-Licensed under [MIT](#LICENCE)
+Licensed under [MIT](#LICENSE)
 
 ---
 
