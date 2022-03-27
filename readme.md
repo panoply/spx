@@ -1,14 +1,14 @@
 # @brixtol/pjax
 
-Functional, blazing fast, lightweight (9kb gzipped) and feature full new generation pjax solution for instantaneous page navigation of SSR web applications. This pjax variation supports multiple fragment replacements, advanced pre-fetching capabilities executing via mouse, pointer, touch or intersection events and employs a snapshot caching engine to prevent subsequent requests from occurring.
+Blazing fast, lightweight (9kb gzipped) and feature full new generation pjax solution. This pjax variation supports multiple fragment replacements, advanced pre-fetching capabilities and employs a snapshot caching engine to prevent subsequent requests from occurring.
 
 ### Features
 
-- Simple and painless integration
-- Pre-fetching capabilities using click, hover and intersect
+- Simple and painless integration.
+- Pre-fetching capabilities using hover, intersect and proximity triggers.
 - Snapshot caching engine and per-page state control.
-- Powerful target and document triggered lifecycle event dispatching
-- Client side DOM hydration approach approach
+- Powerful target and document triggered lifecycle event dispatching.
+- Provides a client side DOM hydration approach.
 - Supports both append and prepend fragment replacements
 - Dependency management system
 - Couples perfectly with [stimulus.js](https://stimulusjs.org/).
@@ -21,7 +21,26 @@ We are using this module live on our [webshop](https://brixtoltextiles.com).
 
 The landscape of pjax based solution has become rather scarce. The current bread winners either offer the same thing or for our use case were vastly over engineered. This pjax variation couples together various techniques found to be the most effective in enhancing the performance of SSR rendered web application which are fetching pages over the wire.
 
+# Table of Contents
+
+1. [Install](#install)
+2. [Recommendations](#recommendations)
+3. [Usage](#usage)
+4. [Options](#options)
+5. [Real World](#real-world)
+6. [Lifecycle Events](#lifecycle-events)
+7. [Methods](#methods)
+8. [Attributes](#attributes)
+9. [State](#state)
+10. [How it works](#how-it-works)
+11. [Contributing](#contributing)
+12. [Acknowledgements](#acknowledgements)
+
 # Install
+
+This module is distributed as ESM and designed to work in the browser environment.
+
+### pnpm
 
 ```cli
 pnpm add @brixtol/pjax
@@ -29,55 +48,77 @@ pnpm add @brixtol/pjax
 
 > _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
 
-## Usage
+### Yarn
 
-To initialize, call `pjax.connect()` in your bundle, preferably before anything else renders. Optionally pass preset configuration. By default the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis for optimal performance.
+```cli
+yarn add @brixtol/pjax
+```
+
+> _Stop using Yarn, choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
+
+### npm
+
+```cli
+npm i @brixtol/pjax
+```
+
+> _Okay, Boomer..._
+
+### cdn
+
+```
+https://unpkg.com/@brixtol/pjax
+```
+
+# Recommendations
+
+In order to get the most of this module below are a few recommendations developers should consider when leveraging it within in their projects.
+
+### Pre-fetching
+
+The pre-fetching capabilities this Pjax variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, when and where pjax should execute a pre-fetch.
+
+### Stimulus
+
+This module was originally developed as a replacement for [turbo](https://github.com/hotwired/turbo) so leveraging it together with [stimulus.js](https://stimulusjs.org/) is the preferred usage. Stimulus is a very simple framework and when working with SSR projects it helps alleviate the complications developers tend to face.
+
+### Minification
+
+By default, all fetched pages are stored in memory so for every request the HTML dom string response is saved to cache. The smaller your HTML pages the more performant the rendering engine will be. In addition to minification it is generally good practice to consider using semantic HTML5 as much as possible so as to negate the amount of markup pages require.
+
+# Usage
+
+To initialize, call `pjax.connect()` in your bundle preferably before anything else is loaded. By default, the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis for optimal performance and consider leveraging the pre-fetching capabilities.
 
 > The typings provided in this package will describe each option in good detail, below are the defaults and all options are optional.
 
-<!-- prettier-ignore -->
 ```js
-import * as pjax from "@brixtol/pjax";
+import * as pjax from '@brixtol/pjax';
 
 pjax.connect({
-  // Define fragments to replace
-  targets: [ 'body' ],
-  // Set attribute schema reference, eg: data-pjax-*
+  targets: ['body'],
   schema: 'pjax',
-  // Request timeouts
   timeout: 30000,
-  // Request polling
   poll: 15,
-  // Request asynchronously
   async: true,
-  // Enable a cache store
   cache: true,
-  // Fetch previous on initialization
   reverse: true,
-  // Cache limit in mb
-  limit: 25,
-  // mouseover pre-fetching options, pass false to disable
+  persist: false,
+  limit: 50,
+  preload: null,
   mouseover: {
-    // The trigger reference, accepts: 'href' or 'attribute'
     trigger: 'attribute',
-    // The amount of time to wait before executing pre-fetch
-    threshold: 100
+    threshold: 250
   },
-  // intersect pre-fetching options, pass false to disable (false is default)
   intersect: {
-    // root margin (passed to Intersection Observer)
     rootMargin: '',
-    // threshold (passed to Intersection Observer)
     threshold: 0
   },
-  // Proximity pre-fetching options, pass false to disable (false is default)
   proximity: {
-    // The distance range before triggering fetch
-    distance: 100,
-    // The amount of time to wait before executing pre-fetch
-    threshold: 100
+    distance: 85,
+    throttle: 500,
+    threshold: 250
   },
-   // Progress bar options
   progress: {
     threshold: 850,
     minimum: 0.1,
@@ -88,8 +129,148 @@ pjax.connect({
     easing: 'ease'
   }
 });
-
 ```
+
+# Options
+
+### `targets`
+
+Define page fragment targets which are expected to change on a per-page basis. By default, this pjax module will replace the entire `<body>` fragment. It's best to define specific fragments.
+
+**Type:** `string[]` <br>
+**Default:** `['body']` <br>
+
+### `schema`
+
+By default, attribute identifiers use a `-pjax-` identifier. You can use a custom attribute identifier.
+
+**Type:** `string` <br>
+**Default:** `pjax` <br>
+
+### `timeout`
+
+Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `30000` which means requests will wait `30s` before being a new request is triggered.
+
+### `poll`
+
+Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `1000` which means requests will wait `1s` before being a new request is triggered.
+
+**Type:** `number` <br>
+**Default:** `1000` <br>
+
+### `async`
+
+Determine if page requests should be fetched asynchronously or synchronously. Setting this to `false` is not recommended.
+
+**Type:** `boolean` <br>
+**Default:** `true` <br>
+
+### `cache`
+
+Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discourage as all visits will be fetched over the network and `data-pjax-cache` attribute configs will be ignored.
+
+> If `cache` is disabled then prefetches will be dispatched using HTML5 `<link>` prefetches, else when cache is enabled it uses XHR.
+
+**Type:** `boolean` <br>
+**Default:** `true` <br>
+
+### `persist`
+
+The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
+
+**Type:** `boolean` <br>
+**Default:** `false` <br>
+
+### `reverse`
+
+Reverse caching. This will execute a pre-emptive fetch of the previous pages in the history stack when no snapshot exists in cache. Snapshots cache is purged when browser refresh occurs (unless `persist` is enabled) so when navigating backwards or pages will need to be re-fetched and this results in minor delays due to the refresh which was triggered.
+
+**Type:** `boolean` <br>
+**Default:** `true` <br>
+
+### `limit`
+
+Cache size limit. This pjax variation limits cache size to `50mb`and once it exceeds that limit, records will be removed starting from the earliest point of known cache entries.
+
+**Type:** `number` <br>
+**Default:** `50` <br>
+
+### `mouseover`
+
+Mouseover pre-fetching. You can disable mouseover (hover) pre-fetching by setting this to `false` which will prevent observers from executing and any `data-pjax-mouseover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
+
+**Type:** `boolean` or `object` <br>
+**Default:** `{ trigger: 'attribute', threshold: 250 }` <br>
+
+##### `mouseover.trigger`
+
+How mouseover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-pjax-mouseover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-pjax-mouseover="false"`.
+
+**Type:** `string` <br>
+**Accepts:** `attribute` or `href` <br>
+**Default:** `attribute` <br>
+
+##### `mouseover.threshold`
+
+Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
+
+**Type:** `number` <br>
+**Default:** `250` <br>
+
+### `proximity`
+
+Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `data-pjax-proximity` attribute will be pre-fetched.
+
+> Annotate any `<a>` links you wish to exclude from pre-fetching using the `data-pjax-proximity="false"`
+
+**Type:** `boolean` or `object` <br>
+**Default:** `{ distance: 75, throttle: 500, threshold: 250 }` <br>
+
+##### `proximity.distance`
+
+The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-pjax-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
+
+**Type:** `number` <br>
+**Default:** `75` <br>
+
+##### `proximity.throttle`
+
+Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
+
+**Type:** `number` <br>
+**Default:** `500` <br>
+
+##### `proximity.threshold`
+
+Controls the fetch delay threshold. Requests will fire only when the mouse has exceeded the range and the threshold time limit defined here has been exceeded.
+
+**Type:** `number` <br>
+**Default:** `250` <br>
+
+### `intersect`
+
+Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `data-pjax-intersect` or `data-pjax-intersect="true"` attribute will be pre-fetched. You can annotate nodes containing href links or `<a>` directly.
+
+> Annotate any `<a>` links you wish to exclude from intersection pre-fetching using the `data-pjax-intersect="false"`
+
+**Type:** `boolean` or `object` <br>
+**Default:** `{ rootMargin: '0px 0px 0px 0px', throttle: 0 }` <br>
+
+##### `intersect.rootMargin`
+
+An offset rectangle applied to the root's href bounding box. The option is passed to the Intersection Observer.
+
+**Type:** `string` <br>
+**Default:** `0px 0px 0px 0px` <br>
+
+##### `proximity.throttle`
+
+Threshold limit passed to the intersection observer instance.
+
+**Type:** `number` <br>
+**Default:** `500` <br>
+
+##### `proximity.threshold`
 
 # Real World
 
@@ -346,28 +527,33 @@ import type { Events } from '@brixtol/pjax'
 document.addEventListener<Events.Prefetch>("pjax:prefetch", ({
   detail: {
     target: HTMLElement,
-    location: ILocation
-    }
+    route: IRoute,
+    type: 'mouseover' | 'intersect' | 'proximity'
+  }
 }) => void | false)
 
 // Triggered when a mousedown event occurs on a link
 document.addEventListener<Events.Trigger>("pjax:trigger", ({
   detail: {
-    target: HTMLElement
+    target: HTMLElement,
+    route: IRoute
   }
 }) => void | false)
 
 // Triggered before a page is fetched over XHR
 document.addEventListener<Events.Request>("pjax:request", ({
   detail: {
-    state: IPage
+    state: IPage,
+    type: 'prefetch' | 'trigger'
   }
 }) => void | false)
 
 // Triggered before a page is cached
 document.addEventListener<Events.Cache>("pjax:cache", ({
   detail: {
-    state: IPage
+    state: IPage,
+    type: 'prefetch' | 'trigger',
+    snapshot: Document
   }
 }) => void | false)
 
@@ -391,7 +577,8 @@ document.addEventListener<Events.Hydrate>("pjax:hydrate", ({
 document.addEventListener<Events.Module>("pjax:module", ({
   detail: {
     src: string,
-    id: string
+    id: string,
+    type: 'script' | 'style'
   }
 }) => void | false)
 
@@ -454,6 +641,7 @@ Elements can be annotated with `data-pjax-*` attributes which you can leverage t
 - [data-pjax-append](#data-pjax-append)
 - [data-pjax-mouseover](#data-pjax-mouseover)
 - [data-pjax-threshold](#data-pjax-threshold)
+- [data-pjax-proximity](#data-pjax-proximity)
 - [data-pjax-position](#data-pjax-position)
 - [data-pjax-cache](#data-pjax-cache)
 - [data-pjax-history](#data-pjax-history)
@@ -1024,6 +1212,49 @@ This attribute either a `number` type. You can optionally pass a key reference t
 
 </details>
 
+## data-pjax-proximity
+
+Triggers a proximity fetch when the cursor is within range of an `<a>` element. Optionally accepts a `number` value which overrides the `distance` preset configuration.
+
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+
+The `data-pjax-proximity` attribute can be annotated on any HTML contained within `<body>`.
+
+</details>
+
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+
+This attribute is a `number` type or a boolean `false`
+
+</details>
+
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+
+<!-- prettier-ignore -->
+```html
+<!-- This next navigation will load at 1000px from top of page  -->
+<a
+ href="*"
+ data-pjax-position="y:1000 x:0"></a>
+
+<!-- This next navigation will load at 250px from top of page  -->
+<a
+ href="*"
+ data-pjax-position="y:250"></a>
+
+```
+
+</details>
+
 ## data-pjax-position
 
 Sets the scroll position of the next navigation. This is a space separated expression with colon separated prop and value.
@@ -1261,9 +1492,10 @@ interface IPage {
    * `hydrate` to replace specific fragments.
    *
    * @example
+   *
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  readonly targets: string[];
+  targets: string[];
 
   /**
    * The URL cache key and current url path
@@ -1291,6 +1523,7 @@ interface IPage {
    * on the triggered page fragments.
    *
    * @example
+   *
    * ['#main', '.header', '[data-attr]', 'header']
    */
   hyrdate: null | string[];
@@ -1300,6 +1533,7 @@ interface IPage {
    * `querySelector()` string.
    *
    * @example
+   *
    * ['#main', '.header', '[data-attr]', 'header']
    */
   replace: null | string[];
@@ -1421,11 +1655,34 @@ interface IPage {
 }
 ```
 
-## Contributing
+# How it works?
+
+This pjax variation is leveraging modern browser capabilities. What makes this pjax variant faster than others is how the pages are fetched and the caching approach it employs.
+
+### Fetching
+
+Pages are fetches using XHR opposed to the Fetch API. Because we are dealing with HTML there is no benefit of using Fetch over XHR. The main
+
+### Rendering
+
+1. An XHR request can begin on mousedown, mouseover, element intersection or via cursor proximity.
+2. The response DOM string of fetched pages is stored in memory, so page requests are only ever executed once.
+3. Stored pages (snapshots) are re-used when returning visits to cached (stored) locations occur.
+4. The DOM Parser API is used in the rendering cycle, only specific elements (targets) are replaced.
+5. The state model of the History API is used maintain page specific configuration references.
+6.
+
+# Contributing
 
 This module is written in TypeScript. Production bundles exports to ES2015. This project has been open sourced from within a predominantly closed source mono/multi repo. We will update it according to what we need. Feel free to suggest features or report bugs and PR's are welcome!
 
-## Acknowledgements
+### Development
+
+The projects is functional, there are no classes, just functions. Application state considered as global is exported from [app/state.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/store.ts) and the rendering apparatus is contained within [app/render.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/render.ts). The [observers](https://github.com/BRIXTOL/pjax/blob/master/src/observers) directory contains the various fetch and pre-fetch logics. Objects avoid the prototype and `Object.create(null)` is the preferred approach.
+
+The project is fairly each to understand, there are no complexities and over-engineering. The Pjax method is simple, you fetch pages over the wire and replace elements in the rendering cycle.
+
+# Acknowledgements
 
 This module combines concepts originally introduced by other awesome Open Source projects:
 
@@ -1436,7 +1693,7 @@ This module combines concepts originally introduced by other awesome Open Source
 - [Turbo](https://github.com/hotwired/turbo)
 - [Turbolinks](https://github.com/turbolinks/turbolinks)
 
-## License
+# License
 
 Licensed under [MIT](#LICENCE)
 
