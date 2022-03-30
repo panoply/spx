@@ -24,6 +24,11 @@ export function reload(): Promise<IPage>;
 export function cache(path?: string): IPage | { [path: string]: IPage; };
 
 /**
+ * Cache
+ */
+export function hydrate(path: string, elements: string[]): Promise<IPage>
+
+/**
  * UUID Generator
  */
 export function uuid(size?: number): string;
