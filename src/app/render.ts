@@ -1,13 +1,15 @@
+import history from 'history/browser';
 import loadjs from 'loadjs';
 import { forEach } from './utils';
-import { dispatchEvent } from './events';
+import { dispatch } from './events';
 import { progress } from './progress';
 import { IPage } from '../types/page';
-import history from 'history/browser';
-import { from } from '../constants/native';
+import { snaps, config, selectors } from './state';
+import { toArray } from '../constants/native';
 import * as store from './store';
-import * as mouseover from '../observers/hover';
+import * as mouseover from '../observers/mouseover';
 import * as intersect from '../observers/intersect';
+// import * as proximity from '../observers/proximity';
 
 /**
  * DOM Parser
@@ -29,17 +31,18 @@ function observeHead(
   mutations: MutationRecord[],
   observer: MutationObserver
 ): void {
-  forEach((mutation: MutationRecord) => {
+
+  mutations.forEach((mutation: MutationRecord) => {
+
     if (mutation.type === 'childList') {
       mutation.addedNodes.forEach(node => {
-        if (node.nodeName === 'SCRIPT') {
-          if (node instanceof HTMLElement) {
-            if (node.getAttribute('data-pjax-eval') !== 'false') {
-              node.setAttribute('data-pjax-eval', 'false');
-            }
+        if (node.nodeName === 'SCRIPT' && node instanceof HTMLElement) {
+          if (node.getAttribute(selectors.eval) !== 'false') {
+            node.setAttribute(selectors.eval, 'false');
           }
         }
       });
+
     } else if (mutation.type === 'attributes') {
       console.log(mutation.target);
 
@@ -47,7 +50,7 @@ function observeHead(
         'The ' + mutation.attributeName + ' attribute was modified.'
       );
     }
-  })(mutations);
+  });
 }
 
 /**
@@ -59,8 +62,8 @@ function observeHead(
 function DOMScripts ({ src, id = src }: HTMLScriptElement): void {
   if (!loadjs.isDefined(id)) {
     loadjs(src, id, {
-      before: (_, script) => script.setAttribute('data-pjax-eval', 'false'),
-      success: () => dispatchEvent('pjax:script', { id }),
+      before: (_, script) => script.setAttribute(selectors.eval, 'false'),
+      success: () => dispatch('pjax:script', { id }),
       error: path => console.error(`Pjax: Failed to load script ${path} `),
       numRetries: 1
     });
@@ -74,7 +77,7 @@ function DOMHeadNodes (nodes: string[], { ...children }: HTMLHeadElement): strin
 
   forEach(DOMNode => {
     if (DOMNode.tagName === 'TITLE') return null;
-    if (DOMNode.getAttribute('data-pjax-eval') !== 'false') {
+    if (DOMNode.getAttribute(selectors.eval) !== 'false') {
       const index = nodes.indexOf(DOMNode.outerHTML);
       index === -1
         ? DOMNode.parentNode.removeChild(DOMNode)
@@ -91,10 +94,10 @@ function DOMHeadNodes (nodes: string[], { ...children }: HTMLHeadElement): strin
  */
 function DOMHead ({ children }: HTMLHeadElement): void {
 
-  const targetNodes = from(children).reduce((arr, node) => {
+  const targetNodes = toArray(children).reduce((arr, node) => {
 
     if (node.tagName === 'SCRIPT' && node.hasAttribute('src')) {
-      if (node.getAttribute('data-pjax-eval') !== 'false') {
+      if (node.getAttribute(selectors.eval) !== 'false') {
         if (node instanceof HTMLScriptElement) {
           DOMScripts(node);
           node.parentNode.removeChild(node);
@@ -102,9 +105,13 @@ function DOMHead ({ children }: HTMLHeadElement): void {
       }
     }
 
-    return node.tagName !== 'TITLE' && node.tagName !== 'SCRIPT'
-      ? [ ...arr, node.outerHTML ]
-      : arr;
+    if (node.tagName !== 'TITLE' && node.tagName !== 'SCRIPT') {
+      arr.push(node.outerHTML);
+    } else {
+      return arr;
+    }
+
+    return arr;
 
   }, []);
 
@@ -115,30 +122,8 @@ function DOMHead ({ children }: HTMLHeadElement): void {
   // console.log(fragment.children);
 
   for (const DOMNode of fragment.children) {
-    if (!DOMNode.hasAttribute('data-pjax-eval')) document.head.appendChild(DOMNode);
+    if (!DOMNode.hasAttribute(selectors.eval)) document.head.appendChild(DOMNode);
   }
-
-}
-
-/**
- * Append Tracked Node
- */
-function trackedNodes (target: HTMLElement): void {
-
-  const nodes = target.querySelectorAll('[data-pjax-track]:not([data-pjax-track="hydrate"])');
-
-  forEach((node) => {
-
-    // tracked element must contain id
-    if (node.hasAttribute('id')) {
-      if (!tracked.has(node.id)) {
-        document.body.appendChild(node);
-        dispatchEvent('pjax:tracked', { target: node }, true);
-        tracked.add(node.id);
-      }
-    }
-
-  }, nodes);
 
 }
 
@@ -154,49 +139,63 @@ export function parse (HTMLString: string): Document {
 }
 
 /**
- * Captures current document element and sets a
- * record to snapshot state
+ * Tracked Nodes
+ *
+ * '[data-pjax-track]:not([data-pjax-track="hydrate"])'
  */
-export async function capture (state: IPage) {
+function trackedNodes (target: HTMLElement): void {
 
-  if (store.has(state.url)) {
-    const target = parse(store.snaps.get(state.snapshot));
-    target.body.innerHTML = document.body.innerHTML;
-    store.snaps.set(state.snapshot, target.documentElement.outerHTML);
-  }
+  const nodes = target.querySelectorAll(selectors.track);
+
+  nodes.forEach((node) => {
+
+    // tracked element must contain id
+    if (!node.hasAttribute('id')) return;
+
+    if (!tracked.has(node.id)) {
+      document.body.appendChild(node);
+      tracked.add(node.id);
+      dispatch('pjax:tracked', { target: node }, true);
+    }
+  });
+
 }
 
+/**
+ * Render Nodes
+ *
+ * Renders the new page navigation nodes replacing the
+ * current pages targets with the destination targets.
+ * This function is also responsible for handling append,
+ * prepend and tracked replacements of element in the dom.
+ */
 function renderNodes (state: IPage, target: Document) {
 
-  const nodes = state.replace
-    ? [ ...state.targets, ...state.replace ]
-    : state.targets;
-
+  const nodes = state.replace ? [ ...state.targets, ...state.replace ] : state.targets;
   const selector = nodes.join(',');
-  const current = document.body.querySelectorAll(selector);
+  const current = document.body.querySelectorAll<HTMLElement>(selector);
 
   if (current.length === 0) return document.body.replaceWith(target.body);
 
-  const fetched = target.body.querySelectorAll(selector);
+  const fetched = target.body.querySelectorAll<HTMLElement>(selector);
+  // const ignored = isArray(state.ignore) ? state.ignore.join(',') : false;
 
-  forEach((node, i) => {
+  current.forEach((node, i) => {
 
     if (!node.matches(nodes[i])) return;
-    if (!dispatchEvent('pjax:render', { target: node, newTarget: fetched[i] }, true)) return;
+    if (!dispatch('pjax:render', { target: node, newTarget: fetched[i] }, true)) return;
 
     node.replaceWith(fetched[i]);
 
     if (state.append || state.prepend) {
       const fragment = document.createElement('div');
       target.childNodes.forEach(fragment.appendChild);
-      return state.append
-        ? node.appendChild(fragment)
-        : node.insertBefore(fragment, node.firstChild);
+      return state.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
     }
 
-  }, current);
+  });
 
-  return trackedNodes(target.body);
+  trackedNodes(target.body);
 
 }
 
@@ -209,34 +208,31 @@ function renderNodes (state: IPage, target: Document) {
  * will be swapped out via `innerHTML` to prevent missing replacements
  * for occuring.
  */
-async function hydrateNodes (state: IPage, target: Document): Promise<any> {
+function hydrateNodes (state: IPage, target: Document): void {
 
-  const nodes = [ ...state.hydrate, '[data-pjax-track="hydrate"]' ].join(',');
+  const nodes = state.hydrate.join(',');
   const current = document.body.querySelectorAll<HTMLElement>(nodes);
 
   if (current.length > 0) {
-
     const fetched = target.body.querySelectorAll<HTMLElement>(nodes);
+    current.forEach((node, i) => {
 
-    forEach((node, i) => {
+      if (!dispatch('pjax:hydrate', { target: node, newTarget: fetched[i] }, true)) return;
 
-      if (dispatchEvent('pjax:hydrate', { target: node, newTarget: fetched[i] }, true)) {
-
-        // InnerHTML replacment on text nodes
-        if (node.firstChild.nodeType === Node.TEXT_NODE) {
-          node.innerHTML = fetched[i].innerHTML;
-        } else {
-          node.replaceWith(fetched[i]);
-        }
-
+      // InnerHTML replacment on text nodes
+      if (node.firstChild.nodeType === Node.TEXT_NODE) {
+        node.innerHTML = fetched[i].innerHTML;
+      } else {
+        node.replaceWith(fetched[i]);
       }
-    }, current);
-
+    });
   }
 
-  const { url } = await store.pages.updateAsync(state.url, { hydrate: undefined });
+  state.history = undefined;
+  state.type = 'visit';
 
-  return store.snaps.clear(store.pages.clear([ url ]));
+  store.update(state);
+  store.purge([ state.key ]);
 
 }
 
@@ -260,23 +256,27 @@ async function hydrateNodes (state: IPage, target: Document): Promise<any> {
  */
 export function update (state: IPage, popstate?: boolean): IPage {
 
-  if (store.config.prefetch.mouseover.enable) mouseover.stop();
-  if (store.config.prefetch.intersect.enable) intersect.stop();
+  if (config.mouseover !== false) mouseover.stop();
+  if (config.intersect !== false) intersect.stop();
+  // if (config.proximity !== false) proximity.stop();
 
-  const target = parse(store.snaps.get(state.snapshot));
-
+  const target = parse(snaps[state.snapshot]);
   state.title = document.title = target.title || '';
 
   if (target.head) DOMHead(target.head);
 
   if (state.hydrate) {
+
     hydrateNodes(state, target);
+
   } else {
+
     renderNodes(state, target);
 
     if (state.history) {
+
       if (!popstate) {
-        if (state.url === state.location.lastpath) {
+        if (state.key === state.location.lastpath) {
           history.replace(state.location, state);
         } else {
           history.push(state.location, state);
@@ -290,10 +290,11 @@ export function update (state: IPage, popstate?: boolean): IPage {
 
   progress.done();
 
-  if (store.config.prefetch.mouseover.enable) mouseover.start();
-  if (store.config.prefetch.intersect.enable) intersect.start();
+  if (config.mouseover !== false) mouseover.start();
+  if (config.intersect !== false) intersect.start();
+  // if (config.proximity !== false) proximity.start();
 
-  dispatchEvent('pjax:load', state);
+  dispatch('pjax:load', state);
 
   return state;
 
