@@ -90,7 +90,7 @@ export interface ILoad {
 /**
  * Custom Event Wrapper
  */
-export namespace PjaxEvent {
+export namespace Events {
   /**
    * `pjax:prefetch`
    */
