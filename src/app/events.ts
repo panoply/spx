@@ -15,7 +15,7 @@ export function targetedEvent (eventName: IEvents, target: Element): boolean {
 /**
  * Dispatches lifecycle events on the document.
  */
-export function dispatchEvent (
+export function dispatch (
   eventName: IEvents,
   detail: object,
   cancelable: boolean = false
