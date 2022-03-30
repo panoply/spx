@@ -38,11 +38,9 @@ function onload (): void {
     }
   }
 
-  if (!config.reverse) {
+  history.create(page);
 
-    history.create(page);
-
-  } else {
+  if (config.reverse) {
 
     // PERFORM REVERSE CACHING
     const route = history.previous();
@@ -51,9 +49,6 @@ function onload (): void {
       const state = getRoute(route, 'reverse');
       request.get(store.create(state));
     }
-
-    history.update();
-
   }
 
   removeEventListener('load', onload);
