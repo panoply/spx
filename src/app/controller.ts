@@ -1,16 +1,14 @@
 import * as hrefs from '../observers/hrefs';
-import * as hover from '../observers/hover';
+import * as hover from '../observers/mouseover';
 import * as intersect from '../observers/intersect';
 import * as request from '../app/request';
 import * as scroll from '../observers/scroll';
 import * as history from '../observers/history';
-import browser from 'history/browser';
-import { url, parse } from './path';
-import { isArray } from '../constants/native';
-import { connect } from './connects';
+// import * as proximity from '../observers/proximity';
+import { getRoute } from './route';
+import { connect, config } from './state';
 import * as store from './store';
-import { forEach } from './utils';
-import { ILocation } from '../types/location';
+import { isArray } from '../constants/native';
 
 /**
  * Sets initial page state executing on intial load.
@@ -19,27 +17,43 @@ import { ILocation } from '../types/location';
  */
 function onload (): void {
 
-  const page = store.capture({
-    url,
-    location: parse(url),
-    position: scroll.position()
-  }, document.documentElement.outerHTML);
+  const state = store.create(getRoute());
+  state.position = scroll.position();
+  const page = store.set(state, document.documentElement.outerHTML);
 
-  if (store.config.prefetch.preempt !== null) {
-    const { preempt } = store.config.prefetch;
-    if (isArray(preempt)) forEach(path => request.get(path, 'preempt'))(preempt);
-    else if (preempt?.[url]) delete preempt[url];
+  if (config.preload !== null) {
+
+    if (isArray(config.preload)) {
+      // PRELOAD ARRAY LIST
+      for (const path of config.preload) {
+        const route = getRoute(path, 'preload');
+        if (route.key !== path) request.get(store.create(route));
+      }
+    } else if (typeof config.preload === 'object' && state.key in config.preload) {
+      // PRELOAD SPECIFIC ROUTE LIST
+      for (const path of config.preload[state.key]) {
+        const route = getRoute(path, 'preload');
+        if (route.key !== path) request.get(store.create(route));
+      }
+    }
   }
 
-  if (store.config.cache.reverse) {
-    const previous: { location?: ILocation } = browser.location.state;
-    if (previous?.location?.lastpath) {
-      request
-        .get(previous.location.lastpath, 'reverse')
-        .then(() => browser.replace(window.location, page));
-    }
+  if (!config.reverse) {
+
+    history.create(page);
+
   } else {
-    browser.replace(window.location, page);
+
+    // PERFORM REVERSE CACHING
+    const route = history.previous();
+
+    if (route && route !== state.key) {
+      const state = getRoute(route, 'reverse');
+      request.get(store.create(state));
+    }
+
+    history.update();
+
   }
 
   removeEventListener('load', onload);
@@ -51,19 +65,19 @@ function onload (): void {
  */
 export function initialize (): void {
 
-  if (!connect.controller) {
+  if (!connect.has(1)) {
 
     history.start();
-    hrefs.start();
     scroll.start();
+    hrefs.start();
     hover.start();
     intersect.start();
+    // proximity.start();
 
     addEventListener('load', onload);
 
-    connect.controller = true;
-
-    console.info('Pjax: Connection Established ⚡');
+    connect.add(1);
+    console.info('Brixtol Pjax: Connection Established ⚡');
   }
 }
 
@@ -72,22 +86,22 @@ export function initialize (): void {
  */
 export function destroy (): void {
 
-  if (connect.controller) {
+  if (connect.has(1)) {
 
     history.stop();
-    hrefs.stop();
     scroll.stop();
+    hrefs.stop();
     hover.stop();
     intersect.stop();
+    // proximity.stop();
     store.clear();
+    connect.delete(1);
 
-    connect.controller = false;
-
-    console.warn('Pjax: Instance has been disconnected! 😔');
+    console.warn('Brixtol Pjax: Instance has been disconnected! 😔');
 
   } else {
 
-    console.warn('Pjax: No connection made, disconnection is void 🙃');
+    console.warn('Brixtol Pjax: No connection made, disconnection is void 🙃');
   }
 
 }
