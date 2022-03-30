@@ -44,12 +44,12 @@ export interface IPage {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  readonly targets?: string[];
+  targets?: string[];
 
   /**
    * The URL cache key and current url path
    */
-  url?: string;
+  key?: string;
 
   /**
    * UUID reference to the page snapshot HTML Document element
@@ -95,6 +95,14 @@ export interface IPage {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   replace?: null | string[];
+
+  /**
+   * List of fragments contained within targets to ignore in the navigation
+   *
+   * @example
+   * ['#ignore']]
+   */
+  ignore?: string[]
 
   /**
    * List of fragments to be appened from and to. Accepts multiple.
