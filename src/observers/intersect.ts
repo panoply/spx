@@ -1,7 +1,9 @@
-import { getTargets, forEach, attrparse } from '../app/utils';
-import { connect } from '../app/connects';
-import * as path from '../app/path';
+import { forEach, getNodeTargets } from '../app/utils';
+import { dispatch } from '../app/events';
+import { getRoute } from '../app/route';
+import { config, connect, selectors } from '../app/state';
 import * as request from '../app/request';
+import * as store from '../app/store';
 
 /**
  * @type IntersectionObserver
@@ -15,16 +17,20 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
 
   if (entry.isIntersecting) {
 
-    const state = attrparse(entry.target, path.get(entry.target));
-    const response = await request.get(state);
+    const route = getRoute(entry.target, 'intersect');
+
+    if (!dispatch('pjax:prefetch', { target: entry.target, route }, true)) {
+      return entries.unobserve(entry.target);
+    }
+
+    const response = await request.get(store.create(route));
 
     if (response) {
       entries.unobserve(entry.target);
     } else {
-      console.warn(`Pjax: Prefetch will retry at next intersect for: ${state.url}`);
+      console.warn(`Pjax: Prefetch will retry at next intersect for: ${route.key}`);
       entries.observe(entry.target);
     }
-
   }
 };
 
@@ -34,11 +40,12 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
  */
 export function start (): void {
 
-  if (!connect.intersect) {
-    entries = new IntersectionObserver(forEach(onIntersect));
-    forEach(entries.observe)(getTargets('a[data-pjax-prefetch="intersect"]'));
-    connect.intersect = true;
-  }
+  if (!config.intersect) return;
+  if (connect.has(5)) return;
+
+  entries = new IntersectionObserver(forEach(onIntersect));
+  forEach(entries.observe, getNodeTargets(selectors.intersect, selectors.interhref));
+  connect.add(5);
 
 }
 
@@ -48,9 +55,9 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (connect.intersect) {
+  if (connect.has(5)) {
     entries.disconnect();
-    connect.intersect = false;
+    connect.has(5);
   }
 
 };

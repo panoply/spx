@@ -546,7 +546,7 @@ document.addEventListener<Events.Trigger>("pjax:trigger", ({
 document.addEventListener<Events.Request>("pjax:request", ({
   detail: {
     state: IPage,
-    type: 'prefetch' | 'trigger'
+    type: 'prefetch' | 'trigger' | 'hydrate'
   }
 }) => void | false)
 

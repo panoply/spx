@@ -1,23 +1,29 @@
 import { IPage, ICacheSize } from '../types/page';
-import { dispatchEvent } from './events';
+import { dispatch } from './events';
 import { byteConvert, byteSize } from './utils';
 import { progress } from './progress';
-import { is } from '../constants/native';
+import { config } from './state';
 import * as store from './store';
-import * as path from './path';
+import { create } from '../constants/native';
 
-let ratelimit: number = 0;
 let storage: number = 0;
-let showprogress: boolean = false;
 
+/**
+ * Request Transits
+ */
 export const transit: Map<string, XMLHttpRequest> = new Map();
+
+/**
+ * Request Timeouts
+ */
+export const timeout: { [url: string]: NodeJS.Timeout } = create(null);
 
 /**
  * Async Timeout
  */
-function asyncTimeout (callback: Function, ms = 0): Promise<boolean> {
+function pending (callback: Function): Promise<boolean> {
 
-  return new Promise(resolve => setTimeout(() => resolve(callback()), ms));
+  return new Promise(resolve => setTimeout(() => resolve(callback()), 5));
 
 };
 
@@ -33,6 +39,27 @@ function httpRequestEnd (url: string, DOMString: string) {
 };
 
 /**
+ * Fetch Throttle
+ */
+export function throttle (url: string, fn: ()=> void, delay: number): void {
+
+  if (url in timeout) return;
+  if (!store.has(url)) timeout[url] = setTimeout(fn, delay);
+
+};
+
+/**
+ * Cleanup throttlers
+ */
+export function cleanup (url: string): boolean {
+
+  clearTimeout(timeout[url]);
+
+  return delete timeout[url];
+
+};
+
+/**
  * Fetch XHR Request wrapper function
  */
 export function httpRequest (url: string): Promise<string | false> {
@@ -43,7 +70,7 @@ export function httpRequest (url: string): Promise<string | false> {
 
     // OPEN
     //
-    xhr.open('GET', url, store.config.request.async);
+    xhr.open('GET', url, config.async);
 
     // HEADERS
     //
@@ -53,11 +80,12 @@ export function httpRequest (url: string): Promise<string | false> {
     // EVENTS
     //
     xhr.onloadstart = e => transit.set(url, xhr);
-    xhr.onload = e => resolve(is(xhr.status, 200) ? xhr.responseText : false);
+    xhr.onload = e => resolve(xhr.status === 200 ? xhr.responseText : false);
     xhr.onloadend = e => httpRequestEnd(url, xhr.responseText);
+    xhr.onabort = e => transit.delete(url);
 
     xhr.onerror = reject;
-    xhr.timeout = store.config.request.timeout;
+    xhr.timeout = config.timeout;
     xhr.responseType = 'text';
 
     // SEND
@@ -65,6 +93,20 @@ export function httpRequest (url: string): Promise<string | false> {
     xhr.send(null);
 
   });
+
+};
+
+/**
+ * Fetch document and add the response to session cache.
+ * Lifecycle event `pjax:cache` will fire upon completion.
+ */
+export async function prefetch (state: IPage): Promise<boolean> {
+
+  if (!(await get(state))) {
+    console.warn(`Pjax: Prefetch failed, request will retry for: ${state.key}`);
+  }
+
+  return cleanup(state.key);
 
 };
 
@@ -80,22 +122,41 @@ export function cacheSize (): ICacheSize {
 }
 
 /**
- * Cancels the request in transit
+ * Abort Request
+ *
+ * Aborts a specific request in transit.
  */
-export function cancel (url: string): void {
+export function abort (url: string): void {
 
   if (transit.has(url)) {
     transit.get(url).abort();
-    transit.delete(url);
     console.warn(`Pjax: XHR Request was cancelled for url: ${url}`);
   }
 
 };
 
 /**
- * Prevents repeated requests from being executed.
+ * Cancel Requests
+ *
+ * Aborts all pending requests excluding the
+ * the request id (page key identifier) provided.
+ * To cancel a specific request, use `abort` export.
+ */
+export function cancel (id: string): void {
+
+  transit.forEach((xhr, url) => {
+    if (id !== url) {
+      xhr.abort();
+      console.warn(`Pjax: Cancelled pending request: ${url}`);
+    }
+  });
+
+};
+
+/**
+ * Prevents repeated transit from being executed.
  * When prefetching, if a request is in transit and a click
- * event dispatched this will prevent multiple requests and
+ * event dispatched this will prevent multiple transit and
  * instead wait for initial fetch to complete.
  *
  * Number of recursive runs to make, set this to 85 to disable,
@@ -103,62 +164,48 @@ export function cancel (url: string): void {
  *
  * Returns `true` if request resolved in `850ms` else `false`
  */
-export async function inFlight (url: string): Promise<boolean> {
+export async function inFlight (url: string, rate = 0): Promise<boolean> {
 
-  if (transit.has(url) && ratelimit <= store.config.request.timeout) {
-
-    if (!showprogress && is((ratelimit * 10), store.config.progress.threshold)) {
-      progress.start();
-      showprogress = true;
-    }
-
-    return asyncTimeout(() => {
-      ratelimit++;
-      return inFlight(url);
-    }, 1);
-
+  if (transit.has(url) && rate <= config.timeout) {
+    if ((rate * 10) === config.progress.threshold) progress.start();
+    rate++;
+    return pending(() => inFlight(url, rate));
   }
 
-  ratelimit = 0;
-  showprogress = false;
-
-  return !transit.has(url);
+  return !transit.delete(url);
 
 };
 
 /**
- * Fetches documents and guards from duplicated requests
+ * Fetches documents and guards from duplicated transit
  * from being dispatched if an indentical fetch is in flight.
- * Requests will always save responses and snapshots.
+ * transit will always save responses and snapshots.
  */
-export async function get (state: string | IPage, type?: string): Promise<IPage|false> {
+export async function get (state: IPage): Promise<IPage|false> {
 
-  if (typeof state === 'string') state = path.get(state);
-
-  if (type) state.type = type;
-
-  if (transit.has(state.url)) {
-    console.warn(`Pjax: XHR Request is already in transit for: ${state.url}`);
+  if (transit.has(state.key)) {
+    console.warn(`Pjax: XHR Request is already in transit for: ${state.key}`);
     return false;
   }
 
-  if (!dispatchEvent('pjax:request', { state }, true)) {
-    console.warn(`Pjax: Request cancelled via dispatched event for: ${state.url}`);
+  if (!dispatch('pjax:request', { state }, true)) {
+    console.info(`Pjax: Request cancelled via dispatched event for: ${state.key}`);
     return false;
   }
 
   try {
 
-    const dom = await httpRequest(state.url);
+    const snapshot = await httpRequest(state.key);
 
-    if (dom) return state.hydrate ? store.hydrate(state, dom) : store.capture(state, dom);
+    // CREATE CACHE RECORD
+    if (snapshot) return store.set(state, snapshot);
 
-    console.warn(`Pjax: Failed to retrive response at: ${state.url}`);
+    console.warn(`Pjax: Failed to retrive response at: ${state.key}`);
 
-  } catch (error) {
+  } catch (e) {
 
-    transit.delete(state.url);
-    console.error(error);
+    transit.delete(state.key);
+    console.error('Pjax: Fetch error:', e);
 
   }
 

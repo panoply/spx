@@ -7,15 +7,21 @@ export default rollup(
       {
         format: 'es',
         name: 'Pjax',
-        file: 'package/pjax.esm.js',
+        exports: 'named',
+        file: 'package/pjax.mjs',
         sourcemap: false,
+        esModule: true,
+        freeze: false,
         preferConst: true
       },
       {
         format: 'umd',
         name: 'Pjax',
-        file: 'package/pjax.umd.js',
+        exports: 'named',
+        file: 'package/pjax.js',
         sourcemap: false,
+        esModule: true,
+        freeze: false,
         preferConst: true
       }
     ],

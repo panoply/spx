@@ -1,14 +1,13 @@
 import { supportsPointerEvents } from 'detect-it';
-import { dispatchEvent } from '../app/events';
-import { getLink, attrparse } from '../app/utils';
-import { y0x0 } from './scroll';
-import { updateState } from './history';
+import { dispatch } from '../app/events';
+import { getLink } from '../app/utils';
 import { IPage } from '../types/page';
-import { connect } from '../app/connects';
-import * as store from '../app/store';
-import * as path from '../app/path';
+import { connect, selectors, pages } from '../app/state';
+import { getRoute } from '../app/route';
 import * as request from '../app/request';
 import * as render from '../app/render';
+import * as store from '../app/store';
+import * as history from './history';
 
 /**
  * Handles a clicked link, prevents special click types.
@@ -35,25 +34,19 @@ function linkEvent (event: MouseEvent): boolean {
  *
  * @param {Element} target
  */
-function handleClick (
-  target: Element
-): (
-  state: any
-) => (
-  event: MouseEvent
-) => void | Promise<void | IPage> {
+function onClick (target: Element, state: string | IPage) {
 
-  return (state: any) => function click (event: MouseEvent): void | Promise<void | IPage> {
+  return function handle (event: MouseEvent): void | IPage | Promise<void | IPage> {
 
     event.preventDefault();
-    target.removeEventListener('click', click, false);
-    render.capture(updateState()); // PRESERVE CURRENT PAGE
+    target.removeEventListener('click', handle, false);
+    history.update();
 
-    return typeof state === 'object'
-      ? render.update(state) as IPage
-      : typeof state === 'string'
-        ? navigate(state) as any
-        : location.assign(path.url) as void;
+    if (typeof state === 'object') return render.update(state);
+    if (typeof state === 'string') return navigate(state);
+
+    return location.assign(state);
+
   };
 }
 
@@ -65,33 +58,35 @@ function handleClick (
  */
 function handleTrigger (event: MouseEvent): void {
 
-  if (!linkEvent(event)) return undefined;
+  if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, store.config.session.clicks);
+  const target = getLink(event.target, selectors.href);
 
-  if (!target) return undefined;
+  if (!target) return;
 
-  if (dispatchEvent('pjax:trigger', { target }, true)) {
+  const route = getRoute(target);
 
-    const { url, location } = path.get(target, true);
-    const click = handleClick(target);
+  if (!dispatch('pjax:trigger', { target, route }, true)) return;
 
-    if (request.transit.has(url)) {
+  // CACHED VISIT
+  if (store.has(route.key)) {
 
-      target.addEventListener('click', click(url), false);
+    // UPDATE ANY REFERENCES OF ATTRIBUTE
+    target.addEventListener('click', onClick(target, store.update(route)), false);
 
-    } else {
+  } else {
 
-      const state = attrparse(target, { url, location, position: y0x0() });
-
-      if (store.has(url)) {
-        const page = store.pages.update(state.url, state);
-        target.addEventListener('click', click(page), false);
-      } else {
-        request.get(state); // TRIGGERS FETCH
-        target.addEventListener('click', click(url), false);
-      }
+    // CANCEL PENDING REQUESTS
+    if (request.transit.has(route.key)) {
+      if (request.transit.size > 1) request.cancel(route.key);
     }
+
+    // TRIGGERS FETCH
+    request.get(store.create(route));
+
+    // WAIT FOR CLICK
+    target.addEventListener('click', onClick(target, route.key), false);
+
   }
 }
 
@@ -99,16 +94,14 @@ function handleTrigger (event: MouseEvent): void {
  * Executes a pjax navigation.
  */
 export async function navigate (
-  url: string,
+  urlOrState: string,
   state: IPage | false = false
 ): Promise<void|IPage> {
 
   if (state) {
 
-    if (typeof state.cache === 'string') {
-      if (!state.hydrate) {
-        state.cache === 'clear' ? store.clear() : store.clear(url);
-      }
+    if (typeof state.cache === 'string' && !state.hydrate) {
+      state.cache === 'clear' ? store.clear() : store.clear(state.key);
     }
 
     const page = await request.get(state);
@@ -117,15 +110,15 @@ export async function navigate (
 
   } else {
 
-    if (await request.inFlight(url)) {
-      return render.update(store.pages.get(url));
+    if ((await request.inFlight(urlOrState))) {
+      return render.update(pages[urlOrState]);
     } else {
-      request.cancel(url);
+      request.abort(urlOrState);
     }
 
   }
 
-  return location.assign(url);
+  return location.assign(urlOrState);
 
 }
 
@@ -136,18 +129,17 @@ export async function navigate (
  */
 export function start (): void {
 
-  if (!connect.href) {
+  if (connect.has(3)) return;
 
-    if (supportsPointerEvents) {
-      addEventListener('pointerdown', handleTrigger, false);
-    } else {
-      addEventListener('mousedown', handleTrigger, false);
-      addEventListener('touchstart', handleTrigger, false);
-    }
-
-    connect.href = true;
-
+  if (supportsPointerEvents) {
+    addEventListener('pointerdown', handleTrigger, false);
+  } else {
+    addEventListener('mousedown', handleTrigger, false);
+    addEventListener('touchstart', handleTrigger, false);
   }
+
+  connect.add(3);
+
 }
 
 /**
@@ -155,15 +147,15 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (connect.href) {
+  if (!connect.has(3)) return;
 
-    if (supportsPointerEvents) {
-      removeEventListener('pointerdown', handleTrigger, false);
-    } else {
-      removeEventListener('mousedown', handleTrigger, false);
-      removeEventListener('touchstart', handleTrigger, false);
-    }
-
-    connect.href = false;
+  if (supportsPointerEvents) {
+    removeEventListener('pointerdown', handleTrigger, false);
+  } else {
+    removeEventListener('mousedown', handleTrigger, false);
+    removeEventListener('touchstart', handleTrigger, false);
   }
+
+  connect.delete(3);
+
 }
