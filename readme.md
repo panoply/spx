@@ -126,7 +126,7 @@ pjax.connect({
     minimum: 0.1,
     speed: 225,
     trickle: true,
-    colour: '#111',
+    color: '#111',
     height: '2px',
     easing: 'ease'
   }
@@ -508,14 +508,15 @@ Lifecycle events are dispatched to the document upon each navigation. You can ac
 
 The Pjax lifecycle events are dispatched in the following order of execution:
 
-1. **pjax:prefetch**
-2. **pjax:trigger**
-3. **pjax:request**
-4. **pjax:cache**
-5. **pjax:render**
-6. **pjax:hydrate**
-7. **pjax:module**
-8. **pjax:load**
+1. **pjax:ready**
+2. **pjax:prefetch**
+3. **pjax:trigger**
+4. **pjax:request**
+5. **pjax:cache**
+6. **pjax:render**
+7. **pjax:hydrate**
+8. **pjax:module**
+9. **pjax:load**
 
 > When a hydrate event is triggered the `pjax:hydrate` method will be fired instead of the `pjax:render`.
 
@@ -524,6 +525,14 @@ The Pjax lifecycle events are dispatched in the following order of execution:
 <!-- prettier-ignore -->
 ```typescript
 import type { Events } from '@brixtol/pjax'
+
+// Triggered after pjax initialization
+document.addEventListener<Events.Ready>("pjax:ready", ({
+  detail: {
+    target: HTMLElement,
+    route: IRoute,
+  }
+}) => void | false)
 
 // Triggered when a prefetch is triggered
 document.addEventListener<Events.Prefetch>("pjax:prefetch", ({
@@ -567,20 +576,12 @@ document.addEventListener<Events.Render>("pjax:render", ({
   }
 }) => void | false)
 
-// Triggered before a fragment is hydrated
-document.addEventListener<Events.Hydrate>("pjax:hydrate", ({
-  detail: {
-    target: HTMLElement,
-    newTarget: HTMLElement
-  }
-}) => void | false)
-
-// Triggered when a JavaScript module is loaded
-document.addEventListener<Events.Module>("pjax:module", ({
+// Triggered when head modules are appended like scripts, styles etc
+document.addEventListener<Events.Module>("pjax:head", ({
   detail: {
     src: string,
     id: string,
-    type: 'script' | 'style'
+    type: 'script' | 'style' | 'meta'
   }
 }) => void | false)
 
@@ -591,6 +592,36 @@ document.addEventListener<Events.Load>("pjax:load", ({
   }
 }) => void)
 ```
+
+### `pjax:ready`
+
+The ready event will be triggered after Pjax has connected and fired only once. This is the equivalent of the `DOMContentLoaded` event. Upon connection, Pjax will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
+
+Because the initial snapshot is saved using `document.documentElement.outerHTML` the captured HTML may cause third party scripts which augment the document to fail when a return navigation is detected. You can prevent issues of this nature from occurring by initializing your modules within `pjax:ready`.
+
+### `pjax:prefetch`
+
+The prefetch event will be triggered for every prefetch request. Prefetch requests are fired for `mouseover`, `intersect` and `proximity` occur. This event will be frequent if you are leveraging any of these capabilities.
+
+### `pjax:trigger`
+
+The trigger event will be triggered when a `mousedown` event has occurred on a Pjax enabled `href`. This is the equivalent of a `click` and allows you to hook into the dispatch. Use this event to teardown any third party scripts.
+
+### `pjax:request`
+
+The request event will be triggered before an XHR request begins and a page is fetched. This event will be fired for `prefetch`, `hydrate` and `trigger` actions. You can determine the trigger action for the request using the `type` property passed in the `event.detail` parameter.
+
+### `pjax:cache`
+
+The cache event will be triggered immediately after a request has finished and before the snapshot is saved. You can determine the trigger action for the request using the `type` property passed in the `event.detail` parameter.
+
+### `pjax:render`
+
+The render event will be triggered before a page or fragment is rendered (replaced) in the dom. For every `target` you've defined this event fires. You can determine which elements are being replaced via the `target` and `newTarget` properties passed in the `event.detail` parameter. The `target` property represents the current element that will be replaced and the `newTarget` element represents the new target.
+
+### `pjax:load`
+
+The load event is the final lifecycle event to be triggered. Use this event to re-initialize any third party scripts. The load event will only execute after navigation has concluded.
 
 # Methods
 
@@ -607,6 +638,9 @@ pjax.connect(options?): void
 
 // Returns the current page state reference
 pjax.current(): IPage
+
+// Trigger hydration, optionally pass search params
+pjax.hydrate(options: { url?: string, target: Elements[] }): Promise<Page{}>
 
 // Execute a programmatic pjax visit
 pjax.visit(url?, options?): Promise<Page{}>
@@ -1496,6 +1530,11 @@ State modifications can be carried out using attributes, method or from within d
 ```typescript
 interface IPage {
   /**
+   * The URL cache key, this is the pathname (excludes #hashes)
+   */
+  key: string;
+
+  /**
    * The list of fragment target element selectors defined upon connection.
    * Targets are inherited from `pjax.connect()` presets.
    *
@@ -1506,12 +1545,7 @@ interface IPage {
    *
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  targets: string[];
-
-  /**
-   * The URL cache key and current url path
-   */
-  url: string;
+  replace: string[];
 
   /**
    * The Document title
@@ -1537,17 +1571,7 @@ interface IPage {
    *
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  hyrdate: null | string[];
-
-  /**
-   * List of fragment element selectors. Accepts any valid
-   * `querySelector()` string.
-   *
-   * @example
-   *
-   * ['#main', '.header', '[data-attr]', 'header']
-   */
-  replace: null | string[];
+  hyrdate?: string[];
 
   /**
    * List of fragments to append from and to. Accepts multiple.
@@ -1556,7 +1580,7 @@ interface IPage {
    *
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  append: null | Array<[from: string, to: string]>;
+  append?: Array<[from: string, to: string]>;
 
   /**
    * List of fragments to be prepend from and to. Accepts multiple.
@@ -1565,7 +1589,7 @@ interface IPage {
    *
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  prepend: null | Array<[from: string, to: string]>;
+  prepend?: Array<[from: string, to: string]>;
 
   /**
    * Controls the caching engine for the link navigation.
@@ -1694,7 +1718,7 @@ This module is written in TypeScript. Production bundles exports to ES2015. This
 
 The projects is functional, there are no classes, just functions. Application state considered as global is exported from [state.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/store.ts) and the rendering apparatus is contained within [render.ts](https://github.com/BRIXTOL/pjax/blob/master/src/app/render.ts). The [observers](https://github.com/BRIXTOL/pjax/blob/master/src/observers) directory contains the various fetch and pre-fetch logics. Objects avoid the prototype and `Object.create(null)` is the preferred approach.
 
-The project is fairly each to understand, there are no complexities and over-engineering. The Pjax method is simple, you fetch pages over the wire and replace elements in the rendering cycle.
+The project is fairly easy to understand, there are no complexities and over-engineering. The Pjax method is simple, you fetch pages over the wire and replace elements in the rendering cycle. This module follows this pattern but includes additional extras to help improve the rendering times.
 
 # Acknowledgements
 
