@@ -1,3 +1,9 @@
+export interface IHeadConfig {
+  link?: { [prop: string]: boolean | RegExp; },
+  script?: { [prop: string]: boolean | RegExp; },
+  style?: { [prop: string]: boolean | RegExp; }
+  meta?: { [prop: string]: boolean | RegExp; }
+}
 
 export interface ISelectors {
   /**
@@ -12,6 +18,12 @@ export interface ISelectors {
    * Attribute only select type, see render.ts
    */
   eval?: string;
+  /**
+   * Eval True selector
+   *
+   * Tracker for eval
+   */
+  observe?: string;
   /**
    * Hydration selector
    *
