@@ -1,4 +1,3 @@
-import { IProgress } from './progress';
 import { MergeExclusive } from 'type-fest';
 
 export interface IMouseover {
@@ -95,6 +94,18 @@ export interface IConfig {
    */
   schema?: string;
   /**
+   * Controls how `<head></head>` elements should be handled. Typically,
+   * you will use `data-pjax-eval` attributes to inform upon which tags
+   * should be evaluated or ignored. However, sometimes tags are applied
+   * dynamically by third party scripts. In such a situation you can define
+   * and control replacements using this option.
+   *
+   * ---
+   *
+   * @default {}
+   */
+  head?: { [attribute: string]: string | string[] | RegExp | true };
+  /**
    * Define page fragment targets. By default, this pjax module will replace the
    * entire `<body>` fragment, if undefined. Its best to define specific fragments.
    *
@@ -158,8 +169,8 @@ export interface IConfig {
    */
   limit?: number;
   /**
-   * Anticipatory prefetches. Values defined here will be fetched preemptively
-   * and saved to cache either upon initial load or when a specific path is
+   * Anticipatory preloading (prefetches). Values defined here will be fetched
+   * preemptively and saved to cache either upon initial load or when a specific path is
    * visited. If you provide an array list of paths those pages will be visited
    * asynchronously in the order they were passed after. If you provide an object,
    * preemptive fetches will be carried out when path match occurs based on the
@@ -172,19 +183,25 @@ export interface IConfig {
   preload?: string[] | { [path: string]: string[] }
   /**
    * Reverse caching. This will execute a premptive fetch of the previous
-   * pages in the history stack when no snapshot exists in cache. Snapshots cache
-   * is purged if a browser refresh occurs and when navigating backwards or
-   * pages will need to be re-fetched resulting in minor delays if a refresh
-   * was triggered between browsing.
+   * pages in the history stack when no snapshot exists in cache. The previous
+   * url is stored in session storage and will be recalled.
+   *
+   * **Explained**
+   *
+   * Snapshots cache is purged if a browser refresh occurs and when navigating
+   * backwards or forwards pages will need to be re-fetched resulting in minor
+   * delays if a refresh was triggered between browsing, but this can be avoided
+   * when snapshots exist.
    *
    * By default, the last known previous page in the history stack is fetched
-   * and re-cached when no snapshot exists.
+   * and re-cached when no snapshot exists and we have a reference of its history
+   * stack.
    *
    * ---
    *
    * @default true
    */
-  reverse?: boolean;
+  reverse?: true
   /**
    * Mouseover prefetching. You can disable mouseover (hover) prefetching
    * by setting this to `false` otherwise you can customize the fetching
@@ -199,7 +216,7 @@ export interface IConfig {
    *
    * @default true
    */
-  mouseover?: IMouseover;
+  hover?: IMouseover;
   /**
    * Intersection pre-fetching. Intersect prefetching leverages the
    * [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when
@@ -238,12 +255,52 @@ export interface IConfig {
   /**
    * Progress Bar configuration
    */
-  progress?: IProgress;
+  progress?: {
+    /**
+     * Changes the minimum percentage used upon starting.
+     *
+     * @default 0.08
+     */
+    minimum?: number;
+    /**
+     * CSS Easing String
+     *
+     * @default cubic-bezier(0,1,0,1)
+     */
+    easing?: string;
+    /**
+     * Animation Speed
+     *
+     * @default 200
+     */
+    speed?: number;
+    /**
+     * Turn off the automatic incrementing behavior
+     * by setting this to false.
+     *
+     * @default true
+     */
+    trickle?: boolean;
+    /**
+     * Adjust how often to trickle/increment, in ms.
+     *
+     * @default 200
+     */
+    trickleSpeed?: number;
+    /**
+     * Controls the progress bar preset threshold. Defines the amount of
+     * time to delay before the progress bar is shown.
+     *
+     * ---
+     * @default 350
+     */
+    threshold?: number;
+  }
 
 }
 
 export type Options = MergeExclusive<IConfig, {
-  mouseover?: boolean;
+  hover?: boolean;
   intersect?: boolean;
   proximity?: boolean;
 }>

@@ -4,6 +4,7 @@ import { ILocation } from './location';
  * Pjax Events
  */
 export type IEvents =
+  | 'pjax:ready'
   | 'pjax:prefetch'
   | 'pjax:trigger'
   | 'pjax:click'
