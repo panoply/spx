@@ -1,16 +1,13 @@
 import { IPosition } from '../types/page';
-import { connect } from '../app/state';
-import { create, defineProps } from '../constants/native';
+import * as state from '../app/state';
+import { create } from '../constants/native';
 
 /**
  * Returns to current scroll position, the `reset()`
  * function **MUST** be called after referencing this
  * to reset position.
  */
-
 let ticking: boolean = false;
-
-const pos = create(null);
 
 /**
  * Set the current scroll position offset
@@ -18,7 +15,7 @@ const pos = create(null);
  */
 export function position (): IPosition {
 
-  return pos;
+  return state.position;
 
 }
 
@@ -28,11 +25,11 @@ export function position (): IPosition {
  */
 export function onscroll (): void {
 
-  pos.y = window.scrollY;
-  pos.x = window.scrollX;
+  state.position.y = window.scrollY;
+  state.position.x = window.scrollX;
 
   if (!ticking) {
-    window.requestAnimationFrame(position);
+    requestAnimationFrame(position);
     ticking = true;
   }
 
@@ -46,10 +43,10 @@ export function reset (): IPosition {
 
   ticking = false;
 
-  pos.x = 0;
-  pos.y = 0;
+  state.position.x = 0;
+  state.position.y = 0;
 
-  return pos;
+  return state.position;
 
 }
 
@@ -62,12 +59,11 @@ export function y0x0 (): IPosition {
 
   const position = create(null);
 
-  defineProps(position, {
-    y: { value: 0, configurable: true, writable: true },
-    x: { value: 0, configurable: true, writable: true }
-  });
+  position.x = 0;
+  position.y = 0;
 
   return position;
+
 }
 
 /**
@@ -75,11 +71,11 @@ export function y0x0 (): IPosition {
  */
 export function start (): void {
 
-  if (connect.has(6)) return;
+  if (state.connect.has(6)) return;
 
   onscroll();
   addEventListener('scroll', onscroll, { passive: true });
-  connect.add(6);
+  state.connect.add(6);
 
 }
 
@@ -88,10 +84,10 @@ export function start (): void {
  */
 export function stop (): void {
 
-  if (!connect.has(6)) return;
+  if (!state.connect.has(6)) return;
 
   removeEventListener('scroll', onscroll, false);
   reset();
-  connect.delete(6);
+  state.connect.delete(6);
 
 }
