@@ -1,10 +1,14 @@
 # CHANGELOG
 
-### 24/03/2022 | v1.0.0-beta.1
+### 09/04/2022 | v1.0.0-beta.1
 
 This module has now moved to an major release beta candidate. Multiple breaking changes have been applied in this version. Several refactors and improvement and overall maturity. Let's get into it.
 
-##### New setup configuration
+#### Smaller Size
+
+This release is 7.9kb (gzipped). Previous versions exceeded 10kb so the module is now considerably smaller and faster.
+
+#### New setup configuration
 
 Previous version were using a rather complicated setup configuration model. This is breaking change and application need to update to the new config model.
 
@@ -23,7 +27,7 @@ pjax.connect({
     bounding: 0,
     threshold: 100
   },
-  mouseover: {
+  hover: {
     trigger: 'href',
     threshold: 100
   },
@@ -32,24 +36,44 @@ pjax.connect({
     threshold: ''
   },
   progress: {
-    threshold: 850,
-    minimum: 0.1,
-    speed: 225,
+    minimum: 0.08,
+    easing: 'linear',
+    speed: 200,
     trickle: true,
-    colour: '#111',
-    height: '2px',
-    easing: 'ease'
+    threshold: 500,
+    trickleSpeed: 200
   }
 });
 ```
 
-##### Improved scroll tracking
+#### Improved scroll tracking
 
-Changed the way in which scroll position was tracked between navigations. This update improves upon this typically resource heavy aspect and scrolling is a lot more snappier as a result.
+The way in which scroll position was tracked between navigations in previous versions was a tad costly on performance. This update improves upon this resource heavy aspect and scrolling is recognizably more snappier as a result.
 
-##### Reverted snapshot cache store
+#### Pub/Sub Event Dispatching
 
-In version `0.3.0-beta.1` the cache store was changed to use object storage and snapshots were stored in a object. This release moves snapshot records back to a `Map` storage model. This change was incurred because snapshots can sometimes reach 1mb per page and object storage lookups when dealing with such heavy records can be slow whereas Map is better suited for large references.
+In previous versions the module allowed methods to be hooked into via `document` event listeners. This approach is replaced with a emitter pub/sub event dispatching. This allows users to leverage the lifecycle hooks more efficiently. The `pjax.on()` methods are the new approach to lifecycle hooks.
+
+**Old Way**
+
+```js
+// Old way
+document.addEventListener('pjax:load', ({ detail: { ... }}))
+```
+
+**New Way**
+
+```js
+pjax.on('load', param => {});
+```
+
+#### Improved `<script>` tag evaluation
+
+A new and improved approach for handling inline `<script></script>` and external `<script src="*"></script>` javascript.
+
+#### Added `schema` option
+
+You can now customize the attribute annotation schema.
 
 ##### Exposed snapshot method
 
