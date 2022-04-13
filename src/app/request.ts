@@ -1,22 +1,12 @@
 import { IPage, ICacheSize } from '../types/page';
-import { dispatch } from './events';
+import { emit } from './events';
 import { byteConvert, byteSize } from './utils';
-import { progress } from './progress';
-import { config } from './state';
+import * as progress from './progress';
+import { config, transit, timers } from './state';
 import * as store from './store';
 import { create } from '../constants/native';
 
 let storage: number = 0;
-
-/**
- * Request Transits
- */
-export const transit: Map<string, XMLHttpRequest> = new Map();
-
-/**
- * Request Timeouts
- */
-export const timeout: { [url: string]: NodeJS.Timeout } = create(null);
 
 /**
  * Async Timeout
@@ -33,7 +23,7 @@ function pending (callback: Function): Promise<boolean> {
  */
 function httpRequestEnd (url: string, DOMString: string) {
 
-  transit.delete(url);
+  delete transit[url];
   storage = storage + byteSize(DOMString);
 
 };
@@ -41,23 +31,22 @@ function httpRequestEnd (url: string, DOMString: string) {
 /**
  * Fetch Throttle
  */
-export function throttle (url: string, fn: ()=> void, delay: number): void {
+export function throttle (url: string, fn: () => void, delay: number): void {
 
-  if (url in timeout) return;
-  if (!store.has(url)) timeout[url] = setTimeout(fn, delay);
+  if (url in timers) return;
+  if (!store.has(url)) timers[url] = setTimeout(fn, delay);
 
 };
 
 /**
  * Cleanup throttlers
  */
-export function cleanup (url: string): boolean {
+export function cleanup (url: string) {
 
-  clearTimeout(timeout[url]);
+  clearTimeout(timers[url]);
+  return delete timers[url];
 
-  return delete timeout[url];
-
-};
+}
 
 /**
  * Fetch XHR Request wrapper function
@@ -74,15 +63,15 @@ export function httpRequest (url: string): Promise<string | false> {
 
     // HEADERS
     //
-    xhr.setRequestHeader('X-Pjax', 'true');
+    xhr.setRequestHeader('X-Brixtol-Pjax', 'true');
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     // EVENTS
     //
-    xhr.onloadstart = e => transit.set(url, xhr);
+    xhr.onloadstart = e => (transit[url] = xhr);
     xhr.onload = e => resolve(xhr.status === 200 ? xhr.responseText : false);
     xhr.onloadend = e => httpRequestEnd(url, xhr.responseText);
-    xhr.onabort = e => transit.delete(url);
+    xhr.onabort = e => delete transit[url];
 
     xhr.onerror = reject;
     xhr.timeout = config.timeout;
@@ -97,28 +86,16 @@ export function httpRequest (url: string): Promise<string | false> {
 };
 
 /**
- * Fetch document and add the response to session cache.
- * Lifecycle event `pjax:cache` will fire upon completion.
- */
-export async function prefetch (state: IPage): Promise<boolean> {
-
-  if (!(await get(state))) {
-    console.warn(`Pjax: Prefetch failed, request will retry for: ${state.key}`);
-  }
-
-  return cleanup(state.key);
-
-};
-
-/**
  * Returns request cache metrics
  */
 export function cacheSize (): ICacheSize {
 
-  return {
-    total: storage,
-    weight: byteConvert(storage)
-  };
+  const cache = create(null);
+
+  cache.total = storage;
+  cache.weight = byteConvert(storage);
+
+  return cache;
 }
 
 /**
@@ -128,8 +105,8 @@ export function cacheSize (): ICacheSize {
  */
 export function abort (url: string): void {
 
-  if (transit.has(url)) {
-    transit.get(url).abort();
+  if (url in transit) {
+    transit[url].abort();
     console.warn(`Pjax: XHR Request was cancelled for url: ${url}`);
   }
 
@@ -144,13 +121,12 @@ export function abort (url: string): void {
  */
 export function cancel (id: string): void {
 
-  transit.forEach((xhr, url) => {
+  for (const url in transit) {
     if (id !== url) {
-      xhr.abort();
+      transit[url].abort();
       console.warn(`Pjax: Cancelled pending request: ${url}`);
     }
-  });
-
+  }
 };
 
 /**
@@ -166,13 +142,13 @@ export function cancel (id: string): void {
  */
 export async function inFlight (url: string, rate = 0): Promise<boolean> {
 
-  if (transit.has(url) && rate <= config.timeout) {
+  if ((url in transit) && rate <= config.timeout) {
     if ((rate * 10) === config.progress.threshold) progress.start();
     rate++;
     return pending(() => inFlight(url, rate));
   }
 
-  return !transit.delete(url);
+  return delete transit[url];
 
 };
 
@@ -183,12 +159,12 @@ export async function inFlight (url: string, rate = 0): Promise<boolean> {
  */
 export async function get (state: IPage): Promise<IPage|false> {
 
-  if (transit.has(state.key)) {
+  if (state.key in transit) {
     console.warn(`Pjax: XHR Request is already in transit for: ${state.key}`);
-    return false;
+    return;
   }
 
-  if (!dispatch('pjax:request', { state }, true)) {
+  if (!emit('request', state)) {
     console.info(`Pjax: Request cancelled via dispatched event for: ${state.key}`);
     return false;
   }
@@ -204,7 +180,7 @@ export async function get (state: IPage): Promise<IPage|false> {
 
   } catch (e) {
 
-    transit.delete(state.key);
+    delete transit[state.key];
     console.error('Pjax: Fetch error:', e);
 
   }
