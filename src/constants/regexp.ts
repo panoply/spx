@@ -6,11 +6,26 @@
 export const CacheValue: RegExp = /^(reset|clear)$/i;
 
 /**
+ * URL Protocol
+ *
+ * @see
+ * https://regex101.com/r/leA7tF/1
+ */
+export const Protocol: RegExp = /https?:\/\/(w{3}\.)?/;
+
+/**
  * URL Pathname
  *
  * Used to match first pathname from a URL (group 1)
+ *
+ * 1. Hostname, eg: brixtol.com
+ * 2. Pathname, eg: /collections/product?variant=xxx
+ * 3. Hash, eg: #some-hash
+ *
+ * @see
+ * https://regex101.com/r/57UCeF/1
  */
-export const Pathname: RegExp = /\/\/[^/]*(\/[^;]*)/;
+export const Pathname: RegExp = /(?:https?:)?\/\/(?:w{3}\.)?([^/]*?)?([/?][^;]*?)?(#[^#]*?)?$/i;
 
 /**
  * Form Inputs
@@ -31,11 +46,18 @@ export const isReady: RegExp = /^(interactive|complete)$/i;
  *
  * Used to test value for append or prepend, array within array
  *
- * @example
+ * @see
  * https://regex101.com/r/8d7Swb/1
  *
  */
 export const isPender: RegExp = /\b(?:append|prepend)/;
+
+/**
+ * Mime Type
+ *
+ * Captures `<script>` tag mime types
+ */
+export const MimeType: RegExp = /^((application|text)\/(x-)?(ecma|java)script|text\/(javascript1\.[0-5]|(j|live)script))$/;
 
 /**
  * Boolean Attribute value
@@ -84,7 +106,7 @@ export const isPrefetch: RegExp = /\b(?:intersect|mouseover)\b/;
  *
  * Used to match threshold JSON attributes
  *
- * @example
+ * @see
  * https://regex101.com/r/yCi0Do/1
  */
 export const isThreshold: RegExp = /\b(?:intersect|mouseover|progress)\b|(?<=[:])[^\s][0-9.]+/;
@@ -101,7 +123,7 @@ export const ActionParams: RegExp = /\[?[^,'"[\]()\s]+\]?/g;
  *
  * Used to test value for a string array attribute value, like data-pjax-replace.
  *
- * @example
+ * @see
  * https://regex101.com/r/bIQefA/1
  *
  */
@@ -112,7 +134,7 @@ export const isArray: RegExp = /\(?\[(['"]?.*['"]?,?)\]\)?/;
  *
  * Tests attribute values for a position config
  *
- * @example
+ * @see
  * https://regex101.com/r/DG2LI1/1
  *
  */
@@ -124,10 +146,3 @@ export const isPosition: RegExp = /[xy]:[0-9.]+/;
  * Used to match `x:0` and `y:0` JSON space separated attributes
  */
 export const inPosition: RegExp = /[xy]|\d*\.?\d+/g;
-
-/**
- * Protocol
- *
- * Used to match Protocol
- */
-export const Protocol: RegExp = /^https?:/;
