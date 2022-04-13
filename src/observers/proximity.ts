@@ -1,7 +1,7 @@
 import { IPage } from 'types';
-import { config, connect, selectors } from '../app/state';
+import { config, connect, schema, timers } from '../app/state';
 import { getTargets, emptyObject } from '../app/utils';
-import { create, define } from '../constants/native';
+import { create } from '../constants/native';
 import { getRoute } from '../app/route';
 import * as store from '../app/store';
 import * as request from '../app/request';
@@ -27,14 +27,12 @@ function setHrefBounds (target: HTMLLinkElement) {
 
   const o = create(null);
   const rect = target.getBoundingClientRect();
-  const state = getRoute(target);
 
-  define(o, 'state', { get () { return state; } });
-
-  o.top = rect.top - (state.proximity || config.proximity.distance);
-  o.bottom = rect.bottom + (state.proximity || config.proximity.distance);
-  o.left = rect.left - (state.proximity || config.proximity.distance);
-  o.right = rect.right + (state.proximity || config.proximity.distance);
+  o.state = getRoute(target);
+  o.top = rect.top - (o.state.proximity || config.proximity.distance);
+  o.bottom = rect.bottom + (o.state.proximity || config.proximity.distance);
+  o.left = rect.left - (o.state.proximity || config.proximity.distance);
+  o.right = rect.right + (o.state.proximity || config.proximity.distance);
 
   return o;
 
@@ -70,11 +68,13 @@ function observer (targets?: {
 
       request.throttle(state.key, async () => {
 
-        const prefetch = await request.prefetch(state);
+        const prefetch = await request.get(state);
 
         if (prefetch) {
+
           targets.splice(node, 1);
           wait = false;
+
           if (targets.length === 0) {
             stop();
             console.info('Pjax: Proximity observer has disconnected');
@@ -97,7 +97,7 @@ export function start (): void {
   if (!config.proximity) return;
   if (connect.has(7)) return;
 
-  const targets = getTargets(selectors.proximity).map(setHrefBounds);
+  const targets = getTargets(schema.proximity).map(setHrefBounds);
 
   if (targets.length > 0) {
     entries = observer(targets);
@@ -115,7 +115,7 @@ export function stop (): void {
 
   if (!connect.has(7)) return;
 
-  emptyObject(request.timeout);
+  emptyObject(timers);
   removeEventListener('mousemove', entries, false);
   connect.delete(7);
 
