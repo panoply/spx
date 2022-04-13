@@ -1,7 +1,7 @@
 import { forEach, getNodeTargets } from '../app/utils';
-import { dispatch } from '../app/events';
+import { emit } from '../app/events';
 import { getRoute } from '../app/route';
-import { config, connect, selectors } from '../app/state';
+import { config, connect, schema } from '../app/state';
 import * as request from '../app/request';
 import * as store from '../app/store';
 
@@ -19,7 +19,7 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
 
     const route = getRoute(entry.target, 'intersect');
 
-    if (!dispatch('pjax:prefetch', { target: entry.target, route }, true)) {
+    if (!emit('prefetch', entry.target, route, 'intersect')) {
       return entries.unobserve(entry.target);
     }
 
@@ -44,7 +44,7 @@ export function start (): void {
   if (connect.has(5)) return;
 
   entries = new IntersectionObserver(forEach(onIntersect));
-  forEach(entries.observe, getNodeTargets(selectors.intersect, selectors.interhref));
+  forEach(entries.observe, getNodeTargets(schema.intersect, schema.interhref));
   connect.add(5);
 
 }
