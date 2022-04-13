@@ -69,7 +69,7 @@ export default rollup(
       ]
     )(
       [
-        plugin.esminify(),
+        plugin.esminify({ legalComments: 'none' }),
         plugin.filesize()
       ]
     )
