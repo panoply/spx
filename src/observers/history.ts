@@ -8,15 +8,34 @@ import * as scroll from './scroll';
 import { connect, pages } from '../app/state';
 import { assign } from '../constants/native';
 
+/**
+ * Listener state
+ */
 let unlisten: () => void = null;
+
+/**
+ * Determines if page is in transit
+ */
 let inTransit: string;
 
 /**
  * Create history state
+ *
+ * Triggers a history replace action saving
+ * the current page state to history.
  */
 export function create (state: IPage) {
 
   history.replace(history.location, state);
+
+  return history.location.state;
+
+}
+
+/**
+ * Create history state
+ */
+export function get () {
 
   return history.location.state;
 
@@ -59,19 +78,17 @@ export function update (): IPage {
 }
 
 /**
- * Popstate Navigation
+ * Popstate Event
+ *
+ * Fires popstate navigation request
  */
 async function popstate (url: string, state: IPage): Promise<void|IPage> {
 
   if (url !== inTransit) request.abort(inTransit);
 
   if (store.has(url)) {
-    if (state.type !== null && state.type === 'reverse') {
-      pages[url].position = state.position;
-      return render.update(pages[url], true);
-    } else {
-      return render.update(pages[url], true);
-    }
+    if (state.type !== null && state.type === 'reverse') pages[url].position = state.position;
+    return render.update(pages[url], true);
   }
 
   inTransit = url;
@@ -83,6 +100,8 @@ async function popstate (url: string, state: IPage): Promise<void|IPage> {
 };
 
 /**
+ * Listener Callback
+ *
  * Event History dispatch controller, handles popstate,
  * push and replace events via third party module
  */
@@ -93,6 +112,8 @@ function listener ({ action, location }: BrowserHistory) {
 };
 
 /**
+ * Start History API
+ *
  * Attached `history` event listener.
  */
 export function start (): void {
@@ -105,6 +126,8 @@ export function start (): void {
 }
 
 /**
+ * End History API
+ *
  * Removed `history` event listener.
  */
 export function stop (): void {
