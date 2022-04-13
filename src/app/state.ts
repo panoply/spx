@@ -2,6 +2,47 @@ import { IConfig, IPage, ISelectors } from 'types';
 import { create } from '../constants/native';
 
 /**
+ * Configuration
+ *
+ * Initialization settings applied upon Pjax connection.
+ * These are instance options, informing upon how the
+ * pjax instance should run. The options defined here are
+ * the defaults applied at runtime.
+ */
+export const config: IConfig = {
+  targets: [ 'body' ],
+  timeout: 30000,
+  poll: 15,
+  schema: 'pjax',
+  async: true,
+  cache: true,
+  reverse: true,
+  limit: 50,
+  preload: null,
+  hover: {
+    trigger: 'attribute',
+    threshold: 250
+  },
+  intersect: {
+    rootMargin: '0px 0px 0px 0px',
+    threshold: 0
+  },
+  proximity: {
+    distance: 75,
+    threshold: 250,
+    throttle: 500
+  },
+  progress: {
+    minimum: 0.08,
+    easing: 'linear',
+    speed: 200,
+    trickle: true,
+    threshold: 500,
+    trickleSpeed: 200
+  }
+};
+
+/**
  * Connects
  *
  * Determines the connection of various observers
@@ -14,8 +55,9 @@ import { create } from '../constants/native';
  * 5. Intersect
  * 6. Scroll
  * 7. Proximity
+ * 8. Head
  */
-export const connect: Set<1 | 2 | 3 | 4 | 5 | 6 | 7> = new Set();
+export const connect: Set<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8> = new Set();
 
 /**
  * Selectors
@@ -23,7 +65,15 @@ export const connect: Set<1 | 2 | 3 | 4 | 5 | 6 | 7> = new Set();
  * String `key > value` references to DOM attributes
  * selectors used in the Pjax instance.
  */
-export const selectors: ISelectors = create(null);
+export const schema: ISelectors = create(null);
+
+/**
+ * Position
+ *
+ * Holds the current position page offset radius.
+ * The scroll position is updated and saved here.
+ */
+export const position: { x: number; y: number } = create(null);
 
 /**
  * Pages
@@ -41,46 +91,38 @@ export const pages: { [url: string]: IPage } = create(null);
  * Each document is stored in string type. The key values
  * are unique ids generated using nanoid.
  */
-export const snaps: { [snapshot: string]: string } = create(null);
+export const snaps:{ [id: string]: string } = create(null);
 
 /**
- * Configuration
+ * Events Model
  *
- * Initialization settings applied upon Pjax connection.
- * These are instance options, informing upon how the
- * pjax instance should run. The options defined here are
- * the defaults applied at runtime.
+ * Holds an object reference for every event
+ * emitted. Used by the event emitter operations
  */
-export const config: IConfig = {
-  targets: [ 'body' ],
-  timeout: 30000,
-  poll: 15,
-  schema: 'pjax',
-  async: true,
-  cache: true,
-  reverse: true,
-  limit: 25,
-  preload: null,
-  mouseover: {
-    trigger: 'attribute',
-    threshold: 250
-  },
-  intersect: {
-    rootMargin: '0px 0px 0px 0px',
-    threshold: 0
-  },
-  proximity: {
-    distance: 75,
-    threshold: 250,
-    throttle: 500
-  },
-  progress: {
-    threshold: 850,
-    minimum: 0.1,
-    speed: 225,
-    trickle: true,
-    colour: '#111',
-    height: '2px',
-    easing: 'ease'
-  }
-};
+export const events: { [name: string]: Array<() => void | boolean> } = create(null);
+
+/**
+ * Request Transits
+ *
+ * This object holds the XHR requests in transit. The object
+ * properties represent the the request URL and the
+ * value is the XML Request instance.
+ */
+export const transit: { [url: string]: XMLHttpRequest } = create(null);
+
+/**
+ * Tracked Elements
+ *
+ * Keeps a reference of tracked nodes between renders
+ * and navigations to prevent extra appends from occuring.
+ */
+export const tracked: Set<string> = new Set();
+
+/**
+ * Request Timeouts
+ *
+ * Transit timers used to keep track of promises
+ * and trigger operations like hover or proximity
+ * prefetching.
+ */
+export const timers: { [url: string]: NodeJS.Timeout } = create(null);
