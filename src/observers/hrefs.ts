@@ -1,8 +1,9 @@
 import { supportsPointerEvents } from 'detect-it';
-import { dispatch } from '../app/events';
+import { emit } from '../app/events';
 import { getLink } from '../app/utils';
+import { keys } from '../constants/native';
 import { IPage } from '../types/page';
-import { connect, selectors, pages } from '../app/state';
+import { connect, schema, pages, transit } from '../app/state';
 import { getRoute } from '../app/route';
 import * as request from '../app/request';
 import * as render from '../app/render';
@@ -60,13 +61,13 @@ function handleTrigger (event: MouseEvent): void {
 
   if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, selectors.href);
+  const target = getLink(event.target, schema.href);
 
   if (!target) return;
 
   const route = getRoute(target);
 
-  if (!dispatch('pjax:trigger', { target, route }, true)) return;
+  if (!emit('trigger', event, route)) return;
 
   // CACHED VISIT
   if (store.has(route.key)) {
@@ -77,8 +78,9 @@ function handleTrigger (event: MouseEvent): void {
   } else {
 
     // CANCEL PENDING REQUESTS
-    if (request.transit.has(route.key)) {
-      if (request.transit.size > 1) request.cancel(route.key);
+    if (route.key in transit) {
+      console.log(transit, keys(transit));
+      if (keys(transit).length > 1) request.cancel(route.key);
     }
 
     // TRIGGERS FETCH
@@ -93,10 +95,7 @@ function handleTrigger (event: MouseEvent): void {
 /**
  * Executes a pjax navigation.
  */
-export async function navigate (
-  urlOrState: string,
-  state: IPage | false = false
-): Promise<void|IPage> {
+export async function navigate (urlOrState: string, state: IPage | false = false): Promise<void|IPage> {
 
   if (state) {
 
@@ -105,7 +104,6 @@ export async function navigate (
     }
 
     const page = await request.get(state);
-
     if (page) return render.update(page);
 
   } else {
@@ -113,6 +111,7 @@ export async function navigate (
     if ((await request.inFlight(urlOrState))) {
       return render.update(pages[urlOrState]);
     } else {
+      console.log('aborted');
       request.abort(urlOrState);
     }
 
