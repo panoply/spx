@@ -1,13 +1,13 @@
 import { pages, snaps } from './state';
 import * as regex from '../constants/regexp';
-import { create, toArray } from '../constants/native';
+import { create, toArray, nil } from '../constants/native';
 
 /**
  * Join Strings
  */
 export function join (...strings: string[]): string {
 
-  return strings.join('');
+  return strings.join(nil);
 
 }
 
@@ -69,11 +69,11 @@ export function delay (ms: number) {
 /**
  * Locted the closest link when click bubbles.
  */
-export function getLink (target: EventTarget | MouseEvent, selector: string): Element | false {
+export function getLink (target: EventTarget | MouseEvent, selector: string): HTMLLinkElement | false {
 
   if (target instanceof Element) {
     const element = target.closest(selector);
-    if (element && element.tagName === 'A') return element;
+    if (element && element.tagName === 'A') return element as HTMLLinkElement;
   }
 
   return false;
@@ -208,29 +208,6 @@ export function getElementAttrs (
   }, toArray(attributes));
 
   return include;
-}
-
-/**
- * Returns an object with `null` prototype. Optionally
- * accepts a spread of strings, which when provided will
- * be used as property names and create additional objects.
- */
-export function createObject <T> (...props: string[]): T {
-
-  const len = props.length;
-
-  if (len === 0) return create(null);
-
-  let i = 0;
-  const o = create(null);
-
-  while (i < len) {
-    o[props[i]] = create(null);
-    i++;
-  }
-
-  return o;
-
 }
 
 /**
