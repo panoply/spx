@@ -1,7 +1,7 @@
 import { supportsPointerEvents } from 'detect-it';
 import { getLink, getTargets, forEach, emptyObject } from '../app/utils';
-import { dispatch } from '../app/events';
-import { connect, config, selectors } from '../app/state';
+import { emit } from '../app/events';
+import { connect, config, schema, timers } from '../app/state';
 import * as store from '../app/store';
 import * as request from '../app/request';
 import { getKey, getRoute } from '../app/route';
@@ -13,13 +13,11 @@ import { getKey, getRoute } from '../app/route';
  */
 function onMouseleave (event: MouseEvent) {
 
-  const target = getLink(event.target, selectors.mouseover);
-
+  const target = getLink(event.target, schema.mouseover);
   if (target) {
-    request.cleanup(getKey(target));
-    handleLeave(target);
+    request.cleanup(getKey(target.href));
+    handleHover(target);
   }
-
 };
 
 /**
@@ -29,16 +27,14 @@ function onMouseleave (event: MouseEvent) {
  *
  * @param {MouseEvent} event
  */
-function onMouseover (event: MouseEvent): void {
+function onMouseEnter (event: MouseEvent): void {
 
-  const target = getLink(event.target, selectors.mouseover);
+  const target = getLink(event.target, schema.mouseover);
+  if (!target) return;
 
-  if (!target) return undefined;
+  const route = getRoute(target, 'hover');
 
-  const route = getRoute(target, 'mouseover');
-
-  if (!dispatch('pjax:prefetch', { target, route }, true)) return disconnect(target);
-
+  if (route.key in timers) return;
   if (store.has(route.key)) return disconnect(target);
 
   handleLeave(target);
@@ -47,11 +43,13 @@ function onMouseover (event: MouseEvent): void {
 
   request.throttle(route.key, async () => {
 
-    const prefetch = await request.prefetch(state);
+    if (!emit('prefetch', target, route, 'hover')) return disconnect(target);
 
-    if (prefetch) handleLeave(target);
+    const prefetch = await request.get(state);
 
-  }, state.threshold || config.mouseover.threshold);
+    if (prefetch) disconnect(target);
+
+  }, state.threshold || config.hover.threshold);
 
 };
 
@@ -61,9 +59,9 @@ function onMouseover (event: MouseEvent): void {
 function handleHover (target: EventTarget): void {
 
   if (supportsPointerEvents) {
-    target.addEventListener('pointerover', onMouseover, false);
+    target.addEventListener('pointerenter', onMouseEnter, false);
   } else {
-    target.addEventListener('mouseover', onMouseover, false);
+    target.addEventListener('mouseenter', onMouseEnter, false);
   }
 };
 
@@ -75,9 +73,11 @@ function handleHover (target: EventTarget): void {
 function handleLeave (target: Element): void {
 
   if (supportsPointerEvents) {
-    target.removeEventListener('pointerout', onMouseleave, false);
+    target.addEventListener('pointerout', onMouseleave, false);
+    target.removeEventListener('pointerenter', onMouseEnter, false);
   } else {
-    target.removeEventListener('mouseleave', onMouseleave, false);
+    target.addEventListener('mouseleave', onMouseleave, false);
+    target.removeEventListener('mouseenter', onMouseEnter, false);
   }
 }
 
@@ -87,11 +87,11 @@ function handleLeave (target: Element): void {
 function disconnect (target: EventTarget): void {
 
   if (supportsPointerEvents) {
-    target.removeEventListener('pointerover', onMouseleave, false);
-    target.removeEventListener('pointerout', onMouseleave, false);
+    target.removeEventListener('pointerenter', onMouseleave, false);
+    target.removeEventListener('pointerout', onMouseEnter, false);
   } else {
     target.removeEventListener('mouseleave', onMouseleave, false);
-    target.removeEventListener('mouseover', onMouseover, false);
+    target.removeEventListener('mouseenter', onMouseEnter, false);
   }
 }
 
@@ -102,9 +102,10 @@ function disconnect (target: EventTarget): void {
  */
 export function start (): void {
 
-  if (!config.mouseover) return;
+  if (!config.hover) return;
+
   if (!connect.has(4)) {
-    forEach(handleHover, getTargets(selectors.mouseover));
+    forEach(handleHover, getTargets(schema.mouseover));
     connect.add(4);
   }
 
@@ -118,8 +119,8 @@ export function start (): void {
 export function stop (): void {
 
   if (connect.has(4)) {
-    emptyObject(request.timeout);
-    forEach(disconnect, getTargets(selectors.mouseover));
+    emptyObject(timers);
+    forEach(disconnect, getTargets(schema.mouseover));
     connect.delete(4);
   }
 
