@@ -75,25 +75,31 @@ _Be as you are.._
 
 # Recommendations
 
-In order to get the most of this module below are a few recommendations developers should consider when leveraging it within in their projects.
+In order to get the most out of this module below are a few recommendations developers should consider when leveraging it within in their projects. The project was developed for our use cases and while it can be appropriated into other projects there are still a couple of minor features and/or capabilities that need work, so please bare that in mind.
+
+### Scripts
+
+JavaScript evaluation between navigations is supported when contained `<script>` elements are contained within the document `<head>` but this highly discouraged. Avoid inline/external JavaScript and instead leverage dynamic imports (`import('.')`) within your bundle, similar to SPA architecture.
+
+### Styles
+
+Stylesheet and inline CSS evaluation between navigations is not yet supported. This means you need to load CSS files at runtime and any `<style>` and `<link rel="stylesheet>` elements which exist thereafter will be ignored, unless contained within targets elements. This is something we will support post-beta.
 
 ### Pre-fetching
 
-The pre-fetching capabilities this Pjax variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, when and where pjax should execute a pre-fetch.
+The pre-fetching capabilities this Pjax variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, where and when pjax should execute a pre-fetch.
 
 ### Stimulus
 
-This module was developed as a replacement for [turbo](https://github.com/hotwired/turbo) so leveraging it together with [stimulus.js](https://stimulusjs.org/) is the preferred usage. Stimulus is a very simple framework and when working with SSR projects it helps alleviate the complications developers tend to face. The reason one would choose this project over Turbo comes to performance as this module is much faster and smaller than turbo.
+This module was developed as a replacement for [turbo](https://github.com/hotwired/turbo) so leveraging it together with [stimulus.js](https://stimulusjs.org/) is the preferred usage. Stimulus is a very simple framework and when working with SSR projects it helps alleviate the complications developers tend to face. The reason one would choose this project over Turbo comes down to performance as this module is much faster and smaller than turbo, it's also not riddled with class OOP design patterns, just functions bae,fFunctions, functions functions.
 
 ### Minification
 
-By default, all fetched pages are stored in memory so for every request the HTML dom string response is saved to cache. The smaller your HTML pages the more performant the rendering engine will be. In addition to minification it is generally good practice to consider using semantic HTML5 as much as possible so as to negate the amount of markup pages require.
+By default, all fetched pages are stored in memory so for every request the HTML dom string response is saved to cache. The smaller your HTML pages the more performant the rendering engine will be. In addition to minification it is generally good practice to consider using semantic HTML5 as much as possible this will help negate the amount of markup pages require.
 
 ### JavaScript
 
-Inline javascript contained within `<script></script>` tags should be placed in your documents `<head>` element. Script tags will be evaluated and executed on a per-page basis. You can prevent scripts from being re-evaluated by attributing them with `data-pjax-eval="false"` attributes. When script tags contain this attribute they will be executed only once and never again after that. Scripts which reference JavaScript files, ie: `<script src="*"></script>` are evaluated only onceonce and never again unless attributed with a `data-pjax-eval="true"` attribute.
-
-The best possible approach is to initialize JavaScript with `pjax.on('load', () => {})` method event. This way you can be sure it will load between navigations and improve performance.
+The best possible approach is to initialize JavaScript like Google Analytics and scripts which require per-page execution is to use the `pjax.on('load', function(){})` method event. This way you can be sure it will load between navigations.
 
 # Usage
 
@@ -141,39 +147,39 @@ pjax.connect({
 
 # Options
 
-### `targets`
+#### `targets`
 
 Define page fragment targets which are expected to change on a per-page basis. By default, this pjax module will replace the entire `<body>` fragment. It's best to define specific fragments.
 
 **Type:** `string[]` <br>
 **Default:** `['body']` <br>
 
-### `schema`
+#### `schema`
 
 By default, attribute identifiers use a `-pjax-` identifier. You can use a custom attribute identifier.
 
 **Type:** `string` <br>
 **Default:** `pjax` <br>
 
-### `timeout`
+#### `timeout`
 
 Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `30000` which means requests will wait `30s` before being a new request is triggered.
 
-### `poll`
+#### `poll`
 
 Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `1000` which means requests will wait `1s` before being a new request is triggered.
 
 **Type:** `number` <br>
 **Default:** `1000` <br>
 
-### `async`
+#### `async`
 
 Determine if page requests should be fetched asynchronously or synchronously. Setting this to `false` is not recommended.
 
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-### `cache`
+#### `cache`
 
 Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discourage as all visits will be fetched over the network and `data-pjax-cache` attribute configs will be ignored.
 
@@ -182,7 +188,7 @@ Enable or Disable caching. Each page visit request is cached and used in subsequ
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-### `persist`
+#### `persist`
 
 **NOT YET AVAILABLE**
 
@@ -191,28 +197,28 @@ The `persist` option can be used to restore cache into memory after a browser re
 **Type:** `boolean` <br>
 **Default:** `false` <br>
 
-### `reverse`
+#### `reverse`
 
 Reverse caching. This will execute a pre-emptive fetch of the previous pages in the history stack when no snapshot exists in cache. Snapshots cache is purged when browser refresh occurs (unless `persist` is enabled) so when navigating backwards or pages will need to be re-fetched and this results in minor delays due to the refresh which was triggered.
 
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-### `limit`
+#### `limit`
 
 Cache size limit. This pjax variation limits cache size to `50mb`and once it exceeds that limit, records will be removed starting from the earliest point of known cache entries.
 
 **Type:** `number` <br>
 **Default:** `50` <br>
 
-### `hover`
+#### `hover`
 
 Hover pre-fetching. You can disable hover pre-fetching by setting this to `false` which will prevent observers from executing and any `data-pjax-hover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
 
 **Type:** `boolean` or `object` <br>
 **Default:** `{ trigger: 'attribute', threshold: 250 }` <br>
 
-### `hover.trigger`
+#### `hover.trigger`
 
 How hover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-pjax-hover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-pjax-hover="false"`.
 
@@ -220,14 +226,14 @@ How hover prefetches should be triggered. By default this option is set to trigg
 **Accepts:** `attribute` or `href` <br>
 **Default:** `attribute` <br>
 
-### `hover.threshold`
+#### `hover.threshold`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
 
 **Type:** `number` <br>
 **Default:** `250` <br>
 
-### `proximity`
+#### `proximity`
 
 Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `data-pjax-proximity` attribute will be pre-fetched.
 
@@ -236,28 +242,28 @@ Proximity pre-fetching allow for requests to be dispatched when the cursor is wi
 **Type:** `boolean` or `object` <br>
 **Default:** `{ distance: 75, throttle: 500, threshold: 250 }` <br>
 
-### `proximity.distance`
+#### `proximity.distance`
 
 The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-pjax-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
 
 **Type:** `number` <br>
 **Default:** `75` <br>
 
-### `proximity.throttle`
+#### `proximity.throttle`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
 
 **Type:** `number` <br>
 **Default:** `250` <br>
 
-### `proximity.threshold`
+#### `proximity.threshold`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse has exceeded the range and the threshold time limit defined here has been exceeded.
 
 **Type:** `number` <br>
 **Default:** `250` <br>
 
-### `intersect`
+#### `intersect`
 
 Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `data-pjax-intersect` or `data-pjax-intersect="true"` attribute will be pre-fetched. You can annotate elements that contain href links or `<a>` elements directly.
 
@@ -266,14 +272,14 @@ Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Ob
 **Type:** `boolean` or `object` <br>
 **Default:** `{ rootMargin: '0px 0px 0px 0px', throttle: 0 }` <br>
 
-### `intersect.rootMargin`
+#### `intersect.rootMargin`
 
 An offset rectangle applied to the root's href bounding box. The option is passed to the Intersection Observer.
 
 **Type:** `string` <br>
 **Default:** `0px 0px 0px 0px` <br>
 
-### `intersect.throttle`
+#### `intersect.throttle`
 
 Throttle limit passed to the intersection observer instance.
 
@@ -510,21 +516,171 @@ The contact page will replace an additional fragment with the id value of `foo` 
 
 </details>
 
+# Session
+
+A pjax navigation sessions will begin immediately after a connection was initialized via `pjax.connect()` and ends when a browser refresh is executed or url origin changes occurs. You can access, view or modify the session store using the `pjax.session()` method.
+
+> The `pjax.session()` method references a subset of null prototypical objects.
+
+<details>
+<summary>
+<strong>Model</strong>
+</summary>
+
+```typescript
+interface ISession {
+  options: IOptions;
+  schema: object;
+  tracked: Set<string>;
+  pages: {
+    [key: string]: IPage;
+  };
+  timers: {
+    [key: string]: number;
+  };
+  requests: {
+    [key: string]: XMLHttpRequest;
+  };
+  snapshots: {
+    [uuid: string]: string;;
+  };
+  observers: {
+    history: boolean;
+    hover: boolean;
+    hrefs: boolean;
+    intersect: boolean;
+    proximity: boolean;
+    scroll: boolean;
+  };
+}
+```
+
+#### `options`
+
+The merged default and custom configuration [options](#options) provided on connection via `pjax.connect()`.
+
+#### `observers`
+
+The connected observers being used in the session.
+
+#### `schema`
+
+A **readonly** reference object list of selectors used by the module for internal operations.
+
+#### `pages`
+
+A **readonly** key > value store of pages visited. The object properties (keys) in this store use a pathname + parameter combinator sequence which map to page states. See [state](#state) for more information.
+
+#### `snapshots`
+
+A **readonly** key > value store of snapshots. Snapshots hold the DOM string responses of visited pages. The object properties (keys) in this store use the `UUID` values in page [state](#states). S
+
+#### `tracked`
+
+A **readonly** `Set` of tracked nodes that have been rendered to the document.
+
+</details>
+
+# State
+
+State represents per-page configuration. This store is immutable and created for every unique url `/path` or `/pathname?query=param` location that has been encountered throughout the session. The state of each page is stored in memory and also written to the browsers history stack so it can be retrieved in subsequent visits.
+
+State modifications can be carried out using attributes, methods or from within lifecycle events that support it. When using the `Pjax.visit()` method you can apply state modification in the `options` parameter and changes will be merged before a visit begins. You should avoid modifying state outside of the available methods, treat state as **read only** and architect your application to prevent direct augmentation.
+
+> State saved to history stack is stored with the `config` object omitted.
+
+<details>
+<summary>
+<strong>Model</strong>
+</summary>
+
+```typescript
+interface IPage {
+  uuid: string;
+  key: string;
+  rev: string;
+  title: string;
+  type: number;
+  position: {
+    y: number;
+    x: number;
+  };
+  location: {
+    origin: string;
+    hostname: string;
+    pathname: string;
+    search?: string;
+    hash?: string;
+  };
+  config: {
+    cache: boolean | number;
+    history: boolean | string;
+    threshold?: number;
+    proximity?: number;
+    hydrate?: string[];
+    replace?: string[];
+    append?: [from: string, to: string][];
+    prepend?: [from: string, to: string][];
+  };
+}
+```
+
+#### `uuid`
+
+A UUID reference to the page snapshot HTML Document element.
+
+#### `key`
+
+A URL pathname + parameter combination key reference (this value excludes `#hashes`).
+
+#### `rev`
+
+A previous pathname + parameter combination key reference, ie: the previous page
+
+#### `title`
+
+The document title, ie: the text content contained in `<title></title>` tags.
+
+#### `type`
+
+An enumerable number reference that informs upon how this store was created.
+
+#### `position{}`
+
+Scroll position of the next navigation. The `y` - Equivalent to `scrollTop` and the `x` is equivalent to `scrollLeft`.
+
+#### `location{}`
+
+Parsed location reference of the page. The `origin` is the domain value of `window.location.origin`, the `hostname` value will is the domain name with protocol and _www_ omitted (`https://www.brixtol.com` > `brixtol.com`). If the page does not contain search parameters or hashes then these options are omitted from the object.
+
+#### `config{}`
+
+Configuration model. This values defined here are applied on a per-page basis and will reflect the visits render options. These settings merge the connection defaults and attribute annotations (if defined) to instruct pjax on how to perform its rendering and cache operation.
+
+</details>
+
+# Snapshots
+
+```typescript
+interface ISnapshot {
+  [uuid: string]: string;
+}
+```
+
 # Lifecycle Events
 
 Lifecycle events are dispatched to the document upon each navigation. You can access contextual information in the parameters. You can also cancel events with `preventDefault()` or by returning boolean `false` if you wish to prevent execution from occurring in a certain lifecycle.
 
 The Pjax lifecycle events are dispatched in the following order of execution:
 
-1. **pjax:ready**
-2. **pjax:prefetch**
-3. **pjax:trigger**
-4. **pjax:request**
-5. **pjax:cache**
-6. **pjax:render**
-7. **pjax:hydrate**
-8. **pjax:module**
-9. **pjax:load**
+1. **connected**
+2. **prefetch**
+3. **trigger**
+4. **request**
+5. **cache**
+6. **hydrate**
+7. **render**
+8. **load**
 
 > When a hydrate event is triggered the `hydrate` method will be fired instead of the `render`.
 
@@ -535,80 +691,107 @@ The Pjax lifecycle events are dispatched in the following order of execution:
 import type { Events } from '@brixtol/pjax'
 
 // Triggered once after pjax initialization
-pjax.on('connected', (state: IPage) => void)
+pjax.on('connected', (state?: IPage, session?: ISession) => void)
 
 // Triggered when a prefetch is triggered
-pjax.on('prefetch', (target: Element, state: IPage, type: EventType) => void | false)
+pjax.on('prefetch', (trigger?: Element, location?: ILocation) => void | false)
 
 // Triggered when a mousedown event occurs on a link
-pjax.on('trigger', (event: Event, state: IPage) => void | false)
+pjax.on('visit', (event?: Event) => void | false)
 
-// Triggered before a page is fetched over XHR
-pjax.on('request', (state: IPage, type: EventType) => void | false)
+// Before a request begins and after a href element was parsed
+pjax.on('fetch', (state?: IState) => void | false)
 
 // Triggered before a page and snapshot is saved to memory
-pjax.on('cache', (state: IPage, snapshot: Document) => void | false | Document)
+pjax.on('cache', (state?: IState, dom?: Document) => void | false | Document)
 
 // Triggered on before a hydration replacement occurs
-pjax.on('hydrate', (target: Element, newTarget: Element) => void | false)
+pjax.on('hydrate', (target?: Element, newTarget?: Element) => void | false)
 
 // Triggered before a page or fragment is rendered
-pjax.on('render', (target: Element, newTarget: Element) => void | false)
+pjax.on('replace', (target?: Element, newTarget?: Element) => void | false)
 
 // Triggered after a page has rendered
-pjax.on('load', (state: IPage) => void)
+pjax.on('load', (state?: IPage) => void)
 
 ```
 
-### `connected`
+#### `connected`
 
 The connected event will be triggered after Pjax has connected and fired only once. This is the equivalent of the `DOMContentLoaded` event. Upon connection, Pjax will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
 
 Because the initial snapshot is saved using `document.documentElement.outerHTML` the captured HTML may cause third party scripts which have augmented the document to serve an invalid dom into the snapshot cache. When a return navigation to this location occurs it may cause the third party script to fail. You can prevent issues of this nature from happening by initializing your modules within the `connected` event.
 
-**Cancellable:** `false`
+**Cancellable:** `false` <br>
+**Asynchronous:** `false`
 
-### `prefetch`
+#### `prefetch`
 
 The prefetch event will be triggered for every prefetch request. Prefetch requests are fired when `hover`, `intersect` and `proximity` are triggered. This event will be frequently triggered if you are leveraging any of those capabilities. You can determine the type of prefetch which has occurred via the `type` parameter.
 
-**Cancellable:** `true`
+**Cancellable:** `false` <br>
+**Asynchronous:** `true`
 
-### `trigger`
+#### `visit`
 
-The trigger event will be triggered when a `mousedown` event has occurred on a Pjax enabled `href`. This is the equivalent of a `click` and allows you to hook into the dispatch. Use this event to teardown any third party scripts.
+The visit event will be triggered when a `mousedown` event has occurred on a Pjax enabled `href` element. This is the equivalent of a `click` and when such an action occurs then navigation intent is assumed and visit begins.
 
-**Cancellable:** `true`
+**Cancellable:** `false` <br>
+**Asynchronous:** `false`
 
-### `request`
+#### `request`
 
 The request event will be triggered before an XHR request begins and a page is fetched. This event will be fired for `prefetch`, `hydrate` and `trigger` actions. You can determine the trigger action for the request using the `type` property passed in the `event.detail` parameter.
 
-**Cancellable:** `true`
+**Cancellable:** `false` <br>
+**Asynchronous:** `true`
 
-### `cache`
+#### `cache`
 
 The cache event will be triggered immediately after a request has finished and before the snapshot and page record is saved to memory. You can determine the trigger action for the request via the `type` parameter. This Lifecycle also allows you to augment the snapshot `Document` and before it is saved.
 
-**Cancellable:** `true`
+**Cancellable:** `false` <br>
+**Asynchronous:** `false`
 
-### `render`
+#### `render`
 
 The render event will be triggered before a page or fragment is rendered (replaced) in the dom. For every `target` you've defined this event will fire. You can determine which elements are being replaced via the `target` and `newTarget` parameters passed. The `target` property represents the current element that will be replaced and the `newTarget` element represents the new target which it will be replaced with.
 
-**Cancellable:** `true`
+**Cancellable:** `false` <br>
+**Asynchronous:** `false`
 
-### `hydrate`
+#### `hydrate`
 
 The hydrate event is identical to the `render` event. The parameters represent the current `target` and `newTarget` elements which will be replaced.
 
-**Cancellable:** `true`
+**Cancellable:** `false` <br>
+**Asynchronous:** `false`
 
-### `load`
+#### `load`
 
 The load event is the final lifecycle event to be triggered. Use this event to re-initialize any third party scripts. The load event will only execute after navigation has concluded.
 
-**Cancellable:** `false`
+**Cancellable:** `false` <br>
+**Asynchronous:** `false`
+
+# Routing
+
+The module exposes a low-level routing approach using simple wildcard path matching. Routes executed right before fragments are replaced in the rendering lifecycle. Routes allow you to augment the target documents and state before replacement occur.
+
+<!-- prettier-ignore -->
+```typescript
+import * as pjax from '@brixtol/pjax'
+
+pjax.route({
+
+  '/:value': (state?: IState, target?: IRoute) => void | Document,
+
+  '/path/*': (state?: IState, target?: IRoute) => void | Document,
+
+  '/?param': (state?: IState, target?: IRoute) => void | Document
+
+});
+```
 
 # Methods
 
@@ -624,10 +807,10 @@ pjax.supported: boolean
 pjax.connect(options?): void
 
 // Returns the session model
-pjax.session(): ISession
+pjax.session(store?: string, merge: ISession<T>): ISession
 
 // Trigger hydration, optionally pass search params
-pjax.hydrate(options: { url?: string, target: Elements[] }): Promise<IPage>
+pjax.hydrate(url: string, targets: string[]): Promise<IPage>
 
 // Triggers a programmatic fetch (the record is not cached)
 pjax.fetch(url: string): Promise<Document>
@@ -639,10 +822,10 @@ pjax.prefetch(link: string | Element): Promise<IPage>
 pjax.visit(url?: string, options?): Promise<IPage>
 
 // Access the cache, pass in href for specific record
-pjax.cache(url?: string): Page{}
+pjax.state(url?: string, merge: ): Page{}
 
-// Returns a snapshot or list of snapshots
-pjax.snapshot(url?: string, options?): Document | { [id: string]: string }
+// Updates the current document snapshot
+pjax.capture(elements?: string[]): Promise<Element[]>
 
 // Clears the cache, pass in url to clear specific record
 pjax.clear(url?: string): void
@@ -654,6 +837,58 @@ pjax.reload(): Page{}
 pjax.disconnect(): void
 
 ```
+
+### `pjax.connect(options?)`
+
+The `connect` method is a **required** call and will initialize a pjax session. You can optionally provide options which inform pjax on how it should behave. See [options](#options) for list of settings.
+
+**Returns:** `void`
+**Dispatched Events:** `connected` <br>
+
+### `pjax.session()`
+
+The `session` method will return the current store instance. This includes all state, snapshots, options and settings of the current session which exists in memory. If you intend of augmenting the session, please note that the store records are created without prototype.
+
+**Returns:** `Promise<IPage>`
+
+### `pjax.hydrate(url: string, targets: string[])`
+
+The `hydrate` method executed a programmatic hydration. The method expects a `url` and string list of element selectors.
+
+**Returns:** `Promise<IPage>`<br>
+**Events:** `cache > hydrate > load`
+
+### `pjax.fetch(url: string)`
+
+Triggers a programmatic fetch. The XHR request response is not cached and no state reference are touched.
+
+**Returns:** `Document`<br>
+
+### `pjax.prefetch(link: string | Element)`
+
+The `prefetch` method executed a programmatic Prefetch. The method expects a `url` or `<a href="*"></a>` node as an argument. This method behaves the same way as hover, intersect of proximity prefetches.
+
+**Returns:** `Promise<IPage>`<br>
+**Events:** `request > cache`
+
+### `pjax.visit(url: string, options?: IOptions)`
+
+The `visit` method executed a programmatic trigger visit. The method expects a `url` as an argument and optionally accepts an page state options model. This method behaves the same way as trigger.
+
+**Returns:** `Promise<IPage>`<br>
+**Events:** `replace > request > cache > render > load`
+
+### `pjax.state(url?: string, state?: IState)`
+
+The `state` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
+
+**Returns:** `Promise<IPage>`
+
+### `pjax.update(targets: string[])`
+
+The `update` method performs a snapshot modification to the current document. Use this to align a snapshot cache record between navigations. This is helpful in situations where the dom is augmented and you want to preserve
+
+**Returns:** `Promise<IPage>`
 
 # Attributes
 
@@ -1158,17 +1393,16 @@ This attribute is a `boolean` type. Passing the `true` value is optional as `dat
 
 ## data-pjax-threshold
 
-By default, this will be set to `100` or whatever preset configuration was defined in `pjax.connect()` but you can override those settings by annotating the link with this attribute. The `data-pjax-threshold` attribute should be used together attributes that accept threshold control.
+By default, this will be set to whatever preset configuration was defined in `pjax.connect()` but you can override those settings by annotating the link with this attribute. The `data-pjax-threshold` attribute can only be used on attributes that accept threshold control. The per-page state session will write this to the `threshold` property.
 
 <details>
 <summary>
 <strong>Attributes</strong>
 </summary>
 
-The `data-pjax-threshold` attribute can be used together with the following attributes:
+The `data-pjax-threshold` attribute can be used together with one the following attributes:
 
 - `data-pjax-hover`
-- `data-pjax-intersect`
 - `data-pjax-proximity`
 
 </details>
@@ -1189,52 +1423,17 @@ This attribute either a `number` type. You can optionally pass a key reference t
 
 <!-- prettier-ignore -->
 ```html
-<!-- hover prefetch will begin after 500ms on mouseover -->
+<!-- hover prefetch will begin after 500ms on hover -->
 <a
  href="*"
  data-pjax-threshold="500"
  data-pjax-hover>Link</a>
 
-<!-- prefetch will begin after 500ms on mouseover -->
 <!-- prefetch will begin after 1s on proximity -->
 <a
  href="*"
- data-pjax-threshold="mouseover:500 proximity:1000"
- data-pjax-hover
+ data-pjax-threshold="1000"
  data-pjax-proximity>Link</a>
-
-<!-- prefetch will begin after 500ms on mouseover and proximity -->
-<a
- href="*"
- data-pjax-threshold="500"
- data-pjax-hover
- data-pjax-proximity>Link</a>
-
-<!-- Prefetch will begin 1s after this link becomes visible in viewport -->
-<div data-pjax-threshold="1000" data-pjax-intersect>
-
-  <!-- Prefetch will begin after 1s as per the threshold defined on the parent -->
-  <a
-   href="*">link</a>
-
-  <!-- This threshold will be used and fetch will begin after 100ms instead of 1s -->
-  <a
-   href="*"
-   data-pjax-threshold="100">link</a>
-
-  <!-- Prefetch will be disabled -->
-  <a
-   href="*"
-   data-pjax-intersect="false">link</a>
-
-  <!-- Prefetch will be disabled on intersection by trigger on mouseover after 300ms -->
-  <a
-   href="*"
-   data-pjax-intersect="false"
-   data-pjax-threshold="300"
-   data-pjax-hover>link</a>
-
-</div>
 
 ```
 
@@ -1502,185 +1701,6 @@ This attribute can be `number` or boolean `false` type. You must provide a numbe
 ```
 
 </details>
-
-# State
-
-Each page visited has a state value. Page state is immutable and created for every unique url `/path` or `/pathname?query=param` location that has been encountered throughout the pjax session. The state value of each page is added to its pertaining History stack record and it will be referenced on subsequent visits. This approach drastically improves TTFB and provides a specific store for every page.
-
-> Navigation sessions begin once a Pjax connection has been established and ends when a browser refresh is executed or url origin changes. You can maintain and restore sessions using cache methods.
-
-### Read
-
-You can access page state via the `event.details.state` property provided in certain dispatched lifecycle events or via the `pjax.cache()` method. The caching engine used by this Pjax variation acts as mediator when a session begins, when you access page state via the `pjax.cache()` method you are given a bridge to the object that holds all active sessions of the cache store kept in browser memory.
-
-### Write
-
-State modifications can be carried out using attributes, method or from within dispatched events. When using the `Pjax.visit()` method you can apply state modification to the `options` parameter and changes will be merged before a visit begins. You should avoid modifying state outside of the available methods, treat state as **read only** and architect your application to prevent direct augmentation.
-
-### Model
-
-```typescript
-interface IPage {
-  /**
-   * The URL cache key, this is the pathname (excludes #hashes)
-   */
-  key: string;
-
-  /**
-   * The list of fragment target element selectors defined upon connection.
-   * Targets are inherited from `pjax.connect()` presets.
-   *
-   * > You cannot override the targets but you can skip replacements using
-   * `hydrate` to replace specific fragments.
-   *
-   * @example
-   *
-   * ['#main', '.header', '[data-attr]', 'header']
-   */
-  replace: string[];
-
-  /**
-   * The Document title
-   */
-  title: string;
-
-  /**
-   * Should this fetch be pushed to history
-   */
-  history: boolean;
-
-  /**
-   * UUID reference to the page snapshot HTML Document element
-   */
-  snapshot: string;
-
-  /**
-   * List of fragments to replace. When `hydrate` is used,
-   * it will run precedence over `targets` and execute replacements
-   * on the triggered page fragments.
-   *
-   * @example
-   *
-   * ['#main', '.header', '[data-attr]', 'header']
-   */
-  hyrdate?: string[];
-
-  /**
-   * List of fragments to append from and to. Accepts multiple.
-   *
-   * @example
-   *
-   * [['#main', '.header'], ['[data-attr]', 'header']]
-   */
-  append?: Array<[from: string, to: string]>;
-
-  /**
-   * List of fragments to be prepend from and to. Accepts multiple.
-   *
-   * @example
-   *
-   * [['#main', '.header'], ['[data-attr]', 'header']]
-   */
-  prepend?: Array<[from: string, to: string]>;
-
-  /**
-   * Controls the caching engine for the link navigation.
-   * Option is enabled when `cache` preset config is `true`.
-   * Each pjax link can set a different cache option.
-   */
-  cache: boolean | 'reset' | 'clear' | 'restore';
-
-  /**
-   * Define mouseover timeout from which fetching will begin
-   * after time spent on mouseover
-   *
-   * @default 100
-   */
-  threshold: number;
-
-  /**
-   * Define proximity prefetch distance from which fetching will
-   * begin relative to the cursor offset of href elements.
-   *
-   * @default 0
-   */
-  proximity: number;
-
-  /**
-   * Progress bar threshold delay
-   *
-   * @default 350
-   */
-  progress: boolean | number;
-
-  /**
-   * Scroll position of the next navigation.
-   *
-   * ---
-   * `x` - Equivalent to `scrollLeft` in pixels
-   *
-   * `y` - Equivalent to `scrollTop` in pixels
-   */
-  position: {
-    y: number;
-    x: number;
-  };
-
-  /**
-   * Location URL
-   */
-  location: {
-    /**
-     * The URL origin name
-     *
-     * @example
-     * 'https://website.com'
-     */
-    origin: string;
-    /**
-     * The URL Hostname
-     *
-     * @example
-     * 'website.com'
-     */
-    hostname: string;
-
-    /**
-     * The URL Pathname
-     *
-     * @example
-     * '/pathname' OR '/pathname/foo/bar'
-     */
-    pathname: string;
-
-    /**
-     * The URL search params (omitted is no search exist)
-     *
-     * @example
-     * '?param=foo&bar=baz'
-     */
-    search?: string;
-
-    /**
-     * The URL Hash (omitted is no hash exist)
-     *
-     * @example
-     * '#foo'
-     */
-    hash?: string;
-
-    /**
-     * The previous page path URL, this is also the cache identifier.
-     * If `cache.reverse` is `true` then preemptive fetches will be
-     * executed to this location.
-     *
-     * @example
-     * '/pathname' OR '/pathname?foo=bar'
-     */
-    lastpath: string;
-  };
-}
-```
 
 # How it works?
 
