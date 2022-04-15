@@ -659,14 +659,6 @@ Configuration model. This values defined here are applied on a per-page basis an
 
 </details>
 
-# Snapshots
-
-```typescript
-interface ISnapshot {
-  [uuid: string]: string;
-}
-```
-
 # Lifecycle Events
 
 Lifecycle events are dispatched to the document upon each navigation. You can access contextual information in the parameters. You can also cancel events with `preventDefault()` or by returning boolean `false` if you wish to prevent execution from occurring in a certain lifecycle.
@@ -716,7 +708,7 @@ pjax.on('load', (state?: IPage) => void)
 
 ```
 
-#### `connected`
+## connected
 
 The connected event will be triggered after Pjax has connected and fired only once. This is the equivalent of the `DOMContentLoaded` event. Upon connection, Pjax will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
 
@@ -725,49 +717,49 @@ Because the initial snapshot is saved using `document.documentElement.outerHTML`
 **Cancellable:** `false` <br>
 **Asynchronous:** `false`
 
-#### `prefetch`
+## prefetch
 
 The prefetch event will be triggered for every prefetch request. Prefetch requests are fired when `hover`, `intersect` and `proximity` are triggered. This event will be frequently triggered if you are leveraging any of those capabilities. You can determine the type of prefetch which has occurred via the `type` parameter.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `true`
 
-#### `visit`
+## visit
 
 The visit event will be triggered when a `mousedown` event has occurred on a Pjax enabled `href` element. This is the equivalent of a `click` and when such an action occurs then navigation intent is assumed and visit begins.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `false`
 
-#### `request`
+## request
 
 The request event will be triggered before an XHR request begins and a page is fetched. This event will be fired for `prefetch`, `hydrate` and `trigger` actions. You can determine the trigger action for the request using the `type` property passed in the `event.detail` parameter.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `true`
 
-#### `cache`
+## cache
 
 The cache event will be triggered immediately after a request has finished and before the snapshot and page record is saved to memory. You can determine the trigger action for the request via the `type` parameter. This Lifecycle also allows you to augment the snapshot `Document` and before it is saved.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `false`
 
-#### `render`
+## render
 
 The render event will be triggered before a page or fragment is rendered (replaced) in the dom. For every `target` you've defined this event will fire. You can determine which elements are being replaced via the `target` and `newTarget` parameters passed. The `target` property represents the current element that will be replaced and the `newTarget` element represents the new target which it will be replaced with.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `false`
 
-#### `hydrate`
+## hydrate
 
 The hydrate event is identical to the `render` event. The parameters represent the current `target` and `newTarget` elements which will be replaced.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `false`
 
-#### `load`
+## load
 
 The load event is the final lifecycle event to be triggered. Use this event to re-initialize any third party scripts. The load event will only execute after navigation has concluded.
 
@@ -807,28 +799,28 @@ pjax.supported: boolean
 pjax.connect(options?): void
 
 // Returns the session model
-pjax.session(store?: string, merge: ISession<T>): ISession
+pjax.session(store?, merge{}): ISession
 
 // Trigger hydration, optionally pass search params
-pjax.hydrate(url: string, targets: string[]): Promise<IPage>
+pjax.hydrate(url?, targets: string[]): Promise<IPage>
 
 // Triggers a programmatic fetch (the record is not cached)
-pjax.fetch(url: string): Promise<Document>
+pjax.fetch(url): Promise<Document>
 
 // Triggers a programmatic pre-fetch visit
-pjax.prefetch(link: string | Element): Promise<IPage>
+pjax.prefetch(string | Element): Promise<IPage>
 
 // Execute a programmatic pjax visit
-pjax.visit(url?: string, options?): Promise<IPage>
+pjax.visit(url, options?{}): Promise<IPage>
 
 // Access the cache, pass in href for specific record
-pjax.state(url?: string, merge: ): Page{}
+pjax.state(url, merge?{}): Page{}
 
 // Updates the current document snapshot
-pjax.capture(elements?: string[]): Promise<Element[]>
+pjax.capture(string[]): Promise<Element[]>
 
 // Clears the cache, pass in url to clear specific record
-pjax.clear(url?: string): void
+pjax.clear(url?): void
 
 // Reloads the current page
 pjax.reload(): Page{}
@@ -838,53 +830,53 @@ pjax.disconnect(): void
 
 ```
 
-### `pjax.connect(options?)`
+#### `pjax.connect(options?)`
 
 The `connect` method is a **required** call and will initialize a pjax session. You can optionally provide options which inform pjax on how it should behave. See [options](#options) for list of settings.
 
 **Returns:** `void`
 **Dispatched Events:** `connected` <br>
 
-### `pjax.session()`
+#### `pjax.session()`
 
 The `session` method will return the current store instance. This includes all state, snapshots, options and settings of the current session which exists in memory. If you intend of augmenting the session, please note that the store records are created without prototype.
 
 **Returns:** `Promise<IPage>`
 
-### `pjax.hydrate(url: string, targets: string[])`
+#### `pjax.hydrate(url: string, targets: string[])`
 
 The `hydrate` method executed a programmatic hydration. The method expects a `url` and string list of element selectors.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `cache > hydrate > load`
 
-### `pjax.fetch(url: string)`
+#### `pjax.fetch(url: string)`
 
 Triggers a programmatic fetch. The XHR request response is not cached and no state reference are touched.
 
 **Returns:** `Document`<br>
 
-### `pjax.prefetch(link: string | Element)`
+#### `pjax.prefetch(link: string | Element)`
 
 The `prefetch` method executed a programmatic Prefetch. The method expects a `url` or `<a href="*"></a>` node as an argument. This method behaves the same way as hover, intersect of proximity prefetches.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `request > cache`
 
-### `pjax.visit(url: string, options?: IOptions)`
+#### `pjax.visit(url: string, options?: IOptions)`
 
 The `visit` method executed a programmatic trigger visit. The method expects a `url` as an argument and optionally accepts an page state options model. This method behaves the same way as trigger.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `replace > request > cache > render > load`
 
-### `pjax.state(url?: string, state?: IState)`
+#### `pjax.state(url?: string, state?: IState)`
 
 The `state` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
 
 **Returns:** `Promise<IPage>`
 
-### `pjax.update(targets: string[])`
+#### `pjax.update(targets: string[])`
 
 The `update` method performs a snapshot modification to the current document. Use this to align a snapshot cache record between navigations. This is helpful in situations where the dom is augmented and you want to preserve
 
