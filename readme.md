@@ -792,40 +792,51 @@ In addition to Lifecycle events, you also have a list of methods available. Meth
 ```typescript
 import * as pjax from '@brixtol/pjax'
 
-// Check to see if Pjax is supported by the browser
+
 pjax.supported: boolean
 
 // Connects Pjax, call to initialize a pjax session
+//
 pjax.connect(options?): void
 
 // Returns the session model
+//
 pjax.session(store?, merge{}): ISession
 
 // Trigger hydration, optionally pass search params
+//
 pjax.hydrate(url?, targets: string[]): Promise<IPage>
 
 // Triggers a programmatic fetch (the record is not cached)
+//
 pjax.fetch(url): Promise<Document>
 
 // Triggers a programmatic pre-fetch visit
+//
 pjax.prefetch(string | Element): Promise<IPage>
 
 // Execute a programmatic pjax visit
+//
 pjax.visit(url, options?{}): Promise<IPage>
 
 // Access the cache, pass in href for specific record
+//
 pjax.state(url, merge?{}): Page{}
 
 // Updates the current document snapshot
+//
 pjax.capture(string[]): Promise<Element[]>
 
 // Clears the cache, pass in url to clear specific record
+//
 pjax.clear(url?): void
 
 // Reloads the current page
+//
 pjax.reload(): Page{}
 
 // Disconnects Pjax, ie: destroy the instance
+//
 pjax.disconnect(): void
 
 ```
