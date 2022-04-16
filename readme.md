@@ -77,29 +77,59 @@ _Be as you are.._
 
 In order to get the most out of this module below are a few recommendations developers should consider when leveraging it within in their projects. The project was developed for our use cases and while it can be appropriated into other projects there are still a couple of minor features and/or capabilities that need work, so please bare that in mind.
 
-### Scripts
+<details>
+<summary>
+<strong>Script Evaluation</strong>
+</summary>
 
 JavaScript evaluation between navigations is supported when contained `<script>` elements are contained within the document `<head>` but this highly discouraged. Avoid inline/external JavaScript and instead leverage dynamic imports (`import('.')`) within your bundle, similar to SPA architecture.
 
-### Styles
+</details>
+
+<details>
+<summary>
+<strong>Style Evaluation</strong>
+</summary>
 
 Stylesheet and inline CSS evaluation between navigations is not yet supported. This means you need to load CSS files at runtime and any `<style>` and `<link rel="stylesheet>` elements which exist thereafter will be ignored, unless contained within targets elements. This is something we will support post-beta.
 
-### Pre-fetching
+</details>
+
+<details>
+<summary>
+<strong>Pre-fetching</strong>
+</summary>
 
 The pre-fetching capabilities this Pjax variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, where and when pjax should execute a pre-fetch.
 
-### Stimulus
+</details>
+
+<details>
+<summary>
+<strong>Stimulus</strong>
+</summary>
 
 This module was developed as a replacement for [turbo](https://github.com/hotwired/turbo) so leveraging it together with [stimulus.js](https://stimulusjs.org/) is the preferred usage. Stimulus is a very simple framework and when working with SSR projects it helps alleviate the complications developers tend to face. The reason one would choose this project over Turbo comes down to performance as this module is much faster and smaller than turbo, it's also not riddled with class OOP design patterns, just functions bae,fFunctions, functions functions.
 
-### Minification
+</details>
+
+<details>
+<summary>
+<strong>Minification</strong>
+</summary>
 
 By default, all fetched pages are stored in memory so for every request the HTML dom string response is saved to cache. The smaller your HTML pages the more performant the rendering engine will be. In addition to minification it is generally good practice to consider using semantic HTML5 as much as possible this will help negate the amount of markup pages require.
 
-### JavaScript
+</details>
+
+<details>
+<summary>
+<strong>JavaScript</strong>
+</summary>
 
 The best possible approach is to initialize JavaScript like Google Analytics and scripts which require per-page execution is to use the `pjax.on('load', function(){})` method event. This way you can be sure it will load between navigations.
+
+</details>
 
 # Usage
 
@@ -115,18 +145,18 @@ pjax.connect({
   schema: 'pjax',
   timeout: 30000,
   poll: 15,
+  limit: 50,
   async: true,
   cache: true,
   reverse: true,
   persist: false,
-  limit: 50,
   preload: null,
   hover: {
     trigger: 'attribute',
     threshold: 250
   },
   intersect: {
-    rootMargin: '',
+    rootMargin: '0px 0px 0px 0px',
     threshold: 0
   },
   proximity: {
@@ -135,6 +165,8 @@ pjax.connect({
     threshold: 250
   },
   progress: {
+    background: '#111',
+    height: '3px',
     minimum: 0.08,
     easing: 'linear',
     speed: 200,
@@ -151,15 +183,9 @@ pjax.connect({
 
 Define page fragment targets which are expected to change on a per-page basis. By default, this pjax module will replace the entire `<body>` fragment. It's best to define specific fragments.
 
-**Type:** `string[]` <br>
-**Default:** `['body']` <br>
-
 #### `schema`
 
 By default, attribute identifiers use a `-pjax-` identifier. You can use a custom attribute identifier.
-
-**Type:** `string` <br>
-**Default:** `pjax` <br>
 
 #### `timeout`
 
@@ -169,15 +195,9 @@ Request polling limit is used when a request is already in transit. Request comp
 
 Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `1000` which means requests will wait `1s` before being a new request is triggered.
 
-**Type:** `number` <br>
-**Default:** `1000` <br>
-
 #### `async`
 
 Determine if page requests should be fetched asynchronously or synchronously. Setting this to `false` is not recommended.
-
-**Type:** `boolean` <br>
-**Default:** `true` <br>
 
 #### `cache`
 
@@ -185,53 +205,31 @@ Enable or Disable caching. Each page visit request is cached and used in subsequ
 
 > If `cache` is disabled then prefetches will be dispatched using HTML5 `<link>` prefetches, else when cache is enabled it uses XHR.
 
-**Type:** `boolean` <br>
-**Default:** `true` <br>
-
 #### `persist`
 
 **NOT YET AVAILABLE**
 
 The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
 
-**Type:** `boolean` <br>
-**Default:** `false` <br>
-
 #### `reverse`
 
 Reverse caching. This will execute a pre-emptive fetch of the previous pages in the history stack when no snapshot exists in cache. Snapshots cache is purged when browser refresh occurs (unless `persist` is enabled) so when navigating backwards or pages will need to be re-fetched and this results in minor delays due to the refresh which was triggered.
-
-**Type:** `boolean` <br>
-**Default:** `true` <br>
 
 #### `limit`
 
 Cache size limit. This pjax variation limits cache size to `50mb`and once it exceeds that limit, records will be removed starting from the earliest point of known cache entries.
 
-**Type:** `number` <br>
-**Default:** `50` <br>
-
 #### `hover`
 
 Hover pre-fetching. You can disable hover pre-fetching by setting this to `false` which will prevent observers from executing and any `data-pjax-hover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
-
-**Type:** `boolean` or `object` <br>
-**Default:** `{ trigger: 'attribute', threshold: 250 }` <br>
 
 #### `hover.trigger`
 
 How hover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-pjax-hover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-pjax-hover="false"`.
 
-**Type:** `string` <br>
-**Accepts:** `attribute` or `href` <br>
-**Default:** `attribute` <br>
-
 #### `hover.threshold`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
-
-**Type:** `number` <br>
-**Default:** `250` <br>
 
 #### `proximity`
 
@@ -239,29 +237,17 @@ Proximity pre-fetching allow for requests to be dispatched when the cursor is wi
 
 > Annotate any `<a>` links you wish to exclude from pre-fetching using the `data-pjax-proximity="false"`
 
-**Type:** `boolean` or `object` <br>
-**Default:** `{ distance: 75, throttle: 500, threshold: 250 }` <br>
-
 #### `proximity.distance`
 
 The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-pjax-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
-
-**Type:** `number` <br>
-**Default:** `75` <br>
 
 #### `proximity.throttle`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
 
-**Type:** `number` <br>
-**Default:** `250` <br>
-
 #### `proximity.threshold`
 
 Controls the fetch delay threshold. Requests will fire only when the mouse has exceeded the range and the threshold time limit defined here has been exceeded.
-
-**Type:** `number` <br>
-**Default:** `250` <br>
 
 #### `intersect`
 
@@ -269,22 +255,13 @@ Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Ob
 
 > Annotate any `<a>` links you wish to exclude from intersection pre-fetching using the `data-pjax-intersect="false"`
 
-**Type:** `boolean` or `object` <br>
-**Default:** `{ rootMargin: '0px 0px 0px 0px', throttle: 0 }` <br>
-
 #### `intersect.rootMargin`
 
 An offset rectangle applied to the root's href bounding box. The option is passed to the Intersection Observer.
 
-**Type:** `string` <br>
-**Default:** `0px 0px 0px 0px` <br>
-
 #### `intersect.throttle`
 
 Throttle limit passed to the intersection observer instance.
-
-**Type:** `number` <br>
-**Default:** `500` <br>
 
 # Real World
 
