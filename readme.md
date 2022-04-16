@@ -680,28 +680,20 @@ The Pjax lifecycle events are dispatched in the following order of execution:
 ```typescript
 import * as pjax from '@brixtol/pjax'
 
-// Triggered once after pjax initialization
 pjax.on('connected', (state?: IPage, session?: ISession) => void)
 
-// Triggered when a prefetch is triggered
 pjax.on('prefetch', (trigger?: Element, location?: ILocation) => void | false): PrefetchEvent
 
-// Triggered when a mousedown event occurs on a link
 pjax.on('visit', (event?: Event) => void | false): VisitEvent
 
-// Before a request begins and after a href element was parsed
 pjax.on('fetch', (state?: IState) => void | false): FetchEvent
 
-// Triggered before a page and snapshot is saved to memory
 pjax.on('store', (state?: IState, dom?: Document) => void | false | Document): StoreEvent
 
-// Triggered on before a hydration replacement occurs
 pjax.on('hydrate', (target?: Element, newTarget?: Element) => void | false): HydrateEvent
 
-// Triggered before a page or fragment is rendered
 pjax.on('render', (target?: Element, newTarget?: Element) => void | false): RenderEvent
 
-// Triggered after a page has rendered
 pjax.on('load', (state?: IPage) => void): LoadEvent
 
 ```
@@ -792,21 +784,21 @@ import * as pjax from '@brixtol/pjax'
 
 pjax.supported: boolean
 
-pjax.connect(options?: IOptions): void
+pjax.connect(options?: {}): void
 
-pjax.session(store?: string, merge{}): ISession
+pjax.session(store?: string, merge?:{}): ISession
 
 pjax.hydrate(url?: string, targets: string[]): Promise<IPage>
 
-pjax.fetch(url): Promise<Document>
+pjax.fetch(url: string): Promise<Document>
 
 pjax.prefetch(string | Element): Promise<IPage>
 
-pjax.visit(url: string, options?{}): Promise<IPage>
+pjax.visit(url: string, options?:{}): Promise<IPage>
 
-pjax.state(url: string, merge?{}): Page{}
+pjax.state(url?: string, merge?:{}): Page{}
 
-pjax.capture(string[]): Promise<Element[]>
+pjax.capture(targets: string[]): Promise<Element[]>
 
 pjax.clear(url?: string): void
 
