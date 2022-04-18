@@ -5,7 +5,7 @@ import { IPage } from './page';
  * Selectors
  *
  * String `key > value` references to DOM attributes
- * selectors used in the Pjax instance.
+ * selectors used in the SPX instance.
  */
 export interface ISelectors {
   attrs?: RegExp;
@@ -19,6 +19,18 @@ export interface ISelectors {
   intersect?: string;
   interHref?: string;
   proximity?: string;
+}
+
+/**
+ * Memory
+ *
+ * Object reference which holds the storage memory
+ * record throughout the SPX session.
+ */
+export interface IMemory {
+  bytes: number;
+  limit: number;
+  visits: number;
 }
 
 /**

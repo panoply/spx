@@ -2,7 +2,7 @@
 
 import { Attributes } from '../shared/enums';
 import { assign } from '../shared/native';
-import { config, selectors } from './session';
+import { config, selectors, memory } from './session';
 import { IConfig, IOptions } from 'types';
 
 /**
@@ -10,10 +10,10 @@ import { IConfig, IOptions } from 'types';
  *
  * Connects store and intialized the workable
  * state management model. Connect MUST be called
- * upon Pjax initialization. This function acts
+ * upon SPX initialization. This function acts
  * as a class `constructor` establishing an instance.
  */
-export function configure (options: IOptions = {}): IConfig {
+export function configure (options: IOptions = {}) {
 
   if (options.hover !== undefined) {
     if (typeof options.hover !== 'boolean') assign(config.hover, options.hover);
@@ -69,6 +69,10 @@ export function configure (options: IOptions = {}): IConfig {
       : `a[${n}-hover]${h}:not([${n}-hover=false]):not([${n}-intersect]):not([${n}-proximity])`;
   }
 
-  return assign<IConfig, IOptions>(config, options);
+  assign<IConfig, IOptions>(config, options);
+
+  memory.bytes = 0;
+  memory.limit = config.limit;
+  memory.visits = 0;
 
 }
