@@ -1,4 +1,5 @@
-import { config } from './state';
+import { IProgress } from 'types';
+import { config } from './session';
 
 /**
  * Progress Status
@@ -20,7 +21,7 @@ const pending = [];
  */
 function setProgress (n: number) {
 
-  const { speed, easing, minimum } = config.progress;
+  const { speed, easing, minimum } = config.progress as IProgress;
   const started = typeof status === 'number';
 
   n = clamp(n, minimum, 1);
@@ -28,15 +29,14 @@ function setProgress (n: number) {
   status = (n === 1 ? null : n);
 
   const progress = render(!started);
-  const bar = progress.firstElementChild as HTMLDivElement;
 
   progress.offsetWidth; // eslint-disable-line no-unused-expressions
 
   queue((next: () => void) => {
 
     // Add transition
-    bar.style.transform = `translate3d(${percentage(n)}%,0,0)`;
-    bar.style.transition = `all ${speed}ms ${easing}`;
+    progress.style.transform = `translate3d(${percentage(n)}%,0,0)`;
+    progress.style.transition = `all ${speed}ms ${easing}`;
 
     if (n !== 1) return setTimeout(next, speed);
 
@@ -87,18 +87,22 @@ function render (fromStart: boolean): HTMLDivElement {
 
   if (element) return element;
 
-  document.documentElement.classList.add('nprogress-busy');
+  document.documentElement.classList.add('pload');
 
+  const percent = fromStart ? '-100' : percentage(status || 0);
   const progress = document.createElement('div');
 
-  progress.id = 'nprogress';
-  progress.innerHTML = '<div class="bar" role="bar"><div class="peg"></div></div>';
-
-  const bar = progress.firstElementChild as HTMLDivElement;
-  const percent = fromStart ? '-100' : percentage(status || 0);
-
-  bar.style.transition = 'all 0 linear';
-  bar.style.transform = `translate3d(${percent}%,0,0)`;
+  progress.id = 'pprogress';
+  progress.style.pointerEvents = 'none';
+  progress.style.background = (config.progress as IProgress).background;
+  progress.style.height = (config.progress as IProgress).height;
+  progress.style.position = 'fixed';
+  progress.style.zIndex = '9999';
+  progress.style.top = '0';
+  progress.style.left = '0';
+  progress.style.width = '100%';
+  progress.style.transition = 'all 0 linear';
+  progress.style.transform = `translate3d(${percent}%,0,0)`;
 
   document.body.appendChild(progress);
 
@@ -113,11 +117,10 @@ function render (fromStart: boolean): HTMLDivElement {
  */
 function remove () {
 
-  document.documentElement.classList.remove('nprogress-busy');
-  document.body.classList.remove('nprogress-custom-parent');
+  document.documentElement.classList.remove('pload');
 
-  const progress = document.getElementById('nprogress');
-  progress && progress.parentNode && progress.parentNode.removeChild(element);
+  const progress = document.getElementById('pprogress');
+  progress && document.body.removeChild(element);
   element = null;
 
 };
@@ -166,6 +169,7 @@ function queue (fn: Function) {
  */
 export function start () {
 
+  if (!config.progress) return;
   if (!status) setProgress(0);
 
   const work = function () {
@@ -174,7 +178,7 @@ export function start () {
       if (!status) return;
       increment();
       work();
-    }, config.progress.trickleSpeed);
+    }, (config.progress as IProgress).trickleSpeed);
 
   };
 
