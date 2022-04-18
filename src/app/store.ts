@@ -1,12 +1,11 @@
-import { nanoid } from 'nanoid';
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { emptyObject } from './utils';
-import { assign, create as object, isArray } from '../constants/native';
-import { pages, snaps, config } from './state';
-import { ILocation } from 'types';
-import * as scroll from '../observers/scroll';
-import { StoreType } from '../constants/enums';
+import { empty, forEach, uuid } from '../shared/utils';
+import { assign, object, isArray, history } from '../shared/native';
+import { pages, snapshots, config } from './session';
+import { EventType } from '../shared/enums';
+import { IHover, IProximity } from 'types';
+import { parse, getTitle } from '../shared/dom';
 
 /**
  * Clear
@@ -14,24 +13,23 @@ import { StoreType } from '../constants/enums';
  * Removes cached records. Optionally pass in URL
  * to remove specific record.
  */
-export function clear (url?: string[] | string): void {
+export function clear (key?: string[] | string): void {
 
-  if (typeof url === 'undefined') {
+  if (key === undefined) {
 
-    emptyObject(pages);
-    emptyObject(snaps);
+    empty(pages);
+    empty(snapshots);
 
-  } else if (typeof url === 'string') {
+  } else if (typeof key === 'string') {
 
-    delete snaps[pages[url].snapshot];
-    delete pages[url];
+    delete snapshots[pages[key].uuid];
+    delete pages[key];
 
-  } else if (isArray(url)) {
+  } else if (isArray(key)) {
 
-    purge(url);
+    purge(key);
 
   }
-
 }
 
 /**
@@ -42,47 +40,45 @@ export function clear (url?: string[] | string): void {
  * visit and will be overwritten by attribute configs
  * or by any programmatic triggers.
  */
-export function create (state?: IPage): IPage {
+export function create (state: IPage): IPage {
 
-  const page: IPage = object(null);
+  if (state.replace === undefined) {
+    state.replace = config.targets;
+  } else {
+    forEach(target => state.replace.push(target), config.targets);
+  }
 
-  page.key = null;
-  page.history = true;
-  page.type = StoreType.VISIT;
-  page.title = document.title;
-  page.replace = config.targets;
-  page.cache = config.cache;
-  page.snapshot = page.cache ? nanoid() : null;
-  page.position = scroll.y0x0();
-  page.location = object(null) as ILocation;
+  if (config.cache) {
+    if (state.cache === undefined) state.cache = config.cache;
+    if (state.uuid === undefined) state.uuid = uuid();
+  }
 
-  if (config.proximity !== false) page.proximity = config.proximity.threshold;
-  if (config.hover !== false) page.threshold = config.hover.threshold;
-  if (config.progress !== false) page.progress = config.progress.threshold;
+  if (state.position === undefined) {
+    state.position = object(null);
+    state.position.y = 0;
+    state.position.x = 0;
+  }
 
-  if (!page.cache) delete state.cache;
+  if (config.hover !== false) {
+    if (state.type === EventType.HOVER) {
+      if (state.threshold === undefined) state.threshold = (config.hover as IHover).threshold;
+    }
+  }
 
-  return assign(page, state);
+  if (config.proximity !== false) {
+    if (state.type === EventType.PROXIMITY) {
+      if (state.proximity === undefined) state.proximity = (config.proximity as IProximity).distance;
+      if (state.threshold === undefined) state.threshold = (config.hover as IHover).threshold;
+    }
+  }
+
+  if (config.progress !== false) {
+    if (state.progress === undefined) state.progress = config.progress.threshold;
+  }
+
+  return state;
 
 }
-
-/**
- * Check if cache record exists with snapshot
- */
-export function cache (record?: 'page' | 'snapshot' | 'location') {
-
-  const page = pages[cache.prototype.key];
-
-  if (record === 'page') return page as IPage;
-  if (record === 'location') return page.location as ILocation;
-  if (record === 'snapshot') return snaps[page.snapshot] as string;
-
-  return {
-    page,
-    get snapshot () { return snaps[page.snapshot]; }
-  };
-
-};
 
 /**
  * Handles a new page visit or a return page visit. New visits
@@ -98,18 +94,23 @@ export function cache (record?: 'page' | 'snapshot' | 'location') {
  */
 export function set (state: IPage, snapshot: string): IPage {
 
-  const event = emit('cache', state, snapshot);
+  const event = emit('store', state, snapshot);
 
   if (event === false) return;
 
-  pages[state.key] = state;
-  cache.prototype.key = state.key;
-
-  if (state.cache) {
-    snaps[state.snapshot] = typeof event === 'string'
-      ? event
-      : snapshot;
+  switch (state.type) {
+    case EventType.HOVER:
+    case EventType.PROXIMITY:
+    case EventType.INTERSECT: state.type = EventType.PREFETCH; break;
   }
+
+  const dom = typeof event === 'string' ? event : snapshot;
+  state.title = getTitle(dom);
+
+  if (!config.cache) return state;
+
+  pages[state.key] = state;
+  snapshots[state.uuid] = dom;
 
   return state;
 
@@ -120,28 +121,36 @@ export function set (state: IPage, snapshot: string): IPage {
  */
 export function update (state: IPage, snapshot?: string): IPage {
 
-  const page = state.key in pages
-    ? assign(pages[state.key], state)
-    : create(state);
+  const page = state.key in pages ? pages[state.key] : create(state);
 
   if (typeof snapshot === 'string') {
-    snaps[page.snapshot] = snapshot;
+    state.title = getTitle(snapshot);
+    snapshots[page.uuid] = snapshot;
+    return assign(page, state);
   }
-  return page;
+
+  return assign(page, state);
 
 }
 
 /**
- * Check if cache record exists with snapshot
+ * Get Store
  *
- * @param {string} url
+ * Returns the in-memory page store and
+ * parsed document snapshot. Optionally accepts
+ * a url `key` reference. If none provided then
+ * loads the current store.
  */
-export function get (url: string) {
+export function get (url?: string): { page: IPage, dom: Document } {
 
-  const page = pages[url];
-  const snapshot = snaps[page.snapshot];
+  const o = object(null);
 
-  return ({ page, snapshot });
+  url = url || history.state.key;
+
+  o.page = pages[url];
+  o.dom = parse(snapshots[o.page.uuid]);
+
+  return o;
 
 }
 
@@ -150,8 +159,8 @@ export function get (url: string) {
  */
 export function has (url: string): boolean {
 
-  return (url in pages && 'snapshot' in pages[url])
-    ? pages[url].snapshot in snaps
+  return ((url in pages) && ('uuid' in pages[url]))
+    ? (pages[url].uuid in snapshots)
     : false;
 
 }
@@ -167,7 +176,7 @@ export function purge (targets: string[] = []) {
 
   return Object.getOwnPropertyNames(pages).forEach((url) => {
     if (!targets.includes(url)) delete pages[url];
-    else delete snaps[pages[url].snapshot];
+    else delete snapshots[pages[url].uuid];
   });
 
 }
