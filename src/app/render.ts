@@ -37,7 +37,7 @@ async function scriptNodes (target: HTMLHeadElement) {
 /**
  * Tracked Nodes
  *
- * '[data-pjax-track]:not([data-pjax-track="hydrate"])'
+ * '[data-spx-track]:not([data-spx-track="hydrate"])'
  */
 function trackedNodes (target: HTMLElement): void {
 
@@ -99,7 +99,7 @@ function renderNodes (state: IPage, target: Document) {
  * Node Hydration
  *
  * Executes node replacements hydrating the DOM with
- * the fetched target. All nodes provided with `data-pjax-hydrate`
+ * the fetched target. All nodes provided with `data-spx-hydrate`
  * or via the `visit.hydrate[]` method are replaced. TextNode types
  * will be swapped out via `innerHTML` to prevent missing replacements
  * for occuring.

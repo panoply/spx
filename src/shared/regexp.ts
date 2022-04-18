@@ -134,7 +134,7 @@ export const ActionParams: RegExp = /\[?[^,'"[\]()\s]+\]?/g;
 /**
  * Array Value
  *
- * Used to test value for a string array attribute value, like data-pjax-replace.
+ * Used to test value for a string array attribute value, like data-spx-replace.
  *
  * @see
  * https://regex101.com/r/bIQefA/1

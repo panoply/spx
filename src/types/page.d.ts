@@ -123,7 +123,7 @@ export interface IPage {
  /**
    * Controls the caching engine for the link navigation.
    * Option is enabled when `cache` preset config is `true`.
-   * Each pjax link can set a different cache option. Cache control
+   * Each href link can set a different cache option. Cache control
    * is only operational on visits (clicks). Prefetches have no
    * control of the cache operation.
    *
@@ -197,7 +197,7 @@ export interface IPage {
   /**
    * Define proximity prefetch distance from which fetching should
    * begin. This value is relative to the cursor offset of defined
-   * elements using the `data-pjax-proximity` attribute.
+   * elements using the `data-spx-proximity` attribute.
    *
    * @default 75
    */

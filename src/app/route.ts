@@ -11,14 +11,14 @@ import { EventType } from '../shared/enums';
 export const hostname = origin.replace(regex.Protocol, nil);
 
 /**
- * Constructs a JSON object from HTML `data-pjax-*` attributes.
+ * Constructs a JSON object from HTML `data-spx-*` attributes.
  * Attributes are passed in as array items
  *
  * @example
  *
  * // Attribute values are seperated by whitespace
  * // For example, a HTML attribute would look like:
- * <data-pjax-prop="string:foo number:200">
+ * <data-spx-prop="string:foo number:200">
  *
  * // Attribute values are split into an Array
  * // The array is passed to this reducer function
@@ -74,7 +74,7 @@ export function getAttributes (element: Element): IPage {
     } else if (regex.isPosition.test(value)) {
       state[name] = parseAttribute(value.match(regex.inPosition));
     } else if (regex.isBoolean.test(value)) {
-      state[name] = value === 'true';
+      if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
     } else if (regex.isNumber.test(value)) {
       state[name] = Number(value);
     } else {

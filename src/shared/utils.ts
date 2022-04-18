@@ -10,15 +10,15 @@ export function log (error: Errors, message: string) {
 
   if (error === Errors.INFO) {
 
-    console.info('@brixtol/pjax: ' + message);
+    console.info('SPX: ' + message);
 
   } else if (error === Errors.WARN) {
 
-    console.warn('@brixtol/pjax: ' + message);
+    console.warn('SPX: ' + message);
 
   } else {
 
-    console.error('@brixtol/pjax: ' + message);
+    console.error('SPX: ' + message);
 
     try {
 

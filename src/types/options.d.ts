@@ -3,10 +3,10 @@ export interface IHover {
    * How mousover prefetches should be triggered. By default this option is set
    * to trigger on all `<a>` href link elements. You can instead use the `attribute`
    * option and only prefetch on href link elements that are annotated with a
-   * `data-pjax-mouseover` or `data-pjax-mouseover="true"` attribute.
+   * `data-spx-mouseover` or `data-spx-mouseover="true"` attribute.
    *
    * > If you set the trigger to `href` you can annotate links you wish to exclude
-   * from prefetch with `data-pjax-mouseover="false"`.
+   * from prefetch with `data-spx-mouseover="false"`.
    *
    * ---
    *
@@ -51,8 +51,8 @@ export interface IProximity {
    *
    * For example:
    *
-   * An href element using `data-pjax-proximity="50"` would infrom
-   * Pjax to begin fetching when the mouse is within 50px of the
+   * An href element using `data-spx-proximity="50"` would infrom
+   * SPX to begin fetching when the mouse is within 50px of the
    * element.
    *
    * ---
@@ -142,11 +142,11 @@ export interface IOptions {
    *
    * ---
    *
-   * @default 'pjax'
+   * @default 'SPX'
    */
   schema?: string;
   /**
-   * Define page fragment targets. By default, this pjax module will replace the
+   * Define page fragment targets. By default, this SPX module will replace the
    * entire `<body>` fragment, if undefined. Its best to define specific fragments.
    *
    * ---
@@ -189,7 +189,7 @@ export interface IOptions {
   /**
    * Enable or Disable caching. Each page visit request is cached and used in
    * subsequent visits to the same location. By disabling cache, all visits will
-   * be fetched over the network and any `data-pjax-cache` attribute configs
+   * be fetched over the network and any `data-spx-cache` attribute configs
    * will be ignored.
    *
    * ---
@@ -197,7 +197,7 @@ export interface IOptions {
    */
   cache?: boolean;
   /**
-   * Cache size limit. This pjax variation limits cache size to `50mb`and once size
+   * Cache size limit. This SPX variation limits cache size to `50mb`and once size
    * exceeds that limit, records will be removed starting from the earliest point
    * of the cache entries.
    *
@@ -276,11 +276,11 @@ export interface IOptions {
    * intersect fetching behaviour.
    *
    * To use default behaviour, set this to `true` and all elements annotated with
-   * with a `data-pjax-intersect` or `data-pjax-intersect="true"` attribute will be
+   * with a `data-spx-intersect` or `data-spx-intersect="true"` attribute will be
    * prefetched. You can annotate nodes containing href links or `<a>` directly.
    *
    * > Annotate any `<a>` links you wish to exclude from intersection prefetching
-   * using the `data-pjax-intersect="false"`
+   * using the `data-spx-intersect="false"`
    *
    * ---
    *
@@ -293,11 +293,11 @@ export interface IOptions {
    * enable predicative fetching to occur, so a request will trigger before any interaction.
    *
    * To use default behaviour, set this to `true` and all  `<a>` annotated with
-   * with a `data-pjax-proximity` or `data-pjax-proximity="true"` attribute will be
+   * with a `data-spx-proximity` or `data-spx-proximity="true"` attribute will be
    * prefetched.
    *
    * > Annotate any `<a>` links you wish to exclude from intersection prefetching
-   * using the `data-pjax-proximity="false"`
+   * using the `data-spx-proximity="false"`
    *
    * ---
    * @default true

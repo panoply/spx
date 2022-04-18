@@ -50,7 +50,7 @@ export function emit <T extends EventNames> (name: T, ...args: EmitterArguments<
 /**
  * On Event
  *
- * Exposed as public method on `pjax`
+ * Exposed as public method on `spx`
  */
 export function on (name: EventNames, callback: () => void) {
 
@@ -63,7 +63,7 @@ export function on (name: EventNames, callback: () => void) {
 /**
  * Off Event
  *
- * Exposed as public method on `pjax`
+ * Exposed as public method on `spx`
  */
 export function off (name: EventNames, callback: () => void) {
 

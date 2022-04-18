@@ -11,7 +11,7 @@ export function defaults (o: object) {
   state.targets = [ 'body' ];
   state.timeout = 30000;
   state.poll = 15;
-  state.schema = 'pjax';
+  state.schema = 'spx';
   state.async = true;
   state.cache = true;
   state.reverse = true;

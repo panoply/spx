@@ -36,7 +36,7 @@ export function clear (key?: string[] | string): void {
  * Defaults
  *
  * Page state defaults applied to `pages` and written
- * to history push state. This is used on each pjax
+ * to history push state. This is used on each SPX
  * visit and will be overwritten by attribute configs
  * or by any programmatic triggers.
  */

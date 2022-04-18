@@ -87,12 +87,12 @@ function render (fromStart: boolean): HTMLDivElement {
 
   if (element) return element;
 
-  document.documentElement.classList.add('pload');
+  document.documentElement.classList.add('spx-load');
 
   const percent = fromStart ? '-100' : percentage(status || 0);
   const progress = document.createElement('div');
 
-  progress.id = 'pprogress';
+  progress.id = 'spx-progress';
   progress.style.pointerEvents = 'none';
   progress.style.background = (config.progress as IProgress).background;
   progress.style.height = (config.progress as IProgress).height;
@@ -117,9 +117,9 @@ function render (fromStart: boolean): HTMLDivElement {
  */
 function remove () {
 
-  document.documentElement.classList.remove('pload');
+  document.documentElement.classList.remove('spx-load');
 
-  const progress = document.getElementById('pprogress');
+  const progress = document.getElementById('spx-progress');
   progress && document.body.removeChild(element);
   element = null;
 
