@@ -1,11 +1,11 @@
-import { forEach } from '../shared/utils';
+import { forEach, log } from '../shared/utils';
 import { getNodeTargets } from '../shared/links';
 import { config, observers, selectors } from '../app/session';
 import { emit } from '../app/events';
 import { getRoute } from '../app/route';
 import * as request from '../app/fetch';
 import * as store from '../app/store';
-import { EventType } from '../shared/enums';
+import { Errors, EventType } from '../shared/enums';
 
 /**
  * @type IntersectionObserver
@@ -23,12 +23,12 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
 
     if (!emit('prefetch', entry.target, route)) return entries.unobserve(entry.target);
 
-    const response = await request.get(store.create(route));
+    const response = await request.fetch(store.create(route));
 
     if (response) {
       entries.unobserve(entry.target);
     } else {
-      console.warn(`@brixtol/pjax: Prefetch will retry at next intersect for: ${route.key}`);
+      log(Errors.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
       entries.observe(entry.target);
     }
   }
