@@ -73,7 +73,7 @@ export interface ISelectors {
    * - `<a data-pjax-intersect>`
    * - `<a data-pjax-disable">`
    */
-  mouseover?: string;
+  hover?: string;
   /**
    * Intersection Selectors
    *
