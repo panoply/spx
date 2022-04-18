@@ -1,6 +1,150 @@
-import { IProgress } from './progress';
+export interface IHover {
+  /**
+   * How mousover prefetches should be triggered. By default this option is set
+   * to trigger on all `<a>` href link elements. You can instead use the `attribute`
+   * option and only prefetch on href link elements that are annotated with a
+   * `data-pjax-mouseover` or `data-pjax-mouseover="true"` attribute.
+   *
+   * > If you set the trigger to `href` you can annotate links you wish to exclude
+   * from prefetch with `data-pjax-mouseover="false"`.
+   *
+   * ---
+   *
+   * @default 'href'
+   */
+  trigger?: 'attribute' | 'href'
+
+  /**
+   * Controls the fetch delay threshold. Requests will fire
+   * only when the mouse is both within range and the threshold
+   * time limit defined here has exceeded.
+   *
+   * ---
+   * @default 100
+   */
+  threshold?: number;
+
+}
+
+export interface IIntersect {
+  /**
+   * An offset rectangle applied to the root's href bounding box.
+   *
+   * ---
+   * @default '0px 0px 0px 0px'
+   */
+  rootMargin?: string;
+  /**
+   * Threshold limit passed to the intersection observer instance
+   *
+   * ---
+   * @default 0
+   */
+  threshold?: number;
+}
+
+export interface IProximity {
+  /**
+   * The distance range the mouse should be within before
+   * the prefetch is triggered. You can optionally override
+   * this by assigning a number value to the proximity attribute.
+   *
+   * For example:
+   *
+   * An href element using `data-pjax-proximity="50"` would infrom
+   * Pjax to begin fetching when the mouse is within 50px of the
+   * element.
+   *
+   * ---
+   * @default 75
+   */
+  distance?: number;
+  /**
+   * Controls the fetch delay threshold. Requests will fire
+   * only when the mouse is both within range and the threshold
+   * time limit defined here has exceeded.
+   *
+   * ---
+   * @default 100
+   */
+  threshold?: number;
+  /**
+   * Controls the mouseover trigger throttle. This helps limit the amount of
+   * times an internal callback fires once cursor is in range. It is highly
+   * discouraged to set this to a limit less than 250ms.
+   *
+   * _Generally speaking, leave this the fuck alone._
+   *
+   * ---
+   *
+   * @default 500
+   */
+   throttle?: number;
+}
+
+export interface IProgress {
+  /**
+   * The progress bar color
+   *
+   * @default #111111
+   */
+  background?: string;
+  /**
+   * The progress bar height in pixels.
+   *
+   * @default 3px
+   */
+  height?: `${string}px`;
+  /**
+   * Changes the minimum percentage used upon starting.
+   *
+   * @default 0.08
+   */
+  minimum?: number;
+  /**
+   * CSS Easing String
+   *
+   * @default linear
+   */
+  easing?: string;
+  /**
+   * Animation Speed
+   *
+   * @default 200
+   */
+  speed?: number;
+  /**
+   * Turn off the automatic incrementing behavior
+   * by setting this to false.
+   *
+   * @default true
+   */
+  trickle?: boolean;
+  /**
+   * Adjust how often to trickle/increment, in ms.
+   *
+   * @default 200
+   */
+  trickleSpeed?: number;
+  /**
+   * Controls the progress bar preset threshold. Defines the amount of
+   * time to delay before the progress bar is shown.
+   *
+   * ---
+   * @default 350
+   */
+  threshold?: number;
+}
 
 export interface IOptions {
+  /**
+   * Define page the selector schema
+   *
+   * ---
+   *
+   * @default 'pjax'
+   */
+  schema?: string;
   /**
    * Define page fragment targets. By default, this pjax module will replace the
    * entire `<body>` fragment, if undefined. Its best to define specific fragments.
@@ -10,241 +154,158 @@ export interface IOptions {
    * @default ['body']
    */
   targets?: string[];
+  /**
+   * The timeout limit of the XHR request issued. If timeout limit is exceeded a
+   * normal page visit will be executed.
+   *
+   * ---
+   *
+   * @default 30000
+   */
+  timeout?: number;
+  /**
+   * Request polling limit is used when a request is already in transit. Request
+   * completion is checked every 10ms, by default this is set to 150 which means
+   * requests will wait 1500ms before being a new request is triggered.
+   *
+   * **BEWARE**
+   *
+   * Timeout limit will run precedence!
+   *
+   * ---
+   *
+   * @default 150
+   */
+  poll?: number;
+  /**
+   * Determin if page requests should be fetched asynchronously or synchronously.
+   * Setting this to `false` is not reccomended.
+   *
+   * ---
+   *
+   * @default true
+   */
+  async?: boolean;
+  /**
+   * Enable or Disable caching. Each page visit request is cached and used in
+   * subsequent visits to the same location. By disabling cache, all visits will
+   * be fetched over the network and any `data-pjax-cache` attribute configs
+   * will be ignored.
+   *
+   * ---
+   * @default true
+   */
+  cache?: boolean;
+  /**
+   * Cache size limit. This pjax variation limits cache size to `50mb`and once size
+   * exceeds that limit, records will be removed starting from the earliest point
+   * of the cache entries.
+   *
+   * _Generally speaking, leave this the fuck alone._
+   *
+   * ---
+   *
+   * @default 50
+   */
+  limit?: number;
 
   /**
-   * Request Configuration
+   * The `persist` option can be used to restore cache into memory after a browser
+   * refresh has been triggered. When persisting cache a reference is maintained in
+   * session storage.
+   *
+   * ---
+   *
+   * @default false
    */
-  request?: {
-
-    /**
-     * The timeout limit of the XHR request issued. If timeout limit is exceeded a
-     * normal page visit will be executed.
-     *
-     * ---
-     *
-     * @default 3000
-     */
-    timeout?: number;
-
-    /**
-     * Request polling limit is used when a request is already in transit. Request
-     * completion is checked every 10ms, by default this is set to 150 which means
-     * requests will wait 1500ms before being a new request is triggered.
-     *
-     * **BEWARE**
-     *
-     * Timeout limit will run precedence!
-     *
-     * ---
-     *
-     * @default 150
-     */
-    poll?: number;
-
-    /**
-     * Determin if page requests should be fetched asynchronously or synchronously.
-     * Setting this to `false` is not reccomended.
-     *
-     * ---
-     *
-     * @default true
-     */
-    async?: boolean;
-
-    /**
-     * **FEATURE NOT YET AVAILABLE**
-     *
-     * Define the request dispatch. By default, requests are fetched upon mousedown, this allows
-     * fetching to start sooner that it would from an click event.
-     *
-     * > Currently, fetches are executed on `mousedown` only. Future releases will provide click
-     * dispatches
-     *
-     * ---
-     *
-     * @default 'mousedown'
-     */
-    readonly dispatch?: 'mousedown';
-  };
-
+  persist?: boolean;
   /**
-   * Prefetch configuration
+   * Anticipatory preloading (prefetches). Values defined here will be fetched
+   * preemptively and saved to cache either upon initial load or when a specific path is
+   * visited. If you provide an array list of paths those pages will be visited
+   * asynchronously in the order they were passed after. If you provide an object,
+   * preemptive fetches will be carried out when path match occurs based on the
+   * `key` entry provided.
+   *
+   * ---
+   *
+   * @default null
    */
-  prefetch?: {
-
-    /**
-     * Anticipatory prefetches. Values defined here will be fetched preemptively
-     * and saved to cache either upon initial load or when a specific path is
-     * visited. If you provide an array list of paths those pages will be visited
-     * asynchronously in the order they were passed after. If you provide an object,
-     * preemptive fetches will be carried out when path match occurs based on the
-     * `key` entry provided.
-     *
-     * ---
-     *
-     * @default nul
-     */
-    preempt?: string[] | { [path: string]: string[] }
-
-    /**
-     * Mouseover prefetching preset configuration
-     */
-    mouseover?: {
-      /**
-       * Enable or Disable mouseover (hover) prefetching. When enabled, this option
-       * will allow you to fetch pages over the wire upon mouseover and saves them to
-       * cache. When `mouseover` prefetches are disabled, all `data-pjax-prefetch="mouseover"`
-       * attribute configs will be ignored.
-       *
-       * > _If cache if disabled then prefetches will be dispatched using HTML5
-       * `<link>` prefetches, else when cache is enabled it uses XHR._
-       *
-       * ---
-       *
-       * @default true
-       */
-      enable?: boolean;
-
-      /**
-       * Whether or not mouseover (hover) prefetching should be triggered on
-       * link elements annotated with `data-pjax-prefetch="mouseover"` or trigger
-       * on all `<a>` href link elements.
-       *
-       * > If you set the trigger to `href` you can annotate links you wish to exclude
-       * from prefetch with `data-pjax-prefetch="false"`.
-       *
-       * ---
-       *
-       * @default 'href'
-       */
-      trigger?: 'attribute' | 'href'
-
-      /**
-       * Controls the mouseover fetch delay threshold. Requests will fire on mouseover
-       * only after the threshold time has been exceeded. This helps limit extrenous
-       * requests from firing.
-       *
-       * ---
-       * @default 250
-       */
-      threshold?: number;
-
-      /**
-       * **FEATURE NOT YET AVAILABLE**
-       *
-       * Proximity hovers allow for prefetch hovers to be dispatched when the cursor is within
-       * a proximity range of a href link element. Coupling proximity with mouseover prefetches
-       * enable predicative fetching to occur, so a request will trigger before any interaction.
-       *
-       * ---
-       * @default 0
-       */
-      readonly proximity?: number;
-    };
-
-    /**
-     * Intersection prefetching preset configuration
-     */
-    intersect?: {
-      /**
-       * Enable or disable intersection prefetching. Intersect prefetching leverages the
-       * Intersection Observer API to fire requests when elements become visible in viewport.
-       * When intersect prefetch is disabled, all `data-pjax-prefetch="intersect"`
-       * attribute configs will be ignored.
-       *
-       * > _If cache if disabled then prefetches will be dispatched using HTML5
-       * `<link>` prefetches, else when cache is enabled it uses XHR._
-       *
-       * ---
-       * @default true
-       */
-      enable?: boolean;
-
-      /**
-       * Partial options passed to [Intersection Observer](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
-       *
-       */
-      options?: {
-        /**
-         * An offset rectangle applied to the root's href bounding box.
-         *
-         * ---
-         * @default '0px 0px 0px 0px'
-         */
-        rootMargin?: string;
-        /**
-         * Threshold limit passed to the intersection observer instance
-         *
-         * ---
-         * @default 0
-         */
-        threshold?: number;
-      };
-
-    };
-  };
-
+  preload?: string[] | { [path: string]: string[] }
   /**
-   * Caching engine configuration
+   * Reverse caching. This will execute a premptive fetch of the previous
+   * pages in the history stack when no snapshot exists in cache. The previous
+   * url is stored in session storage and will be recalled.
+   *
+   * **Explained**
+   *
+   * Snapshots cache is purged if a browser refresh occurs and when navigating
+   * backwards or forwards pages will need to be re-fetched resulting in minor
+   * delays if a refresh was triggered between browsing, but this can be avoided
+   * when snapshots exist.
+   *
+   * By default, the last known previous page in the history stack is fetched
+   * and re-cached when no snapshot exists and we have a reference of its history
+   * stack.
+   *
+   * ---
+   *
+   * @default true
    */
-  cache?: {
-    /**
-     * Enable or Disable caching. Each page visit request is cached and used in
-     * subsequent visits to the same location. By disabling cache, all visits will
-     * be fetched over the network and any `data-pjax-cache` attribute configs
-     * will be ignored.
-     *
-     * ---
-     * @default true
-     */
-    enable?: boolean;
-
-    /**
-     * Cache size limit. This pjax variation limits cache size to `25mb`and once size
-     * exceeds that limit, records will be removed starting from the earliest point
-     * cache entry.
-     *
-     * _Generally speaking, leave this the fuck alone._
-     *
-     * ---
-     *
-     * @default 50
-     */
-    limit?: number;
-
-    /**
-     * Reverse caching. This will execute a premptive fetch of the previous
-     * pages in the history stack when no snapshot exists in cache. Snapshots cache
-     * is purged if a browser refresh occurs and when navigating backwards or
-     * pages will need to be re-fetched resulting in minor delays if a refresh
-     * was triggered between browsing.
-     *
-     * By default, the last known previous page in the history stack is fetched
-     * and re-cached when no snapshot exists.
-     *
-     * ---
-     *
-     * @default true
-     */
-    reverse?: boolean;
-
-    /**
-     * **FEATURE NOT YET AVAILABLE**
-     *
-     * The save option will save snapshot cache to IndexedDB.
-     * This feature is not yet available.
-     *
-     * ---
-     *
-     * @default false
-     */
-    readonly save?: boolean;
-
-  };
-
+  reverse?: true
+  /**
+   * Mouseover prefetching. You can disable mouseover (hover) prefetching
+   * by setting this to `false` otherwise you can customize the fetching
+   * behaviour. To use the default behaviour, set this to `true`. When enabled,
+   * this option will allow you to fetch pages over the wire upon mouseover and
+   * saves them to cache.
+   *
+   * > If `cache` is disabled then prefetches will be dispatched using HTML5
+   * `<link>` prefetches, else when cache is enabled it uses XHR.
+   *
+   * ---
+   *
+   * @default true
+   */
+  hover?: boolean | IHover;
+  /**
+   * Intersection pre-fetching. Intersect prefetching leverages the
+   * [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when
+   * elements become visible in viewport. You can disable intersect prefetching
+   * by setting this to `false` (default), otherwise you can customize the
+   * intersect fetching behaviour.
+   *
+   * To use default behaviour, set this to `true` and all elements annotated with
+   * with a `data-pjax-intersect` or `data-pjax-intersect="true"` attribute will be
+   * prefetched. You can annotate nodes containing href links or `<a>` directly.
+   *
+   * > Annotate any `<a>` links you wish to exclude from intersection prefetching
+   * using the `data-pjax-intersect="false"`
+   *
+   * ---
+   *
+   * @default true
+   */
+  intersect?: boolean | IIntersect;
+  /**
+   * Proximity pre-fetching allow for requests to be dispatched when the cursor is within
+   * a proximity range of a href link element. Coupling proximity with mouseover prefetches
+   * enable predicative fetching to occur, so a request will trigger before any interaction.
+   *
+   * To use default behaviour, set this to `true` and all  `<a>` annotated with
+   * with a `data-pjax-proximity` or `data-pjax-proximity="true"` attribute will be
+   * prefetched.
+   *
+   * > Annotate any `<a>` links you wish to exclude from intersection prefetching
+   * using the `data-pjax-proximity="false"`
+   *
+   * ---
+   * @default true
+   */
+  proximity?: boolean | IProximity;
   /**
    * Progress Bar configuration
    */
-  progress?: IProgress;
+  progress?: boolean | IProgress
 
 }
