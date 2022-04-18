@@ -1,13 +1,15 @@
 import { supportsPointerEvents } from 'detect-it';
-import { config, connect, schema } from '../app/state';
-import { getTargets } from '../app/utils';
-import { create } from '../constants/native';
-import { isNumber } from '../constants/regexp';
+import { config, observers, selectors } from '../app/session';
+import { getTargets } from '../shared/links';
+import { object } from '../shared/native';
+import { isNumber } from '../shared/regexp';
+import { log } from '../shared/utils';
 import { getRoute } from '../app/route';
 import { emit } from '../app/events';
 import * as store from '../app/store';
-import * as request from '../app/request';
-import { EventType, StoreType } from '../constants/enums';
+import * as request from '../app/fetch';
+import { EventType, Errors } from '../shared/enums';
+import { IProximity } from 'types';
 
 /**
  * Detects is the cursor (mouse) is in range of a
@@ -28,18 +30,18 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
 
 function setBounds (target: HTMLLinkElement) {
 
-  const o = create(null);
+  const state = object(null);
   const rect = target.getBoundingClientRect();
   const attr = target.getAttribute(`${config.schema}-proximity`);
-  const distance = isNumber.test(attr) ? Number(attr) : config.proximity.distance;
+  const distance = isNumber.test(attr) ? Number(attr) : (config.proximity as IProximity).distance;
 
-  o.target = target;
-  o.top = rect.top - distance;
-  o.bottom = rect.bottom + distance;
-  o.left = rect.left - distance;
-  o.right = rect.right + distance;
+  state.target = target;
+  state.top = rect.top - distance;
+  state.bottom = rect.bottom + distance;
+  state.left = rect.left - distance;
+  state.right = rect.right + distance;
 
-  return o;
+  return state;
 
 }
 
@@ -67,18 +69,18 @@ function observer (targets?: {
 
     if (node === -1) {
 
-      setTimeout(() => { wait = false; }, config.proximity.throttle);
+      setTimeout(() => { wait = false; }, (config.proximity as IProximity).throttle);
 
     } else {
 
       const { target } = targets[node];
-      const page = store.create(getRoute(target, StoreType.PREFETCH));
+      const page = store.create(getRoute(target, EventType.PROXIMITY));
 
       request.throttle(page.key, async () => {
 
-        if (!emit('prefetch', target, page, EventType.PROXIMITY)) return stop();
+        if (!emit('prefetch', target, page)) return stop();
 
-        const prefetch = await request.get(page, EventType.PROXIMITY);
+        const prefetch = await request.get(page);
 
         if (prefetch) {
 
@@ -87,11 +89,12 @@ function observer (targets?: {
 
           if (targets.length === 0) {
             stop();
-            console.info('Brixtol Pjax: Proximity observer has disconnected');
+            log(Errors.INFO, 'Proximity observer disconnected');
           }
         }
 
-      }, page.threshold || config.proximity.threshold);
+      }, page.threshold || (config.proximity as IProximity).threshold);
+
     }
   };
 }
@@ -102,11 +105,11 @@ let entries: ReturnType<typeof observer>;
  * Starts proximity prefetch, will parse all link nodes and
  * begin watching mouse movements.
  */
-export function start (): void {
+export function connect (): void {
 
-  if (!config.proximity || connect.has(7)) return;
+  if (!config.proximity || observers.proximity) return;
 
-  const targets = getTargets(schema.proximity).map(setBounds);
+  const targets = getTargets(selectors.proximity).map(setBounds);
 
   if (targets.length > 0) {
 
@@ -118,7 +121,8 @@ export function start (): void {
       addEventListener('mousemove', entries, false);
     }
 
-    connect.add(7);
+    observers.proximity = true;
+
   }
 
 }
@@ -126,9 +130,9 @@ export function start (): void {
 /**
  * Stops prefetch, will remove pointer move event listener
  */
-export function stop (): void {
+export function disconnect (): void {
 
-  if (!connect.has(7)) return;
+  if (!observers.proximity) return;
 
   if (supportsPointerEvents) {
     removeEventListener('pointermove', entries, false);
@@ -136,6 +140,6 @@ export function stop (): void {
     removeEventListener('mousemove', entries, false);
   }
 
-  connect.delete(7);
+  observers.proximity = false;
 
 };
