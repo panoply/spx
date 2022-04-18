@@ -1,11 +1,12 @@
-import { IPage, ICacheSize } from '../types/page';
+import { IPage } from '../types/page';
 import { emit } from './events';
-import { size, log } from '../shared/utils';
+import { forEach, log } from '../shared/utils';
 import * as progress from './progress';
-import { config } from './session';
+import { getRoute } from './route';
+import { config, memory } from './session';
 import * as store from './store';
-import { object } from '../shared/native';
-import { Errors } from '../shared/enums';
+import { isArray, object } from '../shared/native';
+import { Errors, EventType } from '../shared/enums';
 
 /**
  * Request Transits
@@ -22,18 +23,6 @@ const transit: { [url: string]: XMLHttpRequest } = object(null);
 function pending (callback: Function): Promise<boolean> {
 
   return new Promise(resolve => setTimeout(() => resolve(callback()), 5));
-
-};
-
-let storage: number = 0;
-
-/**
- * Executes on request end. Removes the XHR recrod and update
- * the response DOMString cache size record.
- */
-async function httpRequestEnd (dom: string) {
-
-  storage = storage + dom.length;
 
 };
 
@@ -55,46 +44,23 @@ export function httpRequest (url: string): Promise<string | false> {
 
   return new Promise((resolve, reject) => {
 
-    // OPEN
-    //
     xhr.open('GET', url, config.async);
-
-    // HEADERS
-    //
-    xhr.setRequestHeader('X-Brixtol-Pjax', 'true');
+    xhr.setRequestHeader('X-SPX', 'true');
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-    // START
-    //
-    xhr.onloadstart = e => {
-      transit[url] = xhr;
-    };
-
-    // ONLOAD
-    //
-    xhr.onload = e => {
-      resolve(xhr.status === 200 ? xhr.responseText : false);
-    };
-
-    // ONABORT
-    //
-    xhr.onabort = e => {
-      delete transit[url];
-    };
-
-    // END
-    //
+    xhr.onloadstart = e => { transit[url] = xhr; };
+    xhr.onload = e => { resolve(xhr.status === 200 ? xhr.responseText : false); };
+    xhr.onabort = e => { delete transit[url]; };
     xhr.onloadend = e => {
       delete transit[url];
-      httpRequestEnd(xhr.responseText);
+      memory.bytes = memory.bytes + e.loaded;
+      memory.visits = memory.visits++;
     };
 
     xhr.onerror = reject;
     xhr.timeout = config.timeout;
     xhr.responseType = 'text';
 
-    // SEND
-    //
     xhr.send(null);
 
   });
@@ -125,20 +91,7 @@ export function cleanup (url: string) {
 }
 
 /**
- * Returns request cache metrics
- */
-export function cacheSize (): ICacheSize {
-
-  const cache = object(null);
-
-  cache.total = storage;
-  cache.weight = size(storage);
-
-  return cache;
-}
-
-/**
- * Abort Request
+ * Abort Single Request
  *
  * Aborts a specific request in transit.
  */
@@ -146,26 +99,26 @@ export function abort (url: string): void {
 
   if (url in transit) {
     transit[url].abort();
-    log(Errors.WARN, `Request aborted: ${url}`);
+    log(Errors.WARN, `Fetch aborted: ${url}`);
   }
 
 };
 
 /**
- * Cancel Requests
+ * Cancel Multiple Requests
  *
  * Aborts all pending requests excluding the
  * the request id (page key identifier) provided.
  * To cancel a specific request, use `abort` export.
  */
-export function cancel (id: string): void {
+export function cancel (key: string): void {
 
-  if (!(id in transit)) return;
+  if (!(key in transit)) return;
 
   for (const url in transit) {
-    if (id !== url) {
+    if (key !== url) {
       transit[url].abort();
-      log(Errors.WARN, `Pending request aborted: ${url}`);
+      log(Errors.WARN, `Pending fetch aborted: ${url}`);
     }
   }
 };
@@ -200,19 +153,60 @@ export async function inFlight (url: string, rate = 0): Promise<boolean> {
 };
 
 /**
+ * Preload Requests
+ *
+ */
+export function preload (state: IPage) {
+
+  if (config.preload !== null) {
+
+    const load = forEach(async path => {
+      const route = getRoute(path, EventType.PRELOAD);
+      if (route.key !== path) await fetch(store.create(route));
+    });
+
+    if (isArray(config.preload)) {
+      load(config.preload);
+    } else if (typeof config.preload === 'object') {
+      if (state.key in config.preload) {
+        load(config.preload[state.key]);
+      }
+    }
+  }
+}
+
+export async function reverse (state: IPage) {
+
+  if (state.rev !== state.key) {
+    if (!store.has(state.rev)) {
+      console.log('REVERSE FETCH FOR', state.rev);
+      await fetch(store.create(getRoute(state.rev, EventType.REVERSE)));
+    }
+  }
+
+}
+
+/**
  * Fetches documents and guards from duplicated transit
  * from being dispatched if an indentical fetch is in flight.
  * transit will always save responses and snapshots.
  */
-export async function get (state: IPage): Promise<IPage|false> {
+export async function fetch (state: IPage): Promise<IPage|false> {
 
   if (state.key in transit) {
-    log(Errors.WARN, `Request already in transit: ${state.key}`);
+
+    if (state.type === EventType.REVERSE) {
+      transit[state.key].abort();
+      log(Errors.WARN, `Reverse fetch aborted: ${state.key}`);
+    } else {
+      log(Errors.WARN, `Fetch already in transit: ${state.key}`);
+    }
+
     return;
   }
 
   if (!emit('fetch', state)) {
-    log(Errors.WARN, `Request cancelled in dispatched event: ${state.key}`);
+    log(Errors.WARN, `Fetch cancelled within dispatched event: ${state.key}`);
     return false;
   }
 
