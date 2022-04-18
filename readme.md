@@ -1,6 +1,6 @@
-# @brixtol/pjax
+# SPX
 
-A blazing fast, lightweight (7kb gzipped) and feature full new generation pjax solution. This pjax variation supports advanced pre-fetching capabilities, multiple fragment replacements and employs a snapshot caching engine that prevents subsequent requests from occurring.
+SPX (Single Page XHR) is a blazing fast, lightweight (7.4kb gzipped) and feature full new generation pjax solution. SPX supports advanced pre-fetching capabilities, multiple fragment replacements and employs a snapshot caching engine that prevents subsequent requests from occurring.
 
 ### Features
 
@@ -20,19 +20,19 @@ We are using this module live on our [webshop](https://brixtoltextiles.com).
 
 ### Why?
 
-The landscape of pjax based solution has become rather scarce. The current bread winners tend to offer the same thing or for our use case were either over or under engineered. This pjax variation couples together various techniques found to be the most effective in enhancing the performance of SSR rendered web application that fetch pages over the wire.
+The landscape of Pjax (Push~State Ajax) solutions has become rather scarce. The current bread winners tend to offer the same thing and we wanted to push the limits. SPX couples together various techniques found to be the most effective in enhancing the performance of SSR rendered web application which fetch pages over the wire.
 
-# Table of Contents
+# Documentation
 
 1. [Install](#install)
-2. [Recommendations](#recommendations)
+2. [Recommendations](/panoply/spx/tree/next/recommendations.md)
 3. [Usage](#usage)
 4. [Options](#options)
-5. [Real World](#real-world)
+5. [Real World](/panoply/spx/tree/next/real-world.md)
 6. [Lifecycle Events](#lifecycle-events)
 7. [Methods](#methods)
-8. [Attributes](#attributes)
-9. [State](#state)
+8. [Attributes](/panoply/spx/tree/next/attributes.md)
+9. [Sessions](/panoply/spx/tree/next/sessions.md)
 10. [How it works](#how-it-works)
 11. [Contributing](#contributing)
 12. [Acknowledgements](#acknowledgements)
@@ -44,7 +44,7 @@ This module is distributed as ESM and designed to work in the browser environmen
 ### pnpm
 
 ```cli
-pnpm add @brixtol/pjax
+pnpm add spx
 ```
 
 _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
@@ -52,7 +52,7 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
 ### Yarn
 
 ```cli
-yarn add @brixtol/pjax
+yarn add spx
 ```
 
 _Stop using Yarn, it sucks. Choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
@@ -60,7 +60,7 @@ _Stop using Yarn, it sucks. Choose [pnpm](https://pnpm.js.org/en/cli/install) an
 ### npm
 
 ```cli
-npm i @brixtol/pjax
+npm i spx
 ```
 
 _Okay, Boomer..._
@@ -68,23 +68,23 @@ _Okay, Boomer..._
 ### cdn
 
 ```
-https://unpkg.com/@brixtol/pjax
+https://unpkg.com/spx
 ```
 
 _Be as you are.._
 
 # Usage
 
-To initialize, call `pjax.connect()` in your bundle preferably before anything else is loaded. By default, the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis for optimal performance and consider leveraging the pre-fetching capabilities.
+To initialize, call `spx.connect()` in your bundle preferably before anything else is loaded. By default, the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis for optimal performance and consider leveraging the pre-fetching capabilities.
 
 > The typings provided in this package will describe each option in good detail, below are the defaults and all options are optional.
 
 ```js
-import * as pjax from '@brixtol/pjax';
+import spx from 'spx';
 
-pjax.connect({
+spx.connect({
   targets: ['body'],
-  schema: 'pjax',
+  schema: 'spx',
   timeout: 30000,
   poll: 15,
   async: true,
@@ -121,17 +121,17 @@ pjax.connect({
 
 #### `targets`
 
-Define page fragment targets which are expected to change on a per-page basis. By default, this pjax module will replace the entire `<body>` fragment. It's best to define specific fragments.
+Define page fragment targets which are expected to change on a per-page basis. By default, SPX will replace the entire `<body>` fragment but it is best to define specific fragments.
 
 **Type:** `string[]` <br>
 **Default:** `['body']` <br>
 
 #### `schema`
 
-By default, attribute identifiers use a `-pjax-` identifier. You can use a custom attribute identifier.
+By default, attribute identifiers use a `-spx-` identifier. You can use a custom attribute identifier or if you wish to opt-out of an identifier you can pass `null` so annotations can be expressed using `data-` only.
 
 **Type:** `string` <br>
-**Default:** `pjax` <br>
+**Default:** `spx` <br>
 
 #### `timeout`
 
@@ -153,7 +153,7 @@ Determine if page requests should be fetched asynchronously or synchronously. Se
 
 #### `cache`
 
-Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discourage as all visits will be fetched over the network and `data-pjax-cache` attribute configs will be ignored.
+Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discourage as all visits will be fetched over the network and `data-spx-cache` attribute configs will be ignored.
 
 > If `cache` is disabled then prefetches will be dispatched using HTML5 `<link>` prefetches, else when cache is enabled it uses XHR.
 
@@ -183,14 +183,14 @@ Cache size limit. This pjax variation limits cache size to `50mb`and once it exc
 
 #### `hover`
 
-Hover pre-fetching. You can disable hover pre-fetching by setting this to `false` which will prevent observers from executing and any `data-pjax-hover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
+Hover pre-fetching. You can disable hover pre-fetching by setting this to `false` which will prevent observers from executing and any `data-spx-hover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
 
 **Type:** `boolean` or `object` <br>
 **Default:** `{ trigger: 'attribute', threshold: 250 }` <br>
 
 #### `hover.trigger`
 
-How hover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-pjax-hover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-pjax-hover="false"`.
+How hover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-spx-hover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-spx-hover="false"`.
 
 **Type:** `string` <br>
 **Accepts:** `attribute` or `href` <br>
@@ -205,16 +205,16 @@ Controls the fetch delay threshold. Requests will fire only when the mouse is bo
 
 #### `proximity`
 
-Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `data-pjax-proximity` attribute will be pre-fetched.
+Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `data-spx-proximity` attribute will be pre-fetched.
 
-> Annotate any `<a>` links you wish to exclude from pre-fetching using the `data-pjax-proximity="false"`
+> Annotate any `<a>` links you wish to exclude from pre-fetching using the `data-spx-proximity="false"`
 
 **Type:** `boolean` or `object` <br>
 **Default:** `{ distance: 75, throttle: 500, threshold: 250 }` <br>
 
 #### `proximity.distance`
 
-The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-pjax-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
+The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-spx-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
 
 **Type:** `number` <br>
 **Default:** `75` <br>
@@ -235,9 +235,9 @@ Controls the fetch delay threshold. Requests will fire only when the mouse has e
 
 #### `intersect`
 
-Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `data-pjax-intersect` or `data-pjax-intersect="true"` attribute will be pre-fetched. You can annotate elements that contain href links or `<a>` elements directly.
+Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `data-spx-intersect` or `data-spx-intersect="true"` attribute will be pre-fetched. You can annotate elements that contain href links or `<a>` elements directly.
 
-> Annotate any `<a>` links you wish to exclude from intersection pre-fetching using the `data-pjax-intersect="false"`
+> Annotate any `<a>` links you wish to exclude from intersection pre-fetching using the `data-spx-intersect="false"`
 
 **Type:** `boolean` or `object` <br>
 **Default:** `{ rootMargin: '0px 0px 0px 0px', throttle: 0 }` <br>
@@ -262,12 +262,12 @@ Lifecycle events are dispatched to the document upon each navigation. You can ac
 
 The Pjax lifecycle events are dispatched in the following order of execution:
 
-1. **connected** _executed once_
+1. **connected**
 2. **prefetch**
 3. **visit**
-4. **fetch** - _skipped if cache exists_
+4. **fetch**
 5. **store**
-6. **route** - _route events will trigger at this point_
+6. **route**
 7. **render**
 8. **load**
 
@@ -275,29 +275,29 @@ The Pjax lifecycle events are dispatched in the following order of execution:
 
 <!-- prettier-ignore -->
 ```typescript
-import * as pjax from '@brixtol/pjax'
+import spx from 'spx'
 
-pjax.on('connected', (state?: IPage, session?: ISession) => void)
+spx.on('connected', (state?: IPage, session?: ISession) => void)
 
-pjax.on('prefetch', (trigger?: Element, location?: ILocation) => void | false): PrefetchEvent
+spx.on('prefetch', (trigger?: Element, location?: ILocation) => void | false): PrefetchEvent
 
-pjax.on('visit', (event?: Event) => void | false): VisitEvent
+spx.on('visit', (event?: Event) => void | false): VisitEvent
 
-pjax.on('fetch', (state?: IState) => void | false): FetchEvent
+spx.on('fetch', (state?: IState) => void | false): FetchEvent
 
-pjax.on('store', (state?: IState, dom?: Document) => void | false | Document): StoreEvent
+spx.on('store', (state?: IState, dom?: Document) => void | false | Document): StoreEvent
 
-pjax.on('hydrate', (target?: Element, newTarget?: Element) => void | false): HydrateEvent
+spx.on('hydrate', (target?: Element, newTarget?: Element) => void | false): HydrateEvent
 
-pjax.on('render', (target?: Element, newTarget?: Element) => void | false): RenderEvent
+spx.on('render', (target?: Element, newTarget?: Element) => void | false): RenderEvent
 
-pjax.on('load', (state?: IPage) => void): LoadEvent
+spx.on('load', (state?: IPage) => void): LoadEvent
 
 ```
 
 ## connected
 
-The connected event will be triggered after Pjax has connected and fired only once. This is the equivalent of the `DOMContentLoaded` event. Upon connection, Pjax will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
+The connected event will be triggered after SPX has connected and fired only once. This is the equivalent of the `DOMContentLoaded` event. Upon connection, SPX will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
 
 Because the initial snapshot is saved using `document.documentElement.outerHTML` the captured HTML may cause third party scripts which have augmented the document to serve an invalid dom into the snapshot cache. When a return navigation to this location occurs it may cause the third party script to fail. You can prevent issues of this nature from happening by initializing your modules within the `connected` event.
 
@@ -313,7 +313,7 @@ The prefetch event will be triggered for every prefetch request. Prefetch reques
 
 ## visit
 
-The visit event will be triggered when a `mousedown` event has occurred on a Pjax enabled `href` element. This is the equivalent of a `click` and when such an action occurs then navigation intent is assumed and visit begins.
+The visit event will be triggered when a `mousedown` event has occurred on a SPX enabled `href` element. This is the equivalent of a `click` and when such an action occurs then navigation intent is assumed and visit begins.
 
 **Cancellable:** `false` <br>
 **Asynchronous:** `false`
@@ -359,9 +359,9 @@ The module exposes a low-level routing approach using simple wildcard path match
 
 <!-- prettier-ignore -->
 ```typescript
-import * as pjax from '@brixtol/pjax'
+import spx from 'spx'
 
-pjax.route({
+spx.route({
 
   '/:value': (state?: IState, target?: IRoute) => void | Document,
 
@@ -374,84 +374,84 @@ pjax.route({
 
 # Methods
 
-In addition to Lifecycle events, you also have a list of methods available. Methods will allow you some basic programmatic control of the Pjax session occurring, provides access to the cache store and various other operational utilities.
+In addition to Lifecycle events, you also have a list of methods available. Methods will allow you some basic programmatic control of the SPX session occurring, provides access to the cache store and various other operational utilities.
 
 ```typescript
-import * as pjax from '@brixtol/pjax'
+import spx from 'spx'
 
-pjax.supported: boolean
+spx.supported: boolean
 
-pjax.connect(options?: {}): void
+spx.connect(options?: {}): void
 
-pjax.session(store?: string, merge?:{}): ISession
+spx.session(store?: string, merge?:{}): ISession
 
-pjax.hydrate(url?: string, targets: string[]): Promise<IPage>
+spx.hydrate(url?: string, targets: string[]): Promise<IPage>
 
-pjax.fetch(url: string): Promise<Document>
+spx.fetch(url: string): Promise<Document>
 
-pjax.prefetch(string | Element): Promise<IPage>
+spx.prefetch(string | Element): Promise<IPage>
 
-pjax.visit(url: string, options?:{}): Promise<IPage>
+spx.visit(url: string, options?:{}): Promise<IPage>
 
-pjax.state(url?: string, merge?:{}): Page{}
+spx.state(url?: string, merge?:{}): Page{}
 
-pjax.capture(targets: string[]): Promise<Element[]>
+spx.capture(targets: string[]): Promise<Element[]>
 
-pjax.clear(url?: string): void
+spx.clear(url?: string): void
 
-pjax.reload(): IPage
+spx.reload(): IPage
 
-pjax.disconnect(): void
+spx.disconnect(): void
 
 ```
 
-#### `pjax.connect(options?)`
+#### `spx.connect(options?)`
 
-The `connect` method is a **required** call and will initialize a pjax session. You can optionally provide options which inform pjax on how it should behave. See [options](#options) for list of settings.
+The `connect` method is a **required** call and will initialize a SPX session. You can optionally provide options which inform SPX on how it should behave. See [options](#options) for list of settings.
 
 **Returns:** `void`
 **Dispatched Events:** `connected` <br>
 
-#### `pjax.session()`
+#### `spx.session()`
 
 The `session` method will return the current store instance. This includes all state, snapshots, options and settings of the current session which exists in memory. If you intend of augmenting the session, please note that the store records are created without prototype.
 
 **Returns:** `Promise<IPage>`
 
-#### `pjax.hydrate(url: string, targets: string[])`
+#### `spx.hydrate(url: string, targets: string[])`
 
 The `hydrate` method executed a programmatic hydration. The method expects a `url` and string list of element selectors.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `cache > hydrate > load`
 
-#### `pjax.fetch(url: string)`
+#### `spx.fetch(url: string)`
 
 Triggers a programmatic fetch. The XHR request response is not cached and no state reference are touched.
 
 **Returns:** `Document`<br>
 
-#### `pjax.prefetch(link: string | Element)`
+#### `spx.prefetch(link: string | Element)`
 
 The `prefetch` method executed a programmatic Prefetch. The method expects a `url` or `<a href="*"></a>` node as an argument. This method behaves the same way as hover, intersect of proximity prefetches.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `request > cache`
 
-#### `pjax.visit(url: string, options?: IOptions)`
+#### `spx.visit(url: string, options?: IOptions)`
 
 The `visit` method executed a programmatic trigger visit. The method expects a `url` as an argument and optionally accepts an page state options model. This method behaves the same way as trigger.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `replace > request > cache > render > load`
 
-#### `pjax.state(url?: string, state?: IState)`
+#### `spx.state(url?: string, state?: IState)`
 
 The `state` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
 
 **Returns:** `Promise<IPage>`
 
-#### `pjax.capture(targets: string[])`
+#### `spx.capture(targets: string[])`
 
 The `capture` method performs a snapshot modification to the current document. Use this to align a snapshot cache record between navigations. This is helpful in situations where the dom is augmented and you want to preserve
 
@@ -459,7 +459,7 @@ The `capture` method performs a snapshot modification to the current document. U
 
 # How it works?
 
-This pjax variation is leveraging modern browser capabilities. What makes this pjax variant faster than others is how the pages are fetched and the caching approach it employs.
+This SPX variation is leveraging modern browser capabilities. What makes this SPX variant faster than others is how the pages are fetched and the caching approach it employs.
 
 ### Fetching
 
@@ -492,11 +492,15 @@ The project is fairly easy to understand, there are no complexities and over-eng
 This module combines concepts originally introduced by other awesome Open Source projects:
 
 - [Defunkt Pjax](https://github.com/defunkt/jquery-pjax)
-- [Pjax.js](https://github.com/brcontainer/pjax.js)
+- [pjax.js](https://github.com/brcontainer/pjax.js)
 - [MoOx Pjax](https://github.com/MoOx/pjax)
 - [InstantClick](https://github.com/dieulot/instantclick)
 - [Turbo](https://github.com/hotwired/turbo)
 - [Turbolinks](https://github.com/turbolinks/turbolinks)
+
+# Special Thanks
+
+Special Thanks/Спасибі to [Alexey](https://github.com/gigi) for the **SPX** registry name.
 
 # License
 

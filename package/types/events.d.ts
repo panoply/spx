@@ -3,7 +3,7 @@
 import { IPage } from './page';
 
 /**
- * Pjax Events
+ * SPX Events
  */
 export type EventNames = (
  | 'connected'

@@ -21,11 +21,6 @@ export interface IPosition {
  */
 export interface ILocation {
   /**
-   * UUID History Stack identifier used to determine whether or not
-   * we have stack for this page.
-   */
-  uuid: string;
-  /**
    * The URL origin name
    *
    * @example
@@ -128,7 +123,7 @@ export interface IPage {
  /**
    * Controls the caching engine for the link navigation.
    * Option is enabled when `cache` preset config is `true`.
-   * Each pjax link can set a different cache option. Cache control
+   * Each href link can set a different cache option. Cache control
    * is only operational on visits (clicks). Prefetches have no
    * control of the cache operation.
    *
@@ -137,11 +132,22 @@ export interface IPage {
   cache: boolean | 'reset' | 'clear' | 'restore';
 
   /**
+   * List of additional fragment element selectors to target in the
+   * render cycle. Accepts any valid `querySelector()` string.
+   * The selectors defined here will be merged with the defined
+   * `targets` set in connection.
+   *
+   * @example
+   * ['#main', '.header', '[data-attr]', 'header']
+   */
+  replace: string[];
+
+  /**
    * Progress bar threshold delay.
    *
    * @default 350
    */
-  progress: boolean | number;
+  progress?: boolean | number;
 
   /**
    * Threshold timeout to be applied to `proximity` or `hover`
@@ -160,17 +166,6 @@ export interface IPage {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   hydrate?: string[];
-
-  /**
-   * List of additional fragment element selectors to target in the
-   * render cycle. Accepts any valid `querySelector()` string.
-   * The selectors defined here will be merged with the defined
-   * `targets` set in connection.
-   *
-   * @example
-   * ['#main', '.header', '[data-attr]', 'header']
-   */
-  replace?: string[];
 
   /**
    * List of fragments contained within targets to ignore in
@@ -202,7 +197,7 @@ export interface IPage {
   /**
    * Define proximity prefetch distance from which fetching should
    * begin. This value is relative to the cursor offset of defined
-   * elements using the `data-pjax-proximity` attribute.
+   * elements using the `data-spx-proximity` attribute.
    *
    * @default 75
    */
