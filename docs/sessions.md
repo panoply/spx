@@ -1,8 +1,8 @@
 # Sessions
 
-A pjax navigation sessions will begin immediately after a connection was initialized via `pjax.connect()` and ends when a browser refresh is executed or url origin changes occurs. You can access, view or modify the session store using the `pjax.session()` method.
+A SPX navigation sessions will begin immediately after a connection was initialized via `spx.connect()` and ends when a browser refresh is executed or url origin changes occurs. You can access, view or modify the session store using the `spx.session()` method.
 
-> The `pjax.session()` method references a subset of null prototypical objects.
+> The `spx.session()` method references a subset of null prototypical objects.
 
 ## Model
 
@@ -11,6 +11,11 @@ interface ISession {
   readonly selectors: object;
   readonly pages: { [key: string]: IPage };
   readonly snapshots: { [uuid: string]: string };
+  readonly memory: {
+    size: string;
+    bytes: number;
+    visits: number;
+  };
   options: IOptions;
   observers: {
     history: boolean;
@@ -25,7 +30,7 @@ interface ISession {
 
 #### `options`
 
-The merged default and custom configuration [options](#options) provided on connection via `pjax.connect()`.
+The merged default and custom configuration [options](#options) provided on connection via `spx.connect()`.
 
 #### `observers`
 
@@ -51,7 +56,7 @@ A **readonly** `Set` of tracked nodes that have been rendered to the document.
 
 State represents per-page configuration. This store is immutable and created for every unique url `/path` or `/pathname?query=param` location that has been encountered throughout the session. The state of each page is stored in memory and also written to the browsers history stack so it can be retrieved in subsequent visits.
 
-State modifications can be carried out using attributes, methods or from within lifecycle events that support it. When using the `Pjax.visit()` method you can apply state modification in the `options` parameter and changes will be merged before a visit begins. You should avoid modifying state outside of the available methods, treat state as **read only** and architect your application to prevent direct augmentation.
+State modifications can be carried out using attributes, methods or from within lifecycle events that support it. When using the `spx.visit()` method you can apply state modification in the `options` parameter and changes will be merged before a visit begins. You should avoid modifying state outside of the available methods, treat state as **read only** and architect your application to prevent direct augmentation.
 
 > State saved to history stack is stored with the `config` object omitted.
 
@@ -116,4 +121,4 @@ Parsed location reference of the page. The `origin` is the domain value of `wind
 
 #### `config{}`
 
-Configuration model. This values defined here are applied on a per-page basis and will reflect the visits render options. These settings merge the connection defaults and attribute annotations (if defined) to instruct pjax on how to perform its rendering and cache operation.
+Configuration model. This values defined here are applied on a per-page basis and will reflect the visits render options. These settings merge the connection defaults and attribute annotations (if defined) to instruct SPX on how to perform its rendering and cache operation.

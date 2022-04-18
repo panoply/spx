@@ -4,16 +4,16 @@ Below is a real world example you can use to better understand how this module w
 
 ## Example
 
-The first thing we want to do is make a connection with Pjax. In your JavaScript bundle we need to initialize it (connect). Our example web application has 3 pages, the **home** page, **about** page and **contact** page. We are going to instruct pjax to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-pjax` attributes to replace an additional fragment when we navigate to the contact page.
+The first thing we want to do is make a connection with SPX. In your JavaScript bundle we need to initialize it (connect). Our example web application has 3 pages, the **home** page, **about** page and **contact** page. We are going to instruct SPX to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-spx` attributes to replace an additional fragment when we navigate to the contact page.
 
 ### JavaScript Bundle
 
 <!-- prettier-ignore -->
 ```javascript
-import * as pjax from "@brixtol/pjax";
+import spx from "SPX";
 
 
-pjax.connect({
+SPX.connect({
   targets: [
     "nav",
     "main"
@@ -25,7 +25,7 @@ pjax.connect({
 
 ## Home Page
 
-Below we have a very basic Home Page with pjax wired up. All `<a>` elements will be intercepted and cached as per the default configuration. SSR web applications (in most cases) will only ever have a couple of fragments that change between navigation.
+Below we have a very basic Home Page with SPX wired up. All `<a>` elements will be intercepted and cached as per the default configuration. SSR web applications (in most cases) will only ever have a couple of fragments that change between navigation.
 
 <!-- prettier-ignore -->
 ```html
@@ -41,7 +41,7 @@ Below we have a very basic Home Page with pjax wired up. All `<a>` elements will
 
     <header>
 
-      <h1>@brixtol/pjax</h1>
+      <h1>SPX Example</h1>
 
       <!-- THIS FRAGMENT WILL BE REPLACED -->
       <nav>
@@ -54,12 +54,12 @@ Below we have a very basic Home Page with pjax wired up. All `<a>` elements will
         <!-- These links will be pe-fetched on hover -->
         <a
          href="/about"
-         data-pjax-hover>About</a>
+         data-spx-hover>About</a>
 
         <!-- This link will replace the #foo fragment -->
         <a
          href="/contact"
-         data-pjax-replace="(['#foo'])">Contact</a>
+         data-spx-replace="(['#foo'])">Contact</a>
       </nav>
 
     </header>
@@ -93,7 +93,7 @@ Below we have a very basic Home Page with pjax wired up. All `<a>` elements will
 
 <br>
 
-The about page in our web application would look practically identical to the home page. We instructed pjax to pre-fetch this page upon hover by annotating the `<a>` href link with `data-pjax-hover` attribute. This attribute informs pjax to being fetching the page the moment the user hovers over the `<a>` link which results in the visit being instantaneous. The **about** page only has some minor differences, but for the sake of clarity, lets have look:
+The about page in our web application would look practically identical to the home page. We instructed SPX to pre-fetch this page upon hover by annotating the `<a>` href link with `data-spx-hover` attribute. This attribute informs SPX to being fetching the page the moment the user hovers over the `<a>` link which results in the visit being instantaneous. The **about** page only has some minor differences, but for the sake of clarity, lets have look:
 
 <!-- prettier-ignore -->
 ```html
@@ -109,7 +109,7 @@ The about page in our web application would look practically identical to the ho
 
     <header>
 
-      <h1>@brixtol/pjax</h1>
+      <h1>SPX Example</h1>
 
       <!-- THIS FRAGMENT WILL BE REPLACED -->
       <nav>
@@ -122,12 +122,12 @@ The about page in our web application would look practically identical to the ho
         <a
          href="/about"
          class="active"
-         data-pjax-hover>About</a>
+         data-spx-hover>About</a>
 
         <!-- This link will replace the #foo fragment -->
         <a
          href="/contact"
-         data-pjax-replace="(['#foo'])">Contact</a>
+         data-spx-replace="(['#foo'])">Contact</a>
       </nav>
 
     </header>
@@ -175,7 +175,7 @@ The contact page will replace an additional fragment with the id value of `foo` 
 
     <header>
 
-      <h1>@brixtol/pjax</h1>
+      <h1>SPX Example</h1>
 
       <!-- THIS FRAGMENT WILL BE REPLACED -->
       <nav>
@@ -188,12 +188,12 @@ The contact page will replace an additional fragment with the id value of `foo` 
         <a
          href="/about"
          class="active"
-         data-pjax-hover>About</a>
+         data-spx-hover>About</a>
 
         <!-- This link will replace the #foo fragment -->
         <a
          href="/contact"
-         data-pjax-replace="(['#foo'])">Contact</a>
+         data-spx-replace="(['#foo'])">Contact</a>
       </nav>
 
     </header>

@@ -12,7 +12,7 @@ Stylesheet and inline CSS evaluation between navigations is not yet supported. T
 
 ### Pre-fetching
 
-The pre-fetching capabilities this Pjax variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, where and when pjax should execute a pre-fetch.
+The pre-fetching capabilities this SPX variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, where and when SPX should execute a pre-fetch.
 
 ### Stimulus
 
@@ -24,4 +24,4 @@ By default, all fetched pages are stored in memory so for every request the HTML
 
 ### JavaScript
 
-The best possible approach is to initialize JavaScript like Google Analytics and scripts which require per-page execution is to use the `pjax.on('load', function(){})` method event. This way you can be sure it will load between navigations.
+The best possible approach is to initialize JavaScript like Google Analytics and scripts which require per-page execution is to use the `SPX.on('load', function(){})` method event. This way you can be sure it will load between navigations.

@@ -1,32 +1,32 @@
 # Attributes
 
-Elements can be annotated with `data-pjax-*` attributes which you can leverage to customize how visits are rendered between navigations. By default, attributes are using a `-pjax-` schema but you can optionally provide a custom schema upon `connect` via the `schema` option.
+Elements can be annotated with `data-spx-*` attributes which you can leverage to customize how visits are rendered between navigations. By default, attributes are using a `-spx-` schema but you can optionally provide a custom schema upon `connect` via the `schema` option.
 
-- [data-pjax-eval](#data-pjax-eval)
-- [data-pjax-disable](#data-pjax-disable)
-- [data-pjax-hydrate](#data-pjax-hydrate)
-- [data-pjax-replace](#data-pjax-replace)
-- [data-pjax-prepend](#data-pjax-prepend)
-- [data-pjax-append](#data-pjax-append)
-- [data-pjax-hover](#data-pjax-hover)
-- [data-pjax-threshold](#data-pjax-threshold)
-- [data-pjax-proximity](#data-pjax-proximity)
-- [data-pjax-position](#data-pjax-position)
-- [data-pjax-cache](#data-pjax-cache)
-- [data-pjax-history](#data-pjax-history)
+- [data-spx-eval](#data-spx-eval)
+- [data-spx-disable](#data-spx-disable)
+- [data-spx-hydrate](#data-spx-hydrate)
+- [data-spx-replace](#data-spx-replace)
+- [data-spx-prepend](#data-spx-prepend)
+- [data-spx-append](#data-spx-append)
+- [data-spx-hover](#data-spx-hover)
+- [data-spx-threshold](#data-spx-threshold)
+- [data-spx-proximity](#data-spx-proximity)
+- [data-spx-position](#data-spx-position)
+- [data-spx-cache](#data-spx-cache)
+- [data-spx-history](#data-spx-history)
 
-## data-pjax-eval
+## data-spx-eval
 
-Used on resources contained within the `<head>` fragment like styles, scripts or meta tags. Use this attribute if you want pjax to evaluate scripts and/or stylesheets. This option accepts a `false` value so you can define which scripts to execute per navigation. By default, pjax will run and evaluate all `<script>` tags it detects for every page visit but will not re-evaluate `<script src="*"></script>` tags.
+Used on resources contained within the `<head>` fragment like styles, scripts or meta tags. Use this attribute if you want SPX to evaluate scripts and/or stylesheets. This option accepts a `false` value so you can define which scripts to execute per navigation. By default, SPX will run and evaluate all `<script>` tags it detects for every page visit but will not re-evaluate `<script src="*"></script>` tags.
 
-> When a `<script>` tag is detected on a pjax navigation and annotated with `data-pjax-eval="false"` then execution will be triggered only once but never again after that.
+> When a `<script>` tag is detected on a SPX navigation and annotated with `data-spx-eval="false"` then execution will be triggered only once but never again after that.
 
 <details>
 <summary>
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-eval` attribute can be annotated on any of the below HTML tags:
+The `data-spx-eval` attribute can be annotated on any of the below HTML tags:
 
 - `<meta>`
 - `<link>`
@@ -40,7 +40,7 @@ The `data-pjax-eval` attribute can be annotated on any of the below HTML tags:
 <strong>Values</strong>
 </summary>
 
-This attribute is a `boolean` type. Passing the `true` value is optional as `data-pjax-eval` infers truthy.
+This attribute is a `boolean` type. Passing the `true` value is optional as `data-spx-eval` infers truthy.
 
 - `true`
 - `false`
@@ -57,24 +57,24 @@ This attribute is a `boolean` type. Passing the `true` value is optional as `dat
   console.log('I will run on every navigation');
 </script>
 
-<!-- script will only run once when between pjax visits -->
-<script data-pjax-eval="false">
+<!-- script will only run once when between SPX visits -->
+<script data-spx-eval="false">
   console.log('I will run on initialization only!');
 </script>
 ```
 
 </details>
 
-## data-pjax-disable
+## data-spx-disable
 
-Use on `<a>` elements to disable pjax navigation. When a link element is annotated with `data-pjax-disable` a normal page navigation will be executed and cache will be cleared. You can optionally restore the cache using the `data-pjax-cache="restore"` attribute when navigating back to a pjax enabled url.
+Use on `<a>` elements to disable SPX navigation. When a link element is annotated with `data-spx-disable` a normal page navigation will be executed and cache will be cleared. You can optionally restore the cache using the `data-spx-cache="restore"` attribute when navigating back to a SPX enabled url.
 
 <details>
 <summary>
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-disable` attribute can be used on the following tags:
+The `data-spx-disable` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -85,7 +85,7 @@ The `data-pjax-disable` attribute can be used on the following tags:
 <strong>Values</strong>
 </summary>
 
-This attribute is a `truthy` type. Passing the `true` value is optional as `data-pjax-disable` infers truthy.
+This attribute is a `truthy` type. Passing the `true` value is optional as `data-spx-disable` infers truthy.
 
 - `true`
 
@@ -99,18 +99,18 @@ This attribute is a `truthy` type. Passing the `true` value is optional as `data
 Clicking this link will clear cache and a normal page navigation will be executed.
 
 ```html
-<a href="*" data-pjax-disable></a>
+<a href="*" data-spx-disable></a>
 ```
 
-Clicking this link will execute a normal page navigation but will inform pjax to save the current cache and restore it upon the next pjax enabled visit. See [data-pjax-cache](#data-pjax-cache) for more information.
+Clicking this link will execute a normal page navigation but will inform SPX to save the current cache and restore it upon the next SPX enabled visit. See [data-spx-cache](#data-spx-cache) for more information.
 
 ```html
-<a href="*" data-pjax-cache="restore" data-pjax-disable></a>
+<a href="*" data-spx-cache="restore" data-spx-disable></a>
 ```
 
 </details>
 
-## data-pjax-track
+## data-spx-track
 
 Place on elements to track on a per-page basis that might otherwise not be contained within target elements. This methods will append nodes to the document `<body>` and placement is not certain. This is helpful when you need to reference an `svg` sprite of template or some sort.
 
@@ -119,7 +119,7 @@ Place on elements to track on a per-page basis that might otherwise not be conta
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-track` attribute can be annotated on any HTML contained within `<body>` but cannot be applied to `<a>` href links.
+The `data-spx-track` attribute can be annotated on any HTML contained within `<body>` but cannot be applied to `<a>` href links.
 
 </details>
 
@@ -128,7 +128,7 @@ The `data-pjax-track` attribute can be annotated on any HTML contained within `<
 <strong>Values</strong>
 </summary>
 
-This attribute is a `truthy` type. Passing the `true` value is optional as `data-pjax-track` infers truthy.
+This attribute is a `truthy` type. Passing the `true` value is optional as `data-spx-track` infers truthy.
 
 - `true`
 
@@ -139,7 +139,7 @@ This attribute is a `truthy` type. Passing the `true` value is optional as `data
 <strong>Example</strong>
 </summary>
 
-Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped that are not contained within the `#main` HTML tag. When annotating `data-pjax-track` to elements located outside of target/s which will be added and persisted on all future navigations.
+Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped that are not contained within the `#main` HTML tag. When annotating `data-spx-track` to elements located outside of target/s which will be added and persisted on all future navigations.
 
 **Page 1**
 
@@ -167,24 +167,24 @@ Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your def
 </div>
 
 <!-- This element will be appended to the dom -->
-<div data-pjax-track>
-  I am outside of target and will be tracked if pjax was initialized on Page 1
+<div data-spx-track>
+  I am outside of target and will be tracked if SPX was initialized on Page 1
 </div>
 
 <!-- This element will not be appended to the dom -->
-<div>I will not be tracked unless Pjax was initialized on Page 2</div>
+<div>I will not be tracked unless SPX was initialized on Page 2</div>
 ```
 
-> If navigation started on `Page 2` then Pjax will have knowledge of the tracked elements existence before navigating away. In such a situation the tracked element is marked internally and the handling will be identical.
+> If navigation started on `Page 2` then SPX will have knowledge of the tracked elements existence before navigating away. In such a situation the tracked element is marked internally and the handling will be identical.
 
 </details>
 
-## data-pjax-hydrate
+## data-spx-hydrate
 
-Executes a controlled replacement of the defined elements. You should perform hydration when server side logic is required to adjust or apply changes to a visitors session as it will allow your application to seamlessly adapt and progressively align the UI without having to trigger a full-page reload. Hydration incurs side effects and the pjax session will be augmented, see below:
+Executes a controlled replacement of the defined elements. You should perform hydration when server side logic is required to adjust or apply changes to a visitors session as it will allow your application to seamlessly adapt and progressively align the UI without having to trigger a full-page reload. Hydration incurs side effects and the SPX session will be augmented, see below:
 
 1. Only current and previous page cache is aligned (updated), all other existing records are purged.
-2. You cannot restore purged cache. Any `data-pjax-cache="restore"` methods will be ignored.
+2. You cannot restore purged cache. Any `data-spx-cache="restore"` methods will be ignored.
 3. Hydration is skipped when target location pathname does not match trigger location pathname.
 4. History stack will not be touched, the visit is executed in the background.
 
@@ -193,7 +193,7 @@ Executes a controlled replacement of the defined elements. You should perform hy
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-hydrate` attribute can be used on the following tags:
+The `data-spx-hydrate` attribute can be used on the following tags:
 
 - `<a>`
 - `<button>`
@@ -223,13 +223,13 @@ This attribute is a `string[]` type and expects a list of valid element selector
 <strong>Example</strong>
 </summary>
 
-Lets assume we informed pjax to trigger replacements on the `#menu`, `#main` and `#note` between navigations upon connection, for example:
+Lets assume we informed SPX to trigger replacements on the `#menu`, `#main` and `#note` between navigations upon connection, for example:
 
 ```js
-pjax.connect({ targets: ['#menu', '#main', '#note'] });
+SPX.connect({ targets: ['#menu', '#main', '#note'] });
 ```
 
-When performing a navigation visit the target elements `#menu`, `#main` and `#note` would be replaced (as expected) but when a trigger tag element is using a `data-pjax-hydrate` attribute then pjax will only preform replacements on the elements defined within the `data-pjax-hydrate` annotation, for example:
+When performing a navigation visit the target elements `#menu`, `#main` and `#note` would be replaced (as expected) but when a trigger tag element is using a `data-spx-hydrate` attribute then SPX will only preform replacements on the elements defined within the `data-spx-hydrate` annotation, for example:
 
 <!-- prettier-ignore -->
 ```html
@@ -244,7 +244,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
   <!-- Pressing this link triggers hydration and replaces all .price nodes -->
   <a
    href="/products?currency=SEK"
-   data-pjax-hydrate="(['.price'])">Perform server side action</a>
+   data-spx-hydrate="(['.price'])">Perform server side action</a>
 
 </nav>
 
@@ -253,7 +253,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
   The next navigation will replace all elements using class "price"
   and "cart-count" - If you have defined the element "#main" as a "target"
   in your connection, a replacement will not be made on that element,
-  instead only the elements defined in "data-pjax-hydrate" are replaced.
+  instead only the elements defined in "data-spx-hydrate" are replaced.
 </section>
 
 
@@ -279,7 +279,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 </div>
 
 <!-- Pressing this triggers hydration and replaces the .cart-count node -->
-<button data-pjax-hydrate="(['.cart-count'])">
+<button data-spx-hydrate="(['.cart-count'])">
   Add to cart
 </button>
 
@@ -287,16 +287,16 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 
 </details>
 
-## data-pjax-replace
+## data-spx-replace
 
-Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in `pjax.connect()` will be merged with those defined on this attribute.
+Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in `SPX.connect()` will be merged with those defined on this attribute.
 
 <details>
 <summary>
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-replace` attribute can be used on the following tags:
+The `data-spx-replace` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -326,7 +326,7 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 <a
  href="*"
- data-pjax-replace="(['#target1', '#target2'])">
+ data-spx-replace="(['#target1', '#target2'])">
  Link
 </a>
 
@@ -342,7 +342,7 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 </details>
 
-## data-pjax-prepend
+## data-spx-prepend
 
 Executes a prepend replacement on visit, where the array list values are used as targets. Index `[0]` will prepend itself to the index `[1]` value. Multiple prepend actions can be defined. Each prepend action is recorded are marked after execution.
 
@@ -351,7 +351,7 @@ Executes a prepend replacement on visit, where the array list values are used as
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-prepend` attribute can be used on the following tags:
+The `data-spx-prepend` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -371,7 +371,7 @@ This attribute is a `string[][]` type and expects a list of valid element select
 
 </details>
 
-## data-pjax-append
+## data-spx-append
 
 Executes a append replacement on visit, where the array list values are used as targets. Index `[0]` will append itself to the index `[1]` value. Multiple append actions can be defined. Each append action is recorded are marked after execution.
 
@@ -380,7 +380,7 @@ Executes a append replacement on visit, where the array list values are used as 
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-append` attribute can be used on the following tags:
+The `data-spx-append` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -412,7 +412,7 @@ This attribute is a `string[][]` type and expects a list of valid element select
 
 <a
  href="*"
- data-pjax-prepend="(['#target-1', '#target-2'])">
+ data-spx-prepend="(['#target-1', '#target-2'])">
  Page 2
 </a>
 
@@ -433,14 +433,14 @@ This attribute is a `string[][]` type and expects a list of valid element select
 
 <a
  href="*"
- data-pjax-prepend="(['#target-1', '#target-2'])">
+ data-spx-prepend="(['#target-1', '#target-2'])">
  Page 2
 </a>
 
 <div id="target-2">
 
   <!-- An action reference record is applied -->
-  <div data-pjax-action="xxxxxxx">
+  <div data-spx-action="xxxxxxx">
     I am target-1 and have been prepended to target-2
   </div>
 
@@ -452,11 +452,11 @@ This attribute is a `string[][]` type and expects a list of valid element select
 
 </details>
 
-## data-pjax-hover
+## data-spx-hover
 
-Performs a prefetch of the `href` url upon mouse enter (hover). By default, hover pre-fetching is enabled but expects attribute annotation on links. You can have pjax execute pre-fetching on all `<a>` links by setting the `trigger` option to `href` in `pjax.connect()`. If you have set `trigger` to `href`then you do not need to define the attribute on links, unless you wish to skip executing the pre-fetch for occurring, in such a case your annotate the href element with a `false` hover attribute, eg: `<a data-pjax-hover="false">`.
+Performs a prefetch of the `href` url upon mouse enter (hover). By default, hover pre-fetching is enabled but expects attribute annotation on links. You can have SPX execute pre-fetching on all `<a>` links by setting the `trigger` option to `href` in `SPX.connect()`. If you have set `trigger` to `href`then you do not need to define the attribute on links, unless you wish to skip executing the pre-fetch for occurring, in such a case your annotate the href element with a `false` hover attribute, eg: `<a data-spx-hover="false">`.
 
-If you set hover pre-fetching to `false` in your `pjax.connect()` settings then annotations will be ignored and hover pre-fetching will be disabled.
+If you set hover pre-fetching to `false` in your `SPX.connect()` settings then annotations will be ignored and hover pre-fetching will be disabled.
 
 > On mobile devices the the prefetch will execute on the `touchstart` event
 
@@ -465,7 +465,7 @@ If you set hover pre-fetching to `false` in your `pjax.connect()` settings then 
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-hover` attribute can be used on the following tags:
+The `data-spx-hover` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -476,7 +476,7 @@ The `data-pjax-hover` attribute can be used on the following tags:
 <strong>Values</strong>
 </summary>
 
-This attribute is a `boolean` type. Passing the `true` value is optional as `data-pjax-hover` infers truthy.
+This attribute is a `boolean` type. Passing the `true` value is optional as `data-spx-hover` infers truthy.
 
 - `true`
 - `false`
@@ -490,28 +490,28 @@ This attribute is a `boolean` type. Passing the `true` value is optional as `dat
 
 ```html
 <!-- This link will be prefetch when it is hovered -->
-<a href="*" data-pjax-hover></a>
+<a href="*" data-spx-hover></a>
 
 <!-- This link will be excluded from prefetch when hovered -->
 
-<a href="*" data-pjax-hover="false"></a>
+<a href="*" data-spx-hover="false"></a>
 ```
 
 </details>
 
-## data-pjax-threshold
+## data-spx-threshold
 
-By default, this will be set to whatever preset configuration was defined in `pjax.connect()` but you can override those settings by annotating the link with this attribute. The `data-pjax-threshold` attribute can only be used on attributes that accept threshold control. The per-page state session will write this to the `threshold` property.
+By default, this will be set to whatever preset configuration was defined in `SPX.connect()` but you can override those settings by annotating the link with this attribute. The `data-spx-threshold` attribute can only be used on attributes that accept threshold control. The per-page state session will write this to the `threshold` property.
 
 <details>
 <summary>
 <strong>Attributes</strong>
 </summary>
 
-The `data-pjax-threshold` attribute can be used together with one the following attributes:
+The `data-spx-threshold` attribute can be used together with one the following attributes:
 
-- `data-pjax-hover`
-- `data-pjax-proximity`
+- `data-spx-hover`
+- `data-spx-proximity`
 
 </details>
 
@@ -534,20 +534,20 @@ This attribute either a `number` type. You can optionally pass a key reference t
 <!-- hover prefetch will begin after 500ms on hover -->
 <a
  href="*"
- data-pjax-threshold="500"
- data-pjax-hover>Link</a>
+ data-spx-threshold="500"
+ data-spx-hover>Link</a>
 
 <!-- prefetch will begin after 1s on proximity -->
 <a
  href="*"
- data-pjax-threshold="1000"
- data-pjax-proximity>Link</a>
+ data-spx-threshold="1000"
+ data-spx-proximity>Link</a>
 
 ```
 
 </details>
 
-## data-pjax-proximity
+## data-spx-proximity
 
 Triggers a proximity fetch when the cursor is within range of an `<a>` element. Optionally accepts a `number` value which overrides the `distance` preset configuration.
 
@@ -556,7 +556,7 @@ Triggers a proximity fetch when the cursor is within range of an `<a>` element. 
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-proximity` attribute can be annotated on any HTML contained within `<body>`.
+The `data-spx-proximity` attribute can be annotated on any HTML contained within `<body>`.
 
 </details>
 
@@ -579,15 +579,15 @@ This attribute is a `number` type or a boolean `false`
 <!-- This activates proximity based pre-fetch and uses the connection present defaults -->
 <a
  href="*"
- data-pjax-proximity></a>
+ data-spx-proximity></a>
 
 <!-- This url will begin fetching when the mouse is within 100px of the element -->
 <a
  href="*"
- data-pjax-proximity="100"></a>
+ data-spx-proximity="100"></a>
 
 <!-- All <a href="*"> elements will be triggered via proximity -->
-<div data-pjax-proximity>
+<div data-spx-proximity>
 
  <!-- These urls will pre-fetch and uses the connection present defaults -->
  <a href="*" ></a>
@@ -599,7 +599,7 @@ This attribute is a `number` type or a boolean `false`
 
 </details>
 
-## data-pjax-position
+## data-spx-position
 
 Sets the scroll position of the next navigation. This is a space separated expression with colon separated prop and value.
 
@@ -608,7 +608,7 @@ Sets the scroll position of the next navigation. This is a space separated expre
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-threshold` attribute can be used on the following tags:
+The `data-spx-threshold` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -637,28 +637,28 @@ This attribute is a `number` type. The value requires a key definition to be def
 <!-- This next navigation will load at 1000px from top of page  -->
 <a
  href="*"
- data-pjax-position="y:1000 x:0"></a>
+ data-spx-position="y:1000 x:0"></a>
 
 <!-- This next navigation will load at 250px from top of page  -->
 <a
  href="*"
- data-pjax-position="y:250"></a>
+ data-spx-position="y:250"></a>
 
 ```
 
 </details>
 
-## data-pjax-cache
+## data-spx-cache
 
-Controls the caching engine of each pjax navigation. When using `data-pjax-cache` together with prefetch attributes like `data-pjax-hover` the action is respected.
+Controls the caching engine of each SPX navigation. When using `data-spx-cache` together with prefetch attributes like `data-spx-hover` the action is respected.
 
 ### false
 
-Passing a `false` value will execute a pjax visit that will not be saved to cache and if the link exists in cache it will be removed.
+Passing a `false` value will execute a SPX visit that will not be saved to cache and if the link exists in cache it will be removed.
 
 ### reset
 
-Passing a `reset` value will remove the cache reference existing at the location of the trigger. A new pjax visit will be executed and the response will saved to cache, replacing the previous record.
+Passing a `reset` value will remove the cache reference existing at the location of the trigger. A new SPX visit will be executed and the response will saved to cache, replacing the previous record.
 
 ### clear
 
@@ -666,14 +666,14 @@ Passing a `clear` value will purge the entire cache store and all records will b
 
 ### restore
 
-Passing a `restore` value will save the current cache to session storage which allows the store to be maintained during page a refresh. The cache will exist in session storage and be restored to memory when another pjax visit is triggered. The restore method can be used together with `data-pjax-disable` or when navigating to an external webpage. If the tab or browser is closed then session storage is purged.
+Passing a `restore` value will save the current cache to session storage which allows the store to be maintained during page a refresh. The cache will exist in session storage and be restored to memory when another SPX visit is triggered. The restore method can be used together with `data-spx-disable` or when navigating to an external webpage. If the tab or browser is closed then session storage is purged.
 
 <details>
 <summary>
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-cache` attribute can be used on the following tags:
+The `data-spx-cache` attribute can be used on the following tags:
 
 - `<a>`
 - `<button>`
@@ -707,28 +707,28 @@ This attribute is a `string` type and expects on the following values.
 <!-- Disables cache and remove any records that might exists at '/a' -->
 <a
  href="/a"
- data-pjax-cache="false"></a>
+ data-spx-cache="false"></a>
 
 <!-- Resets the cache of '/b' -->
 <a
  href="/b"
- data-pjax-cache="reset"></a>
+ data-spx-cache="reset"></a>
 
 <!-- Purges all cache references -->
 <a
  href="/c"
- data-pjax-cache="clear"></a>
+ data-spx-cache="clear"></a>
 
-<!-- Saves cache to session storage and restores it on the next pjax visit -->
+<!-- Saves cache to session storage and restores it on the next SPX visit -->
 <a
  href="/d"
- data-pjax-cache="restore"
- data-pjax-disable></a>
+ data-spx-cache="restore"
+ data-spx-disable></a>
 ```
 
 </details>
 
-## data-pjax-history
+## data-spx-history
 
 Controls the history pushstate for the navigation. Accepts `false`, `replace` or `push` value. Passing in `false` will prevent the navigation from being added to history. Passing in `replace` or `push` will execute its respective value to pushstate to history.
 
@@ -737,7 +737,7 @@ Controls the history pushstate for the navigation. Accepts `false`, `replace` or
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-history` attribute can be used on the following tags:
+The `data-spx-history` attribute can be used on the following tags:
 
 - `<a>`
 
@@ -763,12 +763,12 @@ This attribute is a `string` type and expects on the following values.
 
 ```html
 <!-- the navigation not be pushed to history -->
-<a href="*" data-pjax-history="false"></a>
+<a href="*" data-spx-history="false"></a>
 ```
 
 </details>
 
-## data-pjax-progress
+## data-spx-progress
 
 Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of `false` will disable the progress from showing.
 
@@ -777,7 +777,7 @@ Controls the progress bar delay. By default, progress will use the threshold def
 <strong>Tags</strong>
 </summary>
 
-The `data-pjax-progress` attribute can be used on the following tags:
+The `data-spx-progress` attribute can be used on the following tags:
 
 - `<a>`
 - `<button>`
@@ -802,10 +802,10 @@ This attribute can be `number` or boolean `false` type. You must provide a numbe
 
 ```html
 <!-- Progress bar will be displayed if the request exceeds 500ms -->
-<a href="*" data-pjax-progress="500"></a>
+<a href="*" data-spx-progress="500"></a>
 
 <!-- Progress bar will not be displayed -->
-<a href="*" data-pjax-progress="false"></a>
+<a href="*" data-spx-progress="false"></a>
 ```
 
 </details>
