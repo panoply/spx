@@ -1,13 +1,13 @@
 import { emit } from './events';
-import { parse } from './dom';
+import { parse } from '../shared/dom';
 import { IPage } from '../types/page';
-import { schema, tracked, config, snaps } from './state';
+import { tracked, config, snapshots, selectors } from './session';
 import * as store from './store';
-import * as mouseover from '../observers/hover';
+import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
 import { evaljs } from '../observers/scripts';
-import { StoreType } from '../constants/enums';
-import { toArray, history } from '../constants/native';
+import { EventType } from '../shared/enums';
+import { toArray } from '../shared/native';
 import * as progress from './progress';
 import * as proximity from '../observers/proximity';
 
@@ -17,7 +17,6 @@ import * as proximity from '../observers/proximity';
 function nodePosition (a: Element, b: Element) {
 
   return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING || -1;
-
 }
 
 /**
@@ -28,8 +27,7 @@ function nodePosition (a: Element, b: Element) {
  */
 async function scriptNodes (target: HTMLHeadElement) {
 
-  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(schema.scripts));
-
+  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(selectors.script));
   scripts.sort(nodePosition);
 
   await evaljs(scripts);
@@ -43,9 +41,7 @@ async function scriptNodes (target: HTMLHeadElement) {
  */
 function trackedNodes (target: HTMLElement): void {
 
-  const nodes = target.querySelectorAll(schema.track);
-
-  nodes.forEach((node) => {
+  target.querySelectorAll(selectors.track).forEach((node) => {
 
     // tracked element must contain id
     if (!node.hasAttribute('id')) return;
@@ -54,6 +50,7 @@ function trackedNodes (target: HTMLElement): void {
       document.body.appendChild(node);
       tracked.add(node.id);
     }
+
   });
 
 }
@@ -68,12 +65,12 @@ function trackedNodes (target: HTMLElement): void {
  */
 function renderNodes (state: IPage, target: Document) {
 
-  const nodes = state.replace ? state.replace : config.targets;
+  const nodes = config.targets;
+
+  if (nodes.length === 1 && nodes[0] === 'body') return document.body.replaceWith(target.body);
+
   const selector = nodes.join(',');
   const current = document.body.querySelectorAll<HTMLElement>(selector);
-
-  if (current.length === 0) return document.body.replaceWith(target.body);
-
   const fetched = target.body.querySelectorAll<HTMLElement>(selector);
   // const ignored = isArray(state.ignore) ? state.ignore.join(',') : false;
 
@@ -120,6 +117,8 @@ function hydrateNodes (state: IPage, target: Document): void {
 
       if (!emit('hydrate', node, fetched[i])) return;
 
+      if (!fetched[i]) return;
+
       // InnerHTML replacment on text nodes
       if (node.firstChild.nodeType === Node.TEXT_NODE) {
         node.innerHTML = fetched[i].innerHTML;
@@ -130,8 +129,7 @@ function hydrateNodes (state: IPage, target: Document): void {
     });
   }
 
-  state.history = undefined;
-  state.type = StoreType.VISIT;
+  state.type = EventType.VISIT;
 
   store.update(state);
   store.purge([ state.key ]);
@@ -142,49 +140,28 @@ function hydrateNodes (state: IPage, target: Document): void {
  * Update the DOM and execute page adjustments
  * to new navigation point
  */
-export function update (state: IPage, popstate?: boolean): IPage {
+export function update (state: IPage): IPage {
 
-  // head.stop();
+  const target = parse(snapshots[state.uuid]);
 
-  if (config.hover !== false) mouseover.stop();
-  if (config.intersect !== false) intersect.stop();
-  if (config.proximity !== false) proximity.stop();
+  hover.disconnect();
+  intersect.disconnect();
+  proximity.disconnect();
 
-  const target = parse(snaps[state.snapshot]);
-  state.title = document.title = target.title || '';
-
-  // styleNodes(target.head);
-
-  if (state.type === StoreType.HYDRATE) {
-
+  if (state.type === EventType.HYDRATE) {
     hydrateNodes(state, target);
-
   } else {
-
     renderNodes(state, target);
-
-    if (state.history) {
-
-      if (!popstate) {
-        if (state.key === state.location.lastpath) {
-          history.replace(state.location, state);
-        } else {
-          history.push(state.location, state);
-        }
-      }
-
-      scrollTo(state.position.x, state.position.y);
-
-    }
+    scrollTo(state.position.x, state.position.y);
   }
 
   scriptNodes(target.head);
 
   progress.done();
 
-  if (config.hover !== false) mouseover.start();
-  if (config.intersect !== false) intersect.start();
-  if (config.proximity !== false) proximity.start();
+  hover.connect();
+  intersect.connect();
+  proximity.connect();
 
   emit('load', state);
 
