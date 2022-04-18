@@ -80,7 +80,7 @@ function observer (targets?: {
 
         if (!emit('prefetch', target, page)) return stop();
 
-        const prefetch = await request.get(page);
+        const prefetch = await request.fetch(page);
 
         if (prefetch) {
 

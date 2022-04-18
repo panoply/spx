@@ -13,7 +13,7 @@ export const supported: boolean;
 /**
  * Connect
  *
- * Establish a pjax connection with your web application.
+ * Establish a SPX connection with your web application.
  * Optionally pass in connect options.
  */
 export function connect(options?: IOptions): void;
@@ -107,7 +107,7 @@ export function clear(url?: string): void;
 /**
  * Disconnect
  *
- * Disconnects pjax, purges all records in memory and
+ * Disconnects SPX, purges all records in memory and
  * removes all observer listeners.
  */
 export function disconnect(): void;
