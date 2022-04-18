@@ -8,16 +8,15 @@
   "license": "MIT",
   "type": "module",
   "types": "./package/types/index.d.ts",
-  "module": "./package/pjax.mjs",
-  "browser": "./package/pjax.mjs",
+  "module": "./package/pjax.js",
+  "browser": "./package/pjax.js",
   "exports": {
-    "import": "./package/pjax.mjs",
-    "require": "./package/pjax.js"
+    "import": "./package/pjax.js"
   },
   "scripts": {
     "dev": "rollup -c -w",
-    "prod": "rollup -c -w --environment prod",
-    "build": "rollup -c --environment prod",
+    "build": "pnpm run prod && gzip-size package/pjax.js --include-original",
+    "prod": "esbuild src/index.ts --minify --format=esm --bundle --outfile=package/pjax.js",
     "deploy": "pnpm run build && netlify deploy -p",
     "test": "ava --color --verbose --watch --timeout=2m"
   },
@@ -47,8 +46,9 @@
   },
   "dependencies": {
     "detect-it": "^4.0.1",
-    "history": "^5.3.0",
-    "nanoid": "^3.3.2"
+    "event-from": "^1.0.0",
+    "gzip-size-cli": "^5.1.0",
+    "history": "^5.3.0"
   },
   "devDependencies": {
     "@brixtol/browserslist-config": "workspace:^1.0.3",
@@ -57,11 +57,12 @@
     "@brixtol/rollup-utils": "workspace:^1.0.0",
     "@brixtol/tsconfig": "workspace:^1.2.0",
     "@types/loadjs": "^4.0.1",
-    "ava": "^4.2.0",
+    "@types/nprogress": "^0.2.0",
+    "ava": "^4.1.0",
     "esm": "^3.2.25",
     "rollup": "^2.70.1",
-    "type-fest": "^2.12.2",
-    "typescript": "^4.6.3"
+    "type-fest": "^2.12.1",
+    "typescript": "^4.6.2"
   },
   "peerDependencies": {
     "ava": "^3.13.0",
