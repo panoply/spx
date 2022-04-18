@@ -1,16 +1,17 @@
 import * as hrefs from '../observers/hrefs';
 import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
-import * as request from '../app/request';
+import * as request from './fetch';
 import * as scroll from '../observers/scroll';
 import * as history from '../observers/history';
 import * as proximity from '../observers/proximity';
-import { EventType, StoreType } from '../constants/enums';
-import { getRoute } from './route';
-import { connect, config } from './state';
-import { emit } from './events';
 import * as store from './store';
-import { isArray } from '../constants/native';
+import { EventType, Errors } from '../shared/enums';
+import { getRoute } from './route';
+import { config } from './session';
+import { emit } from './events';
+import { isArray } from '../shared/native';
+import { forEach, log } from '../shared/utils';
 
 /**
  * Sets initial page state executing on intial load.
@@ -19,41 +20,42 @@ import { isArray } from '../constants/native';
  */
 function onload (): void {
 
-  // PERFORM REVERSE CACHING
-  const state = store.create(getRoute());
-  const reverse = history.previous();
-
-  if (config.reverse && typeof reverse === 'string') state.location.lastpath = reverse;
-
+  const state = store.create(getRoute(EventType.INITIAL));
+  const reverse = history.reverse();
   const page = store.set(state, document.documentElement.outerHTML);
+
+  if (config.reverse && typeof reverse === 'string') state.rev = reverse;
+
   state.position = scroll.position();
 
   emit('connected', page);
 
   if (config.preload !== null) {
+
     if (isArray(config.preload)) {
 
       // PRELOAD ARRAY LIST
-      for (const path of config.preload) {
-        const route = getRoute(path, StoreType.PRELOAD);
-        if (route.key !== path) request.get(store.create(route), EventType.PRELOAD);
-      }
+      forEach(async path => {
+        const route = getRoute(path, EventType.PRELOAD);
+        if (route.key !== path) await request.get(store.create(route));
+      }, config.preload);
 
     } else if (typeof config.preload === 'object' && state.key in config.preload) {
 
       // PRELOAD SPECIFIC ROUTE LIST
-      for (const path of config.preload[state.key]) {
-        const route = getRoute(path, StoreType.PRELOAD);
-        if (route.key !== path) request.get(store.create(route), EventType.PRELOAD);
-      }
+      forEach(async path => {
+        const route = getRoute(path, EventType.PRELOAD);
+        if (route.key !== path) await request.get(store.create(route));
+      }, config.preload[state.key]);
+
     }
   }
 
-  history.create(page);
+  history.replace(page);
 
-  if (page.location.lastpath !== state.key) {
-    const state = getRoute(page.location.lastpath, StoreType.REVERSE);
-    request.get(store.create(state), EventType.REVERSE);
+  // PERFORM REVERSE CACHING
+  if (page.rev !== page.key) {
+    request.get(store.create(getRoute(page.rev, EventType.REVERSE)));
   }
 
   removeEventListener('load', onload);
@@ -65,20 +67,17 @@ function onload (): void {
  */
 export function initialize (): void {
 
-  if (!connect.has(1)) {
+  history.connect();
+  scroll.connect();
+  hrefs.connect();
+  hover.connect();
+  intersect.connect();
+  proximity.connect();
 
-    history.start();
-    scroll.start();
-    hrefs.start();
-    hover.start();
-    intersect.start();
-    proximity.start();
+  addEventListener('load', onload);
 
-    addEventListener('load', onload);
+  log(Errors.INFO, 'Connected ⚡');
 
-    connect.add(1);
-    console.info('Brixtol Pjax: Connection Established ⚡');
-  }
 }
 
 /**
@@ -86,22 +85,16 @@ export function initialize (): void {
  */
 export function destroy (): void {
 
-  if (connect.has(1)) {
+  history.disconnect();
+  scroll.disconnect();
+  hrefs.disconnect();
+  hover.disconnect();
+  intersect.disconnect();
+  proximity.disconnect();
 
-    history.stop();
-    scroll.stop();
-    hrefs.stop();
-    hover.stop();
-    intersect.stop();
-    proximity.stop();
-    store.clear();
-    connect.delete(1);
+  // Purge Store
+  store.clear();
 
-    console.warn('Brixtol Pjax: Instance has been disconnected! 😔');
-
-  } else {
-
-    console.warn('Brixtol Pjax: No connection made, disconnection is void 🙃');
-  }
+  log(Errors.INFO, 'Disconnected 😔');
 
 }
