@@ -86,7 +86,7 @@ function handleTrigger (event: MouseEvent): void {
     request.cancel(route.key);
 
     // TRIGGERS FETCH
-    request.get(store.create(route));
+    request.fetch(store.create(route));
 
     // WAIT FOR CLICK
     target.addEventListener('click', onClick(target, route.key), false);
@@ -95,7 +95,7 @@ function handleTrigger (event: MouseEvent): void {
 }
 
 /**
- * Executes a pjax navigation.
+ * Executes a SPX navigation.
  */
 export async function navigate (key: string, state: IPage | false = false): Promise<void|IPage> {
 
@@ -105,7 +105,7 @@ export async function navigate (key: string, state: IPage | false = false): Prom
       state.cache === 'clear' ? store.clear() : store.clear(state.key);
     }
 
-    const page = await request.get(state);
+    const page = await request.fetch(state);
 
     if (page) return render.update(page);
 
