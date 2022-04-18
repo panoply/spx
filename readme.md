@@ -1,6 +1,6 @@
 # @brixtol/pjax
 
-A blazing fast, lightweight (8kb gzipped) and feature full new generation pjax solution. This pjax variation supports advanced pre-fetching capabilities, multiple fragment replacements and employs a snapshot caching engine that prevents subsequent requests from occurring.
+A blazing fast, lightweight (7kb gzipped) and feature full new generation pjax solution. This pjax variation supports advanced pre-fetching capabilities, multiple fragment replacements and employs a snapshot caching engine that prevents subsequent requests from occurring.
 
 ### Features
 
@@ -189,8 +189,6 @@ Enable or Disable caching. Each page visit request is cached and used in subsequ
 **Default:** `true` <br>
 
 #### `persist`
-
-**NOT YET AVAILABLE**
 
 The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
 
