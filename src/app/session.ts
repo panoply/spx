@@ -1,4 +1,4 @@
-import { IConfig, IPage, IObservers, ISelectors } from 'types';
+import { IConfig, IPage, IObservers, ISelectors, IMemory } from 'types';
 import { object } from '../shared/native';
 import { defaults } from './defaults';
 
@@ -26,6 +26,14 @@ export const config: IConfig = defaults(null);
  * - Proximity
  */
 export const observers: IObservers = object(null);
+
+/**
+ * Memory
+ *
+ * This object reference which holds the storage memory
+ * record throughout the pjax session.
+ */
+export const memory: IMemory = object(null);
 
 /**
  * Selectors
