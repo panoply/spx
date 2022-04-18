@@ -7,7 +7,7 @@ export enum Attributes {
   /**
    * Regex Capture Attribute List
    */
-  NAMES = 'hydrate|append|prepend|replace|progress|threshold|position|proximity|hover|history',
+  NAMES = 'hydrate|append|prepend|replace|progress|threshold|position|proximity|hover',
 }
 
 /**
