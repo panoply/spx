@@ -1,36 +1,66 @@
-import { ILocation } from './location';
-import type { StoreType } from '../constants/enums';
-/**
- * Pjax Events
- */
-export type IEvents =
-  | 'pjax:ready'
-  | 'pjax:prefetch'
-  | 'pjax:trigger'
-  | 'pjax:click'
-  | 'pjax:request'
-  | 'pjax:cache'
-  | 'pjax:hydrate'
-  | 'pjax:tracked'
-  | 'pjax:render'
-  | 'pjax:script'
-  | 'pjax:load';
+import type { EventType } from '../shared/enums';
 
 /**
  * Cache Size
  */
-export type ICacheSize = {
+export interface ICacheSize {
   total: number;
   weight: string;
-};
+}
 
 /**
  * Scroll position records
  */
-export type IPosition = {
+export interface IPosition {
   x: number;
   y: number;
-};
+}
+
+/**
+ * The URL location object
+ */
+export interface ILocation {
+  /**
+   * The URL origin name
+   *
+   * @example
+   * 'https://website.com'
+   */
+  origin: string;
+  /**
+   * The URL Hostname
+   *
+   * @example
+   * 'website.com'
+   */
+  hostname: string;
+
+  /**
+   * The URL Pathname
+   *
+   * @example
+   * '/pathname' OR '/pathname/foo/bar'
+   */
+  pathname: string;
+
+  /**
+   * The URL search params. If none exist this property
+   * will be omitted.
+   *
+   * @example
+   * '?param=foo&bar=baz'
+   */
+  search?: string;
+
+  /**
+   * The URL Hash. If none exists then this property
+   * will be omitted.
+   *
+   * @example
+   * '#foo'
+   */
+  hash?: string;
+}
 
 /**
  * Page Visit State
@@ -40,43 +70,92 @@ export type IPosition = {
  */
 export interface IPage {
   /**
-   * The list of fragment target element selectors defined upon connection.
+   * UUID reference to the page snapshot HTML Document element
+   */
+  uuid: string;
+
+  /**
+   * The URL cache key and current url path
+   *
+   * @example
+   * '/pathname' OR '/pathname?foo=bar'
+   */
+  key: string;
+
+  /**
+   * The previous page cache key url path. When this value
+   * matches the `key` then it is a first visit.
+   *
+   * @example
+   * '/pathname' OR '/pathname?foo=bar'
+   */
+  rev: string;
+
+  /**
+   * A store type number reference which determines how the
+   * record was saved. Used by events and internally
+   */
+  type: EventType;
+
+  /**
+   * The Document title. The value is written in the post-request
+   * cycle before caching occurs.
+   */
+  title: string;
+
+  /**
+   * Scroll position of the next navigation, this field
+   * will be updated according to history, which means
+   * navigating away from this page will update this record.
+   *
+   * ---
+   * - `x` - Equivalent to `scrollLeft` in pixels
+   * - `y` - Equivalent to `scrollTop` in pixels
+   */
+   position: IPosition;
+
+  /**
+   * Location Records reference. This holds a parsed path
+   * reference of the page.
+   */
+  location: ILocation;
+
+ /**
+   * Controls the caching engine for the link navigation.
+   * Option is enabled when `cache` preset config is `true`.
+   * Each pjax link can set a different cache option. Cache control
+   * is only operational on visits (clicks). Prefetches have no
+   * control of the cache operation.
+   *
+   * @default true
+   */
+  cache: boolean | 'reset' | 'clear' | 'restore';
+
+  /**
+   * List of additional fragment element selectors to target in the
+   * render cycle. Accepts any valid `querySelector()` string.
+   * The selectors defined here will be merged with the defined
+   * `targets` set in connection.
    *
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  targets?: string[];
+  replace: string[];
 
   /**
-   * The URL cache key and current url path
+   * Progress bar threshold delay.
+   *
+   * @default 350
    */
-  key?: string;
+  progress?: boolean | number;
 
   /**
-   * UUID reference to the page snapshot HTML Document element
+   * Threshold timeout to be applied to `proximity` or `hover`
+   * prefetch operations.
+   *
+   * @default 100
    */
-  snapshot?: string;
-
-  /**
-   * Location URL
-   */
-  location?: ILocation;
-
-  /**
-   * The Document title
-   */
-  title?: string;
-
-  /**
-   * A storage type number reference which determines how the
-   * record was saved. Used internally.
-   */
-  type?: StoreType;
-
-  /**
-   * Should this fetch be pushed to history
-   */
-  history?: boolean;
+  threshold?: number;
 
   /**
    * List of fragments to replace. When `hydrate` is used,
@@ -86,22 +165,16 @@ export interface IPage {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  hydrate?: null | string[];
+  hydrate?: string[];
 
   /**
-   * List of fragment element selectors. Accepts any valid
-   * `querySelector()` string.
+   * List of fragments contained within targets to ignore in
+   * the render cycle.
+   *
+   * **OPTION NOT YET AVAILABLE**
    *
    * @example
-   * ['#main', '.header', '[data-attr]', 'header']
-   */
-  replace?: null | string[];
-
-  /**
-   * List of fragments contained within targets to ignore in the navigation
-   *
-   * @example
-   * ['#ignore']]
+   * ['#ignore']
    */
   ignore?: string[]
 
@@ -111,7 +184,7 @@ export interface IPage {
    * @example
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  append?: null | Array<[from: string, to: string]>;
+  append?: Array<[from: string, to: string]>;
 
   /**
    * List of fragments to be prepend from and to. Accepts multiple.
@@ -119,69 +192,15 @@ export interface IPage {
    * @example
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  prepend?: null | Array<[from: string, to: string]>;
+  prepend?: Array<[from: string, to: string]>;
 
   /**
-   * Controls the caching engine for the link navigation.
-   * Option is enabled when `cache` preset config is `true`.
-   * Each pjax link can set a different cache option.
+   * Define proximity prefetch distance from which fetching should
+   * begin. This value is relative to the cursor offset of defined
+   * elements using the `data-pjax-proximity` attribute.
    *
-   * **IMPORTANT**
-   *
-   * Cache control is only operational on clicks, prefetches
-   * will not control cache.
-   *
-   * ---
-   *
-   * `false`
-   *
-   * Passing in __false__ will execute a pjax visit that will
-   * not be saved to cache and if the link exists in cache
-   * it will be removed.
-   *
-   * `reset`
-   *
-   * Passing in __reset__ will remove the requested page from cache
-   * (if it exsists) and the next navigation result will be saved.
-   *
-   * `clear`
-   *
-   * Passing in __clear__ will clear the entire cache, removing all
-   * saved records.
-   *
-   */
-  cache?: boolean | string | number;
-
-  /**
-   * Scroll position of the next navigation.
-   *
-   * ---
-   * `x` - Equivalent to `scrollLeft` in pixels
-   *
-   * `y` - Equivalent to `scrollTop` in pixels
-   */
-  position?: IPosition;
-
-  /**
-   * Define mouseover timeout from which fetching will begin
-   * after time spent on mouseover
-   *
-   * @default 100
-   */
-  threshold?: number;
-
-  /**
-   * Define proximity prefetch distance from which fetching will
-   * begin relative to the cursor offset of href elements.
-   *
-   * @default 0
+   * @default 75
    */
   proximity?: number;
 
-  /**
-   * Progress bar threshold delay
-   *
-   * @default 350
-   */
-  progress?: boolean | number;
 }
