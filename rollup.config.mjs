@@ -7,7 +7,7 @@ export default rollup(
       {
         format: 'esm',
         exports: 'named',
-        file: 'package/pjax.js',
+        file: 'package/spx.js',
         sourcemap: false,
         esModule: true,
         freeze: false,
@@ -24,7 +24,6 @@ export default rollup(
             platform: 'browser'
           },
           include: [
-            'history',
             'detect-it'
           ]
         }
