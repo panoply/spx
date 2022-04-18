@@ -10,8 +10,7 @@ import { EventType, Errors } from '../shared/enums';
 import { getRoute } from './route';
 import { config } from './session';
 import { emit } from './events';
-import { isArray } from '../shared/native';
-import { forEach, log } from '../shared/utils';
+import { log } from '../shared/utils';
 
 /**
  * Sets initial page state executing on intial load.
@@ -21,8 +20,8 @@ import { forEach, log } from '../shared/utils';
 function onload (): void {
 
   const state = store.create(getRoute(EventType.INITIAL));
-  const reverse = history.reverse();
   const page = store.set(state, document.documentElement.outerHTML);
+  const reverse = history.reverse();
 
   if (config.reverse && typeof reverse === 'string') state.rev = reverse;
 
@@ -30,33 +29,9 @@ function onload (): void {
 
   emit('connected', page);
 
-  if (config.preload !== null) {
-
-    if (isArray(config.preload)) {
-
-      // PRELOAD ARRAY LIST
-      forEach(async path => {
-        const route = getRoute(path, EventType.PRELOAD);
-        if (route.key !== path) await request.get(store.create(route));
-      }, config.preload);
-
-    } else if (typeof config.preload === 'object' && state.key in config.preload) {
-
-      // PRELOAD SPECIFIC ROUTE LIST
-      forEach(async path => {
-        const route = getRoute(path, EventType.PRELOAD);
-        if (route.key !== path) await request.get(store.create(route));
-      }, config.preload[state.key]);
-
-    }
-  }
-
   history.replace(page);
-
-  // PERFORM REVERSE CACHING
-  if (page.rev !== page.key) {
-    request.get(store.create(getRoute(page.rev, EventType.REVERSE)));
-  }
+  request.preload(state);
+  request.reverse(page);
 
   removeEventListener('load', onload);
 
@@ -76,7 +51,7 @@ export function initialize (): void {
 
   addEventListener('load', onload);
 
-  log(Errors.INFO, 'Connected ⚡');
+  log(Errors.INFO, 'Connection Established ⚡');
 
 }
 
