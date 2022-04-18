@@ -8,41 +8,13 @@ import { IPage } from './page';
 export type EventNames = (
  | 'connected'
  | 'prefetch'
- | 'trigger'
- | 'request'
- | 'cache'
+ | 'visit'
+ | 'fetch'
+ | 'store'
  | 'hydrate'
- | 'tracked'
  | 'render'
  | 'load'
 );
-
-/**
- * Event Type
- *
- * Enum number value is passed. Below is the id reference
- *
- * 1. Click/Mousedown event
- * 2. Prefetch hover event
- * 3. Prefetch intersection
- * 4. Prefetch proximity
- * 5. Prefetch preload
- * 6. Reverse cache fetch (lastpath)
- * 7. Popstate fetch
- * 8. Programmatic reload (method trigger)
- * 9. Programmatic prefetch (method trigger)
- */
-export type EventType = (
-  | 1
-  | 2
-  | 3
-  | 4
-  | 5
-  | 6
-  | 7
-  | 8
-  | 9
-)
 
 /**
  * Emitter Arguments
@@ -51,20 +23,18 @@ export type EmitterArguments<T extends EventNames> = (
   T extends 'connected' ? [
     state: IPage
   ] :
-  T extends 'trigger' ? [
+  T extends 'visit' ? [
     event: MouseEvent,
     state: IPage
   ] :
   T extends 'prefetch' ? [
     target: Element,
-    state: IPage,
-    type: EventType
+    state: IPage
   ] :
-  T extends 'request' ? [
-    state: IPage,
-    type: EventType
+  T extends 'fetch' ? [
+    state: IPage
   ] :
-  T extends 'cache' ? [
+  T extends 'store' ? [
     state: IPage,
     snapshot: string
   ] :
@@ -91,6 +61,7 @@ export type LifecycleEvent<T extends EventNames> = (
      * Page state reference
      */
     state?: IPage
+
   ) => void :
 
   T extends 'trigger' ? (
@@ -110,10 +81,6 @@ export type LifecycleEvent<T extends EventNames> = (
      * Page state reference
      */
     state?: IPage,
-    /**
-     * Event dispatch type id
-     */
-    type?: Exclude<EventType, 'trigger'>
 
   ) => void | false :
 
@@ -122,10 +89,6 @@ export type LifecycleEvent<T extends EventNames> = (
      * Page state reference
      */
      state?: IPage,
-     /**
-      * Event dispatch type id
-      */
-     type?: EventType
 
   ) => void | false :
 
