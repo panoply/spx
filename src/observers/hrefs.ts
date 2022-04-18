@@ -1,15 +1,14 @@
 import { supportsPointerEvents } from 'detect-it';
 import { emit } from '../app/events';
-import { getLink } from '../app/utils';
-import { keys } from '../constants/native';
+import { getLink } from '../shared/links';
 import { IPage } from '../types/page';
-import { connect, schema, pages, transit } from '../app/state';
+import { observers, pages, selectors } from '../app/session';
 import { getRoute } from '../app/route';
-import * as request from '../app/request';
+import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as store from '../app/store';
 import * as history from './history';
-import { EventType } from '../constants/enums';
+import { EventType } from '../shared/enums';
 
 /**
  * Handles a clicked link, prevents special click types.
@@ -42,10 +41,15 @@ function onClick (target: Element, state: string | IPage) {
 
     event.preventDefault();
     target.removeEventListener('click', handle, false);
-    history.update();
 
-    if (typeof state === 'object') return render.update(state);
-    if (typeof state === 'string') return navigate(state);
+    if (typeof state === 'object') {
+      history.push(state);
+      return render.update(state);
+    }
+
+    if (typeof state === 'string') {
+      return navigate(state);
+    }
 
     return location.assign(state);
 
@@ -62,29 +66,27 @@ function handleTrigger (event: MouseEvent): void {
 
   if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, schema.href);
+  const target = getLink(event.target, selectors.href);
 
   if (!target) return;
 
-  const route = getRoute(target);
+  const route = getRoute(target, EventType.VISIT);
 
-  if (!emit('trigger', event, route)) return;
+  if (!emit('visit', event, route)) return;
 
   // CACHED VISIT
   if (store.has(route.key)) {
 
-    // UPDATE ANY REFERENCES OF ATTRIBUTE
+    // UPDATE ANY REFERENCES ON ATTRIBUTE
     target.addEventListener('click', onClick(target, store.update(route)), false);
 
   } else {
 
     // CANCEL PENDING REQUESTS
-    if (route.key in transit) {
-      if (keys(transit).length > 1) request.cancel(route.key);
-    }
+    request.cancel(route.key);
 
     // TRIGGERS FETCH
-    request.get(store.create(route), EventType.TRIGGER);
+    request.get(store.create(route));
 
     // WAIT FOR CLICK
     target.addEventListener('click', onClick(target, route.key), false);
@@ -95,29 +97,37 @@ function handleTrigger (event: MouseEvent): void {
 /**
  * Executes a pjax navigation.
  */
-export async function navigate (urlOrState: string, state: IPage | false = false): Promise<void|IPage> {
+export async function navigate (key: string, state: IPage | false = false): Promise<void|IPage> {
 
   if (state) {
 
-    if (typeof state.cache === 'string' && !state.hydrate) {
+    if (typeof state.cache === 'string' && !('hydrate' in state)) {
       state.cache === 'clear' ? store.clear() : store.clear(state.key);
     }
 
-    const page = await request.get(state, EventType.TRIGGER);
+    const page = await request.get(state);
 
     if (page) return render.update(page);
 
   } else {
 
-    if ((await request.inFlight(urlOrState))) {
-      return render.update(pages[urlOrState]);
+    const wait = await request.inFlight(key);
+
+    if (wait) {
+
+      const page = pages[key];
+
+      history.push(page);
+
+      return render.update(page);
+
     } else {
-      request.abort(urlOrState);
+      request.abort(key);
     }
 
   }
 
-  return location.assign(urlOrState);
+  return location.assign(key);
 
 }
 
@@ -126,9 +136,9 @@ export async function navigate (urlOrState: string, state: IPage | false = false
  *
  * @returns {void}
  */
-export function start (): void {
+export function connect (): void {
 
-  if (connect.has(3)) return;
+  if (observers.hrefs) return;
 
   if (supportsPointerEvents) {
     addEventListener('pointerdown', handleTrigger, false);
@@ -137,16 +147,16 @@ export function start (): void {
     addEventListener('touchstart', handleTrigger, false);
   }
 
-  connect.add(3);
+  observers.hrefs = true;
 
 }
 
 /**
  * Removed `click` event listener.
  */
-export function stop (): void {
+export function disconnect (): void {
 
-  if (!connect.has(3)) return;
+  if (!observers.hrefs) return;
 
   if (supportsPointerEvents) {
     removeEventListener('pointerdown', handleTrigger, false);
@@ -155,6 +165,6 @@ export function stop (): void {
     removeEventListener('touchstart', handleTrigger, false);
   }
 
-  connect.delete(3);
+  observers.hrefs = false;
 
 }
