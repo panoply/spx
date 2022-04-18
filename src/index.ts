@@ -10,8 +10,8 @@ import * as request from './app/fetch';
 import * as controller from './app/controller';
 import * as render from './app/render';
 import * as scroll from './observers/scroll';
-import { config, snapshots, pages, observers } from './app/session';
-import { log } from './shared/utils';
+import { config, snapshots, pages, observers, memory, selectors } from './app/session';
+import { log, size } from './shared/utils';
 
 /**
  * Event Emitters
@@ -29,7 +29,7 @@ export const supported = !!(
 );
 
 /**
- * Connect Pjax
+ * Connect SPX
  */
 export function connect (options: IConfig = {}) {
 
@@ -39,7 +39,7 @@ export function connect (options: IConfig = {}) {
     if (/https?/.test(window.location.protocol)) {
       addEventListener('DOMContentLoaded', controller.initialize);
     } else {
-      log(Errors.ERROR, 'Invalid protocol, pjax expects https or http protocol');
+      log(Errors.ERROR, 'Invalid protocol, SPX expects https or http protocol');
     }
   } else {
     log(Errors.ERROR, 'Browser is not supported');
@@ -51,7 +51,7 @@ export function connect (options: IConfig = {}) {
 /**
  * Session
  *
- * Returns the current pjax session
+ * Returns the current SPX session
  */
 export function session (key?: string, update?: object) {
 
@@ -64,6 +64,7 @@ export function session (key?: string, update?: object) {
       if (key === 'observers') return observers;
       if (key === 'pages') return pages;
       if (key === 'snapshots') return snapshots;
+      if (key === 'memory') return size(memory.bytes);
     }
   }
 
@@ -72,7 +73,10 @@ export function session (key?: string, update?: object) {
   state.config = config;
   state.snapshots = snapshots;
   state.pages = pages;
+  state.selectors = selectors;
   state.observers = observers;
+  state.memory = memory;
+  state.memory.size = size(state.memory.bytes);
 
   return state;
 
@@ -116,7 +120,7 @@ export async function reload (options?: Omit<IPage, 'key' | 'location'>) {
   if (options) assign(state, options);
 
   state.type = EventType.RELOAD;
-  const page = await request.get(state);
+  const page = await request.fetch(state);
 
   if (page) {
     log(Errors.INFO, 'Triggered reload, page was re-cached');
@@ -177,10 +181,7 @@ export async function hydrate (link: string, elements: string[]): Promise<void|I
     ? store.update(route, dom)
     : store.create(route);
 
-  if (config.reverse) {
-    const reverse = getRoute(route.rev, EventType.REVERSE);
-    request.get(reverse);
-  }
+  request.reverse(route);
 
   return render.update(page);
 
@@ -198,7 +199,7 @@ export async function prefetch (link: string | Element): Promise<void|IPage> {
     return;
   }
 
-  const prefetch = await request.get(store.create(path));
+  const prefetch = await request.fetch(store.create(path));
 
   if (prefetch) return prefetch;
 
