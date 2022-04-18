@@ -83,10 +83,16 @@ async function pop ({ state }: PopStateEvent & { state: HistoryState}): Promise<
 
   console.log('POP STATE', state);
 
-  if (store.has(state.key)) return render.update(pages[state.key]);
+  if (store.has(state.key)) {
+
+    // PERFORM REVERSE CACHING
+    request.reverse(state);
+
+    return render.update(pages[state.key]);
+  }
 
   state.type = EventType.POPSTATE;
-  const page = await request.get(state);
+  const page = await request.fetch(state);
 
   if (page) return render.update(page);
 
