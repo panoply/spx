@@ -233,27 +233,6 @@ export interface IOptions {
    */
   preload?: string[] | { [path: string]: string[] }
   /**
-   * Reverse caching. This will execute a premptive fetch of the previous
-   * pages in the history stack when no snapshot exists in cache. The previous
-   * url is stored in session storage and will be recalled.
-   *
-   * **Explained**
-   *
-   * Snapshots cache is purged if a browser refresh occurs and when navigating
-   * backwards or forwards pages will need to be re-fetched resulting in minor
-   * delays if a refresh was triggered between browsing, but this can be avoided
-   * when snapshots exist.
-   *
-   * By default, the last known previous page in the history stack is fetched
-   * and re-cached when no snapshot exists and we have a reference of its history
-   * stack.
-   *
-   * ---
-   *
-   * @default true
-   */
-  reverse?: true
-  /**
    * Mouseover prefetching. You can disable mouseover (hover) prefetching
    * by setting this to `false` otherwise you can customize the fetching
    * behaviour. To use the default behaviour, set this to `true`. When enabled,
