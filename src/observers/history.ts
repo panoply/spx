@@ -42,13 +42,13 @@ export function get () {
 
 /**
  * Check if history state holds reverse
- * last path reference
+ * last path reference. Returns a boolean
+ *
  */
 export function reverse () {
 
-  // PERFORM REVERSE CACHING
-  if (!history.state) return false;
-  if ('rev' in history.state) return history.state.rev;
+  if (typeof history.state !== 'object') return false;
+  if ('rev' in history.state) return history.state.key !== history.state.rev;
 
   return false;
 
