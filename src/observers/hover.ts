@@ -1,5 +1,6 @@
+import { IHover } from 'types';
 import { supportsPointerEvents } from 'detect-it';
-import { forEach } from '../shared/utils';
+import { forEach, hasProp } from '../shared/utils';
 import { emit } from '../app/events';
 import { config, observers, selectors } from '../app/session';
 import * as store from '../app/store';
@@ -7,7 +8,6 @@ import * as request from '../app/fetch';
 import { getKey, getRoute } from '../app/route';
 import { getLink, getTargets } from '../shared/links';
 import { EventType } from '../shared/enums';
-import { IHover } from 'types';
 
 /**
  * Cancels prefetch, if mouse leaves target before threshold
@@ -22,6 +22,7 @@ function onMouseLeave (event: MouseEvent) {
     request.cleanup(getKey(target.href));
     handleHover(target);
   }
+
 };
 
 /**
@@ -38,23 +39,22 @@ function onMouseEnter (event: MouseEvent): void {
 
   const route = getRoute(target, EventType.HOVER);
 
-  if (route.key in request.timers) return;
+  if (hasProp(request.timers, route.key)) return;
   if (store.has(route.key)) return removeListener(target);
 
   handleLeave(target);
 
   const state = store.create(route);
-
-  console.log('hver', state);
   const delay = state.threshold || (config.hover as IHover).threshold;
 
-  request.throttle(route.key, async () => {
+  request.throttle(route.key, function () {
 
     if (!emit('prefetch', target, route)) return removeListener(target);
 
-    const prefetch = await request.fetch(state);
-
-    if (prefetch) removeListener(target);
+    request.fetch(state).then(function (prefetch) {
+      return prefetch
+        ? removeListener(target) : null;
+    });
 
   }, delay);
 
