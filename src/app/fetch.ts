@@ -1,12 +1,12 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { forEach, log } from '../shared/utils';
-import * as progress from './progress';
+import { log, hasProp } from '../shared/utils';
 import { getRoute } from './route';
 import { config, memory } from './session';
 import * as store from './store';
 import { isArray, object } from '../shared/native';
 import { Errors, EventType } from '../shared/enums';
+import { Key } from 'types';
 
 /**
  * Request Transits
@@ -15,16 +15,7 @@ import { Errors, EventType } from '../shared/enums';
  * properties represent the the request URL and the
  * value is the XML Request instance.
  */
-const transit: { [url: string]: XMLHttpRequest } = object(null);
-
-/**
- * Async Timeout
- */
-function pending (callback: Function): Promise<boolean> {
-
-  return new Promise(resolve => setTimeout(() => resolve(callback()), 5));
-
-};
+export const transit: { [url: string]: ReturnType<typeof request> } = object(null);
 
 /**
  * Request Timeouts
@@ -36,32 +27,47 @@ function pending (callback: Function): Promise<boolean> {
 export const timers: { [url: string]: NodeJS.Timeout } = object(null);
 
 /**
+ * XHR Requests
+ *
+ * The promise-like queue reference which holds the
+ * XHR requests for each fetch dispatched. This allows
+ * for aborting in-transit requests.
+ */
+const xhr: { [url: string]: XMLHttpRequest } = object(null);
+
+/**
  * Fetch XHR Request wrapper function
  */
-export function httpRequest (url: string): Promise<string | false> {
+export function request (key: string) {
 
-  const xhr = new XMLHttpRequest();
+  const request = xhr[key] = new XMLHttpRequest();
 
-  return new Promise((resolve, reject) => {
+  return new Promise<string>(function (resolve, reject) {
 
-    xhr.open('GET', url, config.async);
-    xhr.setRequestHeader('X-SPX', 'true');
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    request.open('GET', key, config.async);
+    request.setRequestHeader('X-SPX', 'true');
+    request.setRequestHeader('X-SPX-Session', 'true');
+    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-    xhr.onloadstart = e => { transit[url] = xhr; };
-    xhr.onload = e => { resolve(xhr.status === 200 ? xhr.responseText : false); };
-    xhr.onabort = e => { delete transit[url]; };
-    xhr.onloadend = e => {
-      delete transit[url];
-      memory.bytes = memory.bytes + e.loaded;
-      memory.visits = memory.visits++;
+    request.onload = function () {
+      resolve(request.responseText);
     };
 
-    xhr.onerror = reject;
-    xhr.timeout = config.timeout;
-    xhr.responseType = 'text';
+    request.onloadend = function (event: ProgressEvent<EventTarget>) {
+      memory.bytes = memory.bytes + event.loaded;
+      memory.visits = memory.visits + 1;
+      delete xhr[key];
+    };
 
-    xhr.send(null);
+    request.onerror = function () {
+      reject(this.statusText);
+    };
+
+    request.onabort = function () {
+      delete xhr[key];
+    };
+
+    request.send(null);
 
   });
 
@@ -70,24 +76,23 @@ export function httpRequest (url: string): Promise<string | false> {
 /**
  * Fetch Throttle
  */
-export function throttle (url: string, fn: () => void, delay: number): void {
+export function throttle (key: string, callback: () => void, delay: number): void {
 
-  if (url in timers) return;
-  if (!store.has(url)) timers[url] = setTimeout(fn, delay);
+  if (hasProp(timers, key)) return;
+  if (!store.has(key)) timers[key] = setTimeout(callback, delay);
 
 };
 
 /**
  * Cleanup throttlers
  */
-export function cleanup (url: string) {
+export function cleanup (key: string) {
 
-  if (url in timers) {
-    clearTimeout(timers[url]);
-    return delete timers[url];
-  }
+  if (!hasProp(timers, key)) return true;
 
-  return true;
+  clearTimeout(timers[key]);
+  return delete timers[key];
+
 }
 
 /**
@@ -95,11 +100,11 @@ export function cleanup (url: string) {
  *
  * Aborts a specific request in transit.
  */
-export function abort (url: string): void {
+export function abort (key: string): void {
 
-  if (url in transit) {
-    transit[url].abort();
-    log(Errors.WARN, `Fetch aborted: ${url}`);
+  if (hasProp(xhr, key)) {
+    xhr[key].abort();
+    log(Errors.WARN, `Fetch aborted: ${key}`);
   }
 
 };
@@ -111,121 +116,123 @@ export function abort (url: string): void {
  * the request id (page key identifier) provided.
  * To cancel a specific request, use `abort` export.
  */
-export function cancel (key: string): void {
+export function cancel (key?: string): void {
 
-  if (!(key in transit)) return;
-
-  for (const url in transit) {
-    if (key !== url) {
-      transit[url].abort();
+  if (hasProp(xhr, key)) {
+    for (const url in xhr) {
+      if (key === url) continue;
+      console.log('cancel', key);
+      xhr[url].abort();
       log(Errors.WARN, `Pending fetch aborted: ${url}`);
     }
   }
-};
-
-/**
- * Prevents repeated transit from being executed.
- * When prefetching, if a request is in transit and a click
- * event dispatched this will prevent multiple transit and
- * instead wait for initial fetch to complete.
- *
- * Number of recursive runs to make, set this to 85 to disable,
- * else just leave it to execute as is.
- *
- * Returns `true` if request resolved in `850ms` else `false`
- */
-export async function inFlight (url: string, rate = 0): Promise<boolean> {
-
-  if ((url in transit) && rate <= config.timeout) {
-
-    if (config.progress !== false) {
-      const time = rate * 5;
-      if (time === config.progress.threshold) progress.start();
-    }
-
-    rate++;
-
-    return pending(() => inFlight(url, rate));
-  }
-
-  return delete transit[url];
 
 };
 
 /**
  * Preload Requests
  *
+ * Triggered on SPX connection and preloads
+ * locations defined in configuration. This
+ * fetch is executed only once.
  */
 export function preload (state: IPage) {
 
   if (config.preload !== null) {
 
-    const load = forEach(async path => {
-      const route = getRoute(path, EventType.PRELOAD);
-      if (route.key !== path) await fetch(store.create(route));
-    });
-
     if (isArray(config.preload)) {
-      load(config.preload);
+
+      return Promise.all(
+        config.preload.filter(
+          path => {
+            const route = getRoute(path, EventType.PRELOAD);
+            return route.key !== path ? fetch(
+              store.create(route)
+            ) : false;
+          }
+        )
+      );
+
     } else if (typeof config.preload === 'object') {
-      if (state.key in config.preload) {
-        load(config.preload[state.key]);
+      if (hasProp(config.preload, state.key as Key)) {
+
+        return Promise.all(
+          config.preload[state.key].map(
+            (path: Key) => fetch(
+              store.create(
+                getRoute(path, EventType.PRELOAD)
+              )
+            )
+          )
+        );
       }
     }
   }
 }
 
-export async function reverse (state: IPage) {
+/**
+ * Reverse Fetch
+ *
+ * Triggers a reverse fetch which is preemptive request
+ * dispatched at different points, like (for example) in
+ * popstate operations or initial load.
+ */
+export function reverse (key: string) {
 
-  if (state.rev !== state.key) {
-    if (!store.has(state.rev)) {
-      console.log('REVERSE FETCH FOR', state.rev);
-      await fetch(store.create(getRoute(state.rev, EventType.REVERSE)));
-    }
-  }
+  if (store.has(key)) return;
+
+  console.log('REVERSE FETCH FOR', key);
+
+  const route = getRoute(key, EventType.REVERSE);
+  const page = store.create(route);
+
+  fetch(page);
+
+}
+
+export async function wait (state: IPage): Promise<IPage> {
+
+  if (!hasProp(transit, state.key)) return Promise.resolve(state);
+
+  const snapshot = await transit[state.key];
+
+  return store.set(
+    state,
+    snapshot
+  );
 
 }
 
 /**
- * Fetches documents and guards from duplicated transit
- * from being dispatched if an indentical fetch is in flight.
- * transit will always save responses and snapshots.
+ * Fetch Request
+ *
+ * Fetches documents and guards from duplicated requests
+ * from being dispatched when an indentical fetch is inFlight.
+ * Page state is returned and the session is update success.
  */
-export async function fetch (state: IPage): Promise<IPage|false> {
+export function fetch (state: IPage): Promise<false|IPage> {
 
-  if (state.key in transit) {
+  if (hasProp(xhr, state.key)) {
 
     if (state.type === EventType.REVERSE) {
-      transit[state.key].abort();
+      if (hasProp(xhr, state.rev)) xhr[state.rev].abort();
       log(Errors.WARN, `Reverse fetch aborted: ${state.key}`);
     } else {
       log(Errors.WARN, `Fetch already in transit: ${state.key}`);
     }
 
-    return;
+    return Promise.resolve(false);
   }
 
   if (!emit('fetch', state)) {
     log(Errors.WARN, `Fetch cancelled within dispatched event: ${state.key}`);
-    return false;
+    return Promise.resolve(false);
   }
 
-  try {
+  // create a trasit queue reference of the
+  // dispatched request in transit.
+  transit[state.key] = request(state.key);
 
-    const snapshot = await httpRequest(state.key);
-
-    if (snapshot) return store.set(state, snapshot);
-
-    log(Errors.ERROR, ` Failed to retrive response: ${state.key}`);
-
-  } catch (e) {
-
-    delete transit[state.key];
-
-    log(Errors.ERROR, `Fetch failed: ${state.key}`);
-
-  }
-
-  return false;
+  return wait(state);
 
 };
