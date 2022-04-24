@@ -1,13 +1,14 @@
 import { emit } from './events';
-import { parse } from '../shared/dom';
-import { IPage } from '../types/page';
-import { tracked, config, snapshots, selectors } from './session';
-import * as store from './store';
-import * as hover from '../observers/hover';
-import * as intersect from '../observers/intersect';
 import { evaljs } from '../observers/scripts';
 import { EventType } from '../shared/enums';
 import { toArray } from '../shared/native';
+import { parse } from '../shared/dom';
+import { IPage } from '../types/page';
+import { tracked, snapshots, selectors } from './session';
+import * as store from './store';
+import * as hover from '../observers/hover';
+import * as intersect from '../observers/intersect';
+import * as scroll from '../observers/scroll';
 import * as progress from './progress';
 import * as proximity from '../observers/proximity';
 
@@ -63,9 +64,9 @@ function trackedNodes (target: HTMLElement): void {
  * This function is also responsible for handling append,
  * prepend and tracked replacements of element in the dom.
  */
-function renderNodes (state: IPage, target: Document) {
+function renderNodes (page: IPage, target: Document) {
 
-  const nodes = config.targets;
+  const nodes = page.replace;
 
   if (nodes.length === 1 && nodes[0] === 'body') return document.body.replaceWith(target.body);
 
@@ -81,12 +82,10 @@ function renderNodes (state: IPage, target: Document) {
 
     node.replaceWith(fetched[i]);
 
-    if (state.append || state.prepend) {
+    if (page.append || page.prepend) {
       const fragment = document.createElement('div');
       target.childNodes.forEach(fragment.appendChild);
-      return state.append
-        ? node.appendChild(fragment)
-        : node.insertBefore(fragment, node.firstChild);
+      return page.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
     }
 
   });
@@ -115,9 +114,8 @@ function hydrateNodes (state: IPage, target: Document): void {
 
     current.forEach((node, i) => {
 
-      if (!emit('hydrate', node, fetched[i])) return;
-
       if (!fetched[i]) return;
+      if (!emit('hydrate', node, fetched[i])) return;
 
       // InnerHTML replacment on text nodes
       if (node.firstChild.nodeType === Node.TEXT_NODE) {
@@ -125,14 +123,13 @@ function hydrateNodes (state: IPage, target: Document): void {
       } else {
         node.replaceWith(fetched[i]);
       }
-
     });
+
   }
 
   state.type = EventType.VISIT;
-
   store.update(state);
-  store.purge([ state.key ]);
+  store.purge(state.key);
 
 }
 
@@ -140,31 +137,32 @@ function hydrateNodes (state: IPage, target: Document): void {
  * Update the DOM and execute page adjustments
  * to new navigation point
  */
-export function update (state: IPage): IPage {
-
-  const target = parse(snapshots[state.uuid]);
+export function update (page: IPage): IPage {
 
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
 
-  if (state.type === EventType.HYDRATE) {
-    hydrateNodes(state, target);
+  const target = parse(snapshots[page.uuid]);
+
+  if (page.type === EventType.HYDRATE) {
+    hydrateNodes(page, target);
   } else {
-    renderNodes(state, target);
-    scrollTo(state.position.x, state.position.y);
+    renderNodes(page, target);
+    scrollTo(page.position.x, page.position.y);
   }
 
   scriptNodes(target.head);
 
   progress.done();
+  scroll.reset();
 
   hover.connect();
   intersect.connect();
   proximity.connect();
 
-  emit('load', state);
+  emit('load', page);
 
-  return state;
+  return page;
 
 }
