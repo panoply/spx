@@ -1,6 +1,6 @@
 {
   "name": "spx",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.2-beta.1",
   "private": false,
   "description": "SPX is a new generation pjax (pushstate + XHR) solution for SSR web applications",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
