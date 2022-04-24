@@ -1,16 +1,16 @@
 # SPX
 
-SPX (Single Page XHR) is a blazing fast, lightweight (7.4kb gzipped) and feature full new generation pjax solution. SPX supports advanced pre-fetching capabilities, multiple fragment replacements and employs a snapshot caching engine that prevents subsequent requests from occurring.
+SPX (Single Page XHR) is a blazing fast, lightweight (7.4kb gzipped) and feature full new generation pjax solution. SPX supports advanced pre-fetching capabilities, multiple fragment replacements and snapshot caching engine that prevents subsequent requests from occurring resulting in instantaneous navigations.
 
 ### Features
 
-- Simple and painless integration.
-- Pre-fetching capabilities using hover, intersect and proximity triggers.
+- Simple and painless drop-in integration.
+- Pre-fetching capabilities using hover, intersection or proximity observers.
 - Snapshot caching engine and per-page state control.
 - Powerful pub/sub event driven lifecycle triggers.
 - Provides a client side DOM hydration approach.
-- Supports targeted append and prepend fragment replacements.
-- Handles inlined and external script evaluation (asynchronously).
+- Supports multiple replace, append and prepend fragment targets.
+- Handles inlined and external script evaluation.
 - Couples perfectly with [stimulus.js](https://stimulusjs.org/).
 - Attribute driven programmatic control.
 
@@ -25,17 +25,12 @@ The landscape of Pjax (Push~State Ajax) solutions has become rather scarce. The 
 # Documentation
 
 1. [Install](#install)
-2. [Recommendations](/panoply/spx/tree/next/recommendations.md)
-3. [Usage](#usage)
-4. [Options](#options)
-5. [Real World](/panoply/spx/tree/next/real-world.md)
-6. [Lifecycle Events](#lifecycle-events)
-7. [Methods](#methods)
-8. [Attributes](/panoply/spx/tree/next/attributes.md)
-9. [Sessions](/panoply/spx/tree/next/sessions.md)
-10. [How it works](#how-it-works)
-11. [Contributing](#contributing)
-12. [Acknowledgements](#acknowledgements)
+2. [Usage](#usage)
+3. [Options](#options)
+4. [Lifecycle Events](#lifecycle-events)
+5. [Methods](#methods)
+6. [Contributing](#contributing)
+7. [Acknowledgements](#acknowledgements)
 
 # Install
 
@@ -55,7 +50,7 @@ _Because [pnpm](https://pnpm.js.org/en/cli/install) is dope and does dope shit._
 yarn add spx
 ```
 
-_Stop using Yarn, it sucks. Choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
+_Yarn sucks. Choose [pnpm](https://pnpm.js.org/en/cli/install) and emancipate yourself._
 
 ### npm
 
@@ -75,9 +70,9 @@ _Be as you are.._
 
 # Usage
 
-To initialize, call `spx.connect()` in your bundle preferably before anything else is loaded. By default, the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis for optimal performance and consider leveraging the pre-fetching capabilities.
+To initialize, call `spx.connect()` in your bundle preferably before anything else is loaded. By default, the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis.Consider leveraging the pre-fetching capabilities for the most optimal performance.
 
-> The typings provided in this package will describe each option in good detail, below are the defaults and all options are optional.
+> The typings provided in this package will describe each option in good detail, below are the defaults. Settings are optional.
 
 ```js
 import spx from 'spx';
@@ -89,8 +84,7 @@ spx.connect({
   poll: 15,
   async: true,
   cache: true,
-  reverse: true,
-  persist: false,
+  session: false,
   limit: 50,
   preload: null,
   hover: {
@@ -166,13 +160,6 @@ The `persist` option can be used to restore cache into memory after a browser re
 
 **Type:** `boolean` <br>
 **Default:** `false` <br>
-
-#### `reverse`
-
-Reverse caching. This will execute a pre-emptive fetch of the previous pages in the history stack when no snapshot exists in cache. Snapshots cache is purged when browser refresh occurs (unless `persist` is enabled) so when navigating backwards or pages will need to be re-fetched and this results in minor delays due to the refresh which was triggered.
-
-**Type:** `boolean` <br>
-**Default:** `true` <br>
 
 #### `limit`
 
