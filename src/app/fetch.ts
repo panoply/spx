@@ -121,7 +121,7 @@ export function cancel (key?: string): void {
   if (hasProp(xhr, key)) {
     for (const url in xhr) {
       if (key === url) continue;
-      console.log('cancel', key);
+      // console.log('cancel', key);
       xhr[url].abort();
       log(Errors.WARN, `Pending fetch aborted: ${url}`);
     }
@@ -181,7 +181,7 @@ export function reverse (key: string) {
 
   if (store.has(key)) return;
 
-  console.log('REVERSE FETCH FOR', key);
+  // console.log('REVERSE FETCH FOR', key);
 
   const route = getRoute(key, EventType.REVERSE);
   const page = store.create(route);

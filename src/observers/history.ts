@@ -68,7 +68,7 @@ export function reverse () {
 
 export function replace (state: IPage) {
 
-  console.log('REPLACE', state);
+  // console.log('REPLACE', state);
 
   history.replaceState(stack(state), state.title, state.key);
 
@@ -78,7 +78,7 @@ export function replace (state: IPage) {
 
 export function push (state: IPage) {
 
-  console.log('PUSH STATE', state);
+  // console.log('PUSH STATE', state);
 
   history.pushState(stack(state), state.title, state.key);
 
@@ -139,7 +139,7 @@ function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
 // eslint-disable-next-line no-unused-vars
 function persist ({ timeStamp }: BeforeUnloadEvent) {
 
-  console.log('PERSIST', timeStamp);
+  // console.log('PERSIST', timeStamp);
   window.sessionStorage.setItem(config.session, JSON.stringify({ snapshots, pages }));
 
 };

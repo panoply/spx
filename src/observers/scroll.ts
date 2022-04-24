@@ -23,8 +23,6 @@ let ticking: boolean = false;
  */
 export function position (): IPosition {
 
-  console.log(pos);
-
   return pos;
 
 }
