@@ -1,5 +1,7 @@
 # SPX
 
+### BETA VERSION
+
 SPX (Single Page XHR) is a blazing fast, lightweight (7.4kb gzipped) and feature full new generation pjax solution. SPX supports advanced pre-fetching capabilities, multiple fragment replacements and snapshot caching engine that prevents subsequent requests from occurring resulting in instantaneous navigations.
 
 ### Features
