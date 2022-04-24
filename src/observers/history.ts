@@ -1,34 +1,45 @@
 import { HistoryState, IPage } from 'types';
-import { pages, observers, config } from '../app/session';
+import { pages, observers, config, snapshots } from '../app/session';
 import { history, object } from '../shared/native';
+import { hasProp } from '../shared/utils';
 import * as render from '../app/render';
 import * as request from '../app/fetch';
 import * as store from '../app/store';
-// import * as scroll from './scroll';
+import * as scroll from './scroll';
 import { EventType } from '../shared/enums';
+import { getKey, getRoute } from '../app/route';
 
 /**
- * The state reference to be populated and
- * saved in the browser state. This is a partial
- * copy of the in-memory page state.
+ * History API - Re-export of the `window.history` native constant
  */
-function getState (page: IPage) {
+export { history as api } from '../shared/native';
+
+/**
+ * The state reference to be populated and saved in the browser state.
+ * This is a partial copy of the in-memory page state. The function
+ * will omit render specific options that could otherwise be applied
+ * via attribute annotation.
+ */
+function stack (page: IPage) {
 
   const state: HistoryState = object(null);
-
-  console.log('GET STATE', state);
 
   state.key = page.key;
   state.rev = page.rev;
   state.title = page.title;
   state.uuid = page.uuid;
-  state.position = page.position;
   state.cache = page.cache;
   state.replace = page.replace;
   state.type = page.type;
   state.progress = page.progress;
+  state.position = scroll.reset();
 
   return state;
+}
+
+function load () {
+
+  return document.readyState === 'complete';
 }
 
 /**
@@ -47,18 +58,19 @@ export function get () {
  */
 export function reverse () {
 
-  if (typeof history.state !== 'object') return false;
-  if ('rev' in history.state) return history.state.key !== history.state.rev;
-
-  return false;
+  return (
+    history.state !== null &&
+    hasProp(history.state, 'rev') &&
+    history.state.key !== history.state.rev
+  );
 
 }
 
 export function replace (state: IPage) {
 
-  console.log('REPLACE STATE', state);
+  console.log('REPLACE', state);
 
-  history.replaceState(getState(state), null, state.key);
+  history.replaceState(stack(state), state.title, state.key);
 
   return state;
 
@@ -68,35 +80,52 @@ export function push (state: IPage) {
 
   console.log('PUSH STATE', state);
 
-  history.pushState(getState(state), null, state.key);
+  history.pushState(stack(state), state.title, state.key);
 
   return state;
 
 }
+
+let timeout: NodeJS.Timeout;
 
 /**
  * Popstate Event
  *
  * Fires popstate navigation request
  */
-async function pop ({ state }: PopStateEvent & { state: HistoryState}): Promise<void|IPage> {
+function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
 
-  console.log('POP STATE', state);
+  if (!load()) return;
+
+  const { state } = event;
+
+  clearInterval(timeout);
 
   if (store.has(state.key)) {
-
-    // PERFORM REVERSE CACHING
-    request.reverse(state);
-
+    request.reverse(state.rev);
     return render.update(pages[state.key]);
   }
 
-  state.type = EventType.POPSTATE;
-  const page = await request.fetch(state);
+  timeout = setTimeout(async function () {
 
-  if (page) return render.update(page);
+    state.type = EventType.POPSTATE;
 
-  return location.assign(state.key);
+    const page = await request.fetch(state);
+    if (!page) return location.assign(state.key);
+
+    const key = getKey(location);
+
+    // console.log(state.key, page.key, key);
+
+    if (page.key === key) return render.update(page);
+    if (store.has(key)) return render.update(pages[key]);
+
+    const data = store.create(getRoute(key, EventType.POPSTATE));
+
+    request.fetch(data);
+    history.replaceState(data, document.title, key);
+
+  }, 300);
 
 };
 
@@ -106,9 +135,12 @@ async function pop ({ state }: PopStateEvent & { state: HistoryState}): Promise<
  * Event History dispatch controller, handles popstate,
  * push and replace events via third party module
  */
+
+// eslint-disable-next-line no-unused-vars
 function persist ({ timeStamp }: BeforeUnloadEvent) {
 
   console.log('PERSIST', timeStamp);
+  window.sessionStorage.setItem(config.session, JSON.stringify({ snapshots, pages }));
 
 };
 
@@ -121,11 +153,9 @@ export function connect (): void {
 
   if (observers.history) return;
 
-  addEventListener('popstate', pop);
-
-  if (config.persist) {
-    addEventListener('beforeunload', persist, { capture: true });
-  }
+  addEventListener('popstate', pop, false);
+  addEventListener('load', load, false);
+  // addEventListener('beforeunload', persist, { capture: true });
 
   observers.history = true;
 
@@ -140,11 +170,9 @@ export function disconnect (): void {
 
   if (!observers.history) return;
 
-  removeEventListener('popstate', pop);
-
-  if (config.persist) {
-    removeEventListener('beforeunload', persist, { capture: true });
-  }
+  removeEventListener('popstate', pop, false);
+  addEventListener('load', load, false);
+  // removeEventListener('beforeunload', persist, { capture: true });
 
   observers.history = false;
 
