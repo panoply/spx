@@ -12,7 +12,7 @@ import * as request from './app/fetch';
 import * as controller from './app/controller';
 import * as render from './app/render';
 import * as scroll from './observers/scroll';
-
+import { on, off } from './app/events';
 /**
  * Event Emitters
  */
@@ -229,3 +229,19 @@ export function disconnect () {
   controller.destroy();
 
 }
+
+export default {
+  supported,
+  on,
+  off,
+  connect,
+  session,
+  state,
+  reload,
+  fetch,
+  clear,
+  hydrate,
+  prefetch,
+  visit,
+  disconnect
+};
