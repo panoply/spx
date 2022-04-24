@@ -23,6 +23,8 @@ let ticking: boolean = false;
  */
 export function position (): IPosition {
 
+  console.log(pos);
+
   return pos;
 
 }
@@ -31,10 +33,10 @@ export function position (): IPosition {
  * onScroll event, asserts the current X and Y page
  * offset position of the document
  */
-export function onscroll (): void {
+export function scroll (): void {
 
-  pos.y = scrollY;
-  pos.x = scrollX;
+  pos.y = window.scrollY;
+  pos.x = window.scrollX;
 
   if (!ticking) {
     requestAnimationFrame(position);
@@ -65,8 +67,7 @@ export function connect (): void {
 
   if (observers.scroll) return;
 
-  onscroll();
-  addEventListener('scroll', onscroll, { passive: true });
+  addEventListener('scroll', scroll, { passive: true });
 
   observers.scroll = true;
 

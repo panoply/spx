@@ -41,10 +41,9 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
 export function connect (): void {
 
   if (!config.intersect || observers.intersect) return;
+  if (!entries) entries = new IntersectionObserver(forEach(onIntersect), config.intersect);
 
-  entries = new IntersectionObserver(forEach(onIntersect), config.intersect);
-
-  forEach(entries.observe, getNodeTargets(selectors.intersect, selectors.interHref));
+  forEach(n => entries.observe(n), getNodeTargets(selectors.intersect, selectors.interHref));
 
   observers.intersect = true;
 

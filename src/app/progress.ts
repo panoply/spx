@@ -7,6 +7,11 @@ import { config } from './session';
 let status = null;
 
 /**
+ * Progress Status
+ */
+let timeout: NodeJS.Timeout;
+
+/**
  * Progress Element
  */
 let element: HTMLDivElement = null;
@@ -167,23 +172,27 @@ function queue (fn: Function) {
  * Shows the progress bar. This is the same as setting the status to 0%,
  * except that it doesn't go backwards.
  */
-export function start () {
+export function start (threshold?: number) {
 
   if (!config.progress) return;
-  if (!status) setProgress(0);
 
-  const work = function () {
+  timeout = setTimeout(function () {
 
-    setTimeout(() => {
-      if (!status) return;
-      increment();
-      work();
-    }, (config.progress as IProgress).trickleSpeed);
+    if (!status) setProgress(0);
 
-  };
+    const work = function () {
 
-  if (config.progress.trickle) work();
+      setTimeout(() => {
+        if (!status) return;
+        increment();
+        work();
+      }, (config.progress as IProgress).trickleSpeed);
 
+    };
+
+    if ((config.progress as IProgress).trickle) work();
+
+  }, threshold || 0);
 };
 
 /**
@@ -196,6 +205,8 @@ export function start () {
  * > If `true` is passed, it will show the progress bar even if its hidden.
  */
 export function done (force?: boolean) {
+
+  clearTimeout(timeout);
 
   if (!force && !status) return;
 

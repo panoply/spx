@@ -40,7 +40,6 @@ export function emit <T extends EventNames> (name: T, ...args: EmitterArguments<
     } else {
       returns = returned !== false;
     }
-
   }, events[name] || []);
 
   return returns;

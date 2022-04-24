@@ -48,9 +48,9 @@ function parseAttribute (attributes: any[]): { [key: string]: string | number } 
  * configuration options. This function contructs the initial
  * page state model.
  */
-export function getAttributes (element: Element): IPage {
+export function getAttributes (element: Element, page?: IPage): IPage {
 
-  const state: IPage = object(null);
+  const state: IPage = page || object(null);
 
   for (const { nodeName, nodeValue } of element.attributes) {
 
@@ -58,9 +58,14 @@ export function getAttributes (element: Element): IPage {
 
     // KEY REFERENCE
     if (nodeName === 'href') {
-      state.location = getLocation(nodeValue);
-      state.key = state.location.pathname + state.location.search;
+
       state.rev = location.pathname + location.search;
+
+      if (!page) {
+        state.location = getLocation(nodeValue);
+        state.key = state.location.pathname + state.location.search;
+      }
+
       continue;
     }
 
@@ -120,6 +125,26 @@ function parsePath (path: string) {
   return state;
 }
 
+function getPath (url: string, proto: number) {
+
+  const path = url.indexOf('/', proto);
+
+  if (path > proto) {
+    const hash = url.indexOf('#', path);
+    return hash < 0 ? url.slice(path) : url.slice(path, hash);
+  }
+
+  const param = url.indexOf('?', proto);
+
+  if (param > proto) {
+    const hash = url.indexOf('#', param);
+    return hash < 0 ? url.slice(param) : url.slice(param, hash);
+  }
+
+  return url.length - proto === hostname.length ? '/' : null;
+
+}
+
 /**
  * Parse Origin
  *
@@ -153,12 +178,35 @@ function parseOrigin (url: string) {
 }
 
 /**
+ * Has Origin
+ *
+ * Checks to see if the URL contains an origin. We
+ * use integer return values to inform the origin type.
+ * If a value of `0` returned there is no origin in the URL.
+ *
+ * 1. http or https
+ * 2. //
+ * 3. www.
+ */
+function hasOrigin (url: string): number {
+
+  if (url.startsWith('http')) return 1;
+  if (url.startsWith('//')) return 2;
+  if (url.startsWith('www.')) return 3;
+
+  return 0;
+
+}
+
+/**
  * Valid Key
  *
  * Validates URL's contained in a document and returns
  * a boolean informing if the the path is valid or not.
  */
 export function validKey (url: string) {
+
+  if (typeof url !== 'string' || url.length === 0) return false;
 
   if (url.charCodeAt(0) === 47) {
     if (url.charCodeAt(1) !== 47) return true;
@@ -218,9 +266,22 @@ export function getKey (link: string | ILocation): string {
 
   if (typeof link === 'object') return link.pathname + link.search;
 
-  const path = parseKey(link);
+  const has = hasOrigin(link);
 
-  return path.pathname + path.search;
+  if (has === 1) {
+    const proto = link.charCodeAt(4) === 115 ? 8 : 7;
+    const www = link.startsWith('www.', proto) ? (proto + 4) : proto;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+  }
+
+  if (has === 2) {
+    const www = link.startsWith('www.', 2) ? 6 : 2;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+  }
+
+  if (has === 3) return link.startsWith(hostname, 4) ? getPath(link, 4) : null;
+
+  return link.startsWith(hostname, 0) ? getPath(link, 0) : null;
 
 };
 
@@ -255,19 +316,18 @@ export function getRoute (link: Element | string | EventType, type?: EventType):
   // PASSED IN ELEMENT
   // Route state will be generated using node attributes
   if (link instanceof Element) {
-
     const state = getAttributes(link);
-
     state.type = type || EventType.VISIT;
     return state;
   }
 
   const state: IPage = object(null);
-
+  state.fwd = null;
   state.rev = location.pathname + location.search;
   state.location = getLocation(typeof link === 'string' ? link : state.rev);
   state.key = getKey(state.location);
   state.type = type || EventType.VISIT;
+
   return state;
 
 };

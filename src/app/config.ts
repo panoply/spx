@@ -4,6 +4,7 @@ import { Attributes } from '../shared/enums';
 import { assign } from '../shared/native';
 import { config, selectors, memory } from './session';
 import { IConfig, IOptions } from 'types';
+import { hasProp } from '../shared/utils';
 
 /**
  * Initialize
@@ -15,28 +16,44 @@ import { IConfig, IOptions } from 'types';
  */
 export function configure (options: IOptions = {}) {
 
-  if (options.hover !== undefined) {
+  if (hasProp(options, 'hover')) {
     if (typeof options.hover !== 'boolean') assign(config.hover, options.hover);
     else if (options.hover === false) config.hover = options.hover;
     delete options.hover;
   }
 
-  if (options.intersect !== undefined) {
+  if (hasProp(options, 'intersect')) {
     if (typeof options.intersect !== 'boolean') assign(config.intersect, options.intersect);
     else if (options.intersect === false) config.intersect = options.intersect;
     delete options.intersect;
   }
 
-  if (options.proximity !== undefined) {
+  if (hasProp(options, 'proximity')) {
     if (typeof options.proximity !== 'boolean') assign(config.proximity, options.proximity);
     else if (options.proximity === false) config.proximity = options.proximity;
     delete options.proximity;
   }
 
-  if (options.progress !== undefined) {
+  if (hasProp(options, 'progress')) {
     if (typeof options.progress !== 'boolean') assign(config.progress, options.progress);
     else if (options.progress === false) config.progress = options.progress;
     delete options.progress;
+  }
+
+  if (hasProp(options, 'session')) {
+    if (options.session === 'persist') {
+
+      const record = localStorage.getItem('spx');
+
+      if (record === null) {
+        config.session = Math.floor(1000 + Math.random() * 9000).toString();
+        localStorage.setItem('spx', config.session);
+      } else {
+        config.session = record;
+      }
+    }
+
+    delete options.session;
   }
 
   // Name of attribute selector

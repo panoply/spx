@@ -1,4 +1,6 @@
 import { IConfig, IPage } from 'types';
+import { config, snapshots, pages, observers, memory, selectors } from './app/session';
+import { log, size } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute, getKey } from './app/route';
 import { parse } from './shared/dom';
@@ -10,8 +12,6 @@ import * as request from './app/fetch';
 import * as controller from './app/controller';
 import * as render from './app/render';
 import * as scroll from './observers/scroll';
-import { config, snapshots, pages, observers, memory, selectors } from './app/session';
-import { log, size } from './shared/utils';
 
 /**
  * Event Emitters
@@ -22,7 +22,7 @@ export { on, off } from './app/events';
  * Supported
  */
 export const supported = !!(
-  window.history.pushState &&
+  history.pushState &&
   window.requestAnimationFrame &&
   window.addEventListener &&
   window.DOMParser
@@ -144,7 +144,7 @@ export async function fetch (url: string) {
     log(Errors.ERROR, 'Cross origin fetches are not allowed');
   }
 
-  const response = await request.httpRequest(link.key);
+  const response = await request.request(link.key);
 
   if (response) return parse(response);
 
@@ -173,7 +173,7 @@ export async function hydrate (link: string, elements: string[]): Promise<void|I
   route.position = scroll.position();
   route.hydrate = elements;
 
-  const dom = await request.httpRequest(link);
+  const dom = await request.request(link);
 
   if (!dom) return log(Errors.WARN, 'Hydration fetch failed');
 
@@ -181,7 +181,7 @@ export async function hydrate (link: string, elements: string[]): Promise<void|I
     ? store.update(route, dom)
     : store.create(route);
 
-  request.reverse(route);
+  request.reverse(route.rev);
 
   return render.update(page);
 

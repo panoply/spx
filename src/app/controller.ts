@@ -8,7 +8,6 @@ import * as proximity from '../observers/proximity';
 import * as store from './store';
 import { EventType, Errors } from '../shared/enums';
 import { getRoute } from './route';
-import { config } from './session';
 import { emit } from './events';
 import { log } from '../shared/utils';
 
@@ -21,17 +20,16 @@ function onload (): void {
 
   const state = store.create(getRoute(EventType.INITIAL));
   const page = store.set(state, document.documentElement.outerHTML);
-  const reverse = history.reverse();
 
-  if (config.reverse && typeof reverse === 'string') state.rev = reverse;
+  if (history.reverse()) page.rev = history.api.state.rev;
 
-  state.position = scroll.position();
+  page.position = scroll.position();
 
   emit('connected', page);
 
   history.replace(page);
-  request.preload(state);
-  request.reverse(page);
+  request.reverse(page.rev);
+  request.preload(page);
 
   removeEventListener('load', onload);
 
@@ -42,8 +40,8 @@ function onload (): void {
  */
 export function initialize (): void {
 
-  history.connect();
   scroll.connect();
+  history.connect();
   hrefs.connect();
   hover.connect();
   intersect.connect();
@@ -60,8 +58,8 @@ export function initialize (): void {
  */
 export function destroy (): void {
 
-  history.disconnect();
   scroll.disconnect();
+  history.disconnect();
   hrefs.disconnect();
   hover.disconnect();
   intersect.disconnect();

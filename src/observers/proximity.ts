@@ -69,31 +69,32 @@ function observer (targets?: {
 
     if (node === -1) {
 
-      setTimeout(() => { wait = false; }, (config.proximity as IProximity).throttle);
+      setTimeout(() => {
+        wait = false;
+      }, (config.proximity as IProximity).throttle);
 
     } else {
 
       const { target } = targets[node];
       const page = store.create(getRoute(target, EventType.PROXIMITY));
+      const delay = page.threshold || (config.proximity as IProximity).threshold;
 
-      request.throttle(page.key, async () => {
+      request.throttle(page.key, () => {
 
-        if (!emit('prefetch', target, page)) return stop();
+        if (!emit('prefetch', target, page)) return disconnect();
 
-        const prefetch = await request.fetch(page);
-
-        if (prefetch) {
-
-          targets.splice(node, 1);
-          wait = false;
-
-          if (targets.length === 0) {
-            stop();
-            log(Errors.INFO, 'Proximity observer disconnected');
+        return request.fetch(page).then(prefetch => {
+          if (prefetch) {
+            targets.splice(node, 1);
+            wait = false;
+            if (targets.length === 0) {
+              disconnect();
+              log(Errors.INFO, 'Proximity observer disconnected');
+            }
           }
-        }
+        });
 
-      }, page.threshold || (config.proximity as IProximity).threshold);
+      }, delay);
 
     }
   };

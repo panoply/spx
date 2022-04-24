@@ -1,3 +1,7 @@
+import { LiteralUnion } from 'type-fest';
+
+export type Key = '/' | `${'/' | '?'}${string}`
+
 export interface IHover {
   /**
    * How mousover prefetches should be triggered. By default this option is set
@@ -145,6 +149,7 @@ export interface IOptions {
    * @default 'SPX'
    */
   schema?: string;
+
   /**
    * Define page fragment targets. By default, this SPX module will replace the
    * entire `<body>` fragment, if undefined. Its best to define specific fragments.
@@ -154,6 +159,7 @@ export interface IOptions {
    * @default ['body']
    */
   targets?: string[];
+
   /**
    * The timeout limit of the XHR request issued. If timeout limit is exceeded a
    * normal page visit will be executed.
@@ -163,6 +169,7 @@ export interface IOptions {
    * @default 30000
    */
   timeout?: number;
+
   /**
    * Request polling limit is used when a request is already in transit. Request
    * completion is checked every 10ms, by default this is set to 150 which means
@@ -177,6 +184,7 @@ export interface IOptions {
    * @default 150
    */
   poll?: number;
+
   /**
    * Determin if page requests should be fetched asynchronously or synchronously.
    * Setting this to `false` is not reccomended.
@@ -186,6 +194,7 @@ export interface IOptions {
    * @default true
    */
   async?: boolean;
+
   /**
    * Enable or Disable caching. Each page visit request is cached and used in
    * subsequent visits to the same location. By disabling cache, all visits will
@@ -196,6 +205,7 @@ export interface IOptions {
    * @default true
    */
   cache?: boolean;
+
   /**
    * Cache size limit. This SPX variation limits cache size to `50mb`and once size
    * exceeds that limit, records will be removed starting from the earliest point
@@ -210,15 +220,14 @@ export interface IOptions {
   limit?: number;
 
   /**
-   * The `persist` option can be used to restore cache into memory after a browser
-   * refresh has been triggered. When persisting cache a reference is maintained in
-   * session storage.
+   * Session
    *
    * ---
    *
-   * @default false
+   * @default 50
    */
-  persist?: boolean;
+  session?: LiteralUnion<'persist' | 'renew', string>
+
   /**
    * Anticipatory preloading (prefetches). Values defined here will be fetched
    * preemptively and saved to cache either upon initial load or when a specific path is
@@ -231,28 +240,8 @@ export interface IOptions {
    *
    * @default null
    */
-  preload?: string[] | { [path: string]: string[] }
-  /**
-   * Reverse caching. This will execute a premptive fetch of the previous
-   * pages in the history stack when no snapshot exists in cache. The previous
-   * url is stored in session storage and will be recalled.
-   *
-   * **Explained**
-   *
-   * Snapshots cache is purged if a browser refresh occurs and when navigating
-   * backwards or forwards pages will need to be re-fetched resulting in minor
-   * delays if a refresh was triggered between browsing, but this can be avoided
-   * when snapshots exist.
-   *
-   * By default, the last known previous page in the history stack is fetched
-   * and re-cached when no snapshot exists and we have a reference of its history
-   * stack.
-   *
-   * ---
-   *
-   * @default true
-   */
-  reverse?: true
+  preload?: Key[] | { [key: Key]: Key[] }
+
   /**
    * Mouseover prefetching. You can disable mouseover (hover) prefetching
    * by setting this to `false` otherwise you can customize the fetching
@@ -268,6 +257,7 @@ export interface IOptions {
    * @default true
    */
   hover?: boolean | IHover;
+
   /**
    * Intersection pre-fetching. Intersect prefetching leverages the
    * [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when
@@ -292,7 +282,7 @@ export interface IOptions {
    * a proximity range of a href link element. Coupling proximity with mouseover prefetches
    * enable predicative fetching to occur, so a request will trigger before any interaction.
    *
-   * To use default behaviour, set this to `true` and all  `<a>` annotated with
+   * To use default behaviour, set this to `true` and all `<a>` annotated with
    * with a `data-spx-proximity` or `data-spx-proximity="true"` attribute will be
    * prefetched.
    *

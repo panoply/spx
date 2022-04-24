@@ -27,7 +27,6 @@ export function canFetch (target: Element): boolean {
 
   const href = (target as HTMLLinkElement).href;
 
-  if (href.length === 0) return false;
   if (!validKey(href)) return false;
 
   return !has(getKey(href));

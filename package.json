@@ -1,10 +1,9 @@
 {
   "name": "spx",
-  "version": "1.0.0-beta.1",
+  "version": "0.0.1-beta.1",
   "private": false,
-  "description": "SPX (Single Page XHR) is new generation Pjax (Push~State Ajax) solution for SSR rendered web applications.",
+  "description": "SPX is a new generation pjax (pushstate + XHR) solution for SSR web applications",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
-  "owner": "BRIXTOL TEXTILES",
   "license": "MIT",
   "type": "module",
   "types": "./package/types/index.d.ts",
@@ -13,6 +12,16 @@
   "exports": {
     "import": "./package/spx.js"
   },
+  "keywords": [
+    "spx",
+    "pjax",
+    "navigation",
+    "browser",
+    "pushstate",
+    "stimulus",
+    "turbo",
+    "history"
+  ],
   "scripts": {
     "dev": "rollup -c -w",
     "build": "pnpm run prod && gzip-size package/spx.js --include-original",

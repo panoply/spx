@@ -4,9 +4,9 @@ import { object } from '../shared/native';
 /**
  * Default Configuration
  */
-export function defaults (o: object) {
+export function defaults () {
 
-  const state = object(o);
+  const state = object(null);
 
   state.targets = [ 'body' ];
   state.timeout = 30000;
@@ -14,10 +14,9 @@ export function defaults (o: object) {
   state.schema = 'spx';
   state.async = true;
   state.cache = true;
-  state.reverse = true;
   state.limit = 50;
   state.preload = null;
-  state.persist = false;
+  state.session = false;
 
   // HOVER
   state.hover = object(null);
@@ -39,11 +38,11 @@ export function defaults (o: object) {
   state.progress = object(null);
   state.progress.background = '#111';
   state.progress.height = '3px';
-  state.progress.minimum = 0.8;
+  state.progress.minimum = 0.09;
   state.progress.easing = 'linear';
   state.progress.speed = 300;
   state.progress.trickle = true;
-  state.progress.threshold = 350;
+  state.progress.threshold = 500;
   state.progress.trickleSpeed = 300;
 
   return state;

@@ -1,4 +1,3 @@
-import { props } from './native';
 import { Errors } from './enums';
 
 /**
@@ -31,6 +30,15 @@ export function log (error: Errors, message: string) {
     } catch (e) {}
 
   }
+
+}
+
+/**
+ * Used to validate the null prototype objects used in the module.
+ */
+export function hasProp <T extends object> (object: T, property: keyof T): boolean {
+
+  return property in object;
 
 }
 
@@ -82,23 +90,26 @@ export function size (bytes: number): string {
 };
 
 /**
- * Each iterator helper function. Provides a util function
- * for loop iterations
+ * Synchronous forEach iterator wrapper. Provides curried support.
+ * It's using the `for` iterator which is best for records under
+ * 1000 (which is the standard for this library).
  */
-export function forEach (fn: (item: any, index?: number, array?: any) => any, array?: any) {
+export function forEach <T> (callback: (
+  item: T,
+  index?: number,
+  array?: Array<T>
+) => void, array?: Array<T>) {
 
-  if (arguments.length === 1) return (array: any) => forEach(fn, array);
+  // curried expression
+  if (arguments.length === 1) return (array: Array<T>) => forEach(callback, array);
 
   const len = array.length;
 
+  // Ensure we can iterate the list
   if (len === 0) return;
 
-  let i = 0;
-
-  while (i < len) {
-    fn(array[i], i, array);
-    i++;
-  }
+  // Loop over the items in the array
+  for (let i = 0; i < len; i++) callback(array[i], i, array);
 
 }
 
@@ -106,10 +117,8 @@ export function forEach (fn: (item: any, index?: number, array?: any) => any, ar
  * Returns a list of link elements to be prefetched. Filters out
  * any links which exist in cache to prevent extrenous transit.
  */
-export function empty <T> (object: T): boolean {
+export function empty <T> (object: T) {
 
-  const items = props(object);
-
-  return items.length === 0 ? true : items.every(prop => delete object[prop] === true);
+  for (const prop in object) delete object[prop];
 
 };

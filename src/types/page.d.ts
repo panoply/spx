@@ -1,4 +1,6 @@
 import type { EventType } from '../shared/enums';
+import type { Key } from './options';
+import type { LiteralUnion } from 'type-fest';
 
 /**
  * Cache Size
@@ -74,13 +76,40 @@ export interface IPage {
    */
   uuid: string;
 
+ /**
+   * The session identifier. This is used to determine the
+   * connection digest. It is a random 4 digit number. When
+   * using a `persisted` session this is the id used by the
+   * session storage and other internal logic.
+   *
+   * @example
+   * 1001
+   */
+  session: string;
+
+  /**
+   * The number of visits made to this page
+   *
+   * @example
+   * 1
+   */
+  visits: number;
+
+  /**
+   * The exit timestamp, ie: the last time page was viewed
+   *
+   * @example
+   * 834916
+   */
+  ts: number;
+
   /**
    * The URL cache key and current url path
    *
    * @example
    * '/pathname' OR '/pathname?foo=bar'
    */
-  key: string;
+  key: LiteralUnion<Key, string>;
 
   /**
    * The previous page cache key url path. When this value
@@ -89,7 +118,16 @@ export interface IPage {
    * @example
    * '/pathname' OR '/pathname?foo=bar'
    */
-  rev: string;
+  rev: LiteralUnion<Key, string>;
+
+   /**
+   * The forward page cache key url path. When this value
+   * matches the `key` then it is a first visit.
+   *
+   * @example
+    * '/pathname' OR '/pathname?foo=bar'
+    */
+  fwd: LiteralUnion<Key, string>;
 
   /**
    * A store type number reference which determines how the

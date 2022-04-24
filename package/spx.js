@@ -1,3 +1,52 @@
+const history = window.history;
+const origin = window.location.origin;
+const assign = Object.assign;
+const object = Object.create;
+const isArray$1 = Array.isArray;
+const toArray = Array.from;
+const nil = "";
+
+function defaults() {
+  const state = object(null);
+  state.targets = ["body"];
+  state.timeout = 3e4;
+  state.poll = 15;
+  state.schema = "spx";
+  state.async = true;
+  state.cache = true;
+  state.limit = 50;
+  state.preload = null;
+  state.session = false;
+  state.hover = object(null);
+  state.hover.trigger = "attribute";
+  state.hover.threshold = 250;
+  state.intersect = object(null);
+  state.intersect.rootMargin = "0px 0px 0px 0px";
+  state.intersect.threshold = 0;
+  state.proximity = object(null);
+  state.proximity.distance = 75;
+  state.proximity.threshold = 250;
+  state.proximity.throttle = 500;
+  state.progress = object(null);
+  state.progress.background = "#111";
+  state.progress.height = "3px";
+  state.progress.minimum = 0.09;
+  state.progress.easing = "linear";
+  state.progress.speed = 300;
+  state.progress.trickle = true;
+  state.progress.threshold = 500;
+  state.progress.trickleSpeed = 300;
+  return state;
+}
+
+const config = defaults();
+const observers = object(null);
+const memory = object(null);
+const selectors = object(null);
+const pages = object(null);
+const snapshots = object(null);
+const tracked = /* @__PURE__ */ new Set();
+
 var Attributes = /* @__PURE__ */ ((Attributes2) => {
   Attributes2["NAMES"] = "hydrate|append|prepend|replace|progress|threshold|position|proximity|hover";
   return Attributes2;
@@ -26,85 +75,103 @@ var EventType = /* @__PURE__ */ ((EventType2) => {
   return EventType2;
 })(EventType || {});
 
-const history = window.history;
-const origin = window.location.origin;
-const props = Object.getOwnPropertyNames;
-const assign = Object.assign;
-const object = Object.create;
-const isArray$1 = Array.isArray;
-const toArray = Array.from;
-const nil = "";
-
-function defaults(o) {
-  const state = object(o);
-  state.targets = ["body"];
-  state.timeout = 3e4;
-  state.poll = 15;
-  state.schema = "spx";
-  state.async = true;
-  state.cache = true;
-  state.reverse = true;
-  state.limit = 50;
-  state.preload = null;
-  state.persist = false;
-  state.hover = object(null);
-  state.hover.trigger = "attribute";
-  state.hover.threshold = 250;
-  state.intersect = object(null);
-  state.intersect.rootMargin = "0px 0px 0px 0px";
-  state.intersect.threshold = 0;
-  state.proximity = object(null);
-  state.proximity.distance = 75;
-  state.proximity.threshold = 250;
-  state.proximity.throttle = 500;
-  state.progress = object(null);
-  state.progress.background = "#111";
-  state.progress.height = "3px";
-  state.progress.minimum = 0.8;
-  state.progress.easing = "linear";
-  state.progress.speed = 300;
-  state.progress.trickle = true;
-  state.progress.threshold = 350;
-  state.progress.trickleSpeed = 300;
-  return state;
+function log(error, message) {
+  if (error === Errors.INFO) {
+    console.info("SPX: " + message);
+  } else if (error === Errors.WARN) {
+    console.warn("SPX: " + message);
+  } else {
+    console.error("SPX: " + message);
+    try {
+      if (error === Errors.TYPE) {
+        throw new TypeError(message);
+      } else {
+        throw new Error(message);
+      }
+    } catch (e) {
+    }
+  }
+}
+function hasProp(object, property) {
+  return property in object;
+}
+function uuid() {
+  return Math.random().toString(36).slice(2);
+}
+function chunk(size2 = 2) {
+  return (acc, value) => {
+    const length = acc.length;
+    const chunks = length < 1 || acc[length - 1].length === size2 ? acc.push([value]) : acc[length - 1].push(value);
+    return chunks && acc;
+  };
+}
+function size(bytes) {
+  const kb = 1024;
+  const mb = 1048576;
+  const gb = 1073741824;
+  if (bytes < kb)
+    return bytes + " B";
+  else if (bytes < mb)
+    return (bytes / kb).toFixed(1) + " KB";
+  else if (bytes < gb)
+    return (bytes / mb).toFixed(1) + " MB";
+  else
+    return (bytes / gb).toFixed(1) + " GB";
+}
+function forEach(callback, array) {
+  if (arguments.length === 1)
+    return (array2) => forEach(callback, array2);
+  const len = array.length;
+  if (len === 0)
+    return;
+  for (let i = 0; i < len; i++)
+    callback(array[i], i, array);
+}
+function empty(object) {
+  for (const prop in object)
+    delete object[prop];
 }
 
-const config = defaults(null);
-const observers = object(null);
-const memory = object(null);
-const selectors = object(null);
-const pages = object(null);
-const snapshots = object(null);
-const tracked = /* @__PURE__ */ new Set();
-
 function configure(options = {}) {
-  if (options.hover !== void 0) {
+  if (hasProp(options, "hover")) {
     if (typeof options.hover !== "boolean")
       assign(config.hover, options.hover);
     else if (options.hover === false)
       config.hover = options.hover;
     delete options.hover;
   }
-  if (options.intersect !== void 0) {
+  if (hasProp(options, "intersect")) {
     if (typeof options.intersect !== "boolean")
       assign(config.intersect, options.intersect);
     else if (options.intersect === false)
       config.intersect = options.intersect;
     delete options.intersect;
   }
-  if (options.proximity !== void 0) {
+  if (hasProp(options, "proximity")) {
     if (typeof options.proximity !== "boolean")
       assign(config.proximity, options.proximity);
     else if (options.proximity === false)
       config.proximity = options.proximity;
     delete options.proximity;
   }
-  if (options.progress !== void 0) {
+  if (hasProp(options, "progress")) {
     if (typeof options.progress !== "boolean")
       assign(config.progress, options.progress);
     else if (options.progress === false)
       config.progress = options.progress;
     delete options.progress;
+  }
+  if (hasProp(options, "session")) {
+    if (options.session === "persist") {
+      const record = localStorage.getItem("spx");
+      if (record === null) {
+        config.session = Math.floor(1e3 + Math.random() * 9e3).toString();
+        localStorage.setItem("spx", config.session);
+      } else {
+        config.session = record;
+      }
+    }
+    delete options.session;
   }
   const n = config.schema === null ? "data" : `data-${config.schema}`;
   const h = `:not([${n}-disable]):not([href^="#"])`;
@@ -143,63 +210,6 @@ const isArray = /\(?\[(['"]?.*['"]?,?)\]\)?/;
 const isPosition = /[xy]:[0-9.]+/;
 const inPosition = /[xy]|\d*\.?\d+/g;
 
-function log(error, message) {
-  if (error === Errors.INFO) {
-    console.info("SPX: " + message);
-  } else if (error === Errors.WARN) {
-    console.warn("SPX: " + message);
-  } else {
-    console.error("SPX: " + message);
-    try {
-      if (error === Errors.TYPE) {
-        throw new TypeError(message);
-      } else {
-        throw new Error(message);
-      }
-    } catch (e) {
-    }
-  }
-}
-function uuid() {
-  return Math.random().toString(36).slice(2);
-}
-function chunk(size2 = 2) {
-  return (acc, value) => {
-    const length = acc.length;
-    const chunks = length < 1 || acc[length - 1].length === size2 ? acc.push([value]) : acc[length - 1].push(value);
-    return chunks && acc;
-  };
-}
-function size(bytes) {
-  const kb = 1024;
-  const mb = 1048576;
-  const gb = 1073741824;
-  if (bytes < kb)
-    return bytes + " B";
-  else if (bytes < mb)
-    return (bytes / kb).toFixed(1) + " KB";
-  else if (bytes < gb)
-    return (bytes / mb).toFixed(1) + " MB";
-  else
-    return (bytes / gb).toFixed(1) + " GB";
-}
-function forEach(fn, array) {
-  if (arguments.length === 1)
-    return (array2) => forEach(fn, array2);
-  const len = array.length;
-  if (len === 0)
-    return;
-  let i = 0;
-  while (i < len) {
-    fn(array[i], i, array);
-    i++;
-  }
-}
-function empty(object) {
-  const items = props(object);
-  return items.length === 0 ? true : items.every((prop) => delete object[prop] === true);
-}
-
 const hostname = origin.replace(Protocol, nil);
 function parseAttribute(attributes) {
   const state = object(null);
@@ -210,15 +220,17 @@ function parseAttribute(attributes) {
   }, attributes);
   return state;
 }
-function getAttributes(element) {
-  const state = object(null);
+function getAttributes(element, page) {
+  const state = page || object(null);
   for (const { nodeName, nodeValue } of element.attributes) {
     if (!selectors.attrs.test(nodeName))
       continue;
     if (nodeName === "href") {
-      state.location = getLocation(nodeValue);
-      state.key = state.location.pathname + state.location.search;
       state.rev = location.pathname + location.search;
+      if (!page) {
+        state.location = getLocation(nodeValue);
+        state.key = state.location.pathname + state.location.search;
+      }
       continue;
     }
     const name = nodeName.slice(1 + nodeName.lastIndexOf("-"));
@@ -257,6 +269,19 @@ function parsePath(path) {
   state.pathname = path;
   return state;
 }
+function getPath(url, proto) {
+  const path = url.indexOf("/", proto);
+  if (path > proto) {
+    const hash = url.indexOf("#", path);
+    return hash < 0 ? url.slice(path) : url.slice(path, hash);
+  }
+  const param = url.indexOf("?", proto);
+  if (param > proto) {
+    const hash = url.indexOf("#", param);
+    return hash < 0 ? url.slice(param) : url.slice(param, hash);
+  }
+  return url.length - proto === hostname.length ? "/" : null;
+}
 function parseOrigin(url) {
   const path = url.startsWith("www.") ? url.slice(4) : url;
   const name = path.indexOf("/");
@@ -276,7 +301,18 @@ function parseOrigin(url) {
   }
   return null;
 }
+function hasOrigin(url) {
+  if (url.startsWith("http"))
+    return 1;
+  if (url.startsWith("//"))
+    return 2;
+  if (url.startsWith("www."))
+    return 3;
+  return 0;
+}
 function validKey(url) {
+  if (typeof url !== "string" || url.length === 0)
+    return false;
   if (url.charCodeAt(0) === 47) {
     if (url.charCodeAt(1) !== 47)
       return true;
@@ -309,8 +345,19 @@ function parseKey(url) {
 function getKey(link) {
   if (typeof link === "object")
     return link.pathname + link.search;
-  const path = parseKey(link);
-  return path.pathname + path.search;
+  const has = hasOrigin(link);
+  if (has === 1) {
+    const proto = link.charCodeAt(4) === 115 ? 8 : 7;
+    const www = link.startsWith("www.", proto) ? proto + 4 : proto;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+  }
+  if (has === 2) {
+    const www = link.startsWith("www.", 2) ? 6 : 2;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+  }
+  if (has === 3)
+    return link.startsWith(hostname, 4) ? getPath(link, 4) : null;
+  return link.startsWith(hostname, 0) ? getPath(link, 0) : null;
 }
 function getLocation(path) {
   const state = parseKey(path);
@@ -325,6 +372,7 @@ function getRoute(link, type) {
     return state2;
   }
   const state = object(null);
+  state.fwd = null;
   state.rev = location.pathname + location.search;
   state.location = getLocation(typeof link === "string" ? link : state.rev);
   state.key = getKey(state.location);
@@ -385,99 +433,95 @@ function off(name, callback) {
   return this;
 }
 
+function purge(key = []) {
+  const keys = isArray$1(key) ? key : [key];
+  for (const p in pages) {
+    const index = keys.indexOf(p);
+    if (index >= 0) {
+      delete snapshots[pages[p].uuid];
+      delete pages[p];
+      keys.splice(index, 1);
+    }
+  }
+}
 function clear$1(key) {
-  if (key === void 0) {
+  if (!key) {
     empty(pages);
     empty(snapshots);
   } else if (typeof key === "string") {
     delete snapshots[pages[key].uuid];
     delete pages[key];
   } else if (isArray$1(key)) {
-    purge(key);
+    forEach((url) => {
+      delete pages[url];
+      delete snapshots[pages[url].uuid];
+    }, key);
   }
 }
-function create(state) {
-  if (state.replace === void 0) {
-    state.replace = config.targets;
-  } else {
-    forEach((target) => state.replace.push(target), config.targets);
-  }
+function create(page) {
+  page.replace = hasProp(page, "replace") ? [].concat(config.targets, page.replace) : config.targets;
   if (config.cache) {
-    if (state.cache === void 0)
-      state.cache = config.cache;
-    if (state.uuid === void 0)
-      state.uuid = uuid();
+    if (!hasProp(page, "cache"))
+      page.cache = config.cache;
+    if (!hasProp(page, "uuid"))
+      page.uuid = uuid();
   }
-  if (state.position === void 0) {
-    state.position = object(null);
-    state.position.y = 0;
-    state.position.x = 0;
+  if (!hasProp(page, "position")) {
+    page.position = object(null);
+    page.position.y = 0;
+    page.position.x = 0;
   }
-  if (config.hover !== false) {
-    if (state.type === EventType.HOVER) {
-      if (state.threshold === void 0)
-        state.threshold = config.hover.threshold;
-    }
+  if (config.hover !== false && page.type === EventType.HOVER) {
+    if (!hasProp(page, "threshold"))
+      page.threshold = config.hover.threshold;
   }
-  if (config.proximity !== false) {
-    if (state.type === EventType.PROXIMITY) {
-      if (state.proximity === void 0)
-        state.proximity = config.proximity.distance;
-      if (state.threshold === void 0)
-        state.threshold = config.hover.threshold;
-    }
+  if (config.proximity !== false && page.type === EventType.PROXIMITY) {
+    if (!hasProp(page, "proximity"))
+      page.proximity = config.proximity.distance;
+    if (!hasProp(page, "threshold"))
+      page.threshold = config.proximity.threshold;
   }
-  if (config.progress !== false) {
-    if (state.progress === void 0)
-      state.progress = config.progress.threshold;
+  if (config.progress !== false && !hasProp(page, "progress")) {
+    page.progress = config.progress.threshold;
   }
+  if (!hasProp(page, "visits"))
+    page.visits = 0;
+  const state = pages[page.key] = page;
   return state;
 }
 function set(state, snapshot) {
+  console.log(state);
   const event = emit("store", state, snapshot);
-  if (event === false)
-    return;
-  switch (state.type) {
-    case EventType.HOVER:
-    case EventType.PROXIMITY:
-    case EventType.INTERSECT:
-      state.type = EventType.PREFETCH;
-      break;
-  }
   const dom = typeof event === "string" ? event : snapshot;
+  if (state.type > 3 && state.type < 7)
+    state.type = EventType.PREFETCH;
   state.title = getTitle(dom);
-  if (!config.cache)
+  if (!config.cache || event === false)
     return state;
   pages[state.key] = state;
   snapshots[state.uuid] = dom;
+  emit("cached", state);
   return state;
 }
-function update$2(state, snapshot) {
-  const page = state.key in pages ? pages[state.key] : create(state);
+function update$2(page, snapshot) {
+  const state = hasProp(pages, page.key) ? pages[page.key] : create(page);
   if (typeof snapshot === "string") {
-    state.title = getTitle(snapshot);
     snapshots[page.uuid] = snapshot;
-    return assign(page, state);
+    page.title = getTitle(snapshot);
   }
-  return assign(page, state);
+  return assign(state, page);
 }
-function get(url) {
-  const o = object(null);
-  url = url || history.state.key;
-  o.page = pages[url];
-  o.dom = parse(snapshots[o.page.uuid]);
-  return o;
+function get(key = history.state.key) {
+  if (hasProp(pages, key)) {
+    const state = object(null);
+    state.page = pages[key];
+    state.dom = parse(snapshots[state.page.uuid]);
+    return state;
+  }
+  log(Errors.ERROR, `No record exists: ${key}`);
 }
-function has(url) {
-  return url in pages && "uuid" in pages[url] ? pages[url].uuid in snapshots : false;
-}
-function purge(targets = []) {
-  return Object.getOwnPropertyNames(pages).forEach((url) => {
-    if (!targets.includes(url))
-      delete pages[url];
-    else
-      delete snapshots[pages[url].uuid];
-  });
+function has(key) {
+  return hasProp(pages, key) && hasProp(pages[key], "uuid") && hasProp(snapshots, pages[key].uuid);
 }
 
 // ../../node_modules/.pnpm/detect-it@4.0.1/node_modules/detect-it/dist/detect-it.esm.js
@@ -514,8 +558,6 @@ function canFetch(target) {
   if (target.nodeName !== "A")
     return false;
   const href = target.href;
-  if (href.length === 0)
-    return false;
   if (!validKey(href))
     return false;
   return !has(getKey(href));
@@ -529,9 +571,319 @@ const getTargets = (selector) => {
   return toArray(document.body.querySelectorAll(selector)).filter(canFetch);
 };
 
+var __async$5 = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
+const transit = object(null);
+const timers = object(null);
+const xhr = object(null);
+function request(key) {
+  const request2 = xhr[key] = new XMLHttpRequest();
+  return new Promise(function(resolve, reject) {
+    request2.open("GET", key, config.async);
+    request2.setRequestHeader("X-SPX", "true");
+    request2.setRequestHeader("X-SPX-Session", "true");
+    request2.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    request2.onload = function() {
+      resolve(request2.responseText);
+    };
+    request2.onloadend = function(event) {
+      memory.bytes = memory.bytes + event.loaded;
+      memory.visits = memory.visits + 1;
+      delete xhr[key];
+    };
+    request2.onerror = function() {
+      reject(this.statusText);
+    };
+    request2.onabort = function() {
+      delete xhr[key];
+    };
+    request2.send(null);
+  });
+}
+function throttle(key, callback, delay) {
+  if (hasProp(timers, key))
+    return;
+  if (!has(key))
+    timers[key] = setTimeout(callback, delay);
+}
+function cleanup(key) {
+  if (!hasProp(timers, key))
+    return true;
+  clearTimeout(timers[key]);
+  return delete timers[key];
+}
+function cancel(key) {
+  if (hasProp(xhr, key)) {
+    for (const url in xhr) {
+      if (key === url)
+        continue;
+      console.log("cancel", key);
+      xhr[url].abort();
+      log(Errors.WARN, `Pending fetch aborted: ${url}`);
+    }
+  }
+}
+function preload(state) {
+  if (config.preload !== null) {
+    if (isArray$1(config.preload)) {
+      return Promise.all(config.preload.filter((path) => {
+        const route = getRoute(path, EventType.PRELOAD);
+        return route.key !== path ? fetch$1(create(route)) : false;
+      }));
+    } else if (typeof config.preload === "object") {
+      if (hasProp(config.preload, state.key)) {
+        return Promise.all(config.preload[state.key].map((path) => fetch$1(create(getRoute(path, EventType.PRELOAD)))));
+      }
+    }
+  }
+}
+function reverse$1(key) {
+  if (has(key))
+    return;
+  console.log("REVERSE FETCH FOR", key);
+  const route = getRoute(key, EventType.REVERSE);
+  const page = create(route);
+  fetch$1(page);
+}
+function wait(state) {
+  return __async$5(this, null, function* () {
+    if (!hasProp(transit, state.key))
+      return Promise.resolve(state);
+    const snapshot = yield transit[state.key];
+    return set(state, snapshot);
+  });
+}
+function fetch$1(state) {
+  if (hasProp(xhr, state.key)) {
+    if (state.type === EventType.REVERSE) {
+      if (hasProp(xhr, state.rev))
+        xhr[state.rev].abort();
+      log(Errors.WARN, `Reverse fetch aborted: ${state.key}`);
+    } else {
+      log(Errors.WARN, `Fetch already in transit: ${state.key}`);
+    }
+    return Promise.resolve(false);
+  }
+  if (!emit("fetch", state)) {
+    log(Errors.WARN, `Fetch cancelled within dispatched event: ${state.key}`);
+    return Promise.resolve(false);
+  }
+  transit[state.key] = request(state.key);
+  return wait(state);
+}
+
+function onMouseLeave(event) {
+  const target = getLink(event.target, selectors.hover);
+  if (target) {
+    cleanup(getKey(target.href));
+    handleHover(target);
+  }
+}
+function onMouseEnter(event) {
+  const target = getLink(event.target, selectors.hover);
+  if (!target)
+    return;
+  const route = getRoute(target, EventType.HOVER);
+  if (hasProp(timers, route.key))
+    return;
+  if (has(route.key))
+    return removeListener(target);
+  handleLeave(target);
+  const state = create(route);
+  const delay = state.threshold || config.hover.threshold;
+  throttle(route.key, function() {
+    if (!emit("prefetch", target, route))
+      return removeListener(target);
+    fetch$1(state).then(function(prefetch) {
+      return prefetch ? removeListener(target) : null;
+    });
+  }, delay);
+}
+function handleHover(target) {
+  if (supportsPointerEvents) {
+    target.addEventListener("pointerenter", onMouseEnter, false);
+  } else {
+    target.addEventListener("mouseenter", onMouseEnter, false);
+  }
+}
+function handleLeave(target) {
+  if (supportsPointerEvents) {
+    target.addEventListener("pointerout", onMouseLeave, false);
+    target.removeEventListener("pointerenter", onMouseEnter, false);
+  } else {
+    target.addEventListener("mouseleave", onMouseLeave, false);
+    target.removeEventListener("mouseenter", onMouseEnter, false);
+  }
+}
+function removeListener(target) {
+  if (supportsPointerEvents) {
+    target.removeEventListener("pointerenter", onMouseEnter, false);
+    target.removeEventListener("pointerout", onMouseLeave, false);
+  } else {
+    target.removeEventListener("mouseleave", onMouseLeave, false);
+    target.removeEventListener("mouseenter", onMouseEnter, false);
+  }
+}
+function connect$6() {
+  if (!config.hover || observers.hover)
+    return;
+  forEach(handleHover, getTargets(selectors.hover));
+  observers.hover = true;
+}
+function disconnect$6() {
+  if (!observers.hover)
+    return;
+  forEach(removeListener, getTargets(selectors.hover));
+  observers.hover = false;
+}
+
+function inRange({ clientX, clientY }, bounds) {
+  return clientX <= bounds.right && clientX >= bounds.left && clientY <= bounds.bottom && clientY >= bounds.top;
+}
+function setBounds(target) {
+  const state = object(null);
+  const rect = target.getBoundingClientRect();
+  const attr = target.getAttribute(`${config.schema}-proximity`);
+  const distance = isNumber.test(attr) ? Number(attr) : config.proximity.distance;
+  state.target = target;
+  state.top = rect.top - distance;
+  state.bottom = rect.bottom + distance;
+  state.left = rect.left - distance;
+  state.right = rect.right + distance;
+  return state;
+}
+function observer(targets) {
+  let wait = false;
+  return (event) => {
+    if (wait)
+      return;
+    wait = true;
+    const node = targets.findIndex((node2) => inRange(event, node2));
+    if (node === -1) {
+      setTimeout(() => {
+        wait = false;
+      }, config.proximity.throttle);
+    } else {
+      const { target } = targets[node];
+      const page = create(getRoute(target, EventType.PROXIMITY));
+      const delay = page.threshold || config.proximity.threshold;
+      throttle(page.key, () => {
+        if (!emit("prefetch", target, page))
+          return disconnect$5();
+        return fetch$1(page).then((prefetch) => {
+          if (prefetch) {
+            targets.splice(node, 1);
+            wait = false;
+            if (targets.length === 0) {
+              disconnect$5();
+              log(Errors.INFO, "Proximity observer disconnected");
+            }
+          }
+        });
+      }, delay);
+    }
+  };
+}
+let entries$1;
+function connect$5() {
+  if (!config.proximity || observers.proximity)
+    return;
+  const targets = getTargets(selectors.proximity).map(setBounds);
+  if (targets.length > 0) {
+    entries$1 = observer(targets);
+    if (supportsPointerEvents) {
+      addEventListener("pointermove", entries$1, false);
+    } else {
+      addEventListener("mousemove", entries$1, false);
+    }
+    observers.proximity = true;
+  }
+}
+function disconnect$5() {
+  if (!observers.proximity)
+    return;
+  if (supportsPointerEvents) {
+    removeEventListener("pointermove", entries$1, false);
+  } else {
+    removeEventListener("mousemove", entries$1, false);
+  }
+  observers.proximity = false;
+}
+
+var __async$4 = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
+let entries;
+function onIntersect(entry) {
+  return __async$4(this, null, function* () {
+    if (entry.isIntersecting) {
+      const route = getRoute(entry.target, EventType.INTERSECT);
+      if (!emit("prefetch", entry.target, route))
+        return entries.unobserve(entry.target);
+      const response = yield fetch$1(create(route));
+      if (response) {
+        entries.unobserve(entry.target);
+      } else {
+        log(Errors.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
+        entries.observe(entry.target);
+      }
+    }
+  });
+}
+function connect$4() {
+  if (!config.intersect || observers.intersect)
+    return;
+  if (!entries)
+    entries = new IntersectionObserver(forEach(onIntersect), config.intersect);
+  forEach((n) => entries.observe(n), getNodeTargets(selectors.intersect, selectors.interHref));
+  observers.intersect = true;
+}
+function disconnect$4() {
+  if (!observers.intersect)
+    return;
+  entries.disconnect();
+  observers.intersect = false;
+}
+
 let status = null;
+let timeout$1;
 let element = null;
-const pending$1 = [];
+const pending = [];
 function setProgress(n) {
   const { speed, easing, minimum } = config.progress;
   const started = typeof status === "number";
@@ -614,323 +966,41 @@ function percentage(n) {
 }
 function queue(fn) {
   const next = () => {
-    const fn2 = pending$1.shift();
+    const fn2 = pending.shift();
     if (fn2)
       fn2(next);
   };
-  pending$1.push(fn);
-  if (pending$1.length === 1)
+  pending.push(fn);
+  if (pending.length === 1)
     next();
 }
-function start() {
+function start(threshold) {
   if (!config.progress)
     return;
-  if (!status)
-    setProgress(0);
-  const work = function() {
-    setTimeout(() => {
-      if (!status)
-        return;
-      increment();
+  timeout$1 = setTimeout(function() {
+    if (!status)
+      setProgress(0);
+    const work = function() {
+      setTimeout(() => {
+        if (!status)
+          return;
+        increment();
+        work();
+      }, config.progress.trickleSpeed);
+    };
+    if (config.progress.trickle)
       work();
-    }, config.progress.trickleSpeed);
-  };
-  if (config.progress.trickle)
-    work();
+  }, threshold || 0);
 }
 function done(force) {
+  clearTimeout(timeout$1);
   if (!force && !status)
     return;
   increment(0.3 + 0.5 * Math.random());
   return setProgress(1);
 }
 
-var __async$8 = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-const transit = object(null);
-function pending(callback) {
-  return new Promise((resolve) => setTimeout(() => resolve(callback()), 5));
-}
-const timers = object(null);
-function httpRequest(url) {
-  const xhr = new XMLHttpRequest();
-  return new Promise((resolve, reject) => {
-    xhr.open("GET", url, config.async);
-    xhr.setRequestHeader("X-SPX", "true");
-    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    xhr.onloadstart = (e) => {
-      transit[url] = xhr;
-    };
-    xhr.onload = (e) => {
-      resolve(xhr.status === 200 ? xhr.responseText : false);
-    };
-    xhr.onabort = (e) => {
-      delete transit[url];
-    };
-    xhr.onloadend = (e) => {
-      delete transit[url];
-      memory.bytes = memory.bytes + e.loaded;
-      memory.visits = memory.visits++;
-    };
-    xhr.onerror = reject;
-    xhr.timeout = config.timeout;
-    xhr.responseType = "text";
-    xhr.send(null);
-  });
-}
-function throttle(url, fn, delay) {
-  if (url in timers)
-    return;
-  if (!has(url))
-    timers[url] = setTimeout(fn, delay);
-}
-function cleanup(url) {
-  if (url in timers) {
-    clearTimeout(timers[url]);
-    return delete timers[url];
-  }
-  return true;
-}
-function abort(url) {
-  if (url in transit) {
-    transit[url].abort();
-    log(Errors.WARN, `Fetch aborted: ${url}`);
-  }
-}
-function cancel(key) {
-  if (!(key in transit))
-    return;
-  for (const url in transit) {
-    if (key !== url) {
-      transit[url].abort();
-      log(Errors.WARN, `Pending fetch aborted: ${url}`);
-    }
-  }
-}
-function inFlight(url, rate = 0) {
-  return __async$8(this, null, function* () {
-    if (url in transit && rate <= config.timeout) {
-      if (config.progress !== false) {
-        const time = rate * 5;
-        if (time === config.progress.threshold)
-          start();
-      }
-      rate++;
-      return pending(() => inFlight(url, rate));
-    }
-    return delete transit[url];
-  });
-}
-function preload(state) {
-  if (config.preload !== null) {
-    const load = forEach((path) => __async$8(this, null, function* () {
-      const route = getRoute(path, EventType.PRELOAD);
-      if (route.key !== path)
-        yield fetch$1(create(route));
-    }));
-    if (isArray$1(config.preload)) {
-      load(config.preload);
-    } else if (typeof config.preload === "object") {
-      if (state.key in config.preload) {
-        load(config.preload[state.key]);
-      }
-    }
-  }
-}
-function reverse$1(state) {
-  return __async$8(this, null, function* () {
-    if (state.rev !== state.key) {
-      if (!has(state.rev)) {
-        console.log("REVERSE FETCH FOR", state.rev);
-        yield fetch$1(create(getRoute(state.rev, EventType.REVERSE)));
-      }
-    }
-  });
-}
-function fetch$1(state) {
-  return __async$8(this, null, function* () {
-    if (state.key in transit) {
-      if (state.type === EventType.REVERSE) {
-        transit[state.key].abort();
-        log(Errors.WARN, `Reverse fetch aborted: ${state.key}`);
-      } else {
-        log(Errors.WARN, `Fetch already in transit: ${state.key}`);
-      }
-      return;
-    }
-    if (!emit("fetch", state)) {
-      log(Errors.WARN, `Fetch cancelled within dispatched event: ${state.key}`);
-      return false;
-    }
-    try {
-      const snapshot = yield httpRequest(state.key);
-      if (snapshot)
-        return set(state, snapshot);
-      log(Errors.ERROR, ` Failed to retrive response: ${state.key}`);
-    } catch (e) {
-      delete transit[state.key];
-      log(Errors.ERROR, `Fetch failed: ${state.key}`);
-    }
-    return false;
-  });
-}
-
-var __async$7 = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-function onMouseLeave(event) {
-  const target = getLink(event.target, selectors.hover);
-  if (target) {
-    cleanup(getKey(target.href));
-    handleHover(target);
-  }
-}
-function onMouseEnter(event) {
-  const target = getLink(event.target, selectors.hover);
-  if (!target)
-    return;
-  const route = getRoute(target, EventType.HOVER);
-  if (route.key in timers)
-    return;
-  if (has(route.key))
-    return removeListener(target);
-  handleLeave(target);
-  const state = create(route);
-  console.log("hver", state);
-  const delay = state.threshold || config.hover.threshold;
-  throttle(route.key, () => __async$7(this, null, function* () {
-    if (!emit("prefetch", target, route))
-      return removeListener(target);
-    const prefetch = yield fetch$1(state);
-    if (prefetch)
-      removeListener(target);
-  }), delay);
-}
-function handleHover(target) {
-  if (supportsPointerEvents) {
-    target.addEventListener("pointerenter", onMouseEnter, false);
-  } else {
-    target.addEventListener("mouseenter", onMouseEnter, false);
-  }
-}
-function handleLeave(target) {
-  if (supportsPointerEvents) {
-    target.addEventListener("pointerout", onMouseLeave, false);
-    target.removeEventListener("pointerenter", onMouseEnter, false);
-  } else {
-    target.addEventListener("mouseleave", onMouseLeave, false);
-    target.removeEventListener("mouseenter", onMouseEnter, false);
-  }
-}
-function removeListener(target) {
-  if (supportsPointerEvents) {
-    target.removeEventListener("pointerenter", onMouseEnter, false);
-    target.removeEventListener("pointerout", onMouseLeave, false);
-  } else {
-    target.removeEventListener("mouseleave", onMouseLeave, false);
-    target.removeEventListener("mouseenter", onMouseEnter, false);
-  }
-}
-function connect$6() {
-  if (!config.hover || observers.hover)
-    return;
-  forEach(handleHover, getTargets(selectors.hover));
-  observers.hover = true;
-}
-function disconnect$6() {
-  if (!observers.hover)
-    return;
-  forEach(removeListener, getTargets(selectors.hover));
-  observers.hover = false;
-}
-
-var __async$6 = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-let entries$1;
-function onIntersect(entry) {
-  return __async$6(this, null, function* () {
-    if (entry.isIntersecting) {
-      const route = getRoute(entry.target, EventType.INTERSECT);
-      if (!emit("prefetch", entry.target, route))
-        return entries$1.unobserve(entry.target);
-      const response = yield fetch$1(create(route));
-      if (response) {
-        entries$1.unobserve(entry.target);
-      } else {
-        log(Errors.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
-        entries$1.observe(entry.target);
-      }
-    }
-  });
-}
-function connect$5() {
-  if (!config.intersect || observers.intersect)
-    return;
-  entries$1 = new IntersectionObserver(forEach(onIntersect), config.intersect);
-  forEach(entries$1.observe, getNodeTargets(selectors.intersect, selectors.interHref));
-  observers.intersect = true;
-}
-function disconnect$5() {
-  if (!observers.intersect)
-    return;
-  entries$1.disconnect();
-  observers.intersect = false;
-}
-
-var __async$5 = (__this, __arguments, generator) => {
+var __async$3 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
       try {
@@ -988,7 +1058,7 @@ function scriptTag(tag) {
   return exec;
 }
 function execute(script) {
-  return __async$5(this, null, function* () {
+  return __async$3(this, null, function* () {
     try {
       const evaluate = evaluator(script);
       if (script.blocking)
@@ -999,9 +1069,9 @@ function execute(script) {
   });
 }
 function evaljs(scripts) {
-  return __async$5(this, null, function* () {
+  return __async$3(this, null, function* () {
     const scriptjs = toArray(scripts, scriptTag).filter((script) => script.evaluate);
-    const executed = scriptjs.reduce((promise, script) => __async$5(this, null, function* () {
+    const executed = scriptjs.reduce((promise, script) => __async$3(this, null, function* () {
       if (script.external)
         return Promise.all([promise, execute(script)]);
       yield promise;
@@ -1012,98 +1082,41 @@ function evaljs(scripts) {
   });
 }
 
-var __async$4 = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-function inRange({ clientX, clientY }, bounds) {
-  return clientX <= bounds.right && clientX >= bounds.left && clientY <= bounds.bottom && clientY >= bounds.top;
+const pos = object(null);
+let ticking = false;
+function position() {
+  console.log(pos);
+  return pos;
 }
-function setBounds(target) {
-  const state = object(null);
-  const rect = target.getBoundingClientRect();
-  const attr = target.getAttribute(`${config.schema}-proximity`);
-  const distance = isNumber.test(attr) ? Number(attr) : config.proximity.distance;
-  state.target = target;
-  state.top = rect.top - distance;
-  state.bottom = rect.bottom + distance;
-  state.left = rect.left - distance;
-  state.right = rect.right + distance;
-  return state;
-}
-function observer(targets) {
-  let wait = false;
-  return (event) => {
-    if (wait)
-      return;
-    wait = true;
-    const node = targets.findIndex((node2) => inRange(event, node2));
-    if (node === -1) {
-      setTimeout(() => {
-        wait = false;
-      }, config.proximity.throttle);
-    } else {
-      const { target } = targets[node];
-      const page = create(getRoute(target, EventType.PROXIMITY));
-      throttle(page.key, () => __async$4(this, null, function* () {
-        if (!emit("prefetch", target, page))
-          return stop();
-        const prefetch = yield fetch$1(page);
-        if (prefetch) {
-          targets.splice(node, 1);
-          wait = false;
-          if (targets.length === 0) {
-            stop();
-            log(Errors.INFO, "Proximity observer disconnected");
-          }
-        }
-      }), page.threshold || config.proximity.threshold);
-    }
-  };
-}
-let entries;
-function connect$4() {
-  if (!config.proximity || observers.proximity)
-    return;
-  const targets = getTargets(selectors.proximity).map(setBounds);
-  if (targets.length > 0) {
-    entries = observer(targets);
-    if (supportsPointerEvents) {
-      addEventListener("pointermove", entries, false);
-    } else {
-      addEventListener("mousemove", entries, false);
-    }
-    observers.proximity = true;
+function scroll() {
+  pos.y = window.scrollY;
+  pos.x = window.scrollX;
+  if (!ticking) {
+    requestAnimationFrame(position);
+    ticking = true;
   }
 }
-function disconnect$4() {
-  if (!observers.proximity)
+function reset() {
+  ticking = false;
+  pos.x = 0;
+  pos.y = 0;
+  return pos;
+}
+function connect$3() {
+  if (observers.scroll)
     return;
-  if (supportsPointerEvents) {
-    removeEventListener("pointermove", entries, false);
-  } else {
-    removeEventListener("mousemove", entries, false);
-  }
-  observers.proximity = false;
+  addEventListener("scroll", scroll, { passive: true });
+  observers.scroll = true;
+}
+function disconnect$3() {
+  if (!observers.scroll)
+    return;
+  removeEventListener("scroll", onscroll, false);
+  reset();
+  observers.scroll = false;
 }
 
-var __async$3 = (__this, __arguments, generator) => {
+var __async$2 = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
       try {
@@ -1127,7 +1140,7 @@ function nodePosition(a, b) {
   return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING || -1;
 }
 function scriptNodes(target) {
-  return __async$3(this, null, function* () {
+  return __async$2(this, null, function* () {
     const scripts = toArray(target.querySelectorAll(selectors.script));
     scripts.sort(nodePosition);
     yield evaljs(scripts);
@@ -1143,8 +1156,8 @@ function trackedNodes(target) {
     }
   });
 }
-function renderNodes(state, target) {
-  const nodes = config.targets;
+function renderNodes(page, target) {
+  const nodes = page.replace;
   if (nodes.length === 1 && nodes[0] === "body")
     return document.body.replaceWith(target.body);
   const selector = nodes.join(",");
@@ -1156,10 +1169,10 @@ function renderNodes(state, target) {
     if (!emit("render", node, fetched[i]))
       return;
     node.replaceWith(fetched[i]);
-    if (state.append || state.prepend) {
+    if (page.append || page.prepend) {
       const fragment = document.createElement("div");
       target.childNodes.forEach(fragment.appendChild);
-      return state.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
+      return page.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
     }
   });
   trackedNodes(target.body);
@@ -1170,9 +1183,9 @@ function hydrateNodes(state, target) {
   if (current.length > 0) {
     const fetched = target.body.querySelectorAll(nodes);
     current.forEach((node, i) => {
-      if (!emit("hydrate", node, fetched[i]))
-        return;
       if (!fetched[i])
+        return;
+      if (!emit("hydrate", node, fetched[i]))
         return;
       if (node.firstChild.nodeType === Node.TEXT_NODE) {
         node.innerHTML = fetched[i].innerHTML;
@@ -1183,113 +1196,27 @@ function hydrateNodes(state, target) {
   }
   state.type = EventType.VISIT;
   update$2(state);
-  purge([state.key]);
+  purge(state.key);
 }
-function update$1(state) {
-  const target = parse(snapshots[state.uuid]);
+function update$1(page) {
   disconnect$6();
-  disconnect$5();
   disconnect$4();
-  if (state.type === EventType.HYDRATE) {
-    hydrateNodes(state, target);
+  disconnect$5();
+  const target = parse(snapshots[page.uuid]);
+  if (page.type === EventType.HYDRATE) {
+    hydrateNodes(page, target);
   } else {
-    renderNodes(state, target);
-    scrollTo(state.position.x, state.position.y);
+    renderNodes(page, target);
+    scrollTo(page.position.x, page.position.y);
   }
   scriptNodes(target.head);
   done();
+  reset();
   connect$6();
-  connect$5();
   connect$4();
-  emit("load", state);
-  return state;
-}
-
-var __async$2 = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-function getState(page) {
-  const state = object(null);
-  console.log("GET STATE", state);
-  state.key = page.key;
-  state.rev = page.rev;
-  state.title = page.title;
-  state.uuid = page.uuid;
-  state.position = page.position;
-  state.cache = page.cache;
-  state.replace = page.replace;
-  state.type = page.type;
-  state.progress = page.progress;
-  return state;
-}
-function reverse() {
-  if (!history.state)
-    return false;
-  if ("rev" in history.state)
-    return history.state.rev;
-  return false;
-}
-function replace(state) {
-  console.log("REPLACE STATE", state);
-  history.replaceState(getState(state), null, state.key);
-  return state;
-}
-function push(state) {
-  console.log("PUSH STATE", state);
-  history.pushState(getState(state), null, state.key);
-  return state;
-}
-function pop(_0) {
-  return __async$2(this, arguments, function* ({ state }) {
-    console.log("POP STATE", state);
-    if (has(state.key)) {
-      reverse$1(state);
-      return update$1(pages[state.key]);
-    }
-    state.type = EventType.POPSTATE;
-    const page = yield fetch$1(state);
-    if (page)
-      return update$1(page);
-    return location.assign(state.key);
-  });
-}
-function persist({ timeStamp }) {
-  console.log("PERSIST", timeStamp);
-}
-function connect$3() {
-  if (observers.history)
-    return;
-  addEventListener("popstate", pop);
-  if (config.persist) {
-    addEventListener("beforeunload", persist, { capture: true });
-  }
-  observers.history = true;
-}
-function disconnect$3() {
-  if (!observers.history)
-    return;
-  removeEventListener("popstate", pop);
-  if (config.persist) {
-    removeEventListener("beforeunload", persist, { capture: true });
-  }
-  observers.history = false;
+  connect$5();
+  emit("load", page);
+  return page;
 }
 
 var __async$1 = (__this, __arguments, generator) => {
@@ -1312,22 +1239,79 @@ var __async$1 = (__this, __arguments, generator) => {
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
+function stack(page) {
+  const state = object(null);
+  state.key = page.key;
+  state.rev = page.rev;
+  state.title = page.title;
+  state.uuid = page.uuid;
+  state.cache = page.cache;
+  state.replace = page.replace;
+  state.type = page.type;
+  state.progress = page.progress;
+  state.position = reset();
+  return state;
+}
+function load() {
+  return document.readyState === "complete";
+}
+function reverse() {
+  return history.state !== null && hasProp(history.state, "rev") && history.state.key !== history.state.rev;
+}
+function replace(state) {
+  console.log("REPLACE", state);
+  history.replaceState(stack(state), state.title, state.key);
+  return state;
+}
+function push(state) {
+  console.log("PUSH STATE", state);
+  history.pushState(stack(state), state.title, state.key);
+  return state;
+}
+let timeout;
+function pop(event, retry) {
+  if (!load())
+    return;
+  const { state } = event;
+  clearInterval(timeout);
+  if (has(state.key)) {
+    reverse$1(state.rev);
+    return update$1(pages[state.key]);
+  }
+  timeout = setTimeout(function() {
+    return __async$1(this, null, function* () {
+      state.type = EventType.POPSTATE;
+      const page = yield fetch$1(state);
+      if (!page)
+        return location.assign(state.key);
+      const key = getKey(location);
+      if (page.key === key)
+        return update$1(page);
+      if (has(key))
+        return update$1(pages[key]);
+      const data = create(getRoute(key, EventType.POPSTATE));
+      fetch$1(data);
+      history.replaceState(data, document.title, key);
+    });
+  }, 300);
+}
+function connect$2() {
+  if (observers.history)
+    return;
+  addEventListener("popstate", pop, false);
+  addEventListener("load", load, false);
+  observers.history = true;
+}
+function disconnect$2() {
+  if (!observers.history)
+    return;
+  removeEventListener("popstate", pop, false);
+  addEventListener("load", load, false);
+  observers.history = false;
+}
+
 function linkEvent(event) {
   return !(event.target && event.target.isContentEditable || event.defaultPrevented || event.which > 1 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
-}
-function onClick(target, state) {
-  return function handle(event) {
-    event.preventDefault();
-    target.removeEventListener("click", handle, false);
-    if (typeof state === "object") {
-      push(state);
-      return update$1(state);
-    }
-    if (typeof state === "string") {
-      return navigate(state);
-    }
-    return location.assign(state);
-  };
 }
 function handleTrigger(event) {
   if (!linkEvent(event))
@@ -1335,40 +1319,69 @@ function handleTrigger(event) {
   const target = getLink(event.target, selectors.href);
   if (!target)
     return;
-  const route = getRoute(target, EventType.VISIT);
-  if (!emit("visit", event, route))
+  const key = getKey(target.href);
+  if (key === null)
     return;
-  if (has(route.key)) {
-    target.addEventListener("click", onClick(target, update$2(route)), false);
+  disconnect$6();
+  disconnect$5();
+  disconnect$4();
+  if (!emit("visit", event))
+    return;
+  if (hasProp(transit, key)) {
+    const page = pages[key];
+    cancel(key);
+    target.addEventListener("click", function handle(event2) {
+      event2.preventDefault();
+      target.removeEventListener("click", handle, false);
+      return visit$1(page);
+    }, false);
+  } else if (has(key)) {
+    const attrs = getAttributes(target, pages[key]);
+    const page = update$2(attrs);
+    target.addEventListener("click", function handle(event2) {
+      event2.preventDefault();
+      target.removeEventListener("click", handle, false);
+      return update$1(page);
+    }, false);
   } else {
-    cancel(route.key);
-    fetch$1(create(route));
-    target.addEventListener("click", onClick(target, route.key), false);
+    cancel();
+    const route = getRoute(target, EventType.VISIT);
+    const page = create(route);
+    fetch$1(page);
+    target.addEventListener("click", function handle(event2) {
+      event2.preventDefault();
+      target.removeEventListener("click", handle, false);
+      return visit$1(page);
+    }, false);
   }
 }
-function navigate(key, state = false) {
-  return __async$1(this, null, function* () {
-    if (state) {
-      if (typeof state.cache === "string" && !("hydrate" in state)) {
-        state.cache === "clear" ? clear$1() : clear$1(state.key);
-      }
-      const page = yield fetch$1(state);
-      if (page)
-        return update$1(page);
+function visit$1(state) {
+  start(state.progress);
+  wait(state).then(function(page) {
+    if (page) {
+      push(page);
+      update$1(page);
     } else {
-      const wait = yield inFlight(key);
-      if (wait) {
-        const page = pages[key];
-        push(page);
-        return update$1(page);
-      } else {
-        abort(key);
-      }
+      location.assign(state.key);
     }
-    return location.assign(key);
+  }).catch(function(error) {
+    location.assign(state.key);
+    log(Errors.ERROR, error);
   });
 }
-function connect$2() {
+function navigate(key, state) {
+  if (state) {
+    if (typeof state.cache === "string")
+      state.cache === "clear" ? clear$1() : clear$1(state.key);
+    start(state.progress);
+    fetch$1(state).then(function(page) {
+      return page ? update$1(page) : location.assign(state.key);
+    });
+  } else {
+    return visit$1(pages[key]);
+  }
+}
+function connect$1() {
   if (observers.hrefs)
     return;
   if (supportsPointerEvents) {
@@ -1379,7 +1392,7 @@ function connect$2() {
   }
   observers.hrefs = true;
 }
-function disconnect$2() {
+function disconnect$1() {
   if (!observers.hrefs)
     return;
   if (supportsPointerEvents) {
@@ -1391,70 +1404,35 @@ function disconnect$2() {
   observers.hrefs = false;
 }
 
-const pos = object(null);
-let ticking = false;
-function position() {
-  return pos;
-}
-function onscroll() {
-  pos.y = scrollY;
-  pos.x = scrollX;
-  if (!ticking) {
-    requestAnimationFrame(position);
-    ticking = true;
-  }
-}
-function reset() {
-  ticking = false;
-  pos.x = 0;
-  pos.y = 0;
-  return pos;
-}
-function connect$1() {
-  if (observers.scroll)
-    return;
-  onscroll();
-  addEventListener("scroll", onscroll, { passive: true });
-  observers.scroll = true;
-}
-function disconnect$1() {
-  if (!observers.scroll)
-    return;
-  removeEventListener("scroll", onscroll, false);
-  reset();
-  observers.scroll = false;
-}
-
 function onload() {
   const state = create(getRoute(EventType.INITIAL));
   const page = set(state, document.documentElement.outerHTML);
-  const reverse$2 = reverse();
-  if (config.reverse && typeof reverse$2 === "string")
-    state.rev = reverse$2;
-  state.position = position();
+  if (reverse())
+    page.rev = history.state.rev;
+  page.position = position();
   emit("connected", page);
   replace(page);
-  preload(state);
-  reverse$1(page);
+  reverse$1(page.rev);
+  preload(page);
   removeEventListener("load", onload);
 }
 function initialize() {
   connect$3();
-  connect$1();
   connect$2();
+  connect$1();
   connect$6();
-  connect$5();
   connect$4();
+  connect$5();
   addEventListener("load", onload);
   log(Errors.INFO, "Connection Established \u26A1");
 }
 function destroy() {
   disconnect$3();
-  disconnect$1();
   disconnect$2();
+  disconnect$1();
   disconnect$6();
-  disconnect$5();
   disconnect$4();
+  disconnect$5();
   clear$1();
   log(Errors.INFO, "Disconnected \u{1F614}");
 }
@@ -1479,7 +1457,7 @@ var __async = (__this, __arguments, generator) => {
     step((generator = generator.apply(__this, __arguments)).next());
   });
 };
-const supported = !!(window.history.pushState && window.requestAnimationFrame && window.addEventListener && window.DOMParser);
+const supported = !!(history.pushState && window.requestAnimationFrame && window.addEventListener && window.DOMParser);
 function connect(options = {}) {
   configure(options);
   if (supported) {
@@ -1558,7 +1536,7 @@ function fetch(url) {
     if (link.location.origin !== origin) {
       log(Errors.ERROR, "Cross origin fetches are not allowed");
     }
-    const response = yield httpRequest(link.key);
+    const response = yield request(link.key);
     if (response)
       return parse(response);
   });
@@ -1575,11 +1553,11 @@ function hydrate(link, elements) {
     const route = getRoute(EventType.HYDRATE);
     route.position = position();
     route.hydrate = elements;
-    const dom = yield httpRequest(link);
+    const dom = yield request(link);
     if (!dom)
       return log(Errors.WARN, "Hydration fetch failed");
     const page = has(route.key) ? update$2(route, dom) : create(route);
-    reverse$1(route);
+    reverse$1(route.rev);
     return update$1(page);
   });
 }

@@ -11,6 +11,7 @@ export type EventNames = (
  | 'visit'
  | 'fetch'
  | 'store'
+ | 'cached'
  | 'hydrate'
  | 'render'
  | 'load'
@@ -24,8 +25,7 @@ export type EmitterArguments<T extends EventNames> = (
     state: IPage
   ] :
   T extends 'visit' ? [
-    event: MouseEvent,
-    state: IPage
+    event: MouseEvent
   ] :
   T extends 'prefetch' ? [
     target: Element,
@@ -38,6 +38,9 @@ export type EmitterArguments<T extends EventNames> = (
     state: IPage,
     snapshot: string
   ] :
+  T extends 'cached' ? [
+    state: IPage
+  ] :
   T extends 'hydrate' ? [
     element: Element,
     newElement: Element
@@ -49,6 +52,7 @@ export type EmitterArguments<T extends EventNames> = (
   T extends 'load' ? [
     state: IPage
   ] : never
+
 )
 
 /**
@@ -68,11 +72,7 @@ export type LifecycleEvent<T extends EventNames> = (
     /**
      * The mouse event, access target via `event.target`
      */
-    event?: MouseEvent,
-    /**
-     * Page state reference
-     */
-    route?: IPage
+    event?: MouseEvent
 
   ) => void | false :
 
