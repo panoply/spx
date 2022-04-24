@@ -10,7 +10,7 @@ import { defaults } from './defaults';
  * pjax instance should run. The options defined here are
  * the defaults applied at runtime.
  */
-export const config: IConfig = defaults(null);
+export const config: IConfig = defaults();
 
 /**
  * Observers
