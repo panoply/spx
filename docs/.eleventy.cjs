@@ -7,6 +7,7 @@ module.exports = function (config) {
 
 
   config.addPlugin(highlight)
+  config.addPassthroughCopy('CNAME')
   config.setBrowserSyncConfig({ notify: true });
 
   return {

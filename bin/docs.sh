@@ -25,5 +25,4 @@ cd public &&
    git push origin $branch
 
 echo -e "\033[0;32mCleaning up...\033[0m"
-cd $root
-   git worktree remove $public
+git worktree remove $public
