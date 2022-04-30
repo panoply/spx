@@ -27,7 +27,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'pnpm'
-    - run: pnpm ci
+    - run: pnpm install
     - run: pnpm run build --if-present
     - run: pnpx pr-release pr --verbose --target master --source next --compact --verbose
       env:
