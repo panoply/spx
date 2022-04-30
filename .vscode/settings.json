@@ -1,4 +1,6 @@
 {
+  "npm.packageManager": "pnpm",
+  "eslint.packageManager": "pnpm",
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true
