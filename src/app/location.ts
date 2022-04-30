@@ -1,9 +1,9 @@
-import { selectors } from './session';
 import * as regex from '../shared/regexp';
 import { IPage, ILocation } from 'types';
 import { nil, object, origin } from '../shared/native';
 import { forEach, chunk } from '../shared/utils';
 import { EventType } from '../shared/enums';
+import { config } from './session';
 
 /**
  * Location hostname eg: brixtol.com
@@ -54,7 +54,7 @@ export function getAttributes (element: Element, page?: IPage): IPage {
 
   for (const { nodeName, nodeValue } of element.attributes) {
 
-    if (!selectors.attrs.test(nodeName)) continue;
+    if (!config.selectors.attributes.test(nodeName)) continue;
 
     // KEY REFERENCE
     if (nodeName === 'href') {
@@ -322,7 +322,6 @@ export function getRoute (link: Element | string | EventType, type?: EventType):
   }
 
   const state: IPage = object(null);
-  state.fwd = null;
   state.rev = location.pathname + location.search;
   state.location = getLocation(typeof link === 'string' ? link : state.rev);
   state.key = getKey(state.location);

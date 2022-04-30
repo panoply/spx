@@ -1,6 +1,4 @@
 import type { EventType } from '../shared/enums';
-import type { Key } from './options';
-import type { LiteralUnion } from 'type-fest';
 
 /**
  * Cache Size
@@ -109,7 +107,7 @@ export interface IPage {
    * @example
    * '/pathname' OR '/pathname?foo=bar'
    */
-  key: LiteralUnion<Key, string>;
+  key: string;
 
   /**
    * The previous page cache key url path. When this value
@@ -118,16 +116,7 @@ export interface IPage {
    * @example
    * '/pathname' OR '/pathname?foo=bar'
    */
-  rev: LiteralUnion<Key, string>;
-
-   /**
-   * The forward page cache key url path. When this value
-   * matches the `key` then it is a first visit.
-   *
-   * @example
-    * '/pathname' OR '/pathname?foo=bar'
-    */
-  fwd: LiteralUnion<Key, string>;
+  rev: string;
 
   /**
    * A store type number reference which determines how the

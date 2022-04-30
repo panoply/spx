@@ -1,12 +1,12 @@
 {
-  "exclude": ["node_modules/**", "package", "test"],
-  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules/**", "test", "docs"],
+  "include": ["src/**/*.ts", "types/*"],
   "compilerOptions": {
     "target": "ES6",
     "lib": ["es2020", "dom", "dom.iterable"],
     "declaration": true,
-    "declarationMap": true,
-    "declarationDir": "package/@types",
+    "emitDeclarationOnly": true,
+    "outFile": "index.d.ts",
     "module": "ES6",
     "allowSyntheticDefaultImports": true,
     "keyofStringsOnly": true,
@@ -14,14 +14,13 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "noStrictGenericChecks": true,
-    "noEmit": true,
     "suppressExcessPropertyErrors": true,
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "pretty": true,
     "baseUrl": ".",
     "paths": {
-      "types": ["src/types"]
+      "types": ["types"]
     }
   }
 }

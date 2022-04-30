@@ -11,6 +11,11 @@
     "**/.DS_Store": true,
     "**/node_modules": true
   },
-  "cSpell.ignoreWords": ["loadjs", "navigations"],
-  "cSpell.words": ["Alexey", "hrefs", "Спасибі"]
+  "cSpell.words": [
+    "spx",
+    "navigations",
+    "Alexey",
+    "hrefs",
+    "Спасибі"
+  ]
 }

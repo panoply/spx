@@ -1,5 +1,5 @@
 import { HistoryState, IPage } from 'types';
-import { pages, observers, config, snapshots } from '../app/session';
+import { pages, observers } from '../app/session';
 import { history, object } from '../shared/native';
 import { hasProp } from '../shared/utils';
 import * as render from '../app/render';
@@ -7,7 +7,7 @@ import * as request from '../app/fetch';
 import * as store from '../app/store';
 import * as scroll from './scroll';
 import { EventType } from '../shared/enums';
-import { getKey, getRoute } from '../app/route';
+import { getKey, getRoute } from '../app/location';
 
 /**
  * History API - Re-export of the `window.history` native constant
@@ -97,21 +97,19 @@ function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
 
   if (!load()) return;
 
-  const { state } = event;
-
   clearInterval(timeout);
 
-  if (store.has(state.key)) {
-    request.reverse(state.rev);
-    return render.update(pages[state.key]);
+  if (store.has(event.state.key)) {
+    request.reverse(event.state.rev);
+    return render.update(pages[event.state.key]);
   }
 
   timeout = setTimeout(async function () {
 
-    state.type = EventType.POPSTATE;
+    event.state.type = EventType.POPSTATE;
 
-    const page = await request.fetch(state);
-    if (!page) return location.assign(state.key);
+    const page = await request.fetch(event.state);
+    if (!page) return location.assign(event.state.key);
 
     const key = getKey(location);
 
@@ -123,7 +121,7 @@ function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
     const data = store.create(getRoute(key, EventType.POPSTATE));
 
     request.fetch(data);
-    history.replaceState(data, document.title, key);
+    history.pushState(data, document.title, key);
 
   }, 300);
 
@@ -135,14 +133,10 @@ function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
  * Event History dispatch controller, handles popstate,
  * push and replace events via third party module
  */
-
 // eslint-disable-next-line no-unused-vars
-function persist ({ timeStamp }: BeforeUnloadEvent) {
-
-  // console.log('PERSIST', timeStamp);
-  window.sessionStorage.setItem(config.session, JSON.stringify({ snapshots, pages }));
-
-};
+// function persist ({ timeStamp }: BeforeUnloadEvent) {
+//  window.sessionStorage.setItem(config.session, JSON.stringify({ snapshots, pages }));
+// };
 
 /**
  * Start History API
@@ -155,7 +149,6 @@ export function connect (): void {
 
   addEventListener('popstate', pop, false);
   addEventListener('load', load, false);
-  // addEventListener('beforeunload', persist, { capture: true });
 
   observers.history = true;
 

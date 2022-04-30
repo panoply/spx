@@ -1,7 +1,7 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
 import { log, hasProp } from '../shared/utils';
-import { getRoute } from './route';
+import { getRoute } from './location';
 import { config, memory } from './session';
 import * as store from './store';
 import { isArray, object } from '../shared/native';
@@ -196,10 +196,7 @@ export async function wait (state: IPage): Promise<IPage> {
 
   const snapshot = await transit[state.key];
 
-  return store.set(
-    state,
-    snapshot
-  );
+  return store.set(state, snapshot);
 
 }
 
@@ -229,7 +226,7 @@ export function fetch (state: IPage): Promise<false|IPage> {
     return Promise.resolve(false);
   }
 
-  // create a trasit queue reference of the
+  // create a transit queue reference of the
   // dispatched request in transit.
   transit[state.key] = request(state.key);
 

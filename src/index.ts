@@ -1,8 +1,8 @@
 import { IConfig, IPage } from 'types';
-import { config, snapshots, pages, observers, memory, selectors } from './app/session';
+import { config, snapshots, pages, observers, memory } from './app/session';
 import { log, size } from './shared/utils';
 import { configure } from './app/config';
-import { getRoute, getKey } from './app/route';
+import { getRoute, getKey } from './app/location';
 import { parse } from './shared/dom';
 import { Errors, EventType } from './shared/enums';
 import { assign, history, object, origin } from './shared/native';
@@ -73,7 +73,6 @@ export function session (key?: string, update?: object) {
   state.config = config;
   state.snapshots = snapshots;
   state.pages = pages;
-  state.selectors = selectors;
   state.observers = observers;
   state.memory = memory;
   state.memory.size = size(state.memory.bytes);
