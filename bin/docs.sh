@@ -14,14 +14,11 @@ rm -rf $public
 echo -e "\033[0;32mChecking out $branch....\033[0m"
 git worktree add $public $branch
 
-echo -e "\033[0;32mChanging Directory...\033[0m"
-cd $dir
-
 echo -e "\033[0;32mGenerating Documentation...\033[0m"
-generate
+cd $dir && generate && cd $root
 
 echo -e "\033[0;32mDeploying $branch branch...\033[0m"
-git add --all && git commit -m "Deploy updates" && git push origin $branch
+cd $public && git add --all && git commit -m "Deploy updates" && git push origin $branch
 
 echo -e "\033[0;32mCleaning up...\033[0m"
 git worktree remove $public
