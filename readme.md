@@ -2,7 +2,7 @@
 
 ### BETA VERSION
 
-SPX (Single Page XHR) is a blazing fast, lightweight (7.4kb gzipped) and feature full new generation pjax solution. SPX supports advanced pre-fetching capabilities, multiple fragment replacements and snapshot caching engine that prevents subsequent requests from occurring resulting in instantaneous navigations.
+SPX (Single Page XHR) is a blazing fast, lightweight (7.8kb gzipped) and feature full new generation pjax solution. SPX supports advanced pre-fetching capabilities, multiple fragment replacements and snapshot caching engine that prevents subsequent requests from occurring resulting in instantaneous navigations.
 
 ### Features
 
@@ -83,10 +83,8 @@ spx.connect({
   targets: ['body'],
   schema: 'spx',
   timeout: 30000,
-  poll: 15,
-  async: true,
+  annotate: false,
   cache: true,
-  session: false,
   limit: 50,
   preload: null,
   hover: {
@@ -133,12 +131,12 @@ By default, attribute identifiers use a `-spx-` identifier. You can use a custom
 
 Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `30000` which means requests will wait `30s` before being a new request is triggered.
 
-#### `poll`
+#### `annotate`
 
-Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `1000` which means requests will wait `1s` before being a new request is triggered.
+When `true` SPX visits will only trigger on `<a data-spx>` href elements annotated containing a `data-spx` attribute, otherwise visits will execute naturally. Defaults to `false`
 
-**Type:** `number` <br>
-**Default:** `1000` <br>
+**Type:** `boolean` <br>
+**Default:** `false` <br>
 
 #### `async`
 
@@ -157,6 +155,8 @@ Enable or Disable caching. Each page visit request is cached and used in subsequ
 **Default:** `true` <br>
 
 #### `persist`
+
+**NOT YET AVAILABLE**
 
 The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
 
@@ -356,7 +356,24 @@ spx.route({
 
   '/path/*': (state?: IState, target?: IRoute) => void | Document,
 
-  '/?param': (state?: IState, target?: IRoute) => void | Document
+  '/?param': (state?: IState, target?: IRoute) => void | Document,
+
+  '/path/:id': {
+
+    connect() {},
+
+    prefetch() {},
+
+    visit() {},
+
+    cache() {},
+
+    render(){},
+
+    load() {},
+
+    exit() {}
+  }
 
 });
 ```

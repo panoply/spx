@@ -1,6 +1,6 @@
 
 import { toArray } from './native';
-import { getKey, validKey } from '../app/route';
+import { getKey, validKey } from '../app/location';
 import { has } from '../app/store';
 
 /**

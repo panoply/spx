@@ -1,8 +1,8 @@
 import { forEach, log } from '../shared/utils';
 import { getNodeTargets } from '../shared/links';
-import { config, observers, selectors } from '../app/session';
+import { config, observers } from '../app/session';
 import { emit } from '../app/events';
-import { getRoute } from '../app/route';
+import { getRoute } from '../app/location';
 import * as request from '../app/fetch';
 import * as store from '../app/store';
 import { Errors, EventType } from '../shared/enums';
@@ -43,7 +43,10 @@ export function connect (): void {
   if (!config.intersect || observers.intersect) return;
   if (!entries) entries = new IntersectionObserver(forEach(onIntersect), config.intersect);
 
-  forEach(n => entries.observe(n), getNodeTargets(selectors.intersect, selectors.interHref));
+  const observe = forEach<Element>(target => entries.observe(target));
+  const targets = getNodeTargets(config.selectors.intersector, config.selectors.intersects);
+
+  observe(targets);
 
   observers.intersect = true;
 
@@ -58,7 +61,6 @@ export function disconnect (): void {
   if (!observers.intersect) return;
 
   entries.disconnect();
-
   observers.intersect = false;
 
 };

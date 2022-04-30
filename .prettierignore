@@ -1,3 +1,4 @@
 *.js
 *.ts
 *.mjs
+*.cjs

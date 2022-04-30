@@ -2,10 +2,10 @@ import { IHover } from 'types';
 import { supportsPointerEvents } from 'detect-it';
 import { forEach, hasProp } from '../shared/utils';
 import { emit } from '../app/events';
-import { config, observers, selectors } from '../app/session';
+import { config, observers } from '../app/session';
 import * as store from '../app/store';
 import * as request from '../app/fetch';
-import { getKey, getRoute } from '../app/route';
+import { getKey, getRoute } from '../app/location';
 import { getLink, getTargets } from '../shared/links';
 import { EventType } from '../shared/enums';
 
@@ -16,7 +16,7 @@ import { EventType } from '../shared/enums';
  */
 function onMouseLeave (event: MouseEvent) {
 
-  const target = getLink(event.target, selectors.hover);
+  const target = getLink(event.target, config.selectors.hover);
 
   if (target) {
     request.cleanup(getKey(target.href));
@@ -34,7 +34,8 @@ function onMouseLeave (event: MouseEvent) {
  */
 function onMouseEnter (event: MouseEvent): void {
 
-  const target = getLink(event.target, selectors.hover);
+  const target = getLink(event.target, config.selectors.hover);
+
   if (!target) return;
 
   const route = getRoute(target, EventType.HOVER);
@@ -111,7 +112,7 @@ export function connect (): void {
 
   if (!config.hover || observers.hover) return;
 
-  forEach(handleHover, getTargets(selectors.hover));
+  forEach(handleHover, getTargets(config.selectors.hover));
 
   observers.hover = true;
 
@@ -126,7 +127,7 @@ export function disconnect (): boolean {
 
   if (!observers.hover) return;
 
-  forEach(removeListener, getTargets(selectors.hover));
+  forEach(removeListener, getTargets(config.selectors.hover));
 
   observers.hover = false;
 
