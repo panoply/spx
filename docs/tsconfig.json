@@ -1,0 +1,24 @@
+{
+  "exclude": ["node_modules/**", "public"],
+  "include": ["site/scripts/**/*.ts", "types/*.ts"],
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "module": "ES6",
+    "allowSyntheticDefaultImports": true,
+    "keyofStringsOnly": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "noStrictGenericChecks": true,
+    "suppressExcessPropertyErrors": true,
+    "noEmitOnError": true,
+    "noUnusedLocals": true,
+    "pretty": true,
+    "typeRoots": ["./types"],
+    "baseUrl": ".",
+    "paths": {
+      "types": ["types"]
+    }
+  }
+}
