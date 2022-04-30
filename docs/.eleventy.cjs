@@ -1,7 +1,13 @@
-module.exports = function (eleventyConfig) {
+const highlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+
+/**
+ * @param {import('./types/11ty').EleventyConfig} config
+ */
+module.exports = function (config) {
 
 
-  eleventyConfig.setBrowserSyncConfig({ notify: true });
+  config.addPlugin(highlight)
+  config.setBrowserSyncConfig({ notify: true });
 
   return {
     htmlTemplateEngine: 'liquid',
@@ -12,13 +18,13 @@ module.exports = function (eleventyConfig) {
       'md',
       'css',
       'html',
-      'yml'
+      'yaml'
     ],
     dir: {
       input: "site",
-      output: "docs",
-      includes: "views",
-      //  collections: "views",
+      output: "public",
+      includes: "includes",
+      //collections: "pages",
       layouts: "",
       data: "data"
     }
