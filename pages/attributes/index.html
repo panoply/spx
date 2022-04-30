@@ -1,0 +1,446 @@
+<h1>Attributes</h1>
+<p>Elements can be annotated with <code>data-spx-*</code> attributes which you can leverage to customize how visits are rendered between navigations. By default, attributes are using a <code>-spx-</code> schema but you can optionally provide a custom schema upon <code>connect</code> via the <code>schema</code> option.</p>
+<ul>
+<li><a href="#data-spx-eval">data-spx-eval</a></li>
+<li><a href="#data-spx-disable">data-spx-disable</a></li>
+<li><a href="#data-spx-hydrate">data-spx-hydrate</a></li>
+<li><a href="#data-spx-replace">data-spx-replace</a></li>
+<li><a href="#data-spx-prepend">data-spx-prepend</a></li>
+<li><a href="#data-spx-append">data-spx-append</a></li>
+<li><a href="#data-spx-hover">data-spx-hover</a></li>
+<li><a href="#data-spx-threshold">data-spx-threshold</a></li>
+<li><a href="#data-spx-proximity">data-spx-proximity</a></li>
+<li><a href="#data-spx-position">data-spx-position</a></li>
+<li><a href="#data-spx-cache">data-spx-cache</a></li>
+<li><a href="#data-spx-history">data-spx-history</a></li>
+</ul>
+<h2>data-spx-eval</h2>
+<p>Used on resources contained within the <code>&lt;head&gt;</code> fragment like styles, scripts or meta tags. Use this attribute if you want SPX to evaluate scripts and/or stylesheets. This option accepts a <code>false</code> value so you can define which scripts to execute per navigation. By default, SPX will run and evaluate all <code>&lt;script&gt;</code> tags it detects for every page visit but will not re-evaluate <code>&lt;script src=&quot;*&quot;&gt;&lt;/script&gt;</code> tags.</p>
+<blockquote>
+<p>When a <code>&lt;script&gt;</code> tag is detected on a SPX navigation and annotated with <code>data-spx-eval=&quot;false&quot;</code> then execution will be triggered only once but never again after that.</p>
+</blockquote>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-eval</code> attribute can be annotated on any of the below HTML tags:</p>
+<ul>
+<li><code>&lt;meta&gt;</code></li>
+<li><code>&lt;link&gt;</code></li>
+<li><code>&lt;style&gt;</code></li>
+<li><code>&lt;script&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>boolean</code> type. Passing the <code>true</code> value is optional as <code>data-spx-eval</code> infers truthy.</p>
+<ul>
+<li><code>true</code></li>
+<li><code>false</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">></span></span><span class="token script"><span class="token language-javascript"><br>  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'I will run on every navigation'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- script will only run once when between SPX visits --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">data-spx-eval</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>false<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"><span class="token language-javascript"><br>  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'I will run on initialization only!'</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span></code></pre>
+</details>
+<h2>data-spx-disable</h2>
+<p>Use on <code>&lt;a&gt;</code> elements to disable SPX navigation. When a link element is annotated with <code>data-spx-disable</code> a normal page navigation will be executed and cache will be cleared. You can optionally restore the cache using the <code>data-spx-cache=&quot;restore&quot;</code> attribute when navigating back to a SPX enabled url.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-disable</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>truthy</code> type. Passing the <code>true</code> value is optional as <code>data-spx-disable</code> infers truthy.</p>
+<ul>
+<li><code>true</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Examples</strong>
+</summary>
+<p>Clicking this link will clear cache and a normal page navigation will be executed.</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-disable</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+<p>Clicking this link will execute a normal page navigation but will inform SPX to save the current cache and restore it upon the next SPX enabled visit. See <a href="#data-spx-cache">data-spx-cache</a> for more information.</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-cache</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>restore<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-disable</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+</details>
+<h2>data-spx-track</h2>
+<p>Place on elements to track on a per-page basis that might otherwise not be contained within target elements. This methods will append nodes to the document <code>&lt;body&gt;</code> and placement is not certain. This is helpful when you need to reference an <code>svg</code> sprite of template or some sort.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-track</code> attribute can be annotated on any HTML contained within <code>&lt;body&gt;</code> but cannot be applied to <code>&lt;a&gt;</code> href links.</p>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>truthy</code> type. Passing the <code>true</code> value is optional as <code>data-spx-track</code> infers truthy.</p>
+<ul>
+<li><code>true</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<p>Lets assume you are navigating from <code>Page 1</code> to <code>Page 2</code> and <code>#main</code> is your defined target. When you navigate from <code>Page 1</code> only the <code>#main</code> target will be replaced and any other dom elements will be skipped that are not contained within the <code>#main</code> HTML tag. When annotating <code>data-spx-track</code> to elements located outside of target/s which will be added and persisted on all future navigations.</p>
+<p><strong>Page 1</strong></p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nav</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/page-1<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>active<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Page 1<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/page-2<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Page 2<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nav</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#main<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>block<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>I will be replaced, I am active on every page.<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></code></pre>
+<p><strong>Page 2</strong></p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nav</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/page-1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Page 1<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/page-2<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>active<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Page 2<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nav</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>#main<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>block<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>I will be replaced, I am active on every page.<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This element will be appended to the dom --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">data-spx-track</span><span class="token punctuation">></span></span><br>  I am outside of target and will be tracked if SPX was initialized on Page 1<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This element will not be appended to the dom --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span>I will not be tracked unless SPX was initialized on Page 2<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span></code></pre>
+<blockquote>
+<p>If navigation started on <code>Page 2</code> then SPX will have knowledge of the tracked elements existence before navigating away. In such a situation the tracked element is marked internally and the handling will be identical.</p>
+</blockquote>
+</details>
+<h2>data-spx-hydrate</h2>
+<p>Executes a controlled replacement of the defined elements. You should perform hydration when server side logic is required to adjust or apply changes to a visitors session as it will allow your application to seamlessly adapt and progressively align the UI without having to trigger a full-page reload. Hydration incurs side effects and the SPX session will be augmented, see below:</p>
+<ol>
+<li>Only current and previous page cache is aligned (updated), all other existing records are purged.</li>
+<li>You cannot restore purged cache. Any <code>data-spx-cache=&quot;restore&quot;</code> methods will be ignored.</li>
+<li>Hydration is skipped when target location pathname does not match trigger location pathname.</li>
+<li>History stack will not be touched, the visit is executed in the background.</li>
+</ol>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-hydrate</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+<li><code>&lt;button&gt;</code></li>
+<li><code>&lt;form&gt;</code></li>
+<li><code>&lt;input&gt;</code></li>
+</ul>
+<blockquote>
+<p>Triggering via an annotated <code>&lt;button&gt;</code> element will execute hydration on current url.</p>
+</blockquote>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>string[]</code> type and expects a list of valid element selectors to be provided.</p>
+<ul>
+<li><code>(['.foo'])</code></li>
+<li><code>(['.foo' , '#bar', '[data-baz]', '[data-qux=foo]'])</code></li>
+</ul>
+<blockquote>
+<p>The surrounding parenthesis <code>()</code> characters are optional and can be omitted.</p>
+</blockquote>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<p>Lets assume we informed SPX to trigger replacements on the <code>#menu</code>, <code>#main</code> and <code>#note</code> between navigations upon connection, for example:</p>
+<pre class="language-js"><code class="language-js"><span class="token constant">SPX</span><span class="token punctuation">.</span><span class="token function">connect</span><span class="token punctuation">(</span><span class="token punctuation">{</span> <span class="token literal-property property">targets</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">'#menu'</span><span class="token punctuation">,</span> <span class="token string">'#main'</span><span class="token punctuation">,</span> <span class="token string">'#note'</span><span class="token punctuation">]</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>When performing a navigation visit the target elements <code>#menu</code>, <code>#main</code> and <code>#note</code> would be replaced (as expected) but when a trigger tag element is using a <code>data-spx-hydrate</code> attribute then SPX will only preform replacements on the elements defined within the <code>data-spx-hydrate</code> annotation, for example:</p>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><br><span class="token comment">&lt;!-- This node will not be replaced during hydration visit only on navigation visit --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nav</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>menu<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br><br>  <span class="token comment">&lt;!-- Pressing this link will trigger a navigation visit  --></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br>   <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/home<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Replaces the #menu, #main and #note elements<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br>  <span class="token comment">&lt;!-- Pressing this link triggers hydration and replaces all .price nodes --></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br>   <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/products?currency=SEK<span class="token punctuation">"</span></span><br>   <span class="token attr-name">data-spx-hydrate</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>([<span class="token punctuation">'</span>.price<span class="token punctuation">'</span>])<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>Perform server side action<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nav</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This node will not be replaced during hydration visit only on navigation visit --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>section</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>note<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  The next navigation will replace all elements using class "price"<br>  and "cart-count" - If you have defined the element "#main" as a "target"<br>  in your connection, a replacement will not be made on that element,<br>  instead only the elements defined in "data-spx-hydrate" are replaced.<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>section</span><span class="token punctuation">></span></span><br><br><br><span class="token comment">&lt;!-- This node will be replaced on hydration --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>cart-count<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>1<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This node will be replaced on hydration --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>price<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>€ 450<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>main<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>img</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ul</span><span class="token punctuation">></span></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>Great Product<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span><br>    <span class="token comment">&lt;!-- This node will be replaced on hydration --></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>price<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>€ 100<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>Awesome Product<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span><br>    <span class="token comment">&lt;!-- This node will be replaced on hydration --></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>price<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>€ 200<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>Cool Product<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span><br>    <span class="token comment">&lt;!-- This node will be replaced on hydration --></span><br>    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>price<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>€ 300<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>ul</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- Pressing this triggers hydration and replaces the .cart-count node --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">data-spx-hydrate</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>([<span class="token punctuation">'</span>.cart-count<span class="token punctuation">'</span>])<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  Add to cart<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span><br></code></pre>
+</details>
+<h2>data-spx-replace</h2>
+<p>Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in <code>SPX.connect()</code> will be merged with those defined on this attribute.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-replace</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>string[]</code> type and expects a list of valid element selectors to be provided.</p>
+<ul>
+<li><code>(['.foo'])</code></li>
+<li><code>(['.foo' , '.bar', '#baz'])</code></li>
+</ul>
+<blockquote>
+<p>The surrounding parenthesis <code>()</code> characters are optional and can be omitted.</p>
+</blockquote>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-replace</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>([<span class="token punctuation">'</span>#target1<span class="token punctuation">'</span>, <span class="token punctuation">'</span>#target2<span class="token punctuation">'</span>])<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br> Link<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>target1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  I will be replaced on next navigation<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>target2<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  I will be replaced on next navigation<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br></code></pre>
+</details>
+<h2>data-spx-prepend</h2>
+<p>Executes a prepend replacement on visit, where the array list values are used as targets. Index <code>[0]</code> will prepend itself to the index <code>[1]</code> value. Multiple prepend actions can be defined. Each prepend action is recorded are marked after execution.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-prepend</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>string[][]</code> type and expects a list of valid element selectors to be provided.</p>
+<ul>
+<li><code>(['.foo', '.bar'])</code></li>
+<li><code>(['.foo' , '.bar'], ['#baz', '#qux'])</code></li>
+</ul>
+<blockquote>
+<p>The surrounding parenthesis <code>()</code> characters are optional and can be omitted.</p>
+</blockquote>
+</details>
+<h2>data-spx-append</h2>
+<p>Executes a append replacement on visit, where the array list values are used as targets. Index <code>[0]</code> will append itself to the index <code>[1]</code> value. Multiple append actions can be defined. Each append action is recorded are marked after execution.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-append</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>string[][]</code> type and expects a list of valid element selectors to be provided.</p>
+<ul>
+<li><code>(['.foo', '.bar'])</code></li>
+<li><code>(['.foo' , '.bar'], ['#baz', '#qux'])</code></li>
+</ul>
+<blockquote>
+<p>The surrounding parenthesis <code>()</code> characters are optional and can be omitted.</p>
+</blockquote>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<p><strong>PAGE 1</strong></p>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-prepend</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>([<span class="token punctuation">'</span>#target-1<span class="token punctuation">'</span>, <span class="token punctuation">'</span>#target-2<span class="token punctuation">'</span>])<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br> Page 2<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>target-1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  I will prepend to target-2 on next navigation<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>target-2<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>target-1 will prepended to me on next navigation<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br></code></pre>
+<p><strong>PAGE 2</strong></p>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-prepend</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>([<span class="token punctuation">'</span>#target-1<span class="token punctuation">'</span>, <span class="token punctuation">'</span>#target-2<span class="token punctuation">'</span>])<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br> Page 2<br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>target-2<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br><br>  <span class="token comment">&lt;!-- An action reference record is applied --></span><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">data-spx-action</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>xxxxxxx<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><br>    I am target-1 and have been prepended to target-2<br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br><br>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>target-1 is now prepended to me<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br></code></pre>
+</details>
+<h2>data-spx-hover</h2>
+<p>Performs a prefetch of the <code>href</code> url upon mouse enter (hover). By default, hover pre-fetching is enabled but expects attribute annotation on links. You can have SPX execute pre-fetching on all <code>&lt;a&gt;</code> links by setting the <code>trigger</code> option to <code>href</code> in <code>SPX.connect()</code>. If you have set <code>trigger</code> to <code>href</code>then you do not need to define the attribute on links, unless you wish to skip executing the pre-fetch for occurring, in such a case your annotate the href element with a <code>false</code> hover attribute, eg: <code>&lt;a data-spx-hover=&quot;false&quot;&gt;</code>.</p>
+<p>If you set hover pre-fetching to <code>false</code> in your <code>SPX.connect()</code> settings then annotations will be ignored and hover pre-fetching will be disabled.</p>
+<blockquote>
+<p>On mobile devices the the prefetch will execute on the <code>touchstart</code> event</p>
+</blockquote>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-hover</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>boolean</code> type. Passing the <code>true</code> value is optional as <code>data-spx-hover</code> infers truthy.</p>
+<ul>
+<li><code>true</code></li>
+<li><code>false</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<pre class="language-html"><code class="language-html"><span class="token comment">&lt;!-- This link will be prefetch when it is hovered --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-hover</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This link will be excluded from prefetch when hovered --></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-hover</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>false<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+</details>
+<h2>data-spx-threshold</h2>
+<p>By default, this will be set to whatever preset configuration was defined in <code>SPX.connect()</code> but you can override those settings by annotating the link with this attribute. The <code>data-spx-threshold</code> attribute can only be used on attributes that accept threshold control. The per-page state session will write this to the <code>threshold</code> property.</p>
+<details>
+<summary>
+<strong>Attributes</strong>
+</summary>
+<p>The <code>data-spx-threshold</code> attribute can be used together with one the following attributes:</p>
+<ul>
+<li><code>data-spx-hover</code></li>
+<li><code>data-spx-proximity</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute either a <code>number</code> type. You can optionally pass a key reference to target specific attributes when an element is using multiple attribute annotations. Threshold accepts number with decimals, negative numbers will be ignored.</p>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><span class="token comment">&lt;!-- hover prefetch will begin after 500ms on hover --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-threshold</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>500<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-hover</span><span class="token punctuation">></span></span>Link<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- prefetch will begin after 1s on proximity --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-threshold</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>1000<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-proximity</span><span class="token punctuation">></span></span>Link<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br></code></pre>
+</details>
+<h2>data-spx-proximity</h2>
+<p>Triggers a proximity fetch when the cursor is within range of an <code>&lt;a&gt;</code> element. Optionally accepts a <code>number</code> value which overrides the <code>distance</code> preset configuration.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-proximity</code> attribute can be annotated on any HTML contained within <code>&lt;body&gt;</code>.</p>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>number</code> type or a boolean <code>false</code></p>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><span class="token comment">&lt;!-- This activates proximity based pre-fetch and uses the connection present defaults --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-proximity</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This url will begin fetching when the mouse is within 100px of the element --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-proximity</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>100<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- All &lt;a href="*"> elements will be triggered via proximity --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">data-spx-proximity</span><span class="token punctuation">></span></span><br><br> <span class="token comment">&lt;!-- These urls will pre-fetch and uses the connection present defaults --></span><br> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><br></code></pre>
+</details>
+<h2>data-spx-position</h2>
+<p>Sets the scroll position of the next navigation. This is a space separated expression with colon separated prop and value.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-threshold</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>number</code> type. The value requires a key definition to be defined to inform upon position.</p>
+<ul>
+<li><code>y:0</code></li>
+<li><code>x:0</code></li>
+<li><code>y:0 x:0</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><span class="token comment">&lt;!-- This next navigation will load at 1000px from top of page  --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-position</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>y:1000 x:0<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- This next navigation will load at 250px from top of page  --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-position</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>y:250<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br></code></pre>
+</details>
+<h2>data-spx-cache</h2>
+<p>Controls the caching engine of each SPX navigation. When using <code>data-spx-cache</code> together with prefetch attributes like <code>data-spx-hover</code> the action is respected.</p>
+<h3>false</h3>
+<p>Passing a <code>false</code> value will execute a SPX visit that will not be saved to cache and if the link exists in cache it will be removed.</p>
+<h3>reset</h3>
+<p>Passing a <code>reset</code> value will remove the cache reference existing at the location of the trigger. A new SPX visit will be executed and the response will saved to cache, replacing the previous record.</p>
+<h3>clear</h3>
+<p>Passing a <code>clear</code> value will purge the entire cache store and all records will be removed.</p>
+<h3>restore</h3>
+<p>Passing a <code>restore</code> value will save the current cache to session storage which allows the store to be maintained during page a refresh. The cache will exist in session storage and be restored to memory when another SPX visit is triggered. The restore method can be used together with <code>data-spx-disable</code> or when navigating to an external webpage. If the tab or browser is closed then session storage is purged.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-cache</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+<li><code>&lt;button&gt;</code></li>
+</ul>
+<blockquote>
+<p>When annotating <code>&lt;button&gt;</code> elements the action is triggered on current location.</p>
+</blockquote>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>string</code> type and expects on the following values.</p>
+<ul>
+<li><code>false</code></li>
+<li><code>reset</code></li>
+<li><code>clear</code></li>
+<li><code>restore</code> <em>option is not yet available</em></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<!-- prettier-ignore -->
+<pre class="language-html"><code class="language-html"><br><span class="token comment">&lt;!-- Disables cache and remove any records that might exists at '/a' --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/a<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-cache</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>false<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- Resets the cache of '/b' --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/b<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-cache</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>reset<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- Purges all cache references --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/c<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-cache</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>clear<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- Saves cache to session storage and restores it on the next SPX visit --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span><br> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>/d<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-cache</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>restore<span class="token punctuation">"</span></span><br> <span class="token attr-name">data-spx-disable</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+</details>
+<h2>data-spx-history</h2>
+<p>Controls the history pushstate for the navigation. Accepts <code>false</code>, <code>replace</code> or <code>push</code> value. Passing in <code>false</code> will prevent the navigation from being added to history. Passing in <code>replace</code> or <code>push</code> will execute its respective value to pushstate to history.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-history</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute is a <code>string</code> type and expects on the following values.</p>
+<ul>
+<li><code>false</code></li>
+<li><code>replace</code></li>
+<li><code>push</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<pre class="language-html"><code class="language-html"><span class="token comment">&lt;!-- the navigation not be pushed to history --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-history</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>false<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+</details>
+<h2>data-spx-progress</h2>
+<p>Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of <code>false</code> will disable the progress from showing.</p>
+<details>
+<summary>
+<strong>Tags</strong>
+</summary>
+<p>The <code>data-spx-progress</code> attribute can be used on the following tags:</p>
+<ul>
+<li><code>&lt;a&gt;</code></li>
+<li><code>&lt;button&gt;</code></li>
+<li><code>&lt;form&gt;</code></li>
+<li><code>&lt;input&gt;</code></li>
+</ul>
+</details>
+<details>
+<summary>
+<strong>Values</strong>
+</summary>
+<p>This attribute can be <code>number</code> or boolean <code>false</code> type. You must provide a number greater than or equal to 100, negative numbers will be ignored.</p>
+</details>
+<details>
+<summary>
+<strong>Example</strong>
+</summary>
+<pre class="language-html"><code class="language-html"><span class="token comment">&lt;!-- Progress bar will be displayed if the request exceeds 500ms --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-progress</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>500<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><br><br><span class="token comment">&lt;!-- Progress bar will not be displayed --></span><br><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>*<span class="token punctuation">"</span></span> <span class="token attr-name">data-spx-progress</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>false<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span></code></pre>
+</details>
