@@ -76,8 +76,7 @@
     "dev": "esbuild src/index.ts --outfile=spx.js --format=esm --bundle --watch",
     "build": "pnpm run prod && gzip-size spx.js --include-original",
     "prod": "esbuild src/index.ts --minify --tree-shaking=true --format=esm --bundle --outfile=spx.js",
-    "dts": "tsc ./src/types/index.d.ts --emitDeclarationOnly --outFile=index.d.ts",
-    "deploy": "pnpm run build && netlify deploy -p",
+    "deploy": "pnpm exec bin/docs.sh",
     "test": "ava --color --verbose --watch --timeout=2m"
   }
 }
