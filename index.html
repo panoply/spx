@@ -5,8 +5,62 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="stylesheet.css" as="style">
-    <script src="bundle.min.js"></script>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./bundle.min.js"></script>
   </head>
-  <body></body>
+  <body>
+    <div class="container-fluid g-0">
+      <main class="row g-0">
+        <div class="col-2 d-none">
+          <aside class="vh-100 sidebar"></aside>
+
+        </div>
+        <div class="col-12 vh-100">
+          <!-- -->
+<main class="hero d-grid ac-center vh-100">
+
+  <div class="hero-github">
+    <a href="https://github.com/panoply/spx">
+      <svg class=" icon" aria-describedby="symbol-github-desc" aria-labelledby="symbol-github-desc" role="group">
+                <desc id="symbol-github-desc-content">github icon</desc>
+                <use xlink:href="#svg-github"></use>
+            </svg>
+    </a>
+  </div>
+
+
+  <div class="d-flex flex-column as-center jc-center">
+    <a href="#" class="hero-logo d-block">
+      <svg class=" icon" aria-describedby="symbol-logo-desc" aria-labelledby="symbol-logo-desc" role="group">
+                <desc id="symbol-logo-desc-content">logo icon</desc>
+                <use xlink:href="#svg-logo"></use>
+            </svg>
+    </a>
+  </div>
+
+  <div class="d-flex flex-column m-auto fc-white  text-center">
+    <h4 class="d-block italic">
+      <strong>Single Page XHR</strong>
+      enhancement for
+      <strong>SSR</strong>
+      powered web applications.<br>
+      SPX is a lightening fast, lightweight
+      <small>(8kb gzip)</small>
+      push state solution.
+    </h4>
+  </div>
+
+
+  <div class="d-flex flex-column m-auto cli mt-2">
+    <pre class="language-js"><code>pnpm add spx</code></pre>
+  </div>
+
+
+</main>
+
+        </div>
+      </main>
+    </div>
+    <div style="width: 0; height: 0;"><svg width="0" height="0" style="position:absolute"><symbol fill="none" stroke="#76d9e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" id="svg-copy" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></symbol><symbol viewBox="0 0 120.78 117.79" id="svg-github" xmlns="http://www.w3.org/2000/svg"><g data-name="Layer 2"><g data-name="Layer 1"><path class="bcls-1" d="M60.39 0A60.39 60.39 0 0041.3 117.69c3 .56 4.13-1.31 4.13-2.91 0-1.44-.06-6.2-.08-11.24C28.54 107.19 25 96.42 25 96.42c-2.75-7-6.7-8.84-6.7-8.84-5.48-3.75.41-3.67.41-3.67 6.06.43 9.26 6.22 9.26 6.22 5.39 9.23 14.13 6.56 17.57 5 .54-3.9 2.11-6.57 3.83-8.08-13.37-1.5-27.52-6.68-27.52-29.82A23.37 23.37 0 0128.08 41c-.63-1.52-2.69-7.66.58-16 0 0 5.07-1.62 16.61 6.19a57.26 57.26 0 0130.24 0C87 23.42 92.11 25 92.11 25c3.29 8.32 1.22 14.46.59 16a23.32 23.32 0 016.21 16.21c0 23.19-14.13 28.3-27.57 29.8 2.17 1.87 4.1 5.55 4.1 11.18 0 8.08-.07 14.58-.07 16.57 0 1.61 1.09 3.49 4.15 2.9A60.4 60.4 0 0060.39 0z"/><path class="bcls-2" d="M22.87 86.7c-.13.3-.61.39-1 .18s-.68-.61-.54-.91.6-.39 1-.19.69.61.54.91zm-.74-.55M25.32 89.43c-.29.27-.85.14-1.23-.28a.92.92 0 01-.18-1.25c.3-.27.84-.14 1.24.28s.47 1 .17 1.25zm-.58-.62M27.7 92.91c-.37.26-1 0-1.35-.52s-.37-1.18 0-1.44 1 0 1.35.51.37 1.19 0 1.45zm0 0M31 96.27c-.33.37-1 .27-1.55-.23a1.16 1.16 0 01-.34-1.54c.34-.37 1-.26 1.56.23s.68 1.18.33 1.54zm0 0M35.46 98.22c-.15.47-.83.69-1.51.49s-1.13-.76-1-1.24.82-.7 1.51-.49 1.13.76 1 1.24zm0 0M40.4 98.58c0 .5-.56.91-1.28.92s-1.31-.39-1.31-.88.57-.91 1.29-.92 1.31.39 1.31.88zm0 0M45 97.8c.09.49-.41 1-1.13 1.12s-1.35-.17-1.44-.65.42-1 1.12-1.13 1.35.17 1.44.66zm0 0"/></g></g></symbol><symbol viewBox="0 0 400 128" id="svg-logo" xmlns="http://www.w3.org/2000/svg"><path d="M48.508.645C36.45 1.751 23.972 11.015 19.215 22.427c-1.21 2.9-1.794 5.112-2.733 10.37l-.834 4.986c0 .23 11.12.27 58.21.27h58.21l.104-.479c.063-.25 1.523-8.387 3.234-18.089l3.255-18.318.125-.668-44.711.042-45.567.104zm101.711 0c0 .104-1.46 8.43-3.234 18.527l-3.234 18.61c0 .21 11.788.272 58.21.272h58.21l.104-.48c.209-.876 1.336-7.553 1.544-9.18.543-3.88.146-8.408-1.043-11.934-1.231-3.672-3.088-6.551-6.071-9.389-3.318-3.192-6.76-4.986-11.642-6.092-1.44-.334-5.216-.355-47.194-.417-25.12-.042-45.65 0-45.65.083zm123.347.042c.041.125 4.005 8.575 8.825 18.777l8.763 18.59h77.696l14.542-17.588 15.586-18.778L400 .5h-43.793l-12.143 14.709-12.393 14.709c-.146 0-3.442-6.614-7.344-14.709L317.275.499h-21.907l-21.802.188zm23.743 50.135l3.4 7.261 2.671 6.197c-.084.146-11.788 14.416-25.996 31.692L251.45 127.6c-.042.084 9.681.167 21.594.167h21.677l12.185-14.709 12.476-14.667c.146.042 1.315 2.211 2.567 4.861l7.01 14.646 4.715 9.869h21.865l21.886-.146c0-.083-6.718-14.354-14.917-31.713L347.59 64.092c0-.146 2.587-3.443 5.738-7.323l5.737-7.157c0-.041-14.02-.083-31.17-.083h-31.191l.605 1.294zm-284.04.501c-.688 8.283 1.503 15.022 6.614 20.259 3.756 3.86 8.7 6.259 14.334 6.948 1.126.125 10.932.208 27.394.208l25.725.271c.041.146-.355 2.713-.897 5.696l-1.023 5.404-39.516.104-39.516.104-3.171 18.569L0 127.622c0 .083 20.488.125 45.546.083l45.524-.062 2.087-.459c4.485-1.023 8.324-2.65 11.996-5.049 8.221-5.404 13.729-12.79 15.94-21.386.167-.688 1.169-6.092 2.212-11.996 1.669-9.389 1.94-11.142 2.024-13.896.167-4.819-.543-8.429-2.421-12.142-3.296-6.51-8.929-10.787-16.503-12.498-1.439-.333-5.216-.354-47.277-.417l-45.713-.063-.146 1.586zm121.636 36.95l-6.739 39.015-.104.48h37.346l.104-.48c.063-.25 2.003-11.162 4.319-24.244l4.444-24.055c.146-.188 5.55-.25 25.683-.25l27.353-.21c7.406-.834 14.5-4.318 20.425-10.014 4.924-4.736 7.97-9.743 9.806-16.149.292-1.001.543-2.023.543-2.232 0-.396-1.294-.396-58.273-.396h-58.251l-6.656 38.535z"/></symbol><symbol fill="#fff" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" id="svg-menu" xmlns="http://www.w3.org/2000/svg"><path d="M3 12h18M3 6h18M3 18h18"/></symbol></svg></div>
+  </body>
 </html>
