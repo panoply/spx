@@ -113,7 +113,7 @@ export function create (page: IPage): IPage {
  */
 export function set (state: IPage, snapshot: string): IPage {
 
-  console.log(state);
+  // console.log(state);
 
   const event = emit('store', state, snapshot);
   const dom = typeof event === 'string' ? event : snapshot;

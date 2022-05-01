@@ -1,20 +1,19 @@
 # DIRECTORIES
-# --------------------
 .vscode/
+.github/
 node_modules/
 src/
-demo/
-tests/
-versions/
+docs/
+test/
 
 # FILES
-# -------------------
-.babelrc
-.browserslistrc
-.eslintignore
+tsconfig.json
+
+# DOT FILES
 .gitignore
 .prettierignore
-rollup.config.js
-tsconfig.json
+.npmignore
+
+# MARKDOWN
 changelog.md
 readme.md

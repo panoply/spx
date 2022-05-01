@@ -7,7 +7,7 @@ import * as history from '../observers/history';
 import * as proximity from '../observers/proximity';
 import * as store from './store';
 import { EventType, Errors } from '../shared/enums';
-import { getRoute } from './route';
+import { getRoute } from './location';
 import { emit } from './events';
 import { log } from '../shared/utils';
 

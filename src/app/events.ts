@@ -14,6 +14,14 @@ import { parse } from '../shared/dom';
 const events: { [name: string]: Array<() => void | boolean> } = object(null);
 
 /**
+ * Events Model
+ *
+ * Holds an object reference for every event
+ * emitted. Used by the event emitter operations
+ */
+const routes: { [name: string]: Array<() => void | boolean> } = object(null);
+
+/**
  * Emit Event
  *
  * Private function use for emitting events
@@ -43,6 +51,12 @@ export function emit <T extends EventNames> (name: T, ...args: EmitterArguments<
   }, events[name] || []);
 
   return returns;
+
+}
+
+export function route (path: string) {
+
+  emit(name);
 
 }
 

@@ -1,13 +1,6 @@
-# DIRECTORIES -----------------------
-dist
-!src/public
+# DIRECTORIES
 node_modules
-versions
-demo
+docs/public
 
-# FILES -----------------------------
-.env
-.fauna
-
-# Local Netlify folder
-.netlify
+# FILES
+.pnpm-debug.log

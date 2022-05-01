@@ -4,8 +4,8 @@ import { hasProp, log } from '../shared/utils';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
 import { IPage } from '../types/page';
-import { observers, pages, selectors } from '../app/session';
-import { getAttributes, getKey, getRoute } from '../app/route';
+import { config, observers, pages } from '../app/session';
+import { getAttributes, getKey, getRoute } from '../app/location';
 import * as hover from '../observers/hover';
 import * as proximity from '../observers/proximity';
 import * as intersect from '../observers/intersect';
@@ -71,7 +71,7 @@ function handleTrigger (event: MouseEvent): void {
 
   if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, selectors.href);
+  const target = getLink(event.target, config.selectors.hrefs);
 
   // Skip id target is not a valid href element
   if (!target) return;

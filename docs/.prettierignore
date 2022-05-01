@@ -1,0 +1,5 @@
+*.mjs
+*.js
+*.ts
+*.cjs
+*.html

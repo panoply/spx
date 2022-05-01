@@ -1,4 +1,4 @@
-import { IConfig, IPage, IObservers, ISelectors, IMemory } from 'types';
+import { IConfig, IPage, IObservers, IMemory } from 'types';
 import { object } from '../shared/native';
 import { defaults } from './defaults';
 
@@ -34,14 +34,6 @@ export const observers: IObservers = object(null);
  * record throughout the pjax session.
  */
 export const memory: IMemory = object(null);
-
-/**
- * Selectors
- *
- * The object holds a query selector list of string
- * values and expressions that apply the schema reference.
- */
-export const selectors: ISelectors = object(null);
 
 /**
  * Pages

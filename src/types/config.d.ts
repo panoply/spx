@@ -22,14 +22,70 @@ export interface ISelectors {
 }
 
 /**
+ * Hovers
+ *
+ * Configuration specific hover observer
+ * model which applied the selector.
+ */
+export interface IHoverConfig extends IHover {
+  /**
+   * Href selctor for hovers that applies
+   * the correct schema.
+   */
+  selector: string
+}
+
+/**
+ * Intersection
+ *
+ * Configuration specific intersect observer
+ * model which applied the selector.
+ */
+export interface IIntersectConfig extends IIntersect {
+  /**
+   * Href selctor for hovers that applies
+   * the correct schema.
+   */
+  selector: string
+}
+
+/**
+ * Intersection
+ *
+ * Configuration specific intersect observer
+ * model which applied the selector.
+ */
+export interface IProximitConfig extends IProximity {
+  /**
+   * Href selctor for promity that applies
+   * the correct schema.
+   */
+  selector: string
+}
+/**
  * Memory
  *
  * Object reference which holds the storage memory
- * record throughout the SPX session.
+ * record throughout the SPX session. This is accessible
+ * for every page.
  */
 export interface IMemory {
+  /**
+   * Current in-store memory in Bytes
+   */
   bytes: number;
+  /**
+   * The memory limit to be imposed before
+   * purge begins, defaults to 100mb
+   *
+   * @default 100
+   */
   limit: number;
+  /**
+   * The visits counter for the page.
+   *
+   * @default 0
+   */
   visits: number;
 }
 
@@ -40,11 +96,35 @@ export interface IMemory {
  * Assigns a connection status to each observer.
  */
 export interface IObservers {
-  scroll?: boolean;
-  history?: boolean;
+  /**
+   * Whether of not the scroll observer has connected,
+   * always `true` unless disconnected
+   */
+  scroll: boolean;
+  /**
+   * Whether of not history pushState observer has connected,
+   * always `true` unless disconnected
+   */
+  history: boolean;
+  /**
+   * Whether of not href interceptor was connected. This
+   * can be disabled via session.
+   */
   hrefs?: boolean;
+  /**
+   * Whether of not hover interceptor was connected. This
+   * can be disabled via session.
+   */
   hover?: boolean;
+  /**
+   * Whether of not intersect interceptor was connected. This
+   * can be disabled via session.
+   */
   intersect?: boolean;
+  /**
+   * Whether of not href interceptor was connected. This
+   * can be disabled via session.
+   */
   proximity?: boolean;
 }
 
@@ -54,10 +134,71 @@ export interface IObservers {
  * `false` when disabled of the merged defaults.
  */
 export interface IConfig extends IOptions {
-  hover?: false | IHover;
-  intersect?: false | IIntersect;
-  proximity?: false | IProximity;
+  /**
+   * Progress Bar
+   */
   progress?: false | IProgress;
+  /**
+   * Hover Prefeching
+   */
+  hover?: false | IHover;
+  /**
+   * Intersection Prefetching
+   */
+  intersect?: false | IIntersect;
+  /**
+   * Proximity Prefetching
+   */
+  proximity?: false | IProximity;
+  /**
+   * Query Selectors
+   */
+  selectors?: {
+    /**
+     * Tracked element selector
+     */
+    tracking?: string;
+    /**
+     * Asset evaluation selector used for `<script>`
+     * type tags
+     */
+    scripts?: string;
+    /**
+     * Asset evaluation selector used for `<styles>`
+     * type tags
+     */
+    styles?: string;
+    /**
+     * The `href` elements to intercepts. Excluded certain
+     * nodes from firing SPX visits
+     */
+    hrefs?: string;
+    /**
+     * Regular Expression used for matching attribute
+     * annotations
+     */
+    attributes?: RegExp;
+    /**
+     * Href selctor for proximities that applies
+     * the correct schema.
+     */
+    hover?: string;
+    /**
+     * Href selector for proximities that applies
+     * the correct schema.
+     */
+    proximity?: string
+    /**
+     * Intersect Element which contains `href` nodes
+     */
+    intersects?: string
+    /**
+     * Href selctor, which excludes node annotated with a
+     * `data-pjax-intersect="false"` attribute.
+     */
+    intersector?: string
+  }
+
 }
 
 /**

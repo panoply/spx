@@ -1,4 +1,6 @@
 {
+  "npm.packageManager": "pnpm",
+  "eslint.packageManager": "pnpm",
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true
@@ -11,6 +13,12 @@
     "**/.DS_Store": true,
     "**/node_modules": true
   },
-  "cSpell.ignoreWords": ["loadjs", "navigations"],
-  "cSpell.words": ["Alexey", "hrefs", "Спасибі"]
+  "cSpell.words": [
+    "Alexey",
+    "hrefs",
+    "navigations",
+    "spx",
+    "worktree",
+    "Спасибі"
+  ]
 }

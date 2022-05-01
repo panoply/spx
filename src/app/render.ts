@@ -4,7 +4,7 @@ import { EventType } from '../shared/enums';
 import { toArray } from '../shared/native';
 import { parse } from '../shared/dom';
 import { IPage } from '../types/page';
-import { tracked, snapshots, selectors } from './session';
+import { tracked, snapshots, config } from './session';
 import * as store from './store';
 import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
@@ -28,7 +28,7 @@ function nodePosition (a: Element, b: Element) {
  */
 async function scriptNodes (target: HTMLHeadElement) {
 
-  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(selectors.script));
+  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(config.selectors.scripts));
   scripts.sort(nodePosition);
 
   await evaljs(scripts);
@@ -42,7 +42,7 @@ async function scriptNodes (target: HTMLHeadElement) {
  */
 function trackedNodes (target: HTMLElement): void {
 
-  target.querySelectorAll(selectors.track).forEach((node) => {
+  target.querySelectorAll(config.selectors.tracking).forEach((node) => {
 
     // tracked element must contain id
     if (!node.hasAttribute('id')) return;

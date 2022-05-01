@@ -1,10 +1,10 @@
 import { supportsPointerEvents } from 'detect-it';
-import { config, observers, selectors } from '../app/session';
+import { config, observers } from '../app/session';
 import { getTargets } from '../shared/links';
 import { object } from '../shared/native';
 import { isNumber } from '../shared/regexp';
 import { log } from '../shared/utils';
-import { getRoute } from '../app/route';
+import { getRoute } from '../app/location';
 import { emit } from '../app/events';
 import * as store from '../app/store';
 import * as request from '../app/fetch';
@@ -110,7 +110,7 @@ export function connect (): void {
 
   if (!config.proximity || observers.proximity) return;
 
-  const targets = getTargets(selectors.proximity).map(setBounds);
+  const targets = getTargets(config.selectors.proximity).map(setBounds);
 
   if (targets.length > 0) {
 

@@ -1,5 +1,3 @@
-import { LiteralUnion } from 'type-fest';
-
 export type Key = '/' | `${'/' | '?'}${string}`
 
 export interface IHover {
@@ -171,22 +169,16 @@ export interface IOptions {
   timeout?: number;
 
   /**
-   * Request polling limit is used when a request is already in transit. Request
-   * completion is checked every 10ms, by default this is set to 150 which means
-   * requests will wait 1500ms before being a new request is triggered.
-   *
-   * **BEWARE**
-   *
-   * Timeout limit will run precedence!
-   *
+   * When `true` SPX visits will only trigger on `<a>` href elements
+   * annotated with `data-spx` attribute. Defaults to `false`
    * ---
    *
-   * @default 150
+   * @default false
    */
-  poll?: number;
+  annotate?: boolean;
 
   /**
-   * Determin if page requests should be fetched asynchronously or synchronously.
+   * Determine if page requests should be fetched asynchronously or synchronously.
    * Setting this to `false` is not reccomended.
    *
    * ---
@@ -207,7 +199,7 @@ export interface IOptions {
   cache?: boolean;
 
   /**
-   * Cache size limit. This SPX variation limits cache size to `50mb`and once size
+   * Cache size limit. This SPX variation limits cache size to `100mb`and once size
    * exceeds that limit, records will be removed starting from the earliest point
    * of the cache entries.
    *
@@ -215,7 +207,7 @@ export interface IOptions {
    *
    * ---
    *
-   * @default 50
+   * @default 100
    */
   limit?: number;
 
@@ -224,9 +216,9 @@ export interface IOptions {
    *
    * ---
    *
-   * @default 50
+   * @default true
    */
-  session?: LiteralUnion<'persist' | 'renew', string>
+  session?: boolean
 
   /**
    * Anticipatory preloading (prefetches). Values defined here will be fetched
