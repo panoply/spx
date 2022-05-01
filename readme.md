@@ -1,4 +1,5 @@
-<img align="left" src="https://raw.githubusercontent.com/panoply/spx/13d4440296f86ca276c7de7b710dcd714f69b94f/docs/site/assets/svg/logo.svg" width="150px">
+<br>
+<img align="left" src="https://raw.githubusercontent.com/panoply/spx/13d4440296f86ca276c7de7b710dcd714f69b94f/docs/site/assets/svg/logo.svg" width="180px">
 <h1 align="right">
   <i>SINGLE PAGE XHR</i>
 </h1>
