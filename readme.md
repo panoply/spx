@@ -25,8 +25,6 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 
 # Installation
 
-SPX is an ESM module and distributed in EcmaScript 6 (ES6). It is designed to work within the browser environment.
-
 ###### PNPM
 
 ```bash
