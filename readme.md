@@ -25,27 +25,27 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 
 # Installation
 
-This module is distributed as ESM and designed to work in the browser environment.
+SPX is an ESM module and distributed in EcmaScript 6 (ES6). It is designed to work within the browser environment.
 
-### pnpm
+###### PNPM
 
 ```bash
 pnpm add spx
 ```
 
-### Yarn
+###### YARN
 
 ```bash
 yarn add spx
 ```
 
-### npm
+###### NPM
 
 ```bash
 npm install spx --save
 ```
 
-### cdn
+###### CDN
 
 ```bash
 https://unpkg.com/spx
@@ -53,7 +53,7 @@ https://unpkg.com/spx
 
 # Acknowledgements
 
-This module combines concepts originally introduced by other awesome Open Source projects:
+This module combines concepts that were originally introduced by other awesome Open Source projects which provide similar functionality:
 
 - [Defunkt Pjax](https://github.com/defunkt/jquery-pjax)
 - [pjax.js](https://github.com/brcontainer/pjax.js)
@@ -64,8 +64,8 @@ This module combines concepts originally introduced by other awesome Open Source
 
 ### Special Thanks
 
-Special Thanks/Спасибі to [Alexey](https://github.com/gigi) for the **SPX** registry name.
+Special Thanks / Спасибі to [Alexey](https://github.com/gigi) for the **SPX** npm registry name.
 
 # License
 
-Licensed under [MIT](#LICENSE)
+Licensed under **[MIT](#LICENSE)**
