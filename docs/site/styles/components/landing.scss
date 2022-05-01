@@ -1,0 +1,117 @@
+
+.menu{
+  left: 30px;
+  position: absolute;
+  top: 30px;
+
+
+  .icon {
+    width: 40px;
+    height: 40px;
+    color: #fff;
+  }
+
+}
+
+.sidebar {
+  background: rgb(18, 18, 18);
+
+}
+
+strong {
+  color: #76d9e6;
+}
+
+.hero {
+  background: rgb(14, 14, 14); /* fallback for old browsers */
+  //background: -webkit-linear-gradient(to right, #f15f79, #b24592);
+  //background: linear-gradient(to right, #f15f79, #b24592);
+
+  &-github {
+
+    a {
+      right: 30px;
+      position: absolute;
+      top: 30px;
+
+
+   > .icon {
+      width: 40px;
+      height: 40px;
+      fill: #fff;
+    }
+    }
+  }
+
+
+  &-logo {
+    a {
+      color: #76d9e6;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    > .icon {
+      //width: 350px;
+      // height: 73px;
+      width: 250px;
+      fill: $white;
+    }
+  }
+
+  &__caption {
+    position: absolute;
+    bottom: 50px;
+    color: #fff;
+    font-size: 15px;
+    text-transform: uppercase;
+  }
+
+
+}
+
+.version {
+  padding-right: 3px;
+  font-size: 10px;
+  position: absolute;
+  bottom: 50px;
+  width: 100%;
+  text-align: center;
+}
+
+.find {
+  input {
+    width: 100%;
+    line-height: 45px;
+    height: 45px;
+    font-size: 16px;
+    font-weight: 900;
+    border: none;
+    border-radius: 3px;
+    background-color: #ffffff31;
+    color: $white;
+
+    &::placeholder {
+      color: #ffffffad;
+      font-size: 11px;
+      font-weight: 400;
+      padding-left: 5px;
+    }
+
+    &:focus {
+      outline: #fff;
+    }
+  }
+
+  &-spinner {
+    color: rgba($color: $white, $alpha: 0.3);
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.24em;
+  }
+}
+
+

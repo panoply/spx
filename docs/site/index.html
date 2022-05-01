@@ -5,8 +5,20 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="stylesheet.css" as="style">
-    <script src="bundle.min.js"></script>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./bundle.min.js"></script>
   </head>
-  <body></body>
+  <body>
+    <div class="container-fluid g-0">
+      <main class="row g-0">
+        <div class="col-2 d-none">
+          {% include 'sidebar.html' %}
+        </div>
+        <div class="col-12 vh-100">
+          {% include 'landing.html' %}
+        </div>
+      </main>
+    </div>
+    {% svgsprite %}
+  </body>
 </html>
