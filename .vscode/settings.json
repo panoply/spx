@@ -1,4 +1,15 @@
 {
+  "stylelint.validate": ["scss", "sass", "less", "postcss"],
+  "stylelint.packageManager": "pnpm",
+  "stylelint.enable": true,
+  "scss.validate": false,
+  "scss.scannerExclude": ["**/.git", "**/node_modules"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.stylelint": true
+  },
+  "[html]": {
+    "editor.defaultFormatter": "sissel.shopify-liquid"
+  },
   "npm.packageManager": "pnpm",
   "eslint.packageManager": "pnpm",
   "[typescript]": {
@@ -18,6 +29,7 @@
     "hrefs",
     "navigations",
     "spx",
+    "Wanstrath",
     "worktree",
     "Спасибі"
   ]
