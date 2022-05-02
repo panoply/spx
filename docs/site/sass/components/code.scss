@@ -1,0 +1,169 @@
+code[class*="language-"] {
+  color: $cyan;
+  font-size: 15px;
+  font-family: Menlo, Monaco, "Courier New", monospace;
+  white-space: pre;
+  white-space: pre-wrap;
+  text-shadow: none;
+  word-wrap: normal;
+  tab-size: 2;
+  hyphens: none;
+}
+
+pre {
+  position: relative;
+  padding: 15px;
+  overflow: auto;
+  border: 1px solid;
+  border-radius: 4px;
+
+  &[class*="language-"] {
+    color: $cyan;
+    font-size: 15px;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    white-space: pre;
+    white-space: pre-wrap;
+    text-shadow: none;
+    word-wrap: normal;
+    tab-size: 2;
+    hyphens: none;
+    background: rgb(30 30 30);
+  }
+
+  code {
+    display: block;
+    white-space: pre;
+  }
+
+  > code[class*="language-"] {
+    font-size: 1em;
+  }
+}
+
+:not(pre) > code[class*="language-"] {
+  padding: 0.15em 0.2em 0.05em;
+  background: rgb(30 30 30);
+  border: 0.13em solid #7a6652;
+  border-radius: 0.3em;
+  box-shadow: 1px 1px 0.3em -0.1em #000 inset;
+}
+
+
+.token {
+  &.selector,
+  &.inserted {
+    color: #a6e22d;
+  }
+
+  &.atrule,
+  &.attr-value,
+  &.keyword,
+  &.important,
+  &.deleted {
+    color: #ef3b7d;
+  }
+
+  &.regex,
+  &.statement {
+    color: cyan;
+  }
+
+  &.placeholder,
+  &.variable {
+    color: #fff;
+  }
+
+  &.important,
+  &.statement,
+  &.bold {
+    font-weight: bold;
+  }
+
+  &.punctuation {
+    color: #bebec5;
+  }
+
+  &.entity {
+    cursor: help;
+  }
+
+  &.italic {
+    font-style: italic;
+  }
+
+  &.namespace {
+    opacity: 0.7;
+  }
+
+  &.comment,
+  &.prolog,
+  &.doctype,
+  &.cdata {
+    color: #6f705e;
+  }
+
+  &.operator,
+  &.boolean,
+  &.number {
+    color: #a77afe;
+  }
+
+  &.attr-name,
+  &.string,
+  &.entity,
+  &.url {
+    color: #e6d06c;
+  }
+}
+
+.language-css .token.string,
+.style .token.string {
+  color: #e6d06c;
+}
+
+code.language-markup {
+  color: #f9f9f9;
+
+  .token {
+    &.tag {
+      color: #ef3b7d;
+    }
+
+    &.attr-name {
+      color: #a6e22d;
+    }
+
+    &.attr-value {
+      color: #e6d06c;
+    }
+
+    &.style {
+      color: $cyan;
+    }
+
+    &.script {
+      color: $cyan;
+
+      .token.keyword {
+        color: $cyan;
+      }
+    }
+  }
+}
+
+/* Line highlight plugin */
+
+.line-highlight.line-highlight {
+  padding: 0;
+  background: rgb(255 255 255 / 8%);
+
+  &::before,
+  &[data-end]::after {
+    height: 1em;
+    padding: 0.2em 0.5em;
+    color: black;
+    line-height: 1em;
+    background-color: rgb(255 255 255 / 40%);
+    box-shadow: 0 1px 1px rgb(255 255 255 / 70%);
+  }
+}
