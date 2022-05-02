@@ -1,4 +1,26 @@
-# Sessions
+---
+title: 'Reference'
+permalink: '/reference/index.html'
+layout: docs.html
+position: 5
+sidebar:
+  - title: 'Options'
+    anchor: '#options'
+  - title: 'Observers'
+    anchor: '#observers'
+  - title: 'Session'
+    anchor: '#session'
+  - title: 'Sessions'
+    anchor: '#sessions'
+---
+
+# Reference
+
+## Options
+
+## Observers
+
+## Sessions
 
 A SPX navigation sessions will begin immediately after a connection was initialized via `spx.connect()` and ends when a browser refresh is executed or url origin changes occurs. You can access, view or modify the session store using the `spx.session()` method.
 
