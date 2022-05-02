@@ -1,6 +1,6 @@
 {
   "exclude": ["node_modules/**", "public"],
-  "include": ["site/scripts/**/*.ts", "types/*.ts"],
+  "include": ["site/app/**/*.ts"],
   "compilerOptions": {
     "target": "ES6",
     "lib": ["es2020", "dom", "dom.iterable"],
@@ -15,10 +15,7 @@
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "pretty": true,
-    "typeRoots": ["./types"],
-    "baseUrl": ".",
-    "paths": {
-      "types": ["types"]
-    }
+    "typeRoots": ["./scripts/eleventy.d.ts"],
+    "baseUrl": "."
   }
 }

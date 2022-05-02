@@ -8,14 +8,14 @@ $variable-prefix: null;
 /* EDITABLE OPTIONS                             */
 /* -------------------------------------------- */
 
-$enable-rfs: false;
+$enable-rfs: true;
 
 /* -------------------------------------------- */
 /* PALETTE                                      */
 /* -------------------------------------------- */
 
-$white: #ffffff;
-$black: #000000;
+$white: #fff;
+$black: #0e0e0e;
 $blue: #0d6efd;
 $indigo: #6610f2;
 $purple: #6f42c1;
@@ -25,7 +25,7 @@ $orange: #fd7e14;
 $yellow: #ffc107;
 $green: #28a745;
 $teal: #20c997;
-$cyan: #0dcaf0;
+$cyan: #9bf3ff;
 
 /* -------------------------------------------- */
 /* GRAYS                                        */
@@ -33,16 +33,17 @@ $cyan: #0dcaf0;
 
 $gray-100: #f8f9fa;
 $gray-200: #f3f4f5;
-$gray-300: #dee2e6;
+$gray-300: #e1e1e8;
 $gray-400: #ced4da;
 $gray-500: #adb5bd;
 $gray-600: #6c757d;
 $gray-700: #495057;
 $gray-800: #343a40;
 $gray-900: #212529;
-
 $background-colors: (
-  'ivory': $gray-200
+  "ivory": $gray-200,
+  "black": $black,
+  "ebony": rgb(18 18 18)
 );
 
 /* -------------------------------------------- */
@@ -89,37 +90,36 @@ $container-max-widths: (
 /* -------------------------------------------- */
 
 $font-colors: (
-  'black': $black,
-  'white': $white,
-  'gray': $gray-500,
-  'red': $red,
-  'green': $green
+  "black": $black,
+  "white": $white,
+  "gray": $gray-500,
+  "red": $red,
+  "green": $green
 ) !default;
 
 /* -------------------------------------------- */
 /* BODY                                         */
 /* -------------------------------------------- */
 
-$body-bg: $white;
-$body-color: $black;
+$body-bg: $black;
+$body-color: $gray-300;
 
 /* -------------------------------------------- */
 /* FONT FAMILY                                  */
 /* -------------------------------------------- */
 
-$font-family-sans-serif: system-ui, -apple-system, 'Segoe UI', Roboto,
-  'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
-  'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-  'Noto Color Emoji';
-
-$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas,
-  'Liberation Mono', 'Courier New', monospace;
+$font-family-sans-serif: system-ui, -apple-system, "Segoe UI", roboto,
+  "Helvetica Neue", arial, "Noto Sans", "Liberation Sans", sans-serif,
+  "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+  "Noto Color Emoji";
+$font-family-monospace: sfmono-regular, menlo, monaco, consolas,
+  "Liberation Mono", "Courier New", monospace;
 
 /* -------------------------------------------- */
 /* FONT SIZES                                   */
 /* -------------------------------------------- */
 
-$font-size-base: 1rem;
+$font-size-base: 1.1rem;
 $font-size-xs: $font-size-base * 0.625;
 $font-size-sm: $font-size-base * 0.775;
 $font-size-lg: $font-size-base * 1.25;
@@ -128,9 +128,9 @@ $font-size-lg: $font-size-base * 1.25;
 /* FONT HEADINGS                                */
 /* -------------------------------------------- */
 
-$headings-font-family: null;
+$headings-font-family: $font-family-sans-serif;
 $headings-font-style: null;
-$headings-font-weight: 500;
+$headings-font-weight: 600;
 $headings-line-height: 1.2;
 
 /* -------------------------------------------- */
@@ -156,7 +156,7 @@ $line-height-xl: 2.4;
 /* LINKS                                        */
 /* -------------------------------------------- */
 
-$link-color: $blue;
+$link-color: $cyan;
 $link-decoration: underline;
 $link-shade-percentage: 20%;
 $link-hover-decoration: null;
@@ -202,17 +202,17 @@ $btn-padding-y-lg: 0.5rem !default;
 $btn-padding-x-sm: 0.5rem !default;
 $btn-padding-x: 0.75rem !default;
 $btn-padding-x-lg: 1rem !default;
-$btn-white-space: nowrap !default; // Set to `nowrap` to prevent text wrapping
+$btn-white-space: nowrap !default; // set to `nowrap` to prevent text wrapping
 
 /* -------------------------------------------- */
 /* ASPECT RATIOS                                */
 /* -------------------------------------------- */
 
 $aspect-ratios: (
-  '1x1': 100%,
-  '4x3': calc(3 / 4 * 100%),
-  '16x9': calc(9 / 16 * 100%),
-  '21x9': calc(9 / 21 * 100%)
+  "1x1": 100%,
+  "4x3": calc(3 / 4 * 100%),
+  "16x9": calc(9 / 16 * 100%),
+  "21x9": calc(9 / 21 * 100%)
 );
 
 /* -------------------------------------------- */
@@ -224,7 +224,22 @@ $spinner-height: $spinner-width;
 $spinner-vertical-align: -0.125em;
 $spinner-border-width: 0.15em;
 $spinner-animation-speed: 0.75s;
-
 $spinner-width-sm: 1rem;
 $spinner-height-sm: $spinner-width-sm;
 $spinner-border-width-sm: 0.2em;
+
+/* -------------------------------------------- */
+/* NODE MODULE                                  */
+/* -------------------------------------------- */
+
+@import "@brixtol/bootstrap";
+
+/* -------------------------------------------- */
+/* COMPONENTS                                   */
+/* -------------------------------------------- */
+
+@import "components/code";
+@import "components/json-tree";
+@import "components/landing";
+@import "components/accordion";
+@import "components/session";

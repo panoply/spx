@@ -1,0 +1,19 @@
+---
+layout: base.html
+---
+
+<div class="container-fluid g-0 vh-100 bg-black">
+  <main class="row g-0 bg-black">
+    <div class="col-auto">
+      {% include 'sidebar.html' %}
+    </div>
+    <div class="col-8 offset-1" id="content">
+      <div class="w-75 m-auto mt-5 pt-3">
+        {{ content }}
+      </div>
+    </div>
+    <div class="col-3 session vh-100">
+      {% include 'session.html' %}
+    </div>
+  </main>
+</div>
