@@ -166,6 +166,8 @@ export function navigate (key: string, state?: IPage): void {
 
     request.fetch(state).then(function (page) {
 
+      history.push(page);
+
       return page ? render.update(page) : location.assign(state.key);
 
     });
