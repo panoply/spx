@@ -45,6 +45,7 @@
     ],
     "extends": "@brixtol/eslint-config",
     "rules": {
+      "no-prototype-builtins":"off",
       "multiline-ternary": "off"
     }
   },
@@ -61,7 +62,7 @@
   },
   "devDependencies": {
     "@brixtol/browserslist-config": "^1.1.0",
-    "@brixtol/eslint-config": "^1.2.4",
+    "@brixtol/eslint-config": "^1.2.5",
     "@brixtol/prettier-config": "^1.2.1",
     "@octokit/core": "^3.6.0",
     "ava": "^4.2.0",
@@ -78,5 +79,8 @@
     "prod": "esbuild src/index.ts --minify --tree-shaking=true --format=esm --bundle --outfile=index.js",
     "deploy": "pnpm exec bin/docs.sh",
     "test": "ava --color --verbose --watch --timeout=2m"
+  },
+  "optionalDependencies": {
+    "eslint": "^8.14.0"
   }
 }
