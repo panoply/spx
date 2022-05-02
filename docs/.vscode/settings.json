@@ -1,6 +1,0 @@
-{
-  "stylelint.validate": ["scss", "sass", "less", "postcss"],
-  "[html]": {
-    "editor.defaultFormatter": "sissel.shopify-liquid"
-  }
-}
