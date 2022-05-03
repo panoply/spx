@@ -1,5 +1,5 @@
 ---
-layout: base.html
+layout: base.liquid
 title: 'SPX | Single Page XHR'
 permalink: '/'
 ---

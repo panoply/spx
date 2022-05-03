@@ -20,3 +20,15 @@ spx.on('connected', function () {
   stimulus.register('session', Session);
 
 });
+
+class AnchorHandler {
+
+  navigate (event, location) {
+    event.preventDefault();
+    window.location.replace(window.location.pathname + '?' + location);
+    return false;
+  }
+
+}
+
+const anchor = new AnchorHandler();

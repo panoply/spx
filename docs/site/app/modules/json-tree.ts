@@ -81,8 +81,8 @@ export const JSONTree = (function () {
 
           break;
 
-        case 'object':
-          var keys = Object.keys(obj).sort();
+        case 'object': {
+          const keys = Object.keys(obj).sort();
 
           isLast = keys.length - 1;
 
@@ -90,7 +90,7 @@ export const JSONTree = (function () {
             func(item, obj[item], i === isLast);
           });
 
-          break;
+        } break;
       }
 
     },
@@ -224,18 +224,7 @@ export const JSONTree = (function () {
     const el = document.createElement('li');
     let labelEl: { addEventListener: (arg0: string, arg1: (e: any) => void, arg2: boolean) => void; };
     const template = function (label: string, val: string) {
-      const str = '\
-                  <span class="json-tree-label-wrapper">\
-                      <span class="json-tree-label">"' +
-                          label +
-                      '"</span> : \
-                  </span>\
-                  <span class="json-tree-value-wrapper">\
-                      <span class="json-tree-value json-tree-value-' + self.type + '">' +
-                          val +
-                      '</span>' +
-                      (!isLast ? ',' : '') +
-                  '</span>';
+      const str = `<span class="json-tree-label-wrapper"><span class="json-tree-label">${label}</span>:</span><span class="json-tree-value-wrapper"><span class="json-tree-value json-tree-value-${self.type}">${val}</span>${(!isLast ? ',' : '')}</span>`;
 
       return str;
     };
@@ -439,25 +428,10 @@ export const JSONTree = (function () {
     const self = this;
     const el = document.createElement('li');
     const template = function (label: string, sym: string[]) {
-      const comma = (!isLast) ? ',' : '';
-      let str = '\
-                      <div class="json-tree-value-wrapper">\
-                          <div class="json-tree-value json-tree-value-' + self.type + '">\
-                              <b>' + sym[0] + '</b>\
-                              <span class="json-tree-show-more">&hellip;</span>\
-                              <ul class="json-tree-child-nodes"></ul>\
-                              <b>' + sym[1] + '</b>' +
-                          '</div>' + comma +
-                      '</div>';
+      let str = `<div class="json-tree-value-wrapper"><div class="json-tree-value json-tree-value-${self.type}"><b>${sym[0]}</b><span class="json-tree-show-more">&hellip;</span><ul class="json-tree-child-nodes"></ul><b>${sym[1]}</b></div>${(!isLast) ? ',' : ''}</div>`;
 
       if (label !== null) {
-        str = '\
-                      <span class="json-tree-label-wrapper">\
-                          <span class="json-tree-label">' +
-                              '<span class="json-tree-expand-button"></span>' +
-                              '"' + label +
-                          '"</span> : \
-                      </span>' + str;
+        str = `<span class="json-tree-label-wrapper"><span class="json-tree-label"><span class="json-tree-expand-button"></span>${label}</span>:</span>${str}`;
       }
 
       return str;
@@ -772,7 +746,7 @@ export const JSONTree = (function () {
       const DELIMETER = '[%^$#$%^%]';
       let jsonStr = JSON.stringify(this.sourceJSONObj, null, DELIMETER);
 
-      jsonStr = jsonStr.split('\n').join('<br />');
+      jsonStr = jsonStr.split(/\n/).join('<br />');
       jsonStr = jsonStr.split(DELIMETER).join('&nbsp;&nbsp;&nbsp;&nbsp;');
 
       return jsonStr;

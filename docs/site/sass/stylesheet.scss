@@ -94,7 +94,8 @@ $font-colors: (
   "white": $white,
   "gray": $gray-500,
   "red": $red,
-  "green": $green
+  "green": $green,
+  "pink": $pink
 ) !default;
 
 /* -------------------------------------------- */
@@ -105,15 +106,22 @@ $body-bg: $black;
 $body-color: $gray-300;
 
 /* -------------------------------------------- */
+/* BORDER                                       */
+/* -------------------------------------------- */
+
+$border-width: 0.01rem;
+
+/* -------------------------------------------- */
 /* FONT FAMILY                                  */
 /* -------------------------------------------- */
 
-$font-family-sans-serif: system-ui, -apple-system, "Segoe UI", roboto,
+$font-family-sans-serif: roboto, sans-serif, system-ui, -apple-system, "Segoe UI", roboto,
   "Helvetica Neue", arial, "Noto Sans", "Liberation Sans", sans-serif,
   "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
   "Noto Color Emoji";
 $font-family-monospace: sfmono-regular, menlo, monaco, consolas,
   "Liberation Mono", "Courier New", monospace;
+
 
 /* -------------------------------------------- */
 /* FONT SIZES                                   */
@@ -128,10 +136,16 @@ $font-size-lg: $font-size-base * 1.25;
 /* FONT HEADINGS                                */
 /* -------------------------------------------- */
 
-$headings-font-family: $font-family-sans-serif;
+$headings-font-family: "Courier New";
 $headings-font-style: null;
-$headings-font-weight: 600;
-$headings-line-height: 1.2;
+$headings-font-weight: 500;
+$headings-line-height: 1.5;
+$h1-font-size: $font-size-base * 2 !default;
+$h2-font-size: $font-size-base * 1.75 !default;
+$h3-font-size: $font-size-base * 1.5 !default;
+$h4-font-size: $font-size-base * 1.25 !default;
+$h5-font-size: $font-size-base * 1 !default;
+$h6-font-size: $font-size-base !default;
 
 /* -------------------------------------------- */
 /* FONT WEIGHT                                  */
@@ -231,6 +245,7 @@ $spinner-border-width-sm: 0.2em;
 /* -------------------------------------------- */
 /* NODE MODULE                                  */
 /* -------------------------------------------- */
+
 
 @import "@brixtol/bootstrap";
 

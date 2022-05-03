@@ -1,19 +1,14 @@
 ---
 title: 'Introduction'
-layout: docs.html
+layout: docs.liquid
 permalink: '/introduction/index.html'
 position: 0
 sidebar:
-  - title: 'What is SPX'
-    anchor: '#what-is-spx'
-  - title: 'Getting Started'
-    anchor: '#getting-started'
-  - title: 'Prefetch'
-    anchor: '#prefetch'
-  - title: 'Caching'
-    anchor: '#caching'
-  - title: 'Recommendations'
-    anchor: '#recommendations'
+  - 'What is SPX'
+  - 'Getting Started'
+  - 'Prefetch'
+  - 'Caching'
+  - 'Recommendations'
 ---
 
 # Introduction
@@ -32,15 +27,15 @@ Single Page XHR enhancement for SSR powered web applications. SPX is a lightenin
 
 ## What is SPX
 
-SPX is an acronym for **Single Page XHR** and derived from terminologies used to describe modern JavaScript paradigms like **SPA** (Single Page Application) and **MPA** (Multiple Page Application). The approach **SPX** employs is otherwise known as **Pjax** (Push~State Ajax) which is a rendering technique that has been around for quite some time.
+SPX is an acronym for **Single Page XHR** and derived from terminologies used to describe modern JavaScript paradigms like **SPA** (Single Page Application) and **MPA** (Multiple Page Application). The approach **SPX** employs is otherwise known as **Pjax** (Push~State Ajax). Pjax is a rendering technique first introduced by the Github Co-Founder [Chris Wanstrath](http://github.com/defunkt). In 2011 Chris created [jquery-pjax](https://pjax.herokuapp.com/) which intercepted clicks made on link elements and fetched pages over the wire instead of executing a full-page reloads between visits.
 
-The Pjax technique was first introduced by the Github Co-Founder [Chris Wanstrath](http://github.com/defunkt) who in 2011 created [jquery-pjax](https://pjax.herokuapp.com/). The approach is rather simple, instead of executing a full-page reload you intercept clicks made on link elements, fetch the page over the wire and replace the fragments who inner contents has changed.
-
-This technique remained the standard until 2015 when the team at [basecamp](https://basecamp.com/) shipped [Turbolinks 5](https://github.com/turbolinks/turbolinks) (which later become the de-facto successor of the original jquery-pjax module). Turbolinks introduced an ingenious snapshot caching approach that when used together with the pjax technique drastically improved perceived loading times and overall performance between SSR website navigations. In 2021 Turbolinks the was superseded by [Turbo](https://turbo.hotwired.dev/) which is a fantastic alternative to SPX.
+The Pjax method employed in jquery-pjax remained the standard until around 2015 and the team at [basecamp](https://basecamp.com/) shipped [Turbolinks 5](https://github.com/turbolinks/turbolinks). Turbolinks introduced an ingenious snapshot caching approach that together with the pjax technique drastically improved perceived loading times and overall performance between SSR website navigations. In 2021 Turbolinks the was superseded by [Turbo](https://turbo.hotwired.dev/) which is a fantastic alternative to SPX.
 
 SPX is a new generation pjax based solution. The modules introduces new techniques to this paradigm and combines them with strategies standardized by similar projects in the nexus. The aim is instantaneous navigation, progressive enhancement and simple integration.
 
 ## Getting Started
+
+TODO
 
 ## Recommendations
 

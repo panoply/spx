@@ -2,3 +2,5 @@
 *.ts
 *.mjs
 *.cjs
+*.html
+*.liquid

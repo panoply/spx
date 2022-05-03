@@ -1,17 +1,12 @@
 ---
 title: 'Reference'
 permalink: '/reference/index.html'
-layout: docs.html
+layout: docs.liquid
 position: 5
 sidebar:
-  - title: 'Options'
-    anchor: '#options'
-  - title: 'Observers'
-    anchor: '#observers'
-  - title: 'Session'
-    anchor: '#session'
-  - title: 'Sessions'
-    anchor: '#sessions'
+  - 'Options'
+  - 'Observers'
+  - 'Session'
 ---
 
 # Reference

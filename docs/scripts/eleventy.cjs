@@ -15,8 +15,8 @@ module.exports = function (config) {
   config.setBrowserSyncConfig({
     notify: false,
     files: [
-      'public/*.css',
-      'public/*.js'
+      'public/style.css',
+      'public/bundle.min.js'
     ]
   });
 

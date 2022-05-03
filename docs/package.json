@@ -6,6 +6,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@accede-web/tablist": "^2.0.1",
     "@hotwired/stimulus": "^3.0.1",
     "@panoply/accordion": "^0.2.0",
     "@pgrabovets/json-view": "^2.7.1",

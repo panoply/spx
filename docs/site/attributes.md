@@ -1,33 +1,21 @@
 ---
 title: 'Attributes'
 permalink: '/attributes/index.html'
-layout: docs.html
+layout: docs.liquid
 position: 6
 sidebar:
-  - title: data-spx-eval
-    anchor: '#data-spx-eval'
-  - title: data-spx-disable
-    anchor: '#data-spx-disable'
-  - title: data-spx-hydrate
-    anchor: '#data-spx-hydrate'
-  - title: data-spx-replace
-    anchor: '#data-spx-replace'
-  - title: data-spx-prepend
-    anchor: '#data-spx-prepend'
-  - title: data-spx-append
-    anchor: '#data-spx-append'
-  - title: data-spx-hover
-    anchor: '#data-spx-hover'
-  - title: data-spx-threshold
-    anchor: '#data-spx-threshold'
-  - title: data-spx-proximity
-    anchor: '#data-spx-proximity'
-  - title: data-spx-position
-    anchor: '#data-spx-position'
-  - title: data-spx-cache
-    anchor: '#data-spx-cache'
-  - title: data-spx-history
-    anchor: '#data-spx-history'
+  - 'data-spx-eval'
+  - 'data-spx-disable'
+  - 'data-spx-hydrate'
+  - 'data-spx-target'
+  - 'data-spx-prepend'
+  - 'data-spx-append'
+  - 'data-spx-hover'
+  - 'data-spx-threshold'
+  - 'data-spx-proximity'
+  - 'data-spx-position'
+  - 'data-spx-cache'
+  - 'data-spx-history'
 ---
 
 # Attributes
@@ -306,7 +294,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 
 </details>
 
-## data-spx-replace
+## data-spx-target
 
 Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in `SPX.connect()` will be merged with those defined on this attribute.
 

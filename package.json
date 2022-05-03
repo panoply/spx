@@ -41,11 +41,12 @@
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
     "ignorePatterns": [
-      "dist"
+      "index.js",
+      "docs/public"
     ],
     "extends": "@brixtol/eslint-config",
     "rules": {
-      "no-prototype-builtins":"off",
+      "no-prototype-builtins": "off",
       "multiline-ternary": "off"
     }
   },

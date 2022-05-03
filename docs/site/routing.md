@@ -1,3 +1,13 @@
+---
+title: 'Routing'
+layout: docs.liquid
+permalink: '/routing/index.html'
+position: 7
+sidebar:
+  - 'Components'
+  - 'Mounting'
+---
+
 # Routing
 
 SPX exposes a routing approach for cases where per-page lifecycle control is desired. Because we are dealing with SSR markup and intercepting navigations we are able to intercept and execution operations at different points in the render cycles. SPX routes accept components which can be leveraged in your application.
@@ -31,7 +41,7 @@ spx.route('/path/:id', {
     spx.store({ })
 
   },
-  node: function (element) {
+  render: function (element) {
 
     spx.target('active', {})
 
@@ -51,34 +61,7 @@ spx.route('/path/:id', {
 };
 ```
 
-<!-- prettier-ignore -->
-```typescript
-import spx from 'spx'
-
-spx.state('/path/:id', {
-  connect: function () {
-
-  },
-  fetch: function () {
-
-  },
-  visit: function () {
-
-  },
-  cache: function () {
-
-  },
-  render: function () {
-
-  },
-  load: function () {
-
-  },
-  exit: function () {
-
-  }
-};
-```
+# Mounting
 
 The module exposes a low-level routing approach using simple wildcard path matching. Routes executed right before fragments are replaced in the rendering lifecycle. Routes allow you to augment the target documents and state before replacement occur.
 

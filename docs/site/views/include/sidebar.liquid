@@ -1,0 +1,57 @@
+<aside class="sidebar p-4 bd-right vh-100">
+
+  <form>
+    <input
+      class="form-input form-input-sm radius-2"
+      type="search"
+      placeholder="Search...">
+  </form>
+
+  <nav
+    class="accordion mt-3 mb-2"
+    data-accordion-collapsible-value="true"
+    data-accordion-multiselect-value="true"
+    data-controller="accordion">
+
+    {%- assign pages = collections.all | sort: 'data.position' -%}
+
+    {%- for page in pages %}
+
+      {%- unless page.data.title and page.data.sidebar -%}
+        {%- continue -%}
+      {%- endunless -%}
+
+      <div class="accordion-header py-2 {% if url == page.url %} active{%- endif -%}">
+        <button
+          class="accordion-button btn-reset bg-black text-uppercase ff-heading"
+          data-action="mousedown->accordion#goto"
+          data-href=" {{- page.data.title | slugify }}">
+          {{ page.data.title }}
+        </button>
+      </div>
+
+      <div class="accordion-content">
+        <ul class="accordion-inner p-0 ml-0" id="{{- page.data.title | slugify -}}">
+          {%- for item in page.data.sidebar %}
+            <li class="pt-1">
+              <a href="{{ item | slugify | prepend: '#' }}">
+
+                {%- if item contains 'data-' -%}
+                  {{- item | replace: '-', '<span class="fc-pink fw-bold">–</span>'-}}
+                {%- elsif item contains 'spx:' -%}
+                  {{- item | replace: ':', '<span class="fc-pink fw-bold">:</span>'-}}
+                {%- else -%}
+                  {{- item -}}
+                {%- endif -%}
+
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+
+    {%- endfor -%}
+
+  </nav>
+
+</aside>
