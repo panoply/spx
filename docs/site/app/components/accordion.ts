@@ -19,7 +19,7 @@ export class Accordion extends Controller {
   static values = {
     button: {
       type: Boolean,
-      default: false
+      default: true
     },
     multiselect: {
       type: Boolean,
@@ -35,7 +35,7 @@ export class Accordion extends Controller {
     },
     initialDelay: {
       type: Number,
-      default: 200
+      default: 100
     },
     keyboard: {
       type: Boolean,
