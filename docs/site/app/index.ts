@@ -1,34 +1,27 @@
 import { Application } from '@hotwired/stimulus';
 import { Accordion } from './components/accordion';
+import { Tabs } from './components/tabs';
 import { Session } from './components/session';
+import { Drawer } from './components/drawer';
 import spx from 'spx';
 
 spx.connect({
   targets: [
-    '#content'
+    'main'
   ],
   hover: {
     trigger: 'href'
-  }
+  },
+  progress: false
 });
 
 spx.on('connected', function () {
 
   const stimulus = Application.start();
 
+  stimulus.register('drawer', Drawer);
   stimulus.register('accordion', Accordion);
+  stimulus.register('tabs', Tabs);
   stimulus.register('session', Session);
 
 });
-
-class AnchorHandler {
-
-  navigate (event, location) {
-    event.preventDefault();
-    window.location.replace(window.location.pathname + '?' + location);
-    return false;
-  }
-
-}
-
-const anchor = new AnchorHandler();
