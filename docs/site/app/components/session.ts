@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import { JSONTree } from '../modules/json-tree';
+import { JSONTree, Tree } from '../modules/json-tree';
 import spx from 'spx';
 
 export class Session extends Controller {
@@ -7,54 +7,69 @@ export class Session extends Controller {
   static targets: string[] = [
     'pages',
     'memory',
+    'visits',
     'snapshots',
-    'observers'
+    'action',
+    'history'
   ];
 
-  observersTarget: HTMLElement;
+  pages: Tree;
+  history: Tree;
+  snapshots: Tree;
+
+  hasHistoryTarget: boolean;
+  historyTarget: HTMLElement;
+  visitsTarget: HTMLElement;
+  actionTarget: HTMLElement;
   pagesTarget: HTMLElement;
   memoryTarget: HTMLElement;
   snapshotsTarget: HTMLElement;
 
   initialize (): void {
 
+    if (this.hasHistoryTarget) {
+      this.history = JSONTree.create({}, this.historyTarget);
+      this.pages = JSONTree.create({}, this.pagesTarget);
+      this.snapshots = JSONTree.create({}, this.snapshotsTarget);
+    }
   }
 
   /**
    * Stimulus Initialize
    */
   connect (): void {
-    const p = JSONTree.create({}, this.pagesTarget);
-    const m = JSONTree.create({}, this.memoryTarget);
-    const s = JSONTree.create({}, this.snapshotsTarget);
 
     spx.on('prefetch', () => {
-      this.observersTarget.innerHTML = 'Prefetch Triggered';
+      this.actionTarget.innerHTML = 'Prefetch Triggered';
     });
 
     spx.on('visit', () => {
-      this.observersTarget.innerHTML = 'Visit Triggered';
+      this.actionTarget.innerHTML = 'Visit Triggered';
     });
 
-    spx.on('render', () => {
-      setTimeout(() => {
-        this.observersTarget.innerHTML = 'Rendered Fragments';
-      }, 1000);
+    spx.on('visit', () => {
+      this.actionTarget.innerHTML = 'Visit Triggered';
     });
 
-    spx.on('load', () => {
-
-      const sn = spx.session().snapshots;
-
-      p.loadData(spx.session().pages);
-      m.loadData(spx.session().memory);
-      s.loadData(Object.keys(sn));
-
-      // c
-
-      // render tree into dom element
-
+    spx.on('cached', (state) => {
+      this.actionTarget.innerHTML = 'Rendered Fragments';
+      if (state.type === 11) this.update();
     });
+
+    spx.on('load', () => this.update());
+
+    this.update();
+  }
+
+  update () {
+
+    const session = spx.session();
+
+    this.memoryTarget.innerText = session.memory.size;
+    this.visitsTarget.innerText = String(session.memory.visits);
+    this.pages.loadData(session.pages);
+    this.snapshots.loadData(Object.keys(session.snapshots));
+    this.history.loadData(window.history.state);
 
   }
 
