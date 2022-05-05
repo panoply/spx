@@ -1,6 +1,7 @@
 # DIRECTORIES
 node_modules
 docs/public
+docs/.netlify
 
 # FILES
 .pnpm-debug.log
