@@ -2,10 +2,9 @@ import { HistoryState, IPage } from 'types';
 import { pages, observers } from '../app/session';
 import { history, object } from '../shared/native';
 import { hasProp } from '../shared/utils';
+import { fetch, reverse } from '../app/fetch';
 import * as render from '../app/render';
-import * as request from '../app/fetch';
 import * as store from '../app/store';
-import * as scroll from './scroll';
 import { EventType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
 
@@ -27,12 +26,7 @@ function stack (page: IPage) {
   state.key = page.key;
   state.rev = page.rev;
   state.title = page.title;
-  state.uuid = page.uuid;
-  state.cache = page.cache;
-  state.replace = page.replace;
-  state.type = page.type;
-  state.progress = page.progress;
-  state.position = scroll.reset();
+  state.position = page.position;
 
   return state;
 }
@@ -56,7 +50,7 @@ export function get () {
  * last path reference. Returns a boolean
  *
  */
-export function reverse () {
+export function doReverse () {
 
   return (
     history.state !== null &&
@@ -93,14 +87,15 @@ let timeout: NodeJS.Timeout;
  *
  * Fires popstate navigation request
  */
-function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
+function pop (event: PopStateEvent & { state: HistoryState }) {
 
   if (!load()) return;
+  if (event.state === null) return;
 
   clearInterval(timeout);
 
   if (store.has(event.state.key)) {
-    request.reverse(event.state.rev);
+    reverse(event.state.rev);
     return render.update(pages[event.state.key]);
   }
 
@@ -108,21 +103,25 @@ function pop (event: PopStateEvent & { state: HistoryState }, retry?: string) {
 
     event.state.type = EventType.POPSTATE;
 
-    const page = await request.fetch(event.state);
+    const page = await fetch(event.state);
+
     if (!page) return location.assign(event.state.key);
 
     const key = getKey(location);
 
     // console.log(state.key, page.key, key);
 
-    if (page.key === key) return render.update(page);
-    if (store.has(key)) return render.update(pages[key]);
+    if (page.key === key) {
+      return render.update(page);
+    } else if (store.has(key)) {
+      return render.update(pages[key]);
+    } else {
 
-    const data = store.create(getRoute(key, EventType.POPSTATE));
+      const data = store.create(getRoute(key, EventType.POPSTATE));
+      await fetch(data);
+      history.pushState(data, document.title, key);
 
-    request.fetch(data);
-    history.pushState(data, document.title, key);
-
+    }
   }, 300);
 
 };
@@ -148,7 +147,6 @@ export function connect (): void {
   if (observers.history) return;
 
   addEventListener('popstate', pop, false);
-  addEventListener('load', load, false);
 
   observers.history = true;
 
@@ -164,7 +162,7 @@ export function disconnect (): void {
   if (!observers.history) return;
 
   removeEventListener('popstate', pop, false);
-  addEventListener('load', load, false);
+
   // removeEventListener('beforeunload', persist, { capture: true });
 
   observers.history = false;

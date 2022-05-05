@@ -101,6 +101,14 @@ export function getAttributes (element: Element, page?: IPage): IPage {
 function parsePath (path: string) {
 
   const state: ILocation = object(null);
+  const size = path.length;
+
+  if (size === 1 && path.charCodeAt(0) === 47) {
+    state.pathname = path;
+    state.hash = nil;
+    state.search = nil;
+    return state;
+  }
 
   const hash = path.indexOf('#');
 
@@ -239,6 +247,7 @@ export function parseKey (url: string): ILocation {
     return url.charCodeAt(1) !== 47
       ? parsePath(url) // Character is not '/' we have a pathname
       : parseOrigin(url.slice(2)); // Strips the double slash //
+
   }
 
   // 63 is unicode for '?' (eg: ?foo=bar)

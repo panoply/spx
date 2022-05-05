@@ -1,6 +1,7 @@
 import { IPage } from './page';
 import { IOptions } from './options';
 import { EventNames, LifecycleEvent } from './events';
+import { IConfig, IMemory, IObservers } from './config';
 
 /**
  * Supported
@@ -16,7 +17,7 @@ export const supported: boolean;
  * Establish a SPX connection with your web application.
  * Optionally pass in connect options.
  */
-export function connect(options?: IOptions): void;
+export function connect(options?: IOptions): (state?: IPage) => void;
 
 /**
  * Session
@@ -26,7 +27,13 @@ export function connect(options?: IOptions): void;
  * intend of augmenting the session, please note that the store records
  * are created without prototype.
  */
-export function session(key?: string, merge?: object): object
+export function session(key?: string, merge?: object): {
+  pages: { [key: string]: IPage };
+  snapshots: { [key: string]: string };
+  memory: IMemory & { size: string };
+  config: IConfig;
+  observers: IObservers
+}
 
 /**
  * Reload

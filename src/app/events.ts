@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 import { EventNames, EmitterArguments } from 'types';
-import { forEach } from '../shared/utils';
+import { forEach, hasProp } from '../shared/utils';
 import { object } from '../shared/native';
 import { parse } from '../shared/dom';
 
@@ -12,14 +12,6 @@ import { parse } from '../shared/dom';
  * emitted. Used by the event emitter operations
  */
 const events: { [name: string]: Array<() => void | boolean> } = object(null);
-
-/**
- * Events Model
- *
- * Holds an object reference for every event
- * emitted. Used by the event emitter operations
- */
-const routes: { [name: string]: Array<() => void | boolean> } = object(null);
 
 /**
  * Emit Event
@@ -54,20 +46,14 @@ export function emit <T extends EventNames> (name: T, ...args: EmitterArguments<
 
 }
 
-export function route (path: string) {
-
-  emit(name);
-
-}
-
 /**
  * On Event
  *
  * Exposed as public method on `spx`
  */
-export function on (name: EventNames, callback: () => void) {
+export function on (name: EventNames, callback?: () => void) {
 
-  if (!(name in events)) events[name] = [];
+  if (!hasProp(events, name)) events[name] = [];
 
   events[name].push(callback);
 

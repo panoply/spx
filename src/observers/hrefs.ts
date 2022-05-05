@@ -1,6 +1,7 @@
-import { supportsPointerEvents } from 'detect-it';
-import { Errors, EventType } from '../shared/enums';
-import { hasProp, log } from '../shared/utils';
+import { EventType } from '../shared/enums';
+import { hasProp } from '../shared/utils';
+import { deviceType } from 'detect-it';
+import { pointer } from '../shared/native';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
 import { IPage } from '../types/page';
@@ -81,73 +82,87 @@ function handleTrigger (event: MouseEvent): void {
   // Skip id href value is not a valid key
   if (key === null) return;
 
+  // Event lifecycle, cancel if returned false
+  if (!emit('visit', event)) return;
+
   // Prevent any observers from triggering
   hover.disconnect();
   proximity.disconnect();
   intersect.disconnect();
 
-  // Event lifecycle, cancel if returned false
-  if (!emit('visit', event)) return;
+  const options = { once: true };
 
-  if (hasProp(request.transit, key)) {
-
-    const page = pages[key];
-
-    request.cancel(key);
-
-    target.addEventListener('click', function handle (event: MouseEvent) {
-      event.preventDefault();
-      target.removeEventListener('click', handle, false);
-      return visit(page);
-    }, false);
-
-  } else if (store.has(key)) {
+  if (store.has(key)) { // Sub-sequent visit
 
     const attrs = getAttributes(target, pages[key]);
     const page = store.update(attrs);
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      target.removeEventListener('click', handle, false);
-      return render.update(page);
-    }, false);
+      history.push(page);
+      render.update(page);
+    }, options);
 
-  } else {
+  } else if (hasProp(request.transit, key)) { // In-Transit visit
 
+    const page = pages[key];
+
+    request.cancel(key); // Cancel any other fetches in transit
+
+    target.addEventListener('click', function handle (event: MouseEvent) {
+      event.preventDefault();
+      visit(page);
+    }, options);
+
+  } else { // New Visit
+
+    // Cancel all in-transit requests
     request.cancel();
 
+    // If throttle exist for this key, we will remove them
+    // these are the setTimeouts set by pre-fetch timers
+    request.cleanup(key);
+
+    // We need to (re)parse the element and acquire
+    // any attribute annotations
     const route = getRoute(target, EventType.VISIT);
     const page = store.create(route);
 
+    // Lets trigger a fetch, we will await its
+    // complete after click has concluded, we
+    // have a head-start on the request.
     request.fetch(page);
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      target.removeEventListener('click', handle, false);
-      return visit(page);
-    }, false);
+      visit(page);
+    }, options);
+
   }
 }
 
-export function visit (state: IPage) {
+export async function visit (state: IPage) {
 
   progress.start(state.progress as number);
-  request.wait(state).then(function (page) {
 
-    if (page) {
-      history.push(page);
-      render.update(page);
-    } else {
-      location.assign(state.key);
-    }
+  // We will await the fetch in transit
+  const page = await request.wait(state);
 
-  }).catch(function (error) {
+  if (page) {
 
-    location.assign(state.key);
+    // Push history into stack
+    history.push(page);
 
-    log(Errors.ERROR, error);
+    // Let's begin the rendering cylce
+    render.update(page);
 
-  });
+  } else {
+
+    // Something failed, we will trigger a
+    // traditional navigation
+    return location.assign(state.key);
+
+  }
 
 }
 
@@ -155,7 +170,7 @@ export function visit (state: IPage) {
  * Executes a SPX navigation.
  *
  */
-export function navigate (key: string, state?: IPage): void {
+export async function navigate (key: string, state?: IPage): Promise<void> {
 
   if (state) {
 
@@ -164,13 +179,14 @@ export function navigate (key: string, state?: IPage): void {
     // Trigger progress bar loading
     progress.start(state.progress as number);
 
-    request.fetch(state).then(function (page) {
+    const page = await request.fetch(state);
 
+    if (page) {
       history.push(page);
-
-      return page ? render.update(page) : location.assign(state.key);
-
-    });
+      render.update(page);
+    } else {
+      location.assign(state.key);
+    }
 
   } else {
 
@@ -189,10 +205,12 @@ export function connect (): void {
 
   if (observers.hrefs) return;
 
-  if (supportsPointerEvents) {
-    addEventListener('pointerdown', handleTrigger, false);
+  if (deviceType === 'mouseOnly') {
+    addEventListener(`${pointer}down`, handleTrigger, false);
+  } else if (deviceType === 'touchOnly') {
+    addEventListener('touchstart', handleTrigger, false);
   } else {
-    addEventListener('mousedown', handleTrigger, false);
+    addEventListener(`${pointer}down`, handleTrigger, false);
     addEventListener('touchstart', handleTrigger, false);
   }
 
@@ -207,10 +225,12 @@ export function disconnect (): void {
 
   if (!observers.hrefs) return;
 
-  if (supportsPointerEvents) {
-    removeEventListener('pointerdown', handleTrigger, false);
+  if (deviceType === 'mouseOnly') {
+    removeEventListener(`${pointer}down`, handleTrigger, false);
+  } else if (deviceType === 'touchOnly') {
+    removeEventListener('touchstart', handleTrigger, false);
   } else {
-    removeEventListener('mousedown', handleTrigger, false);
+    removeEventListener(`${pointer}down`, handleTrigger, false);
     removeEventListener('touchstart', handleTrigger, false);
   }
 

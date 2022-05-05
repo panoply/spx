@@ -8,7 +8,6 @@ import { tracked, snapshots, config } from './session';
 import * as store from './store';
 import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
-import * as scroll from '../observers/scroll';
 import * as progress from './progress';
 import * as proximity from '../observers/proximity';
 
@@ -66,7 +65,7 @@ function trackedNodes (target: HTMLElement): void {
  */
 function renderNodes (page: IPage, target: Document) {
 
-  const nodes = page.replace;
+  const nodes = page.target;
 
   if (nodes.length === 1 && nodes[0] === 'body') return document.body.replaceWith(target.body);
 
@@ -155,7 +154,6 @@ export function update (page: IPage): IPage {
   scriptNodes(target.head);
 
   progress.done();
-  scroll.reset();
 
   hover.connect();
   intersect.connect();

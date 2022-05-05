@@ -102,7 +102,7 @@ function render (fromStart: boolean): HTMLDivElement {
   progress.style.background = (config.progress as IProgress).background;
   progress.style.height = (config.progress as IProgress).height;
   progress.style.position = 'fixed';
-  progress.style.zIndex = '9999';
+  progress.style.zIndex = '9999999';
   progress.style.top = '0';
   progress.style.left = '0';
   progress.style.width = '100%';

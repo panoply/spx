@@ -1,4 +1,19 @@
+import { IPosition } from 'types';
 import { Errors } from './enums';
+import { object } from './native';
+
+/**
+ * Asserts the current X and Y page
+ * offset position of the document
+ */
+export function position (state: IPosition = object(null)): IPosition {
+
+  state.y = window.scrollY;
+  state.x = window.scrollX;
+
+  return state;
+
+}
 
 /**
  * Type Error

@@ -167,7 +167,7 @@ export interface IPage {
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
    */
-  replace: string[];
+  target: string[];
 
   /**
    * Progress bar threshold delay.

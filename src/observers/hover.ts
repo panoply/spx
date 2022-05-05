@@ -1,5 +1,5 @@
-import { IHover } from 'types';
-import { supportsPointerEvents } from 'detect-it';
+import { IHover, IPage } from 'types';
+import { pointer } from '../shared/native';
 import { forEach, hasProp } from '../shared/utils';
 import { emit } from '../app/events';
 import { config, observers } from '../app/session';
@@ -10,29 +10,13 @@ import { getLink, getTargets } from '../shared/links';
 import { EventType } from '../shared/enums';
 
 /**
- * Cancels prefetch, if mouse leaves target before threshold
- * concludes. This prevents fetches being made for hovers that
- * do not exceeds threshold.
- */
-function onMouseLeave (event: MouseEvent) {
-
-  const target = getLink(event.target, config.selectors.hover);
-
-  if (target) {
-    request.cleanup(getKey(target.href));
-    handleHover(target);
-  }
-
-};
-
-/**
  * Attempts to visit location, Handles bubbled mouseovers and
  * Dispatches to the fetcher. Once item is cached, the mouseover
  * event is removed.
  *
  * @param {MouseEvent} event
  */
-function onMouseEnter (event: MouseEvent): void {
+function onEnter (event: MouseEvent): void {
 
   const target = getLink(event.target, config.selectors.hover);
 
@@ -41,36 +25,22 @@ function onMouseEnter (event: MouseEvent): void {
   const route = getRoute(target, EventType.HOVER);
 
   if (hasProp(request.timers, route.key)) return;
-  if (store.has(route.key)) return removeListener(target);
 
-  handleLeave(target);
+  target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
   const state = store.create(route);
   const delay = state.threshold || (config.hover as IHover).threshold;
 
-  request.throttle(route.key, function () {
+  request.throttle(route.key, async function () {
 
-    if (!emit('prefetch', target, route)) return removeListener(target);
+    if (!emit('prefetch', target, route)) return;
 
-    request.fetch(state).then(function (prefetch) {
-      return prefetch
-        ? removeListener(target) : null;
-    });
+    const fetched = await request.fetch(state);
+
+    if (fetched) removeListener(target);
 
   }, delay);
 
-};
-
-/**
- * Attach mouseover events to all defined element targets
- */
-function handleHover (target: EventTarget): void {
-
-  if (supportsPointerEvents) {
-    target.addEventListener('pointerenter', onMouseEnter, false);
-  } else {
-    target.addEventListener('mouseenter', onMouseEnter, false);
-  }
 };
 
 /**
@@ -78,29 +48,31 @@ function handleHover (target: EventTarget): void {
  * concludes. This prevents fetches being made for hovers that
  * do not exceeds threshold.
  */
-function handleLeave (target: Element): void {
+function onLeave (this: IPage, event: MouseEvent) {
 
-  if (supportsPointerEvents) {
-    target.addEventListener('pointerout', onMouseLeave, false);
-    target.removeEventListener('pointerenter', onMouseEnter, false);
-  } else {
-    target.addEventListener('mouseleave', onMouseLeave, false);
-    target.removeEventListener('mouseenter', onMouseEnter, false);
-  }
-}
+  const target = getLink(event.target, config.selectors.hover);
+
+  if (target) request.cleanup(getKey(target.href));
+
+};
 
 /**
- * Adds and/or Removes click events.
+ * Add event to a target
+ */
+function addListener (target: EventTarget): void {
+
+  target.addEventListener(`${pointer}enter`, onEnter);
+
+};
+
+/**
+ * Remove events from a target
  */
 function removeListener (target: EventTarget): void {
 
-  if (supportsPointerEvents) {
-    target.removeEventListener('pointerenter', onMouseEnter, false);
-    target.removeEventListener('pointerout', onMouseLeave, false);
-  } else {
-    target.removeEventListener('mouseleave', onMouseLeave, false);
-    target.removeEventListener('mouseenter', onMouseEnter, false);
-  }
+  target.removeEventListener(`${pointer}enter`, onEnter);
+  target.removeEventListener(`${pointer}leave`, onLeave);
+
 }
 
 /**
@@ -112,7 +84,7 @@ export function connect (): void {
 
   if (!config.hover || observers.hover) return;
 
-  forEach(handleHover, getTargets(config.selectors.hover));
+  forEach(addListener, getTargets(config.selectors.hover));
 
   observers.hover = true;
 

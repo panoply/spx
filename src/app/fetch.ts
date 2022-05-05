@@ -40,13 +40,12 @@ const xhr: { [url: string]: XMLHttpRequest } = object(null);
  */
 export function request (key: string) {
 
-  const request = xhr[key] = new XMLHttpRequest();
-
   return new Promise<string>(function (resolve, reject) {
 
-    request.open('GET', key, config.async);
+    const request = xhr[key] = new XMLHttpRequest();
+
+    request.open('GET', key);
     request.setRequestHeader('X-SPX', 'true');
-    request.setRequestHeader('X-SPX-Session', 'true');
     request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     request.onload = function () {
@@ -67,7 +66,7 @@ export function request (key: string) {
       delete xhr[key];
     };
 
-    request.send(null);
+    request.send();
 
   });
 
@@ -91,6 +90,9 @@ export function cleanup (key: string) {
   if (!hasProp(timers, key)) return true;
 
   clearTimeout(timers[key]);
+
+  console.log('cleanup', timers);
+
   return delete timers[key];
 
 }
@@ -118,13 +120,10 @@ export function abort (key: string): void {
  */
 export function cancel (key?: string): void {
 
-  if (hasProp(xhr, key)) {
-    for (const url in xhr) {
-      if (key === url) continue;
-      // console.log('cancel', key);
-      xhr[url].abort();
-      log(Errors.WARN, `Pending fetch aborted: ${url}`);
-    }
+  for (const url in xhr) {
+    if (key === url) continue;
+    xhr[url].abort();
+    log(Errors.WARN, `Pending fetch aborted: ${url}`);
   }
 
 };
@@ -177,7 +176,7 @@ export function preload (state: IPage) {
  * dispatched at different points, like (for example) in
  * popstate operations or initial load.
  */
-export function reverse (key: string) {
+export async function reverse (key: string): Promise<void> {
 
   if (store.has(key)) return;
 
@@ -186,13 +185,13 @@ export function reverse (key: string) {
   const route = getRoute(key, EventType.REVERSE);
   const page = store.create(route);
 
-  fetch(page);
+  setTimeout(() => fetch(page));
 
 }
 
 export async function wait (state: IPage): Promise<IPage> {
 
-  if (!hasProp(transit, state.key)) return Promise.resolve(state);
+  if (!hasProp(transit, state.key)) return state;
 
   const snapshot = await transit[state.key];
 
@@ -207,7 +206,7 @@ export async function wait (state: IPage): Promise<IPage> {
  * from being dispatched when an indentical fetch is inFlight.
  * Page state is returned and the session is update success.
  */
-export function fetch (state: IPage): Promise<false|IPage> {
+export async function fetch (state: IPage): Promise<false|IPage> {
 
   if (hasProp(xhr, state.key)) {
 
@@ -218,12 +217,12 @@ export function fetch (state: IPage): Promise<false|IPage> {
       log(Errors.WARN, `Fetch already in transit: ${state.key}`);
     }
 
-    return Promise.resolve(false);
+    return false;
   }
 
   if (!emit('fetch', state)) {
     log(Errors.WARN, `Fetch cancelled within dispatched event: ${state.key}`);
-    return Promise.resolve(false);
+    return false;
   }
 
   // create a transit queue reference of the

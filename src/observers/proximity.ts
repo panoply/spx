@@ -31,8 +31,9 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
 function setBounds (target: HTMLLinkElement) {
 
   const state = object(null);
+
   const rect = target.getBoundingClientRect();
-  const attr = target.getAttribute(`${config.schema}-proximity`);
+  const attr = target.getAttribute(config.selectors.proximity);
   const distance = isNumber.test(attr) ? Number(attr) : (config.proximity as IProximity).distance;
 
   state.target = target;
@@ -59,7 +60,9 @@ function observer (targets?: {
 
   let wait = false;
 
-  return (event: MouseEvent) => {
+  console.log(targets);
+
+  return function (event: MouseEvent) {
 
     if (wait) return;
 
@@ -68,31 +71,30 @@ function observer (targets?: {
     const node = targets.findIndex(node => inRange(event, node));
 
     if (node === -1) {
-
-      setTimeout(() => {
-        wait = false;
-      }, (config.proximity as IProximity).throttle);
-
+      setTimeout(() => (wait = false), (config.proximity as IProximity).throttle);
     } else {
-
       const { target } = targets[node];
+      console.log(targets);
       const page = store.create(getRoute(target, EventType.PROXIMITY));
       const delay = page.threshold || (config.proximity as IProximity).threshold;
 
-      request.throttle(page.key, () => {
+      request.throttle(page.key, async () => {
 
         if (!emit('prefetch', target, page)) return disconnect();
 
-        return request.fetch(page).then(prefetch => {
-          if (prefetch) {
-            targets.splice(node, 1);
-            wait = false;
-            if (targets.length === 0) {
-              disconnect();
-              log(Errors.INFO, 'Proximity observer disconnected');
-            }
+        const prefetch = await request.fetch(page);
+
+        if (prefetch) {
+
+          targets.splice(node, 1);
+
+          wait = false;
+
+          if (targets.length === 0) {
+            disconnect();
+            log(Errors.INFO, 'Proximity observer disconnected');
           }
-        });
+        }
 
       }, delay);
 
@@ -117,9 +119,9 @@ export function connect (): void {
     entries = observer(targets);
 
     if (supportsPointerEvents) {
-      addEventListener('pointermove', entries, false);
+      addEventListener('pointermove', entries, { passive: true });
     } else {
-      addEventListener('mousemove', entries, false);
+      addEventListener('mousemove', entries, { passive: true });
     }
 
     observers.proximity = true;
@@ -136,9 +138,9 @@ export function disconnect (): void {
   if (!observers.proximity) return;
 
   if (supportsPointerEvents) {
-    removeEventListener('pointermove', entries, false);
+    removeEventListener('pointermove', entries);
   } else {
-    removeEventListener('mousemove', entries, false);
+    removeEventListener('mousemove', entries);
   }
 
   observers.proximity = false;

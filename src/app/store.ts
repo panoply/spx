@@ -59,17 +59,23 @@ export function clear (key?: string[] | string): void {
  * Generates a page state record which will be written
  * to our `pages` store and history state. This is called
  * for all new SPX visits to locations that do not exist
- * in the session and will typically be executed following
- * a call to `getRoute` which will have assigned the route
- * preset values and any annotations (attributes).
+ * in the session.
  *
- * We assign defaults defined in the SPX connection that
- * did not exist in the `page` state value that provided.
+ * This function will typically be triggers following a
+ * a call to `getRoute`. The `getRoute()` will have assigned
+ * the location preset and in addition any attribute annotations
+ * provided on the intercepted `<a href="*"></a>` element.
+ *
+ * The function will assign options in accordance to the SPX
+ * connection if they did not exist in the `page` state value
+ * that was passed.
  */
 export function create (page: IPage): IPage {
 
-  page.replace = hasProp(page, 'replace')
-    ? [].concat(config.targets, page.replace)
+  page.target = hasProp(page, 'target')
+    ? (page.target.length === 1 && page.target[0] === 'body')
+      ? page.target
+      : [].concat(config.targets, page.target)
     : config.targets;
 
   if (config.cache) {
@@ -118,10 +124,28 @@ export function set (state: IPage, snapshot: string): IPage {
   const event = emit('store', state, snapshot);
   const dom = typeof event === 'string' ? event : snapshot;
 
-  // EventTypes 4, 5 and 6 are prefetch types then we
-  // update the type record to infer prefetch in the
-  // next lifecycle events to emitted
-  if (state.type > 3 && state.type < 7) state.type = EventType.PREFETCH;
+  // EventTypes above 6 are prefetch/trigger kinds.
+  // We need to augment the page store to align with
+  // the record we handling.
+  if (state.type > 6) {
+
+    // EventTypes above 10 are prefetch kinds
+    // we need to update the type reference
+    if (state.type > 10) {
+
+      state.type = EventType.PREFETCH;
+
+    } else {
+
+      // EventTypes are 7 or 10 which are trigger
+      // kinds, we need to update the current pages
+      // scroll position.
+      if (hasProp(pages, state.rev)) {
+        pages[state.rev].position.x = window.scrollX;
+        pages[state.rev].position.y = window.scrollY;
+      }
+    }
+  }
 
   // Update to document title reference
   state.title = getTitle(dom);
@@ -130,6 +154,7 @@ export function set (state: IPage, snapshot: string): IPage {
   // returned a boolean false values we will return the record
   if (!config.cache || event === false) return state;
 
+  // Lets assign this record to the session store
   pages[state.key] = state;
   snapshots[state.uuid] = dom;
 
@@ -151,8 +176,8 @@ export function set (state: IPage, snapshot: string): IPage {
  *
  * Typicaly, this function augments the in-memory store
  * and as such an already generated record should be
- * provided or at the very least pass a generated `route`
- * using `getRoute()` to ensure the expected values.
+ * provided and at the very least pass a generated `route`
+ * that was created with `getRoute()`.
  */
 export function update (page: IPage, snapshot?: string): IPage {
 
@@ -169,21 +194,22 @@ export function update (page: IPage, snapshot?: string): IPage {
 
 /**
  * Returns the in-memory (session) page store and a
- * parsed document snapshot. Optionally accepts a url
- * `key` reference to retrieve a specific page. If `key`
- * is undefined (not passed) then the current page is
- * returned according to the history API state record.
+ * parsed document snapshot.
+ *
+ * Optionally accepts a url `key` reference to retrieve
+ * a specific page. If `key` is undefined (not passed)
+ * then the current page is returned according to the
+ * history API state record.
+ *
+ * If no `key` exists an error is thrown.
  */
 export function get (key = history.state.key): { page: IPage, dom: Document } {
 
   if (hasProp(pages, key)) {
-
     const state = object(null);
     state.page = pages[key];
     state.dom = parse(snapshots[state.page.uuid]);
-
     return state;
-
   }
 
   log(Errors.ERROR, `No record exists: ${key}`);

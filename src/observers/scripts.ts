@@ -13,7 +13,7 @@ function evaluator (exec: ReturnType<typeof scriptTag>): Promise<void> {
 
     const script = document.createElement('script');
 
-    script.addEventListener('error', reject);
+    script.addEventListener('error', reject, { once: true });
     script.async = false;
     script.text = exec.target.text;
 
@@ -25,11 +25,13 @@ function evaluator (exec: ReturnType<typeof scriptTag>): Promise<void> {
       exec.target.replaceWith(script);
     } else {
       document.head.append(script);
-      exec.external ? script.addEventListener('load', () => script.remove()) : script.remove();
+      exec.external
+        ? script.addEventListener('load', () => script.remove(), { once: true })
+        : script.remove();
     }
 
     exec.external
-      ? script.addEventListener('load', () => resolve())
+      ? script.addEventListener('load', () => resolve(), { once: true })
       : resolve();
 
   });

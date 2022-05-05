@@ -1,16 +1,11 @@
 /**
- * DOM Parser
- */
-const parser: DOMParser = new DOMParser();
-
-/**
   * Parse HTML document string from request response
   * using `parser()` method. Cached pages will pass
   * the saved response here.
   */
 export function parse (HTMLString: string): Document {
 
-  return parser.parseFromString(HTMLString, 'text/html');
+  return new DOMParser().parseFromString(HTMLString, 'text/html');
 
 }
 

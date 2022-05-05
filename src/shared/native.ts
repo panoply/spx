@@ -1,4 +1,10 @@
 import { History } from 'types';
+import { supportsPointerEvents } from 'detect-it';
+
+/**
+ * Re-export of pointer events
+ */
+export const pointer = supportsPointerEvents ? 'pointer' : 'mouse';
 
 /**
  * History API `window.history`

@@ -7,7 +7,7 @@ export enum Attributes {
   /**
    * Regex Capture Attribute List
    */
-  NAMES = 'hydrate|append|prepend|replace|progress|threshold|position|proximity|hover',
+  NAMES = 'hydrate|append|prepend|target|progress|threshold|position|proximity|hover',
 }
 
 /**
@@ -34,59 +34,107 @@ export enum Errors {
 }
 
 /**
- * Event type ids
+ * Event type IDs. Event types are categorizes
+ * into different _kinds_ which inform upon the
+ * action which has takes place.
+ *
+ * Reference ()
+ *
+ * A `reference` event type refers to an action
+ * which has taken place.
+ *
+ * Trigger
+ *
+ * A `trigger` event type refers to a visit
+ * operation of intent, like a link click.
+ *
+ * Prefetch
+ *
+ * A `prefetch` event type refers to an fetch
+ * operation which an occured from an observer.
+ *
+ * Fetch
+ *
+ * A `fetch` event type refers to a request
+ * operation of some kind, like a programmatic fetch.
  */
 export enum EventType {
   /**
    * Store was created on initial run
+   *
+   * @kind `reference`
    */
   INITIAL = 1,
   /**
-   * Store was created from trigger visit
+   * Request is programmatic prefetch
+   *
+   * @kind `reference`
    */
-  VISIT,
+  PREFETCH,
   /**
-   * Store was created from a hydration
+   * Programmatic fetch triggered
+   *
+   * @kind `reference`
    */
-  HYDRATE,
-  /**
-   * Request is a prefetch hover
-   */
-  HOVER,
-  /**
-   * Request is a prefetch intersection
-   */
-  INTERSECT,
-  /**
-   * Request is a prefetch proximity
-   */
-  PROXIMITY,
+  FETCH,
   /**
    * Request is a pre-emptive preload
+   *
+   * @kind `fetch`
    */
   PRELOAD,
   /**
    * Request is a reverse lastpath fetch
+   *
+   * @kind `fetch`
    */
   REVERSE,
   /**
    * Request is a popstate fetch
+   *
+   * @kind `fetch`
    */
   POPSTATE,
   /**
-   * Request is reload fetch
+   * Store was created from trigger visit.
+   *
+   * @kind `trigger`
    */
-  RELOAD,
+  VISIT,
   /**
-   * Request is programmatic prefetch
+   * Store was created from a hydration
+   *
+   * @kind `trigger`
    */
-  PREFETCH,
+  HYDRATE,
   /**
    * Snapshot is recaptured
+   *
+   * @kind `trigger`
    */
   CAPTURE,
   /**
-   * Programmatic fetch triggered
+   * Request is reload fetch
+   *
+   * @kind `trigger`
    */
-  FETCH,
+  RELOAD,
+  /**
+   * Request is a prefetch hover
+   *
+   * @kind `prefetch`
+   */
+  HOVER,
+  /**
+   * Request is a prefetch intersection
+   *
+   * @kind `prefetch`
+   */
+  INTERSECT,
+  /**
+   * Request is a prefetch proximity
+   *
+   * @kind `prefetch`
+   */
+  PROXIMITY
 }

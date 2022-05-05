@@ -68,7 +68,7 @@ export type LifecycleEvent<T extends EventNames> = (
 
   ) => void :
 
-  T extends 'trigger' ? (
+  T extends 'visit' ? (
     /**
      * The mouse event, access target via `event.target`
      */
@@ -84,7 +84,7 @@ export type LifecycleEvent<T extends EventNames> = (
 
   ) => void | false :
 
-  T extends 'request' ? (
+  T extends 'fetch' ? (
     /**
      * Page state reference
      */
@@ -92,7 +92,7 @@ export type LifecycleEvent<T extends EventNames> = (
 
   ) => void | false :
 
-  T extends 'cache' ? (
+  T extends 'cached' ? (
     /**
      * Page state reference
      */

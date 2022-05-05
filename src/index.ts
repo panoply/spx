@@ -1,28 +1,29 @@
 import { IConfig, IPage } from 'types';
 import { config, snapshots, pages, observers, memory } from './app/session';
-import { log, size } from './shared/utils';
+import { log, position, size } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute, getKey } from './app/location';
 import { parse } from './shared/dom';
 import { Errors, EventType } from './shared/enums';
 import { assign, history, object, origin } from './shared/native';
+import { initialize, disconnect } from './app/controller';
 import * as store from './app/store';
 import * as hrefs from './observers/hrefs';
 import * as request from './app/fetch';
-import * as controller from './app/controller';
 import * as render from './app/render';
-import * as scroll from './observers/scroll';
-import { on, off } from './app/events';
+import { on, off, emit } from './app/events';
+
 /**
- * Event Emitters
+ * RE-Exports
  */
 export { on, off } from './app/events';
+export { disconnect } from './app/controller';
 
 /**
  * Supported
  */
 export const supported = !!(
-  history.pushState &&
+  window.history.pushState &&
   window.requestAnimationFrame &&
   window.addEventListener &&
   window.DOMParser
@@ -33,18 +34,26 @@ export const supported = !!(
  */
 export function connect (options: IConfig = {}) {
 
+  if (!supported) {
+    return log(Errors.ERROR, 'Browser does not support SPX');
+  }
+
+  if (!window.location.protocol.startsWith('http')) {
+    return log(Errors.ERROR, 'Invalid protocol, SPX expects https or http protocol');
+  }
+
   configure(options);
 
-  if (supported) {
-    if (/https?/.test(window.location.protocol)) {
-      addEventListener('DOMContentLoaded', controller.initialize);
-    } else {
-      log(Errors.ERROR, 'Invalid protocol, SPX expects https or http protocol');
-    }
-  } else {
-    log(Errors.ERROR, 'Browser is not supported');
+  const promise = initialize();
 
-  }
+  return async function (callback: (state?: IPage) => void) {
+
+    const state = (await promise);
+
+    callback(state);
+
+    log(Errors.INFO, 'Connection Established ⚡');
+  };
 
 };
 
@@ -169,7 +178,7 @@ export async function hydrate (link: string, elements: string[]): Promise<void|I
 
   const route = getRoute(EventType.HYDRATE);
 
-  route.position = scroll.position();
+  route.position = position();
   route.hydrate = elements;
 
   const dom = await request.request(link);
@@ -180,7 +189,7 @@ export async function hydrate (link: string, elements: string[]): Promise<void|I
     ? store.update(route, dom)
     : store.create(route);
 
-  request.reverse(route.rev);
+  setTimeout(() => request.reverse(route.rev));
 
   return render.update(page);
 
@@ -219,15 +228,6 @@ export async function visit (link: string | Element, options?: IPage): Promise<v
     : hrefs.navigate(route.key, store.create(merge));
 
 };
-
-/**
- * Disconnect
- */
-export function disconnect () {
-
-  controller.destroy();
-
-}
 
 export default {
   supported,
