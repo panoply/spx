@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable prefer-const */
 /* eslint-disable no-multi-str */
 
@@ -684,7 +685,7 @@ export const JSONTree = (function () {
        */
     loadData: function (jsonObj: any) {
       if (!utils.isValidRoot(jsonObj)) {
-        alert('The root should be an object or an array');
+        // console('The root should be an object or an array');
         return;
       }
 
@@ -785,3 +786,5 @@ export const JSONTree = (function () {
     }
   };
 })();
+
+export type Tree = typeof JSONTree
