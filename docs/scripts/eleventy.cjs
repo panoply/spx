@@ -21,6 +21,7 @@ module.exports = function (config) {
   });
 
   config.setLibrary('md', markdown);
+  config.setDynamicPermalinks(false);
   config.addPlugin(navigation);
   config.addPlugin(highlight);
   config.addPlugin(svgsprite, {
@@ -47,7 +48,7 @@ module.exports = function (config) {
   });
 
   config.addPlugin(htmlmin, {
-    collapseBooleanAttributes: true,
+    collapseBooleanAttributes: false,
     collapseWhitespace: true,
     decodeEntities: true,
     html5: true,
@@ -61,6 +62,7 @@ module.exports = function (config) {
   return {
     htmlTemplateEngine: 'liquid',
     passthroughFileCopy: false,
+    pathPrefix: '',
     templateFormats: [
       'liquid',
       'json',
