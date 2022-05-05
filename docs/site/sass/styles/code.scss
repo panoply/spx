@@ -1,7 +1,12 @@
+code {
+  color: $pink;
+  font-size: 1.025rem;
+}
+
 code[class*="language-"] {
   color: $cyan;
-  font-size: 15px;
-  font-family: Menlo, Monaco, "Courier New", monospace;
+  font-size: $font-size-base;
+  font-family: $font-family-code;
   white-space: pre;
   white-space: pre-wrap;
   text-shadow: none;
@@ -19,15 +24,14 @@ pre {
 
   &[class*="language-"] {
     color: $cyan;
-    font-size: 15px;
-    font-family: Menlo, Monaco, "Courier New", monospace;
+    font-family: $font-family-code;
     white-space: pre;
     white-space: pre-wrap;
     text-shadow: none;
     word-wrap: normal;
     tab-size: 2;
     hyphens: none;
-    background: rgb(30 30 30);
+    background: $gray-800;
   }
 
   code {
@@ -36,7 +40,7 @@ pre {
   }
 
   > code[class*="language-"] {
-    font-size: 1em;
+    font-size: 1.025rem;
   }
 }
 
@@ -52,7 +56,7 @@ pre {
 .token {
   &.selector,
   &.inserted {
-    color: #a6e22d;
+    color: $green;
   }
 
   &.atrule,
@@ -60,17 +64,17 @@ pre {
   &.keyword,
   &.important,
   &.deleted {
-    color: #ef3b7d;
+    color: $pink;
   }
 
   &.regex,
   &.statement {
-    color: cyan;
+    color: $cyan;
   }
 
   &.placeholder,
   &.variable {
-    color: #fff;
+    color: $white;
   }
 
   &.important,
@@ -80,7 +84,7 @@ pre {
   }
 
   &.punctuation {
-    color: #bebec5;
+    color: #ccc;
   }
 
   &.entity {
@@ -99,42 +103,55 @@ pre {
   &.prolog,
   &.doctype,
   &.cdata {
-    color: #6f705e;
+    color: #ccc;
   }
 
   &.operator,
   &.boolean,
   &.number {
-    color: #a77afe;
+    color: $purple;
   }
 
   &.attr-name,
   &.string,
   &.entity,
   &.url {
-    color: #e6d06c;
+    color: $yellow;
   }
 }
 
 .language-css .token.string,
 .style .token.string {
-  color: #e6d06c;
+  color: $yellow;
 }
 
-code.language-markup {
-  color: #f9f9f9;
+code.language-javascript,
+code.language-js {
+  color: $gray-300;
 
   .token {
+    &.comment {
+      color: $gray-600;
+    }
+
+    &.function {
+      color: $cyan;
+    }
+
+    &.parameter {
+      color: $orange;
+    }
+
     &.tag {
-      color: #ef3b7d;
+      color: $pink;
     }
 
     &.attr-name {
-      color: #a6e22d;
+      color: $green;
     }
 
     &.attr-value {
-      color: #e6d06c;
+      color: $yellow;
     }
 
     &.style {
@@ -143,6 +160,82 @@ code.language-markup {
 
     &.script {
       color: $cyan;
+
+      .token.keyword {
+        color: $cyan;
+      }
+    }
+  }
+}
+
+code.language-html {
+  color: $gray-200;
+
+  .token {
+    &.comment {
+      color: $gray-600;
+    }
+
+    &.tag {
+      color: $pink;
+    }
+
+    &.attr-name {
+      color: $green;
+    }
+
+    &.attr-value {
+      color: $yellow;
+    }
+
+    &.style {
+      color: $cyan;
+    }
+
+    &.script {
+      color: $gray-200;
+
+      .token.function {
+        color: $cyan;
+      }
+
+      .token.keyword {
+        color: $cyan;
+      }
+    }
+  }
+}
+
+code.language-bash {
+  color: $pink;
+}
+
+code.language-markup {
+  color: $gray-200;
+
+  .token {
+    &.tag {
+      color: $pink;
+    }
+
+    &.attr-name {
+      color: $green;
+    }
+
+    &.attr-value {
+      color: $yellow;
+    }
+
+    &.style {
+      color: $cyan;
+    }
+
+    &.script {
+      color: $cyan;
+
+      .token.function {
+        color: $cyan;
+      }
 
       .token.keyword {
         color: $cyan;

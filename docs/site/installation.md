@@ -71,7 +71,7 @@ Bundling the recommended approach because this way you can better leverage the m
 ```js
 import spx from 'spx';
 
-spx.connect({ /* options */ })(session => {
+spx.connect({ /* options */ })(function(session) {
 
   // The connect returns a callback function after
   // connection was established. Lets inspect the session:

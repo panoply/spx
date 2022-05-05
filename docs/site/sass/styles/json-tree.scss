@@ -8,6 +8,7 @@
   /* Styles for the container of the tree (e.g. fonts, margins etc.) */
   &-tree {
     width: 100%;
+    margin-bottom: 0;
     margin-left: 0;
     padding-left: 20px;
     font-size: 13px;
@@ -93,7 +94,6 @@
     display: block;
     width: 11px;
     height: 11px;
-    background-image: url("icons.svg");
   }
 
   &-node-expanded > &-label-wrapper > &-label > &-expand-button {

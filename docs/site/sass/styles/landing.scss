@@ -21,41 +21,20 @@ header {
   top: 0;
   right: 0;
   left: 250px;
+  z-index: 100;
   display: block;
   width: 100%;
-  height: 50px;
-  background-color: $black;
-  border-bottom: 1px solid $cyan;
-
-
-  .logo {
-    display: flex;
-    width: 80px;
-    height: 30px;
-    margin-top: 8px;
-    fill: $cyan;
-  }
+  height: 55px;
+  margin-right: 250px;
+  font-size: 1rem;
+  letter-spacing: 00.06rem;
+  background-color: rgb(15 15 15 / 56.2%);
+  backdrop-filter: blur(15px);
 }
 
-.sidebar {
-  position: fixed;
-  top: 0;
-  width: 250px;
-  height: 100vh;
-  border-color: $cyan;
-
-  ul > li {
-    list-style-type: none;
-
-    a {
-      text-decoration: none;
-    }
-  }
-
-  .logo {
-    width: 200px;
-    fill: $cyan;
-  }
+main {
+  margin: 0 349px 0 251px;
+  scroll-margin-top: 55px;
 }
 
 strong {
@@ -75,7 +54,11 @@ strong {
       > .icon {
         width: 40px;
         height: 40px;
-        fill: #fff;
+        fill: $white;
+
+        &:hover {
+          fill: $cyan;
+        }
       }
     }
   }
@@ -93,6 +76,7 @@ strong {
 
     > .icon {
       width: 250px;
+      height: 80px;
       fill: $white;
 
       &:hover {

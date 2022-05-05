@@ -1,11 +1,10 @@
 .session {
   position: fixed;
-  top: 50px;
+  top: 0;
   right: 0;
+  z-index: 200;
   width: 350px;
-  height: 100vh;
   border-color: $cyan;
-  border-left: 1px solid $cyan;
 }
 
 .bd-bottom {
@@ -16,12 +15,68 @@
   overflow-y: scroll;
 }
 
-
-h1,
-h2,
-h3,
-h4 {
-  margin-top: 50px !important;
-  font-family: Roboto, sans-serif !important;
-  text-transform: uppercase;
+.session-tabs {
+  height: 40px;
 }
+
+.session-logs {
+  position: absolute;
+  top: 41px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+
+  .active {
+    height: 20%;
+  }
+
+  .action {
+    height: 40%;
+  }
+
+  .history {
+    height: 40%;
+  }
+}
+
+.session-details {
+  .memory {
+    height: 10%;
+  }
+
+  .accordion-content.open {
+    border-bottom: $border-width solid $cyan;
+  }
+
+  .accordion-header {
+    .icon {
+      width: 20px;
+      height: 20px;
+      color: $white;
+    }
+
+    .icon-open {
+      display: none;
+    }
+
+    .icon-close {
+      display: flex;
+    }
+
+    &.opened {
+      .icon-open {
+        display: flex;
+      }
+
+      .icon-close {
+        display: none;
+      }
+    }
+  }
+
+  .accordion-button {
+    border-bottom: $border-width solid $cyan;
+  }
+}
+

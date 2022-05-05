@@ -6,11 +6,11 @@ $accordion-header-button-bg: $black !default;
 $accordion-header-button-bg-open: $black !default;
 $accordion-header-button-bg-focus: $black !default;
 $accordion-content-bg: rgb(18 18 18) !default;
-$accordion-transition-button: background-color 0.2s ease !default;
-$accordion-transition-content-outer: height 0.1s ease 0.1s !default;
-$accordion-transition-content-outer-open: height 0.2s ease !default;
-$accordion-transition-content-inner: opacity 0.1s ease;
-$accordion-transition-content-inner-open: opacity 0.3s ease !default;
+$accordion-transition-button: background-color 0.2s linear !default;
+$accordion-transition-content-outer: height 0.1s linear 0.1s !default;
+$accordion-transition-content-outer-open: height 0.1s linear !default;
+$accordion-transition-content-inner: opacity 0.1s linear;
+$accordion-transition-content-inner-open: opacity 0.3s linear !default;
 
 .accordion {
   display: block;
@@ -55,10 +55,9 @@ $accordion-transition-content-inner-open: opacity 0.3s ease !default;
     display: block;
     width: 100%;
     margin: 0;
-    padding: 0;
     color: $color-1;
-    font-size: $font-size-sm;
-    letter-spacing: 0.08rem;
+    font-size: $font-size-base;
+    letter-spacing: 0.03rem;
     text-align: left;
     border: none;
     border-radius: 0;
@@ -77,12 +76,12 @@ $accordion-transition-content-inner-open: opacity 0.3s ease !default;
     background-color: $background-color-1;
     border-top: 1px solid transparent;
     transform: translateY(-100%);
-    transition: 0.3s ease-in-out 0.1s;
+    transition: 0.1s linear 0.1s;
 
     &.open {
       display: block;
       transform: translateY(0);
-      transition: 0.2s ease-in-out;
+      transition: 0.1s linear;
     }
 
     &.opened {
@@ -90,13 +89,13 @@ $accordion-transition-content-inner-open: opacity 0.3s ease !default;
 
       > .accordion-inner {
         opacity: 1;
-        transition: opacity 0.245s ease-in-out;
+        transition: opacity 0.145s linear;
       }
     }
   }
 
   &-inner {
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.1s linear;
   }
 }

@@ -1,18 +1,102 @@
-<div class="row bd-bottom g-1 mt-5" data-controller="session">
-  <div class="col-12 session-scrol bd-bottom bd-cyan py-4">
-    <h6 class="pl-3">OBSERVERS</h6>
-    <div class="d-flex flex-column w-100" data-session-target="observers"></div>
+{%- if page.url == '/' -%}
+  {%- assign is_open = 'false' -%}
+  {%- assign hidden = 'false' -%}
+  {%- assign active = '' -%}
+{%- else -%}
+  {%- assign is_open = 'true' -%}
+  {%- assign hidden = 'true' -%}
+  {%- assign active = 'drawer-active' -%}
+{%- endif -%}
+
+<aside
+  id="session"
+  data-drawer-is-open-value=" {{- is_open }}"
+  class="drawer-panel drawer-right {{ active }} session vh-100 bd-left"
+  data-controller="drawer">
+
+  <div data-controller="session" class="w-100">
+
+    <div data-controller="tabs" class="tabs">
+
+      <nav data-tabs-target="tab" role="tablist" class="row g-0 session-tabs">
+        <button
+          class="btn col-6"
+          aria-controls="store"
+          aria-selected="true"
+          role="tab"
+          type="button">
+          Session
+        </button>
+        <button
+          class="btn col-6"
+          aria-controls="logs"
+          aria-selected="false"
+          role="tab"
+          type="button">
+          Store
+        </button>
+      </nav>
+
+      <div id="store" role="tabpanel" aria-hidden="false" class="session-details">
+
+        <div class="memory bd-bottom px-3 py-4">
+          <div class="row">
+            <div class="col-2 fs-sm upper">Cache</div>
+            <div class="col fs-sm fc-pink" data-session-target="memory"></div>
+          </div>
+          <div class="row">
+            <div class="col-2 fs-sm upper">Visits</div>
+            <div class="col fs-sm fc-pink" data-session-target="visits"></div>
+          </div>
+        </div>
+
+        <div
+          class="accordion"
+          data-accordion-collapsible-value="true"
+          data-accordion-multiselect-value="false"
+          data-controller="accordion">
+
+          {%- assign tabs = 'pages,snapshots,history' | split: ',' -%}
+
+          {% for item in tabs %}
+
+            <div class="accordion-header" {% if item == 'pages' %} data-open {% endif %}>
+              <button class="accordion-button bg-black d-flex jc-between ac-center upcase py-2 px-3">
+                {%- if item == 'history' -%}
+                  <span>{{ item }} API</span>
+                {%- else -%}
+                  <span>{{ item }}</span>
+                {%- endif -%}
+
+                {% svg "plus-square", 'icon icon-close' %}
+                {% svg "minus-square", 'icon icon-open' %}
+              </button>
+
+            </div>
+
+            <div class="accordion-content">
+              <div id="{{ item }}" class="accordion-inner px-2 py-4" data-session-target="{{ item }}"></div>
+            </div>
+
+          {% endfor %}
+
+        </div>
+
+      </div>
+
+      <div id="logs" role="tabpanel" aria-hidden="true" class="session-log">
+
+        {%- assign logs = 'active, action, logs' | split: ',' -%}
+
+        {% for item in logs %}
+
+          <div class="d-flex {{ item }} bd-bottom" data-session-target="{{ item }}">
+            {{ item }}
+          </div>
+
+        {% endfor %}
+      </div>
+
+    </div>
   </div>
-  <div class="col-12 session-scroll bd-bottom bd-cyan py-4">
-    <h6 class="pl-3">STORE</h6>
-    <div class="d-flex flex-column w-100" data-session-target="memory"></div>
-  </div>
-  <div class="col-12 session-scrol bd-bottom bd-cyan py-4">
-    <h6 class="pl-3">PAGES</h6>
-    <div class="d-flex flex-column w-100" data-session-target="pages"></div>
-  </div>
-  <div class="col-12 session-scrol bd-bottom bd-cyan py-4">
-    <h6 class="pl-3">SNAPSHOTS</h6>
-    <div class="d-flex flex-column w-100" data-session-target="snapshots"></div>
-  </div>
-</div>
+</aside>

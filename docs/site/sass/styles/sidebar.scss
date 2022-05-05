@@ -1,0 +1,79 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  width: 250px;
+  border-color: $cyan;
+
+
+  .accordion-header {
+    .icon {
+      width: 20px;
+      height: 20px;
+      color: $white;
+    }
+
+    .icon-open {
+      display: none;
+    }
+
+    .icon-close {
+      display: flex;
+    }
+
+    &.open {
+      .accordion-button {
+        color: $cyan;
+      }
+    }
+
+    &.opened {
+      .icon-open {
+        display: flex;
+        color: $cyan;
+      }
+
+      .icon-close {
+        display: none;
+      }
+    }
+  }
+
+  .accordion-content {
+    box-shadow: inset 0 10px 12px -10px rgb(2 2 2);
+  }
+
+  .accordion-button {
+    padding-left: 0 !important;
+
+    &:hover {
+      color: $cyan;
+
+      .icon {
+        color: $cyan;
+      }
+    }
+  }
+
+
+  ul > li {
+    list-style-type: none;
+
+    a {
+      font-size: 1rem;
+      text-decoration: none;
+    }
+  }
+
+  .logo {
+    width: 54px;
+    height: 21px;
+    fill: $white;
+  }
+
+  .logo-text {
+    color: $white;
+    font-size: 0.8rem;
+    font-family: $font-family-heading;
+    letter-spacing: 0.06rem;
+  }
+}

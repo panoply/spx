@@ -15,7 +15,7 @@ sidebar:
 
 Single Page XHR enhancement for SSR powered web applications. SPX is a lightening fast, lightweight (8kb gzip) push~state solution that (pre)-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module maintains an in-memory cache of fetched pages which prevents subsequent requests and instantaneous navigation in a controlled a persisted manner.
 
-### Key Features
+# Key Features
 
 - Pre-fetching capabilities using hover, intersection or proximity observers.
 - Snapshot caching engine and per-page state control.
@@ -25,7 +25,7 @@ Single Page XHR enhancement for SSR powered web applications. SPX is a lightenin
 - Gracefully handles script and style asset evaluation.
 - Attribute driven programmatic control.
 
-## What is SPX
+# What is SPX
 
 SPX is an acronym for **Single Page XHR** and derived from terminologies used to describe modern JavaScript paradigms like **SPA** (Single Page Application) and **MPA** (Multiple Page Application). The approach **SPX** employs is otherwise known as **Pjax** (Push~State Ajax). Pjax is a rendering technique first introduced by the Github Co-Founder [Chris Wanstrath](http://github.com/defunkt). In 2011 Chris created [jquery-pjax](https://pjax.herokuapp.com/) which intercepted clicks made on link elements and fetched pages over the wire instead of executing a full-page reloads between visits.
 
@@ -33,11 +33,11 @@ The Pjax method employed in jquery-pjax remained the standard until around 2015 
 
 SPX is a new generation pjax based solution. The modules introduces new techniques to this paradigm and combines them with strategies standardized by similar projects in the nexus. The aim is instantaneous navigation, progressive enhancement and simple integration.
 
-## Getting Started
+# Getting Started
 
 TODO
 
-## Recommendations
+# Recommendations
 
 In order to get the most out of this module below are a few recommendations developers should consider when leveraging it within in their projects. The project was developed for our use cases and while it can be appropriated into other projects there are still a couple of minor features and/or capabilities that need work, so please bare that in mind.
 

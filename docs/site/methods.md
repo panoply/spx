@@ -4,17 +4,18 @@ permalink: '/methods/index.html'
 layout: docs.liquid
 position: 3
 sidebar:
-  - 'Connect'
-  - 'Session'
-  - 'Hydrate'
-  - 'Fetch'
-  - 'Prefetch'
-  - 'Visit'
-  - 'Store'
-  - 'Capture'
-  - 'Clear'
-  - 'Reload'
-  - 'Disconnect'
+  - 'spx.connect'
+  - 'spx.session'
+  - 'spx.supported'
+  - 'spx.hydrate'
+  - 'spx.fetch'
+  - 'spx.prefetch'
+  - 'spx.visit'
+  - 'spx.store'
+  - 'spx.capture'
+  - 'spx.clear'
+  - 'spx.reload'
+  - 'spx.disconnect'
 ---
 
 # Methods
