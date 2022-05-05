@@ -30,7 +30,7 @@ Used on resources contained within the `<head>` fragment like styles, scripts or
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-eval` attribute can be annotated on any of the below HTML tags:
@@ -44,7 +44,7 @@ The `data-spx-eval` attribute can be annotated on any of the below HTML tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `boolean` type. Passing the `true` value is optional as `data-spx-eval` infers truthy.
@@ -56,7 +56,7 @@ This attribute is a `boolean` type. Passing the `true` value is optional as `dat
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 ```html
@@ -78,7 +78,7 @@ Use on `<a>` elements to disable SPX navigation. When a link element is annotate
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-disable` attribute can be used on the following tags:
@@ -89,7 +89,7 @@ The `data-spx-disable` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `truthy` type. Passing the `true` value is optional as `data-spx-disable` infers truthy.
@@ -100,7 +100,7 @@ This attribute is a `truthy` type. Passing the `true` value is optional as `data
 
 <details>
 <summary>
-<strong>Examples</strong>
+Examples
 </summary>
 
 Clicking this link will clear cache and a normal page navigation will be executed.
@@ -123,7 +123,7 @@ Place on elements to track on a per-page basis that might otherwise not be conta
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-track` attribute can be annotated on any HTML contained within `<body>` but cannot be applied to `<a>` href links.
@@ -132,7 +132,7 @@ The `data-spx-track` attribute can be annotated on any HTML contained within `<b
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `truthy` type. Passing the `true` value is optional as `data-spx-track` infers truthy.
@@ -143,7 +143,7 @@ This attribute is a `truthy` type. Passing the `true` value is optional as `data
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 Lets assume you are navigating from `Page 1` to `Page 2` and `#main` is your defined target. When you navigate from `Page 1` only the `#main` target will be replaced and any other dom elements will be skipped that are not contained within the `#main` HTML tag. When annotating `data-spx-track` to elements located outside of target/s which will be added and persisted on all future navigations.
@@ -197,7 +197,7 @@ Executes a controlled replacement of the defined elements. You should perform hy
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-hydrate` attribute can be used on the following tags:
@@ -213,7 +213,7 @@ The `data-spx-hydrate` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `string[]` type and expects a list of valid element selectors to be provided.
@@ -227,7 +227,7 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 Lets assume we informed SPX to trigger replacements on the `#menu`, `#main` and `#note` between navigations upon connection, for example:
@@ -300,7 +300,7 @@ Executes a replacement of defined targets, where each target defined in the arra
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-replace` attribute can be used on the following tags:
@@ -311,7 +311,7 @@ The `data-spx-replace` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `string[]` type and expects a list of valid element selectors to be provided.
@@ -325,7 +325,7 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 <!-- prettier-ignore -->
@@ -355,7 +355,7 @@ Executes a prepend replacement on visit, where the array list values are used as
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-prepend` attribute can be used on the following tags:
@@ -366,7 +366,7 @@ The `data-spx-prepend` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `string[][]` type and expects a list of valid element selectors to be provided.
@@ -384,7 +384,7 @@ Executes a append replacement on visit, where the array list values are used as 
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-append` attribute can be used on the following tags:
@@ -395,7 +395,7 @@ The `data-spx-append` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `string[][]` type and expects a list of valid element selectors to be provided.
@@ -409,7 +409,7 @@ This attribute is a `string[][]` type and expects a list of valid element select
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 **PAGE 1**
@@ -469,7 +469,7 @@ If you set hover pre-fetching to `false` in your `SPX.connect()` settings then a
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-hover` attribute can be used on the following tags:
@@ -480,7 +480,7 @@ The `data-spx-hover` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `boolean` type. Passing the `true` value is optional as `data-spx-hover` infers truthy.
@@ -492,7 +492,7 @@ This attribute is a `boolean` type. Passing the `true` value is optional as `dat
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 ```html
@@ -512,7 +512,7 @@ By default, this will be set to whatever preset configuration was defined in `SP
 
 <details>
 <summary>
-<strong>Attributes</strong>
+Attributes
 </summary>
 
 The `data-spx-threshold` attribute can be used together with one the following attributes:
@@ -524,7 +524,7 @@ The `data-spx-threshold` attribute can be used together with one the following a
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute either a `number` type. You can optionally pass a key reference to target specific attributes when an element is using multiple attribute annotations. Threshold accepts number with decimals, negative numbers will be ignored.
@@ -533,7 +533,7 @@ This attribute either a `number` type. You can optionally pass a key reference t
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 <!-- prettier-ignore -->
@@ -560,7 +560,7 @@ Triggers a proximity fetch when the cursor is within range of an `<a>` element. 
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-proximity` attribute can be annotated on any HTML contained within `<body>`.
@@ -569,7 +569,7 @@ The `data-spx-proximity` attribute can be annotated on any HTML contained within
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `number` type or a boolean `false`
@@ -578,7 +578,7 @@ This attribute is a `number` type or a boolean `false`
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 <!-- prettier-ignore -->
@@ -612,7 +612,7 @@ Sets the scroll position of the next navigation. This is a space separated expre
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-threshold` attribute can be used on the following tags:
@@ -623,7 +623,7 @@ The `data-spx-threshold` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `number` type. The value requires a key definition to be defined to inform upon position.
@@ -636,7 +636,7 @@ This attribute is a `number` type. The value requires a key definition to be def
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 <!-- prettier-ignore -->
@@ -677,7 +677,7 @@ Passing a `restore` value will save the current cache to session storage which a
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-cache` attribute can be used on the following tags:
@@ -691,7 +691,7 @@ The `data-spx-cache` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `string` type and expects on the following values.
@@ -705,7 +705,7 @@ This attribute is a `string` type and expects on the following values.
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 <!-- prettier-ignore -->
@@ -741,7 +741,7 @@ Controls the history pushstate for the navigation. Accepts `false`, `replace` or
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-history` attribute can be used on the following tags:
@@ -752,7 +752,7 @@ The `data-spx-history` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute is a `string` type and expects on the following values.
@@ -765,7 +765,7 @@ This attribute is a `string` type and expects on the following values.
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 ```html
@@ -781,7 +781,7 @@ Controls the progress bar delay. By default, progress will use the threshold def
 
 <details>
 <summary>
-<strong>Tags</strong>
+Tags
 </summary>
 
 The `data-spx-progress` attribute can be used on the following tags:
@@ -795,7 +795,7 @@ The `data-spx-progress` attribute can be used on the following tags:
 
 <details>
 <summary>
-<strong>Values</strong>
+Values
 </summary>
 
 This attribute can be `number` or boolean `false` type. You must provide a number greater than or equal to 100, negative numbers will be ignored.
@@ -804,7 +804,7 @@ This attribute can be `number` or boolean `false` type. You must provide a numbe
 
 <details>
 <summary>
-<strong>Example</strong>
+Example
 </summary>
 
 ```html
