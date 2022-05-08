@@ -1,1 +1,1468 @@
-var h=(e,t,r)=>new Promise((o,s)=>{var i=T=>{try{$(r.next(T))}catch(be){s(be)}},c=T=>{try{$(r.throw(T))}catch(be){s(be)}},$=T=>T.done?o(T.value):Promise.resolve(T.value).then(i,c);$((r=r.apply(e,t)).next())});var x=window.history,Z=window.location.origin;var P=Object.assign,a=Object.create,ee=Array.isArray,H=Array.from,te="";function ze(){let e=a(null);return e.targets=["body"],e.timeout=3e4,e.schema="spx",e.cache=!0,e.limit=100,e.preload=null,e.annotate=!1,e.hover=a(null),e.hover.trigger="attribute",e.hover.threshold=250,e.intersect=a(null),e.intersect.rootMargin="0px 0px 0px 0px",e.intersect.threshold=0,e.proximity=a(null),e.proximity.distance=75,e.proximity.threshold=250,e.proximity.throttle=500,e.progress=a(null),e.progress.background="#111",e.progress.height="3px",e.progress.minimum=.09,e.progress.easing="linear",e.progress.speed=300,e.progress.trickle=!0,e.progress.threshold=500,e.progress.trickleSpeed=300,e.selectors=a(null),e}var n=ze(),f=a(null),w=a(null),l=a(null),E=a(null),Pe=new Set;function m(e,t){if(e===1)console.info("SPX: "+t);else if(e===2)console.warn("SPX: "+t);else{console.error("SPX: "+t);try{throw e===3?new TypeError(t):new Error(t)}catch(r){}}}function u(e,t){return t in e}function Ge(){return Math.random().toString(36).slice(2)}function Je(e=2){return(t,r)=>{let o=t.length;return(o<1||t[o-1].length===e?t.push([r]):t[o-1].push(r))&&t}}function Ie(e){return e<1024?e+" B":e<1048576?(e/1024).toFixed(1)+" KB":e<1073741824?(e/1048576).toFixed(1)+" MB":(e/1073741824).toFixed(1)+" GB"}function I(e,t){if(arguments.length===1)return o=>I(e,o);let r=t.length;if(r!==0)for(let o=0;o<r;o++)e(t[o],o,t)}function Re(e){for(let t in e)delete e[t]}var we=(e={})=>{u(e,"hover")&&(e.hover===!1?n.hover=!1:typeof e.hover=="object"&&P(n.hover,e.hover),delete e.hover),u(e,"intersect")&&(e.intersect===!1?n.intersect=!1:typeof e.intersect=="object"&&P(n.intersect,e.intersect),delete e.intersect),u(e,"proximity")&&(e.proximity===!1?n.proximity=!1:typeof e.proximity=="object"&&P(n.proximity,e.proximity),delete e.proximity),u(e,"progress")&&(e.progress===!1?n.progress=!1:typeof e.progress=="object"&&P(n.progress,e.progress),delete e.progress),P(n,e);let t=n.schema===null,r=t?"data":`data-${n.schema}`,o=`:not([${r}-disable]):not([href^="#"])`;n.selectors.hrefs=n.annotate?t?`a[data-spx]${o}`:`a[${r}]${o}`:`a${o}`,n.selectors.tracking=`[${r}-track]:not([${r}-track=false])`,n.selectors.scripts=`script[${r}-eval]:not([${r}-eval=false])`,n.selectors.styles=`style[${r}-eval]:not([${r}-eval=false])`,n.selectors.attributes=new RegExp("^href|"+r+"-("+"hydrate|append|prepend|replace|progress|threshold|position|proximity|hover"+")$","i"),n.selectors.proximity=`a[${r}-proximity]${o}${s("proximity")}`,n.selectors.intersector=`[${r}-intersect]${s("intersect")}`,n.selectors.intersects=`a${o}${s("intersect")}`,n.selectors.hover=n.hover.trigger==="href"?`a${o}${s("hover")}`:`a[${r}-hover]${o}${s("hover")}`,w.bytes=0,w.visits=0,w.limit=n.limit;function s(i){let c=`:not([${r}-${i}=false])`;if(i.charCodeAt(0)===104)return`${c}:not([${r}-proximity]):not([${r}-intersect])`;if(i.charCodeAt(0)===105)return`${c}:not([${r}-hover]):not([${r}-proximity])`;if(i.charCodeAt(0)===112)return`${c}:not([${r}-intersect]):not([${r}-hover])`}};var _e=/(?:https?:)?\/\/(?:www\.)?/;var Ue=/\b(?:append|prepend)/,Qe=/^(?:application|text)\/(?:x-)?(?:ecma|java)script|text\/javascript$/,Ze=/^\b(?:true|false)$/i,re=/^[+-]?\d*\.?\d+$/,et=/\s+/g;var tt=/\b(?:intersect|hover|proximity)\b/;var Te=/\[?[^,'"[\]()\s]+\]?/g,rt=/\(?\[(['"]?.*['"]?,?)\]\)?/,ot=/[xy]:[0-9.]+/,nt=/[xy]|\d*\.?\d+/g;var b=Z.replace(_e,te);function Ft(e){let t=a(null);return I((r,o,s)=>{let i=s.length-1>=o?o-1:o;o%2&&(t[s[i]]=re.test(r)?Number(r):r)},e),t}function Ae(e,t){let r=t||a(null);for(let{nodeName:o,nodeValue:s}of e.attributes){if(!n.selectors.attributes.test(o))continue;if(o==="href"){r.rev=location.pathname+location.search,t||(r.location=it(s),r.key=r.location.pathname+r.location.search);continue}let i=o.slice(1+o.lastIndexOf("-")),c=s.replace(et,te);rt.test(c)?r[i]=Ue.test(i)?c.match(Te).reduce(Je(2),[]):c.match(Te):ot.test(c)?r[i]=Ft(c.match(nt)):Ze.test(c)?tt.test(o)||(r[i]=c==="true"):re.test(c)?r[i]=Number(c):r[i]=c}return r}function B(e){let t=a(null),r=e.indexOf("#");r>=0?(t.hash=e.slice(r),e=e.slice(0,r)):t.hash=te;let o=e.indexOf("?");return o>=0?(t.search=e.slice(o),e=e.slice(0,o)):t.search=te,t.pathname=e,t}function ue(e,t){let r=e.indexOf("/",t);if(r>t){let s=e.indexOf("#",r);return s<0?e.slice(r):e.slice(r,s)}let o=e.indexOf("?",t);if(o>t){let s=e.indexOf("#",o);return s<0?e.slice(o):e.slice(o,s)}return e.length-t===b.length?"/":null}function Le(e){let t=e.startsWith("www.")?e.slice(4):e,r=t.indexOf("/");if(r>=0){let o=t.slice(r);if(t.slice(0,r)===b)return o.length?B(o):B("/")}else{let o=t.search(/[?#]/);if(o>=0){if(t.slice(0,o)===b)return B("/"+t.slice(o))}else if(t===b)return B("/")}return null}function Kt(e){return e.startsWith("http")?1:e.startsWith("//")?2:e.startsWith("www.")?3:0}function st(e){if(typeof e!="string"||e.length===0)return!1;if(e.charCodeAt(0)===47)return e.charCodeAt(1)!==47?!0:e.startsWith("www.",2)?e.startsWith(b,6):e.startsWith(b,2);if(e.charCodeAt(0)===63)return!0;if(e.startsWith("www."))return e.startsWith(b,4);if(e.startsWith("http")){let t=e.indexOf("/",4)+2;return e.startsWith("www.",t)?e.startsWith(b,t+4):e.startsWith(b,t)}}function Xt(e){return e.charCodeAt(0)===47?e.charCodeAt(1)!==47?B(e):Le(e.slice(2)):e.charCodeAt(0)===63?B(location.pathname+e):e.startsWith("https:")||e.startsWith("http:")?Le(e.slice(e.indexOf("/",4)+2)):e.startsWith("www.")?Le(e):null}function L(e){if(typeof e=="object")return e.pathname+e.search;let t=Kt(e);if(t===1){let r=e.charCodeAt(4)===115?8:7,o=e.startsWith("www.",r)?r+4:r;return e.startsWith(b,o)?ue(e,o):null}if(t===2){let r=e.startsWith("www.",2)?6:2;return e.startsWith(b,r)?ue(e,r):null}return t===3?e.startsWith(b,4)?ue(e,4):null:e.startsWith(b,0)?ue(e,0):null}function it(e){let t=Xt(e);return t.origin=Z,t.hostname=b,t}function p(e,t){if(e instanceof Element){let o=Ae(e);return o.type=t||2,o}let r=a(null);return r.rev=location.pathname+location.search,r.location=it(typeof e=="string"?e:r.rev),r.key=L(r.location),r.type=t||2,r}var Vt=new DOMParser;function k(e){return Vt.parseFromString(e,"text/html")}function Oe(e){let t=e.indexOf(">",e.indexOf("<title"))+1,r=e.indexOf("</title",t);return e.slice(t,r)}var j=a(null),Jr=a(null);function g(e,...t){let r=e==="store";r&&t.splice(-1,1,k(t[t.length-1]));let o=!0;return I(s=>{let i=s.apply(null,t);r?i instanceof Document?o=i.documentElement.outerHTML:typeof o!="string"&&(o=i!==!1):o=i!==!1},j[e]||[]),o}function Ne(e,t){e in j||(j[e]=[]),j[e].push(t)}function $e(e,t){let r=j[e],o=[];if(r&&t){let s=0,i=r.length;for(;s<i;s++)r[s]!==t&&o.push(r[s])}return o.length?j[e]=o:delete j[e],this}function ct(e=[]){let t=ee(e)?e:[e];for(let r in l){let o=t.indexOf(r);o>=0&&(delete E[l[r].uuid],delete l[r],t.splice(o,1))}}function D(e){e?typeof e=="string"?(delete E[l[e].uuid],delete l[e]):ee(e)&&I(t=>{delete l[t],delete E[l[t].uuid]},e):(Re(l),Re(E))}function d(e){return e.replace=u(e,"replace")?[].concat(n.targets,e.replace):n.targets,n.cache&&(u(e,"cache")||(e.cache=n.cache),u(e,"uuid")||(e.uuid=Ge())),u(e,"position")||(e.position=a(null),e.position.y=0,e.position.x=0),n.hover!==!1&&e.type===4&&(u(e,"threshold")||(e.threshold=n.hover.threshold)),n.proximity!==!1&&e.type===6&&(u(e,"proximity")||(e.proximity=n.proximity.distance),u(e,"threshold")||(e.threshold=n.proximity.threshold)),n.progress!==!1&&!u(e,"progress")&&(e.progress=n.progress.threshold),u(e,"visits")||(e.visits=0),l[e.key]=e}function le(e,t){let r=g("store",e,t),o=typeof r=="string"?r:t;return e.type>3&&e.type<7&&(e.type=11),e.title=Oe(o),!n.cache||r===!1||(l[e.key]=e,E[e.uuid]=o,g("cached",e)),e}function M(e,t){let r=u(l,e.key)?l[e.key]:d(e);return typeof t=="string"&&(E[e.uuid]=t,e.title=Oe(t)),P(r,e)}function Me(e=x.state.key){if(u(l,e)){let t=a(null);return t.page=l[e],t.dom=k(E[t.page.uuid]),t}m(4,`No record exists: ${e}`)}function y(e){return u(l,e)&&u(l[e],"uuid")&&u(E,l[e].uuid)}var R=typeof window<"u"?window:{screen:{},navigator:{}},Y=(R.matchMedia||function(){return{matches:!1}}).bind(R),Bt=!1,Yt={get passive(){return Bt=!0}},at=function(){};R.addEventListener&&R.addEventListener("p",at,Yt);R.removeEventListener&&R.removeEventListener("p",at,!1);var N="PointerEvent"in R,Se="ontouchstart"in R,zt="TouchEvent"in R,Gt=Se||zt&&Y("(any-pointer: coarse)").matches,oo=(R.navigator.maxTouchPoints||0)>0||Gt,ft=R.navigator.userAgent||"",Jt=Y("(pointer: coarse)").matches&&/iPad|Macintosh/.test(ft)&&Math.min(R.screen.width||0,R.screen.height||0)>=768,no=(Y("(pointer: coarse)").matches||!Y("(pointer: fine)").matches&&Se)&&!/Windows.*Firefox/.test(ft),so=Y("(any-pointer: fine)").matches||Y("(any-hover: hover)").matches||Jt||!Se;function oe(e,t){if(!(e instanceof Element))return!1;let r=e.closest(t);return r&&r.tagName==="A"?r:!1}function qe(e){if(e.nodeName!=="A")return!1;let t=e.href;return st(t)?!y(L(t)):!1}function ut(e,t){return H(document.body.querySelectorAll(e)).flatMap(r=>r.nodeName!=="A"?H(r.querySelectorAll(t)).filter(qe):qe(r)?r:[])}var ne=e=>H(document.body.querySelectorAll(e)).filter(qe);var se=a(null),F=a(null),q=a(null);function me(e){let t=q[e]=new XMLHttpRequest;return new Promise(function(r,o){t.open("GET",e,n.async),t.setRequestHeader("X-SPX","true"),t.setRequestHeader("X-SPX-Session","true"),t.setRequestHeader("X-Requested-With","XMLHttpRequest"),t.onload=function(){r(t.responseText)},t.onloadend=function(s){w.bytes=w.bytes+s.loaded,w.visits=w.visits+1,delete q[e]},t.onerror=function(){o(this.statusText)},t.onabort=function(){delete q[e]},t.send(null)})}function pe(e,t,r){u(F,e)||y(e)||(F[e]=setTimeout(t,r))}function lt(e){return u(F,e)?(clearTimeout(F[e]),delete F[e]):!0}function He(e){if(u(q,e))for(let t in q)e!==t&&(q[t].abort(),m(2,`Pending fetch aborted: ${t}`))}function mt(e){if(n.preload!==null){if(ee(n.preload))return Promise.all(n.preload.filter(t=>{let r=p(t,7);return r.key!==t?v(d(r)):!1}));if(typeof n.preload=="object"&&u(n.preload,e.key))return Promise.all(n.preload[e.key].map(t=>v(d(p(t,7)))))}}function z(e){if(y(e))return;let t=p(e,8),r=d(t);v(r)}function ke(e){return h(this,null,function*(){if(!u(se,e.key))return Promise.resolve(e);let t=yield se[e.key];return le(e,t)})}function v(e){return u(q,e.key)?(e.type===8?(u(q,e.rev)&&q[e.rev].abort(),m(2,`Reverse fetch aborted: ${e.key}`)):m(2,`Fetch already in transit: ${e.key}`),Promise.resolve(!1)):g("fetch",e)?(se[e.key]=me(e.key),ke(e)):(m(2,`Fetch cancelled within dispatched event: ${e.key}`),Promise.resolve(!1))}function he(e){let t=oe(e.target,n.selectors.hover);t&&(lt(L(t.href)),pt(t))}function G(e){let t=oe(e.target,n.selectors.hover);if(!t)return;let r=p(t,4);if(u(F,r.key))return;if(y(r.key))return de(t);_t(t);let o=d(r),s=o.threshold||n.hover.threshold;pe(r.key,function(){if(!g("prefetch",t,r))return de(t);v(o).then(function(i){return i?de(t):null})},s)}function pt(e){N?e.addEventListener("pointerenter",G,!1):e.addEventListener("mouseenter",G,!1)}function _t(e){N?(e.addEventListener("pointerout",he,!1),e.removeEventListener("pointerenter",G,!1)):(e.addEventListener("mouseleave",he,!1),e.removeEventListener("mouseenter",G,!1))}function de(e){N?(e.removeEventListener("pointerenter",G,!1),e.removeEventListener("pointerout",he,!1)):(e.removeEventListener("mouseleave",he,!1),e.removeEventListener("mouseenter",G,!1))}function ge(){!n.hover||f.hover||(I(pt,ne(n.selectors.hover)),f.hover=!0)}function J(){!f.hover||(I(de,ne(n.selectors.hover)),f.hover=!1)}function Ut({clientX:e,clientY:t},r){return e<=r.right&&e>=r.left&&t<=r.bottom&&t>=r.top}function Qt(e){let t=a(null),r=e.getBoundingClientRect(),o=e.getAttribute(`${n.schema}-proximity`),s=re.test(o)?Number(o):n.proximity.distance;return t.target=e,t.top=r.top-s,t.bottom=r.bottom+s,t.left=r.left-s,t.right=r.right+s,t}function Zt(e){let t=!1;return r=>{if(t)return;t=!0;let o=e.findIndex(s=>Ut(r,s));if(o===-1)setTimeout(()=>{t=!1},n.proximity.throttle);else{let{target:s}=e[o],i=d(p(s,6)),c=i.threshold||n.proximity.threshold;pe(i.key,()=>g("prefetch",s,i)?v(i).then($=>{$&&(e.splice(o,1),t=!1,e.length===0&&(C(),m(1,"Proximity observer disconnected")))}):C(),c)}}}var ie;function ve(){if(!n.proximity||f.proximity)return;let e=ne(n.selectors.proximity).map(Qt);e.length>0&&(ie=Zt(e),N?addEventListener("pointermove",ie,!1):addEventListener("mousemove",ie,!1),f.proximity=!0)}function C(){!f.proximity||(N?removeEventListener("pointermove",ie,!1):removeEventListener("mousemove",ie,!1),f.proximity=!1)}var X;function er(e){return h(this,null,function*(){if(e.isIntersecting){let t=p(e.target,5);if(!g("prefetch",e.target,t))return X.unobserve(e.target);(yield v(d(t)))?X.unobserve(e.target):(m(2,`Prefetch will retry at next intersect for: ${t.key}`),X.observe(e.target))}})}function ye(){if(!n.intersect||f.intersect)return;X||(X=new IntersectionObserver(I(er),n.intersect));let e=I(r=>X.observe(r)),t=ut(n.selectors.intersector,n.selectors.intersects);e(t),f.intersect=!0}function _(){!f.intersect||(X.disconnect(),f.intersect=!1)}var V=null,dt,ce=null,De=[];function Fe(e){let{speed:t,easing:r,minimum:o}=n.progress,s=typeof V=="number";e=gt(e,o,1),V=e===1?null:e;let i=tr(!s);i.offsetWidth,or(c=>{if(i.style.transform=`translate3d(${vt(e)}%,0,0)`,i.style.transition=`all ${t}ms ${r}`,e!==1)return setTimeout(c,t);i.style.transition="none",i.style.opacity="1",i.offsetWidth,setTimeout(()=>{i.style.transition=`all ${t}ms ${r}`,i.style.opacity="0",setTimeout(()=>[rr(),c()],t)},t)})}function ht(e){let t=V;if(!t)return xe();if(t<1)return typeof e!="number"&&(t>=0&&t<.2?e=.1:t>=.2&&t<.5?e=.04:t>=.5&&t<.8?e=.02:t>=.8&&t<.99?e=.005:e=0),t=gt(t+e,0,.994),Fe(t)}function tr(e){if(ce)return ce;document.documentElement.classList.add("spx-load");let t=e?"-100":vt(V||0),r=document.createElement("div");return r.id="spx-progress",r.style.pointerEvents="none",r.style.background=n.progress.background,r.style.height=n.progress.height,r.style.position="fixed",r.style.zIndex="9999",r.style.top="0",r.style.left="0",r.style.width="100%",r.style.transition="all 0 linear",r.style.transform=`translate3d(${t}%,0,0)`,document.body.appendChild(r),ce=r,r}function rr(){document.documentElement.classList.remove("spx-load"),document.getElementById("spx-progress")&&document.body.removeChild(ce),ce=null}function gt(e,t,r){return e<t?t:e>r?r:e}function vt(e){return(-1+e)*100}function or(e){let t=()=>{let r=De.shift();r&&r(t)};De.push(e),De.length===1&&t()}function xe(e){!n.progress||(dt=setTimeout(function(){V||Fe(0);let t=function(){setTimeout(()=>{!V||(ht(),t())},n.progress.trickleSpeed)};n.progress.trickle&&t()},e||0))}function yt(e){if(clearTimeout(dt),!(!e&&!V))return ht(.3+.5*Math.random()),Fe(1)}function nr(e){return new Promise((t,r)=>{let o=document.createElement("script");o.addEventListener("error",r),o.async=!1,o.text=e.target.text;for(let{nodeName:s,nodeValue:i}of e.target.attributes)o.setAttribute(s,i);document.contains(e.target)?e.target.replaceWith(o):(document.head.append(o),e.external?o.addEventListener("load",()=>o.remove()):o.remove()),e.external?o.addEventListener("load",()=>t()):t()})}function sr(e){if(!e.hasAttribute("src")&&!e.text)return;let t=e.type?e.type.trim().toLowerCase():"text/javascript",r=Qe.test(t)?1:t==="module"?2:NaN,o=a(null);return o.blocking=!0,o.evaluate=!1,o.external=!1,isNaN(r)||e.noModule&&r===1||(e.src&&(o.external=!0),(r!==1||o.external&&(e.hasAttribute("async")||e.defer))&&(o.blocking=!1),o.evaluate=!0,o.target=e),o}function Et(e){return h(this,null,function*(){try{let t=nr(e);e.blocking&&(yield t)}catch(t){console.error(t)}})}function bt(e){return h(this,null,function*(){let r=H(e,sr).filter(o=>o.evaluate).reduce((o,s)=>h(this,null,function*(){return s.external?Promise.all([o,Et(s)]):(yield o,yield Et(s))}),Promise.resolve());yield Promise.race([r])})}var U=a(null),Ke=!1;function ae(){return U}function ir(){U.y=window.scrollY,U.x=window.scrollX,Ke||(requestAnimationFrame(ae),Ke=!0)}function fe(){return Ke=!1,U.x=0,U.y=0,U}function Pt(){f.scroll||(addEventListener("scroll",ir,{passive:!0}),f.scroll=!0)}function It(){!f.scroll||(removeEventListener("scroll",onscroll,!1),fe(),f.scroll=!1)}function cr(e,t){return e.compareDocumentPosition(t)&Node.DOCUMENT_POSITION_PRECEDING||-1}function ar(e){return h(this,null,function*(){let t=H(e.querySelectorAll(n.selectors.scripts));t.sort(cr),yield bt(t)})}function fr(e){e.querySelectorAll(n.selectors.tracking).forEach(t=>{!t.hasAttribute("id")||Pe.has(t.id)||(document.body.appendChild(t),Pe.add(t.id))})}function ur(e,t){let r=e.replace;if(r.length===1&&r[0]==="body")return document.body.replaceWith(t.body);let o=r.join(","),s=document.body.querySelectorAll(o),i=t.body.querySelectorAll(o);s.forEach((c,$)=>{if(!!c.matches(r[$])&&!!g("render",c,i[$])&&(c.replaceWith(i[$]),e.append||e.prepend)){let T=document.createElement("div");return t.childNodes.forEach(T.appendChild),e.append?c.appendChild(T):c.insertBefore(T,c.firstChild)}}),fr(t.body)}function lr(e,t){let r=e.hydrate.join(","),o=document.body.querySelectorAll(r);if(o.length>0){let s=t.body.querySelectorAll(r);o.forEach((i,c)=>{!s[c]||!g("hydrate",i,s[c])||(i.firstChild.nodeType===Node.TEXT_NODE?i.innerHTML=s[c].innerHTML:i.replaceWith(s[c]))})}e.type=2,M(e),ct(e.key)}function A(e){J(),_(),C();let t=k(E[e.uuid]);return e.type===3?lr(e,t):(ur(e,t),scrollTo(e.position.x,e.position.y)),ar(t.head),yt(),fe(),ge(),ye(),ve(),g("load",e),e}function wt(e){let t=a(null);return t.key=e.key,t.rev=e.rev,t.title=e.title,t.uuid=e.uuid,t.cache=e.cache,t.replace=e.replace,t.type=e.type,t.progress=e.progress,t.position=fe(),t}function Ve(){return document.readyState==="complete"}function Tt(){return x.state!==null&&u(x.state,"rev")&&x.state.key!==x.state.rev}function Lt(e){return x.replaceState(wt(e),e.title,e.key),e}function At(e){return x.pushState(wt(e),e.title,e.key),e}var Rt;function Ot(e,t){if(!!Ve()){if(clearInterval(Rt),y(e.state.key))return z(e.state.rev),A(l[e.state.key]);Rt=setTimeout(function(){return h(this,null,function*(){e.state.type=9;let r=yield v(e.state);if(!r)return location.assign(e.state.key);let o=L(location);if(r.key===o)return A(r);if(y(o))return A(l[o]);let s=d(p(o,9));v(s),x.pushState(s,document.title,o)})},300)}}function Nt(){f.history||(addEventListener("popstate",Ot,!1),addEventListener("load",Ve,!1),f.history=!0)}function $t(){!f.history||(removeEventListener("popstate",Ot,!1),addEventListener("load",Ve,!1),f.history=!1)}function mr(e){return!(e.target&&e.target.isContentEditable||e.defaultPrevented||e.which>1||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)}function Q(e){if(!mr(e))return;let t=oe(e.target,n.selectors.hrefs);if(!t)return;let r=L(t.href);if(r!==null&&(J(),C(),_(),!!g("visit",e)))if(u(se,r)){let o=l[r];He(r),t.addEventListener("click",function s(i){return i.preventDefault(),t.removeEventListener("click",s,!1),Be(o)},!1)}else if(y(r)){let o=Ae(t,l[r]),s=M(o);t.addEventListener("click",function i(c){return c.preventDefault(),t.removeEventListener("click",i,!1),A(s)},!1)}else{He();let o=p(t,2),s=d(o);v(s),t.addEventListener("click",function i(c){return c.preventDefault(),t.removeEventListener("click",i,!1),Be(s)},!1)}}function Be(e){xe(e.progress),ke(e).then(function(t){t?(At(t),A(t)):location.assign(e.key)}).catch(function(t){location.assign(e.key),m(4,t)})}function Ye(e,t){if(t)typeof t.cache=="string"&&(t.cache==="clear"?D():D(t.key)),xe(t.progress),v(t).then(function(r){return r?A(r):location.assign(t.key)});else return Be(l[e])}function St(){f.hrefs||(N?addEventListener("pointerdown",Q,!1):(addEventListener("mousedown",Q,!1),addEventListener("touchstart",Q,!1)),f.hrefs=!0)}function qt(){!f.hrefs||(N?removeEventListener("pointerdown",Q,!1):(removeEventListener("mousedown",Q,!1),removeEventListener("touchstart",Q,!1)),f.hrefs=!1)}function kt(){let e=d(p(1)),t=le(e,document.documentElement.outerHTML);Tt()&&(t.rev=x.state.rev),t.position=ae(),g("connected",t),Lt(t),z(t.rev),mt(t),removeEventListener("load",kt)}function Ct(){Pt(),Nt(),St(),ge(),ye(),ve(),addEventListener("load",kt),m(1,"Connection Established \u26A1")}function Wt(){It(),$t(),qt(),J(),_(),C(),D(),m(1,"Disconnected \u{1F614}")}var jt=!!(x.pushState&&window.requestAnimationFrame&&window.addEventListener&&window.DOMParser);function dr(e={}){we(e),jt?/https?/.test(window.location.protocol)?addEventListener("DOMContentLoaded",Ct):m(4,"Invalid protocol, SPX expects https or http protocol"):m(4,"Browser is not supported")}function hr(e,t){if(e)if(t)e==="config"&&we(t),e==="observers"&&P(f,t);else{if(e==="config")return n;if(e==="observers")return f;if(e==="pages")return l;if(e==="snapshots")return E;if(e==="memory")return Ie(w.bytes)}let r=a(null);return r.config=n,r.snapshots=E,r.pages=l,r.observers=f,r.memory=w,r.memory.size=Ie(r.memory.bytes),r}function gr(e,t){return h(this,null,function*(){if(e===void 0)return Me();if(typeof e=="string"){let r=L(e);y(r)||m(4,`No store exists at: ${r}`);let o=Me(r);return t!==void 0?M(P(o.page,t)):o}if(typeof e=="object")return M(e)})}function vr(e){return h(this,null,function*(){let t=l[x.state.key];e&&P(t,e),t.type=10;let r=yield v(t);return r?(m(1,"Triggered reload, page was re-cached"),A(r)):(m(2,"Reload failed, triggering refresh (cache will be purged)"),location.assign(t.key))})}function yr(e){return h(this,null,function*(){let t=p(e,13);t.location.origin!==Z&&m(4,"Cross origin fetches are not allowed");let r=yield me(t.key);if(r)return k(r)})}function xr(e){return D(e)}function Rn(e){return h(this,null,function*(){})}function Er(e,t){return h(this,null,function*(){let r=p(3);r.position=ae(),r.hydrate=t;let o=yield me(e);if(!o)return m(2,"Hydration fetch failed");let s=y(r.key)?M(r,o):d(r);return z(r.rev),A(s)})}function br(e){return h(this,null,function*(){let t=p(e,11);if(y(t.key)){m(2,`Cache already exists for ${t.key}, prefetch skipped`);return}let r=yield v(d(t));if(r)return r;m(4,`Prefetch failed for ${t.key}`)})}function Pr(e,t){return h(this,null,function*(){let r=p(e),o=typeof t=="object"?P(r,t):r;return y(r.key)?Ye(r.key,M(o)):Ye(r.key,d(o))})}function Ir(){Wt()}var wn={supported:jt,on:Ne,off:$e,connect:dr,session:hr,state:gr,reload:vr,fetch:yr,clear:xr,hydrate:Er,prefetch:br,visit:Pr,disconnect:Ir};export{xr as clear,dr as connect,wn as default,Ir as disconnect,yr as fetch,Er as hydrate,$e as off,Ne as on,br as prefetch,vr as reload,hr as session,gr as state,jt as supported,Rn as update,Pr as visit};
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
+
+// ../../node_modules/.pnpm/detect-it@4.0.1/node_modules/detect-it/dist/detect-it.esm.js
+var w = typeof window !== "undefined" ? window : { screen: {}, navigator: {} };
+var matchMedia = (w.matchMedia || function() {
+  return { matches: false };
+}).bind(w);
+var passiveOptionAccessed = false;
+var options = {
+  get passive() {
+    return passiveOptionAccessed = true;
+  }
+};
+var noop = function() {
+};
+w.addEventListener && w.addEventListener("p", noop, options);
+w.removeEventListener && w.removeEventListener("p", noop, false);
+var supportsPointerEvents = "PointerEvent" in w;
+var onTouchStartInWindow = "ontouchstart" in w;
+var touchEventInWindow = "TouchEvent" in w;
+var supportsTouchEvents = onTouchStartInWindow || touchEventInWindow && matchMedia("(any-pointer: coarse)").matches;
+var hasTouch = (w.navigator.maxTouchPoints || 0) > 0 || supportsTouchEvents;
+var userAgent = w.navigator.userAgent || "";
+var isIPad = matchMedia("(pointer: coarse)").matches && /iPad|Macintosh/.test(userAgent) && Math.min(w.screen.width || 0, w.screen.height || 0) >= 768;
+var hasCoarsePrimaryPointer = (matchMedia("(pointer: coarse)").matches || !matchMedia("(pointer: fine)").matches && onTouchStartInWindow) && !/Windows.*Firefox/.test(userAgent);
+var hasAnyHoverOrAnyFinePointer = matchMedia("(any-pointer: fine)").matches || matchMedia("(any-hover: hover)").matches || isIPad || !onTouchStartInWindow;
+var deviceType = hasTouch && (hasAnyHoverOrAnyFinePointer || !hasCoarsePrimaryPointer) ? "hybrid" : hasTouch ? "touchOnly" : "mouseOnly";
+
+// src/shared/native.ts
+var pointer = supportsPointerEvents ? "pointer" : "mouse";
+var history = window.history;
+var origin = window.location.origin;
+var assign = Object.assign;
+var object = Object.create;
+var isArray = Array.isArray;
+var toArray = Array.from;
+var nil = "";
+
+// src/app/defaults.ts
+function defaults() {
+  const state2 = object(null);
+  state2.targets = ["body"];
+  state2.timeout = 3e4;
+  state2.schema = "spx";
+  state2.cache = true;
+  state2.limit = 100;
+  state2.preload = null;
+  state2.annotate = false;
+  state2.hover = object(null);
+  state2.hover.trigger = "attribute";
+  state2.hover.threshold = 250;
+  state2.intersect = object(null);
+  state2.intersect.rootMargin = "0px 0px 0px 0px";
+  state2.intersect.threshold = 0;
+  state2.proximity = object(null);
+  state2.proximity.distance = 75;
+  state2.proximity.threshold = 250;
+  state2.proximity.throttle = 500;
+  state2.progress = object(null);
+  state2.progress.background = "#111";
+  state2.progress.height = "3px";
+  state2.progress.minimum = 0.09;
+  state2.progress.easing = "linear";
+  state2.progress.speed = 300;
+  state2.progress.trickle = true;
+  state2.progress.threshold = 500;
+  state2.progress.trickleSpeed = 300;
+  state2.selectors = object(null);
+  return state2;
+}
+
+// src/app/session.ts
+var config = defaults();
+var observers = object(null);
+var memory = object(null);
+var pages = object(null);
+var snapshots = object(null);
+var tracked = /* @__PURE__ */ new Set();
+
+// src/shared/utils.ts
+function position(state2 = object(null)) {
+  state2.y = window.scrollY;
+  state2.x = window.scrollX;
+  return state2;
+}
+function log(error, message) {
+  if (error === 1 /* INFO */) {
+    console.info("SPX: " + message);
+  } else if (error === 2 /* WARN */) {
+    console.warn("SPX: " + message);
+  } else {
+    console.error("SPX: " + message);
+    try {
+      if (error === 3 /* TYPE */) {
+        throw new TypeError(message);
+      } else {
+        throw new Error(message);
+      }
+    } catch (e) {
+    }
+  }
+}
+function hasProp(object2, property) {
+  return property in object2;
+}
+function uuid() {
+  return Math.random().toString(36).slice(2);
+}
+function chunk(size2 = 2) {
+  return (acc, value) => {
+    const length = acc.length;
+    const chunks = length < 1 || acc[length - 1].length === size2 ? acc.push([value]) : acc[length - 1].push(value);
+    return chunks && acc;
+  };
+}
+function size(bytes) {
+  const kb = 1024;
+  const mb = 1048576;
+  const gb = 1073741824;
+  if (bytes < kb)
+    return bytes + " B";
+  else if (bytes < mb)
+    return (bytes / kb).toFixed(1) + " KB";
+  else if (bytes < gb)
+    return (bytes / mb).toFixed(1) + " MB";
+  else
+    return (bytes / gb).toFixed(1) + " GB";
+}
+function forEach(callback, array) {
+  if (arguments.length === 1)
+    return (array2) => forEach(callback, array2);
+  const len = array.length;
+  if (len === 0)
+    return;
+  for (let i = 0; i < len; i++)
+    callback(array[i], i, array);
+}
+function empty(object2) {
+  for (const prop in object2)
+    delete object2[prop];
+}
+
+// src/app/config.ts
+var configure = (options2 = {}) => {
+  if (hasProp(options2, "hover")) {
+    if (options2.hover === false)
+      config.hover = false;
+    else if (typeof options2.hover === "object")
+      assign(config.hover, options2.hover);
+    delete options2.hover;
+  }
+  if (hasProp(options2, "intersect")) {
+    if (options2.intersect === false)
+      config.intersect = false;
+    else if (typeof options2.intersect === "object")
+      assign(config.intersect, options2.intersect);
+    delete options2.intersect;
+  }
+  if (hasProp(options2, "proximity")) {
+    if (options2.proximity === false)
+      config.proximity = false;
+    else if (typeof options2.proximity === "object")
+      assign(config.proximity, options2.proximity);
+    delete options2.proximity;
+  }
+  if (hasProp(options2, "progress")) {
+    if (options2.progress === false)
+      config.progress = false;
+    else if (typeof options2.progress === "object")
+      assign(config.progress, options2.progress);
+    delete options2.progress;
+  }
+  assign(config, options2);
+  const schema = config.schema === null;
+  const attr = schema ? "data" : `data-${config.schema}`;
+  const href = `:not([${attr}-disable]):not([href^="#"])`;
+  config.selectors.hrefs = config.annotate ? schema ? `a[data-spx]${href}` : `a[${attr}]${href}` : `a${href}`;
+  config.selectors.tracking = `[${attr}-track]:not([${attr}-track=false])`;
+  config.selectors.scripts = `script[${attr}-eval]:not([${attr}-eval=false])`;
+  config.selectors.styles = `style[${attr}-eval]:not([${attr}-eval=false])`;
+  config.selectors.attributes = new RegExp("^href|" + attr + "-(" + "hydrate|append|prepend|target|progress|threshold|position|proximity|hover" /* NAMES */ + ")$", "i");
+  config.selectors.proximity = `a[${attr}-proximity]${href}${not("proximity")}`;
+  config.selectors.intersector = `[${attr}-intersect]${not("intersect")}`;
+  config.selectors.intersects = `a${href}${not("intersect")}`;
+  config.selectors.hover = config.hover.trigger === "href" ? `a${href}${not("hover")}` : `a[${attr}-hover]${href}${not("hover")}`;
+  memory.bytes = 0;
+  memory.visits = 0;
+  memory.limit = config.limit;
+  function not(name) {
+    const s = `:not([${attr}-${name}=false])`;
+    if (name.charCodeAt(0) === 104)
+      return `${s}:not([${attr}-proximity]):not([${attr}-intersect])`;
+    if (name.charCodeAt(0) === 105)
+      return `${s}:not([${attr}-hover]):not([${attr}-proximity])`;
+    if (name.charCodeAt(0) === 112)
+      return `${s}:not([${attr}-intersect]):not([${attr}-hover])`;
+  }
+  ;
+};
+
+// src/shared/regexp.ts
+var Protocol = /(?:https?:)?\/\/(?:www\.)?/;
+var isPender = /\b(?:append|prepend)/;
+var MimeType = /^(?:application|text)\/(?:x-)?(?:ecma|java)script|text\/javascript$/;
+var isBoolean = /^\b(?:true|false)$/i;
+var isNumber = /^[+-]?\d*\.?\d+$/;
+var Whitespace = /\s+/g;
+var isPrefetch = /\b(?:intersect|hover|proximity)\b/;
+var ActionParams = /\[?[^,'"[\]()\s]+\]?/g;
+var isArray2 = /\(?\[(['"]?.*['"]?,?)\]\)?/;
+var isPosition = /[xy]:[0-9.]+/;
+var inPosition = /[xy]|\d*\.?\d+/g;
+
+// src/app/location.ts
+var hostname = origin.replace(Protocol, nil);
+function parseAttribute(attributes) {
+  const state2 = object(null);
+  forEach((current, index, source) => {
+    const prop = source.length - 1 >= index ? index - 1 : index;
+    if (index % 2)
+      state2[source[prop]] = isNumber.test(current) ? Number(current) : current;
+  }, attributes);
+  return state2;
+}
+function getAttributes(element2, page) {
+  const state2 = page || object(null);
+  for (const { nodeName, nodeValue } of element2.attributes) {
+    if (!config.selectors.attributes.test(nodeName))
+      continue;
+    if (nodeName === "href") {
+      state2.rev = location.pathname + location.search;
+      if (!page) {
+        state2.location = getLocation(nodeValue);
+        state2.key = state2.location.pathname + state2.location.search;
+      }
+      continue;
+    }
+    const name = nodeName.slice(1 + nodeName.lastIndexOf("-"));
+    const value = nodeValue.replace(Whitespace, nil);
+    if (isArray2.test(value)) {
+      state2[name] = isPender.test(name) ? value.match(ActionParams).reduce(chunk(2), []) : value.match(ActionParams);
+    } else if (isPosition.test(value)) {
+      state2[name] = parseAttribute(value.match(inPosition));
+    } else if (isBoolean.test(value)) {
+      if (!isPrefetch.test(nodeName))
+        state2[name] = value === "true";
+    } else if (isNumber.test(value)) {
+      state2[name] = Number(value);
+    } else {
+      state2[name] = value;
+    }
+  }
+  return state2;
+}
+function parsePath(path) {
+  const state2 = object(null);
+  const size2 = path.length;
+  if (size2 === 1 && path.charCodeAt(0) === 47) {
+    state2.pathname = path;
+    state2.hash = nil;
+    state2.search = nil;
+    return state2;
+  }
+  const hash = path.indexOf("#");
+  if (hash >= 0) {
+    state2.hash = path.slice(hash);
+    path = path.slice(0, hash);
+  } else {
+    state2.hash = nil;
+  }
+  const params = path.indexOf("?");
+  if (params >= 0) {
+    state2.search = path.slice(params);
+    path = path.slice(0, params);
+  } else {
+    state2.search = nil;
+  }
+  state2.pathname = path;
+  return state2;
+}
+function getPath(url, proto) {
+  const path = url.indexOf("/", proto);
+  if (path > proto) {
+    const hash = url.indexOf("#", path);
+    return hash < 0 ? url.slice(path) : url.slice(path, hash);
+  }
+  const param = url.indexOf("?", proto);
+  if (param > proto) {
+    const hash = url.indexOf("#", param);
+    return hash < 0 ? url.slice(param) : url.slice(param, hash);
+  }
+  return url.length - proto === hostname.length ? "/" : null;
+}
+function parseOrigin(url) {
+  const path = url.startsWith("www.") ? url.slice(4) : url;
+  const name = path.indexOf("/");
+  if (name >= 0) {
+    const key = path.slice(name);
+    if (path.slice(0, name) === hostname)
+      return key.length ? parsePath(key) : parsePath("/");
+  } else {
+    const char = path.search(/[?#]/);
+    if (char >= 0) {
+      if (path.slice(0, char) === hostname)
+        return parsePath("/" + path.slice(char));
+    } else {
+      if (path === hostname)
+        return parsePath("/");
+    }
+  }
+  return null;
+}
+function hasOrigin(url) {
+  if (url.startsWith("http"))
+    return 1;
+  if (url.startsWith("//"))
+    return 2;
+  if (url.startsWith("www."))
+    return 3;
+  return 0;
+}
+function validKey(url) {
+  if (typeof url !== "string" || url.length === 0)
+    return false;
+  if (url.charCodeAt(0) === 47) {
+    if (url.charCodeAt(1) !== 47)
+      return true;
+    if (url.startsWith("www.", 2))
+      return url.startsWith(hostname, 6);
+    return url.startsWith(hostname, 2);
+  }
+  if (url.charCodeAt(0) === 63)
+    return true;
+  if (url.startsWith("www."))
+    return url.startsWith(hostname, 4);
+  if (url.startsWith("http")) {
+    const start2 = url.indexOf("/", 4) + 2;
+    return url.startsWith("www.", start2) ? url.startsWith(hostname, start2 + 4) : url.startsWith(hostname, start2);
+  }
+}
+function parseKey(url) {
+  if (url.charCodeAt(0) === 47) {
+    return url.charCodeAt(1) !== 47 ? parsePath(url) : parseOrigin(url.slice(2));
+  }
+  if (url.charCodeAt(0) === 63)
+    return parsePath(location.pathname + url);
+  if (url.startsWith("https:") || url.startsWith("http:")) {
+    return parseOrigin(url.slice(url.indexOf("/", 4) + 2));
+  }
+  if (url.startsWith("www."))
+    return parseOrigin(url);
+  return null;
+}
+function getKey(link) {
+  if (typeof link === "object")
+    return link.pathname + link.search;
+  const has2 = hasOrigin(link);
+  if (has2 === 1) {
+    const proto = link.charCodeAt(4) === 115 ? 8 : 7;
+    const www = link.startsWith("www.", proto) ? proto + 4 : proto;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+  }
+  if (has2 === 2) {
+    const www = link.startsWith("www.", 2) ? 6 : 2;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+  }
+  if (has2 === 3)
+    return link.startsWith(hostname, 4) ? getPath(link, 4) : null;
+  return link.startsWith(hostname, 0) ? getPath(link, 0) : null;
+}
+function getLocation(path) {
+  const state2 = parseKey(path);
+  state2.origin = origin;
+  state2.hostname = hostname;
+  return state2;
+}
+function getRoute(link, type) {
+  if (link instanceof Element) {
+    const state3 = getAttributes(link);
+    state3.type = type || 7 /* VISIT */;
+    return state3;
+  }
+  const state2 = object(null);
+  state2.rev = location.pathname + location.search;
+  state2.location = getLocation(typeof link === "string" ? link : state2.rev);
+  state2.key = getKey(state2.location);
+  state2.type = type || 7 /* VISIT */;
+  return state2;
+}
+
+// src/shared/dom.ts
+function parse(HTMLString) {
+  return new DOMParser().parseFromString(HTMLString, "text/html");
+}
+function getTitle(dom) {
+  const start2 = dom.indexOf(">", dom.indexOf("<title")) + 1;
+  const end = dom.indexOf("</title", start2);
+  return dom.slice(start2, end);
+}
+
+// src/app/events.ts
+var events = object(null);
+function emit(name, ...args) {
+  const isCache = name === "store";
+  if (isCache)
+    args.splice(-1, 1, parse(args[args.length - 1]));
+  let returns = true;
+  forEach((argument) => {
+    const returned = argument.apply(null, args);
+    if (isCache) {
+      if (returned instanceof Document) {
+        returns = returned.documentElement.outerHTML;
+      } else {
+        if (typeof returns !== "string")
+          returns = returned !== false;
+      }
+    } else {
+      returns = returned !== false;
+    }
+  }, events[name] || []);
+  return returns;
+}
+function on(name, callback) {
+  if (!hasProp(events, name))
+    events[name] = [];
+  events[name].push(callback);
+}
+function off(name, callback) {
+  const evts = events[name];
+  const live = [];
+  if (evts && callback) {
+    let i = 0;
+    const len = evts.length;
+    for (; i < len; i++)
+      if (evts[i] !== callback)
+        live.push(evts[i]);
+  }
+  if (live.length)
+    events[name] = live;
+  else
+    delete events[name];
+  return this;
+}
+
+// src/app/store.ts
+function purge(key = []) {
+  const keys = isArray(key) ? key : [key];
+  for (const p in pages) {
+    const index = keys.indexOf(p);
+    if (index >= 0) {
+      delete snapshots[pages[p].uuid];
+      delete pages[p];
+      keys.splice(index, 1);
+    }
+  }
+}
+function clear(key) {
+  if (!key) {
+    empty(pages);
+    empty(snapshots);
+  } else if (typeof key === "string") {
+    delete snapshots[pages[key].uuid];
+    delete pages[key];
+  } else if (isArray(key)) {
+    forEach((url) => {
+      delete pages[url];
+      delete snapshots[pages[url].uuid];
+    }, key);
+  }
+}
+function create(page) {
+  page.target = hasProp(page, "target") ? page.target.length === 1 && page.target[0] === "body" ? page.target : [].concat(config.targets, page.target) : config.targets;
+  if (config.cache) {
+    if (!hasProp(page, "cache"))
+      page.cache = config.cache;
+    if (!hasProp(page, "uuid"))
+      page.uuid = uuid();
+  }
+  if (!hasProp(page, "position")) {
+    page.position = object(null);
+    page.position.y = 0;
+    page.position.x = 0;
+  }
+  if (config.hover !== false && page.type === 11 /* HOVER */) {
+    if (!hasProp(page, "threshold"))
+      page.threshold = config.hover.threshold;
+  }
+  if (config.proximity !== false && page.type === 13 /* PROXIMITY */) {
+    if (!hasProp(page, "proximity"))
+      page.proximity = config.proximity.distance;
+    if (!hasProp(page, "threshold"))
+      page.threshold = config.proximity.threshold;
+  }
+  if (config.progress !== false && !hasProp(page, "progress")) {
+    page.progress = config.progress.threshold;
+  }
+  if (!hasProp(page, "visits"))
+    page.visits = 0;
+  const state2 = pages[page.key] = page;
+  return state2;
+}
+function set(state2, snapshot) {
+  const event = emit("store", state2, snapshot);
+  const dom = typeof event === "string" ? event : snapshot;
+  if (state2.type > 6) {
+    if (state2.type > 10) {
+      state2.type = 2 /* PREFETCH */;
+    } else {
+      if (hasProp(pages, state2.rev)) {
+        pages[state2.rev].position.x = window.scrollX;
+        pages[state2.rev].position.y = window.scrollY;
+      }
+    }
+  }
+  state2.title = getTitle(dom);
+  if (!config.cache || event === false)
+    return state2;
+  pages[state2.key] = state2;
+  snapshots[state2.uuid] = dom;
+  emit("cached", state2);
+  return state2;
+}
+function update(page, snapshot) {
+  const state2 = hasProp(pages, page.key) ? pages[page.key] : create(page);
+  if (typeof snapshot === "string") {
+    snapshots[page.uuid] = snapshot;
+    page.title = getTitle(snapshot);
+  }
+  return assign(state2, page);
+}
+function get(key = history.state.key) {
+  if (hasProp(pages, key)) {
+    const state2 = object(null);
+    state2.page = pages[key];
+    state2.dom = parse(snapshots[state2.page.uuid]);
+    return state2;
+  }
+  log(4 /* ERROR */, `No record exists: ${key}`);
+}
+function has(key) {
+  return hasProp(pages, key) && hasProp(pages[key], "uuid") && hasProp(snapshots, pages[key].uuid);
+}
+
+// src/shared/links.ts
+function getLink(target, selector) {
+  if (!(target instanceof Element))
+    return false;
+  const element2 = target.closest(selector);
+  return element2 && element2.tagName === "A" ? element2 : false;
+}
+function canFetch(target) {
+  if (target.nodeName !== "A")
+    return false;
+  const href = target.href;
+  if (!validKey(href))
+    return false;
+  return !has(getKey(href));
+}
+function getNodeTargets(selector, hrefs) {
+  return toArray(document.body.querySelectorAll(selector)).flatMap((node) => {
+    return node.nodeName !== "A" ? toArray(node.querySelectorAll(hrefs)).filter(canFetch) : canFetch(node) ? node : [];
+  });
+}
+var getTargets = (selector) => {
+  return toArray(document.body.querySelectorAll(selector)).filter(canFetch);
+};
+
+// src/app/fetch.ts
+var transit = object(null);
+var timers = object(null);
+var xhr = object(null);
+function request(key) {
+  return new Promise(function(resolve, reject) {
+    const request2 = xhr[key] = new XMLHttpRequest();
+    request2.open("GET", key);
+    request2.setRequestHeader("X-SPX", "true");
+    request2.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    request2.onload = function() {
+      resolve(request2.responseText);
+    };
+    request2.onloadend = function(event) {
+      memory.bytes = memory.bytes + event.loaded;
+      memory.visits = memory.visits + 1;
+      delete xhr[key];
+    };
+    request2.onerror = function() {
+      reject(this.statusText);
+    };
+    request2.onabort = function() {
+      delete xhr[key];
+    };
+    request2.send();
+  });
+}
+function throttle(key, callback, delay) {
+  if (hasProp(timers, key))
+    return;
+  if (!has(key))
+    timers[key] = setTimeout(callback, delay);
+}
+function cleanup(key) {
+  if (!hasProp(timers, key))
+    return true;
+  clearTimeout(timers[key]);
+  console.log("cleanup", timers);
+  return delete timers[key];
+}
+function cancel(key) {
+  for (const url in xhr) {
+    if (key === url)
+      continue;
+    xhr[url].abort();
+    log(2 /* WARN */, `Pending fetch aborted: ${url}`);
+  }
+}
+function preload(state2) {
+  if (config.preload !== null) {
+    if (isArray(config.preload)) {
+      return Promise.all(config.preload.filter((path) => {
+        const route = getRoute(path, 4 /* PRELOAD */);
+        return route.key !== path ? fetch(create(route)) : false;
+      }));
+    } else if (typeof config.preload === "object") {
+      if (hasProp(config.preload, state2.key)) {
+        return Promise.all(config.preload[state2.key].map((path) => fetch(create(getRoute(path, 4 /* PRELOAD */)))));
+      }
+    }
+  }
+}
+function reverse(key) {
+  return __async(this, null, function* () {
+    if (has(key))
+      return;
+    const route = getRoute(key, 5 /* REVERSE */);
+    const page = create(route);
+    setTimeout(() => fetch(page));
+  });
+}
+function wait(state2) {
+  return __async(this, null, function* () {
+    if (!hasProp(transit, state2.key))
+      return state2;
+    const snapshot = yield transit[state2.key];
+    return set(state2, snapshot);
+  });
+}
+function fetch(state2) {
+  return __async(this, null, function* () {
+    if (hasProp(xhr, state2.key)) {
+      if (state2.type === 5 /* REVERSE */) {
+        if (hasProp(xhr, state2.rev))
+          xhr[state2.rev].abort();
+        log(2 /* WARN */, `Reverse fetch aborted: ${state2.key}`);
+      } else {
+        log(2 /* WARN */, `Fetch already in transit: ${state2.key}`);
+      }
+      return false;
+    }
+    if (!emit("fetch", state2)) {
+      log(2 /* WARN */, `Fetch cancelled within dispatched event: ${state2.key}`);
+      return false;
+    }
+    transit[state2.key] = request(state2.key);
+    return wait(state2);
+  });
+}
+
+// src/observers/hover.ts
+function onEnter(event) {
+  const target = getLink(event.target, config.selectors.hover);
+  if (!target)
+    return;
+  const route = getRoute(target, 11 /* HOVER */);
+  if (hasProp(timers, route.key))
+    return;
+  target.addEventListener(`${pointer}leave`, onLeave, { once: true });
+  const state2 = create(route);
+  const delay = state2.threshold || config.hover.threshold;
+  throttle(route.key, function() {
+    return __async(this, null, function* () {
+      if (!emit("prefetch", target, route))
+        return;
+      const fetched = yield fetch(state2);
+      if (fetched)
+        removeListener(target);
+    });
+  }, delay);
+}
+function onLeave(event) {
+  const target = getLink(event.target, config.selectors.hover);
+  if (target)
+    cleanup(getKey(target.href));
+}
+function addListener(target) {
+  target.addEventListener(`${pointer}enter`, onEnter);
+}
+function removeListener(target) {
+  target.removeEventListener(`${pointer}enter`, onEnter);
+  target.removeEventListener(`${pointer}leave`, onLeave);
+}
+function connect() {
+  if (!config.hover || observers.hover)
+    return;
+  forEach(addListener, getTargets(config.selectors.hover));
+  observers.hover = true;
+}
+function disconnect() {
+  if (!observers.hover)
+    return;
+  forEach(removeListener, getTargets(config.selectors.hover));
+  observers.hover = false;
+}
+
+// src/observers/proximity.ts
+function inRange({ clientX, clientY }, bounds) {
+  return clientX <= bounds.right && clientX >= bounds.left && clientY <= bounds.bottom && clientY >= bounds.top;
+}
+function setBounds(target) {
+  const state2 = object(null);
+  const rect = target.getBoundingClientRect();
+  const attr = target.getAttribute(config.selectors.proximity);
+  const distance = isNumber.test(attr) ? Number(attr) : config.proximity.distance;
+  state2.target = target;
+  state2.top = rect.top - distance;
+  state2.bottom = rect.bottom + distance;
+  state2.left = rect.left - distance;
+  state2.right = rect.right + distance;
+  return state2;
+}
+function observer(targets) {
+  let wait2 = false;
+  console.log(targets);
+  return function(event) {
+    if (wait2)
+      return;
+    wait2 = true;
+    const node = targets.findIndex((node2) => inRange(event, node2));
+    if (node === -1) {
+      setTimeout(() => wait2 = false, config.proximity.throttle);
+    } else {
+      const { target } = targets[node];
+      console.log(targets);
+      const page = create(getRoute(target, 13 /* PROXIMITY */));
+      const delay = page.threshold || config.proximity.threshold;
+      throttle(page.key, () => __async(this, null, function* () {
+        if (!emit("prefetch", target, page))
+          return disconnect2();
+        const prefetch2 = yield fetch(page);
+        if (prefetch2) {
+          targets.splice(node, 1);
+          wait2 = false;
+          if (targets.length === 0) {
+            disconnect2();
+            log(1 /* INFO */, "Proximity observer disconnected");
+          }
+        }
+      }), delay);
+    }
+  };
+}
+var entries;
+function connect2() {
+  if (!config.proximity || observers.proximity)
+    return;
+  const targets = getTargets(config.selectors.proximity).map(setBounds);
+  if (targets.length > 0) {
+    entries = observer(targets);
+    if (supportsPointerEvents) {
+      addEventListener("pointermove", entries, { passive: true });
+    } else {
+      addEventListener("mousemove", entries, { passive: true });
+    }
+    observers.proximity = true;
+  }
+}
+function disconnect2() {
+  if (!observers.proximity)
+    return;
+  if (supportsPointerEvents) {
+    removeEventListener("pointermove", entries);
+  } else {
+    removeEventListener("mousemove", entries);
+  }
+  observers.proximity = false;
+}
+
+// src/observers/intersect.ts
+var entries2;
+function onIntersect(entry) {
+  return __async(this, null, function* () {
+    if (entry.isIntersecting) {
+      const route = getRoute(entry.target, 12 /* INTERSECT */);
+      if (!emit("prefetch", entry.target, route))
+        return entries2.unobserve(entry.target);
+      const response = yield fetch(create(route));
+      if (response) {
+        entries2.unobserve(entry.target);
+      } else {
+        log(2 /* WARN */, `Prefetch will retry at next intersect for: ${route.key}`);
+        entries2.observe(entry.target);
+      }
+    }
+  });
+}
+function connect3() {
+  if (!config.intersect || observers.intersect)
+    return;
+  if (!entries2)
+    entries2 = new IntersectionObserver(forEach(onIntersect), config.intersect);
+  const observe = forEach((target) => entries2.observe(target));
+  const targets = getNodeTargets(config.selectors.intersector, config.selectors.intersects);
+  observe(targets);
+  observers.intersect = true;
+}
+function disconnect3() {
+  if (!observers.intersect)
+    return;
+  entries2.disconnect();
+  observers.intersect = false;
+}
+
+// src/app/progress.ts
+var status = null;
+var timeout;
+var element = null;
+var pending = [];
+function setProgress(n) {
+  const { speed, easing, minimum } = config.progress;
+  const started = typeof status === "number";
+  n = clamp(n, minimum, 1);
+  status = n === 1 ? null : n;
+  const progress = render(!started);
+  progress.offsetWidth;
+  queue((next) => {
+    progress.style.transform = `translate3d(${percentage(n)}%,0,0)`;
+    progress.style.transition = `all ${speed}ms ${easing}`;
+    if (n !== 1)
+      return setTimeout(next, speed);
+    progress.style.transition = "none";
+    progress.style.opacity = "1";
+    progress.offsetWidth;
+    setTimeout(() => {
+      progress.style.transition = `all ${speed}ms ${easing}`;
+      progress.style.opacity = "0";
+      setTimeout(() => [remove(), next()], speed);
+    }, speed);
+  });
+}
+function increment(amount) {
+  let n = status;
+  if (!n)
+    return start();
+  if (n < 1) {
+    if (typeof amount !== "number") {
+      if (n >= 0 && n < 0.2)
+        amount = 0.1;
+      else if (n >= 0.2 && n < 0.5)
+        amount = 0.04;
+      else if (n >= 0.5 && n < 0.8)
+        amount = 0.02;
+      else if (n >= 0.8 && n < 0.99)
+        amount = 5e-3;
+      else
+        amount = 0;
+    }
+    n = clamp(n + amount, 0, 0.994);
+    return setProgress(n);
+  }
+}
+function render(fromStart) {
+  if (element)
+    return element;
+  document.documentElement.classList.add("spx-load");
+  const percent = fromStart ? "-100" : percentage(status || 0);
+  const progress = document.createElement("div");
+  progress.id = "spx-progress";
+  progress.style.pointerEvents = "none";
+  progress.style.background = config.progress.background;
+  progress.style.height = config.progress.height;
+  progress.style.position = "fixed";
+  progress.style.zIndex = "9999999";
+  progress.style.top = "0";
+  progress.style.left = "0";
+  progress.style.width = "100%";
+  progress.style.transition = "all 0 linear";
+  progress.style.transform = `translate3d(${percent}%,0,0)`;
+  document.body.appendChild(progress);
+  element = progress;
+  return progress;
+}
+function remove() {
+  document.documentElement.classList.remove("spx-load");
+  const progress = document.getElementById("spx-progress");
+  progress && document.body.removeChild(element);
+  element = null;
+}
+function clamp(n, min, max) {
+  if (n < min)
+    return min;
+  if (n > max)
+    return max;
+  return n;
+}
+function percentage(n) {
+  return (-1 + n) * 100;
+}
+function queue(fn) {
+  const next = () => {
+    const fn2 = pending.shift();
+    if (fn2)
+      fn2(next);
+  };
+  pending.push(fn);
+  if (pending.length === 1)
+    next();
+}
+function start(threshold) {
+  if (!config.progress)
+    return;
+  timeout = setTimeout(function() {
+    if (!status)
+      setProgress(0);
+    const work = function() {
+      setTimeout(() => {
+        if (!status)
+          return;
+        increment();
+        work();
+      }, config.progress.trickleSpeed);
+    };
+    if (config.progress.trickle)
+      work();
+  }, threshold || 0);
+}
+function done(force) {
+  clearTimeout(timeout);
+  if (!force && !status)
+    return;
+  increment(0.3 + 0.5 * Math.random());
+  return setProgress(1);
+}
+
+// src/observers/scripts.ts
+function evaluator(exec) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.addEventListener("error", reject, { once: true });
+    script.async = false;
+    script.text = exec.target.text;
+    for (const { nodeName, nodeValue } of exec.target.attributes) {
+      script.setAttribute(nodeName, nodeValue);
+    }
+    if (document.contains(exec.target)) {
+      exec.target.replaceWith(script);
+    } else {
+      document.head.append(script);
+      exec.external ? script.addEventListener("load", () => script.remove(), { once: true }) : script.remove();
+    }
+    exec.external ? script.addEventListener("load", () => resolve(), { once: true }) : resolve();
+  });
+}
+function scriptTag(tag) {
+  if (!tag.hasAttribute("src") && !tag.text)
+    return;
+  const mime = tag.type ? tag.type.trim().toLowerCase() : "text/javascript";
+  const type = MimeType.test(mime) ? 1 : mime === "module" ? 2 : NaN;
+  const exec = object(null);
+  exec.blocking = true;
+  exec.evaluate = false;
+  exec.external = false;
+  if (isNaN(type) || tag.noModule && type === 1)
+    return exec;
+  if (tag.src)
+    exec.external = true;
+  if (type !== 1 || exec.external && (tag.hasAttribute("async") || tag.defer))
+    exec.blocking = false;
+  exec.evaluate = true;
+  exec.target = tag;
+  return exec;
+}
+function execute(script) {
+  return __async(this, null, function* () {
+    try {
+      const evaluate = evaluator(script);
+      if (script.blocking)
+        yield evaluate;
+    } catch (e) {
+      console.error(e);
+    }
+  });
+}
+function evaljs(scripts) {
+  return __async(this, null, function* () {
+    const scriptjs = toArray(scripts, scriptTag).filter((script) => script.evaluate);
+    const executed = scriptjs.reduce((promise, script) => __async(this, null, function* () {
+      if (script.external)
+        return Promise.all([promise, execute(script)]);
+      yield promise;
+      const exec = yield execute(script);
+      return exec;
+    }), Promise.resolve());
+    yield Promise.race([executed]);
+  });
+}
+
+// src/app/render.ts
+function nodePosition(a, b) {
+  return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING || -1;
+}
+function scriptNodes(target) {
+  return __async(this, null, function* () {
+    const scripts = toArray(target.querySelectorAll(config.selectors.scripts));
+    scripts.sort(nodePosition);
+    yield evaljs(scripts);
+  });
+}
+function trackedNodes(target) {
+  target.querySelectorAll(config.selectors.tracking).forEach((node) => {
+    if (!node.hasAttribute("id"))
+      return;
+    if (!tracked.has(node.id)) {
+      document.body.appendChild(node);
+      tracked.add(node.id);
+    }
+  });
+}
+function renderNodes(page, target) {
+  const nodes = page.target;
+  if (nodes.length === 1 && nodes[0] === "body")
+    return document.body.replaceWith(target.body);
+  const selector = nodes.join(",");
+  const current = document.body.querySelectorAll(selector);
+  const fetched = target.body.querySelectorAll(selector);
+  current.forEach((node, i) => {
+    if (!node.matches(nodes[i]))
+      return;
+    if (!emit("render", node, fetched[i]))
+      return;
+    node.replaceWith(fetched[i]);
+    if (page.append || page.prepend) {
+      const fragment = document.createElement("div");
+      target.childNodes.forEach(fragment.appendChild);
+      return page.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
+    }
+  });
+  trackedNodes(target.body);
+}
+function hydrateNodes(state2, target) {
+  const nodes = state2.hydrate.join(",");
+  const current = document.body.querySelectorAll(nodes);
+  if (current.length > 0) {
+    const fetched = target.body.querySelectorAll(nodes);
+    current.forEach((node, i) => {
+      if (!fetched[i])
+        return;
+      if (!emit("hydrate", node, fetched[i]))
+        return;
+      if (node.firstChild.nodeType === Node.TEXT_NODE) {
+        node.innerHTML = fetched[i].innerHTML;
+      } else {
+        node.replaceWith(fetched[i]);
+      }
+    });
+  }
+  state2.type = 7 /* VISIT */;
+  update(state2);
+  purge(state2.key);
+}
+function update2(page) {
+  disconnect();
+  disconnect3();
+  disconnect2();
+  const target = parse(snapshots[page.uuid]);
+  if (page.type === 8 /* HYDRATE */) {
+    hydrateNodes(page, target);
+  } else {
+    renderNodes(page, target);
+    scrollTo(page.position.x, page.position.y);
+  }
+  scriptNodes(target.head);
+  done();
+  connect();
+  connect3();
+  connect2();
+  emit("load", page);
+  return page;
+}
+
+// src/observers/history.ts
+function stack(page) {
+  const state2 = object(null);
+  state2.key = page.key;
+  state2.rev = page.rev;
+  state2.title = page.title;
+  state2.position = page.position;
+  return state2;
+}
+function load() {
+  return document.readyState === "complete";
+}
+function doReverse() {
+  return history.state !== null && hasProp(history.state, "rev") && history.state.key !== history.state.rev;
+}
+function replace(state2) {
+  history.replaceState(stack(state2), state2.title, state2.key);
+  return state2;
+}
+function push(state2) {
+  history.pushState(stack(state2), state2.title, state2.key);
+  return state2;
+}
+var timeout2;
+function pop(event) {
+  if (!load())
+    return;
+  if (event.state === null)
+    return;
+  clearInterval(timeout2);
+  if (has(event.state.key)) {
+    reverse(event.state.rev);
+    return update2(pages[event.state.key]);
+  }
+  timeout2 = setTimeout(function() {
+    return __async(this, null, function* () {
+      event.state.type = 6 /* POPSTATE */;
+      const page = yield fetch(event.state);
+      if (!page)
+        return location.assign(event.state.key);
+      const key = getKey(location);
+      if (page.key === key) {
+        return update2(page);
+      } else if (has(key)) {
+        return update2(pages[key]);
+      } else {
+        const data = create(getRoute(key, 6 /* POPSTATE */));
+        yield fetch(data);
+        history.pushState(data, document.title, key);
+      }
+    });
+  }, 300);
+}
+function connect4() {
+  if (observers.history)
+    return;
+  addEventListener("popstate", pop, false);
+  observers.history = true;
+}
+function disconnect4() {
+  if (!observers.history)
+    return;
+  removeEventListener("popstate", pop, false);
+  observers.history = false;
+}
+
+// src/observers/hrefs.ts
+function linkEvent(event) {
+  return !(event.target && event.target.isContentEditable || event.defaultPrevented || event.which > 1 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
+}
+function handleTrigger(event) {
+  if (!linkEvent(event))
+    return;
+  const target = getLink(event.target, config.selectors.hrefs);
+  if (!target)
+    return;
+  const key = getKey(target.href);
+  if (key === null)
+    return;
+  if (!emit("visit", event))
+    return;
+  disconnect();
+  disconnect2();
+  disconnect3();
+  const options2 = { once: true };
+  if (has(key)) {
+    const attrs = getAttributes(target, pages[key]);
+    const page = update(attrs);
+    target.addEventListener("click", function handle(event2) {
+      event2.preventDefault();
+      push(page);
+      update2(page);
+    }, options2);
+  } else if (hasProp(transit, key)) {
+    const page = pages[key];
+    cancel(key);
+    target.addEventListener("click", function handle(event2) {
+      event2.preventDefault();
+      visit(page);
+    }, options2);
+  } else {
+    cancel();
+    cleanup(key);
+    const route = getRoute(target, 7 /* VISIT */);
+    const page = create(route);
+    fetch(page);
+    target.addEventListener("click", function handle(event2) {
+      event2.preventDefault();
+      visit(page);
+    }, options2);
+  }
+}
+function visit(state2) {
+  return __async(this, null, function* () {
+    start(state2.progress);
+    const page = yield wait(state2);
+    if (page) {
+      push(page);
+      update2(page);
+    } else {
+      return location.assign(state2.key);
+    }
+  });
+}
+function navigate(key, state2) {
+  return __async(this, null, function* () {
+    if (state2) {
+      if (typeof state2.cache === "string")
+        state2.cache === "clear" ? clear() : clear(state2.key);
+      start(state2.progress);
+      const page = yield fetch(state2);
+      if (page) {
+        push(page);
+        update2(page);
+      } else {
+        location.assign(state2.key);
+      }
+    } else {
+      return visit(pages[key]);
+    }
+  });
+}
+function connect5() {
+  if (observers.hrefs)
+    return;
+  if (deviceType === "mouseOnly") {
+    addEventListener(`${pointer}down`, handleTrigger, false);
+  } else if (deviceType === "touchOnly") {
+    addEventListener("touchstart", handleTrigger, false);
+  } else {
+    addEventListener(`${pointer}down`, handleTrigger, false);
+    addEventListener("touchstart", handleTrigger, false);
+  }
+  observers.hrefs = true;
+}
+function disconnect5() {
+  if (!observers.hrefs)
+    return;
+  if (deviceType === "mouseOnly") {
+    removeEventListener(`${pointer}down`, handleTrigger, false);
+  } else if (deviceType === "touchOnly") {
+    removeEventListener("touchstart", handleTrigger, false);
+  } else {
+    removeEventListener(`${pointer}down`, handleTrigger, false);
+    removeEventListener("touchstart", handleTrigger, false);
+  }
+  observers.hrefs = false;
+}
+
+// src/app/controller.ts
+function initialize() {
+  connect4();
+  const state2 = create(getRoute(1 /* INITIAL */));
+  return new Promise((resolve) => {
+    document.addEventListener("DOMContentLoaded", () => {
+      connect5();
+      connect();
+      connect3();
+      connect2();
+      const page = set(state2, document.documentElement.outerHTML);
+      if (doReverse())
+        page.rev = history.state.rev;
+      page.position = position();
+      replace(page);
+      setTimeout(() => reverse(page.rev));
+      setTimeout(() => preload(page));
+      resolve(page);
+    }, { once: true });
+  });
+}
+function disconnect6() {
+  disconnect4();
+  disconnect5();
+  disconnect();
+  disconnect3();
+  disconnect2();
+  clear();
+  log(1 /* INFO */, "Disconnected \u{1F614}");
+}
+
+// src/index.ts
+var supported = !!(window.history.pushState && window.requestAnimationFrame && window.addEventListener && window.DOMParser);
+function connect6(options2 = {}) {
+  if (!supported) {
+    return log(4 /* ERROR */, "Browser does not support SPX");
+  }
+  if (!window.location.protocol.startsWith("http")) {
+    return log(4 /* ERROR */, "Invalid protocol, SPX expects https or http protocol");
+  }
+  configure(options2);
+  const promise = initialize();
+  return function(callback) {
+    return __async(this, null, function* () {
+      const state2 = yield promise;
+      callback(state2);
+      log(1 /* INFO */, "Connection Established \u26A1");
+    });
+  };
+}
+function session(key, update4) {
+  if (key) {
+    if (update4) {
+      if (key === "config")
+        configure(update4);
+      if (key === "observers")
+        assign(observers, update4);
+    } else {
+      if (key === "config")
+        return config;
+      if (key === "observers")
+        return observers;
+      if (key === "pages")
+        return pages;
+      if (key === "snapshots")
+        return snapshots;
+      if (key === "memory")
+        return size(memory.bytes);
+    }
+  }
+  const state2 = object(null);
+  state2.config = config;
+  state2.snapshots = snapshots;
+  state2.pages = pages;
+  state2.observers = observers;
+  state2.memory = memory;
+  state2.memory.size = size(state2.memory.bytes);
+  return state2;
+}
+function state(key, update4) {
+  return __async(this, null, function* () {
+    if (key === void 0)
+      return get();
+    if (typeof key === "string") {
+      const k = getKey(key);
+      if (!has(k))
+        log(4 /* ERROR */, `No store exists at: ${k}`);
+      const record = get(k);
+      return update4 !== void 0 ? update(assign(record.page, update4)) : record;
+    }
+    if (typeof key === "object")
+      return update(key);
+  });
+}
+function reload(options2) {
+  return __async(this, null, function* () {
+    const state2 = pages[history.state.key];
+    if (options2)
+      assign(state2, options2);
+    state2.type = 10 /* RELOAD */;
+    const page = yield fetch(state2);
+    if (page) {
+      log(1 /* INFO */, "Triggered reload, page was re-cached");
+      return update2(page);
+    }
+    log(2 /* WARN */, "Reload failed, triggering refresh (cache will be purged)");
+    return location.assign(state2.key);
+  });
+}
+function fetch2(url) {
+  return __async(this, null, function* () {
+    const link = getRoute(url, 3 /* FETCH */);
+    if (link.location.origin !== origin) {
+      log(4 /* ERROR */, "Cross origin fetches are not allowed");
+    }
+    const response = yield request(link.key);
+    if (response)
+      return parse(response);
+  });
+}
+function clear2(url) {
+  return clear(url);
+}
+function update3(elements) {
+  return __async(this, null, function* () {
+  });
+}
+function hydrate(link, elements) {
+  return __async(this, null, function* () {
+    const route = getRoute(8 /* HYDRATE */);
+    route.position = position();
+    route.hydrate = elements;
+    const dom = yield request(link);
+    if (!dom)
+      return log(2 /* WARN */, "Hydration fetch failed");
+    const page = has(route.key) ? update(route, dom) : create(route);
+    setTimeout(() => reverse(route.rev));
+    return update2(page);
+  });
+}
+function prefetch(link) {
+  return __async(this, null, function* () {
+    const path = getRoute(link, 2 /* PREFETCH */);
+    if (has(path.key)) {
+      log(2 /* WARN */, `Cache already exists for ${path.key}, prefetch skipped`);
+      return;
+    }
+    const prefetch2 = yield fetch(create(path));
+    if (prefetch2)
+      return prefetch2;
+    log(4 /* ERROR */, `Prefetch failed for ${path.key}`);
+  });
+}
+function visit2(link, options2) {
+  return __async(this, null, function* () {
+    const route = getRoute(link);
+    const merge = typeof options2 === "object" ? assign(route, options2) : route;
+    return has(route.key) ? navigate(route.key, update(merge)) : navigate(route.key, create(merge));
+  });
+}
+var src_default = {
+  supported,
+  on,
+  off,
+  connect: connect6,
+  session,
+  state,
+  reload,
+  fetch: fetch2,
+  clear: clear2,
+  hydrate,
+  prefetch,
+  visit: visit2,
+  disconnect: disconnect6
+};
+export {
+  clear2 as clear,
+  connect6 as connect,
+  src_default as default,
+  disconnect6 as disconnect,
+  fetch2 as fetch,
+  hydrate,
+  off,
+  on,
+  prefetch,
+  reload,
+  session,
+  state,
+  supported,
+  update3 as update,
+  visit2 as visit
+};

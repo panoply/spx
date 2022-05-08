@@ -13,9 +13,7 @@ spx.connect({
     trigger: 'href'
   },
   progress: false
-});
-
-spx.on('connected', function () {
+})(function () {
 
   const stimulus = Application.start();
 
@@ -23,5 +21,7 @@ spx.on('connected', function () {
   stimulus.register('accordion', Accordion);
   stimulus.register('tabs', Tabs);
   stimulus.register('session', Session);
+
+  window.spx = spx;
 
 });

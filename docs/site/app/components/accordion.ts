@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import { accordion, Accordion as Instance } from '@panoply/accordion';
+import { accordion, Accordion as Instance } from '../modules/accordion';
 import spx from 'spx';
 
 /* -------------------------------------------- */

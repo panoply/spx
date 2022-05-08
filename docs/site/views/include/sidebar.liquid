@@ -40,15 +40,14 @@
           {%- continue -%}
         {%- endunless -%}
 
-        <div class="accordion-header pt-2 px-4 {% if url == page.url %} active{%- endif -%}">
-          <a
-            class="accordion-button d-flex jc-between btn ff-base pl-0"
-            href=" {{- page.url }}">
-            <span>{{ page.data.title }}</span>
-            {% svg "chevron-right", 'icon icon-close' %}
-            {% svg "chevron-down", 'icon icon-open' %}
-          </a>
-        </div>
+        <a
+          class="accordion-button d-flex jc-between btn ff-base pl-0"
+          data-spx-proximity
+          href=" {{- page.url }}">
+          <span>{{ page.data.title }}</span>
+          {% svg "chevron-right", 'icon icon-close' %}
+          {% svg "chevron-down", 'icon icon-open' %}
+        </a>
 
         <div class="accordion-content">
           <ul class="accordion-inner px-4 py-1 ml-0" id="{{- page.data.title | slugify -}}">

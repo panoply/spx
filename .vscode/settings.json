@@ -21,8 +21,8 @@
     "**/.svn": true,
     "**/.hg": true,
     "**/CVS": true,
-    "**/.DS_Store": true,
-    "**/node_modules": true
+    "**/.DS_Store": true
+    //"**/node_modules": true
   },
   "cSpell.words": [
     "Alexey",
