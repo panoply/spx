@@ -50,29 +50,23 @@
           </div>
         </div>
 
-        <div
-          class="accordion"
-          data-accordion-collapsible-value="true"
-          data-accordion-multiselect-value="false"
-          data-controller="accordion">
+        <div class="accordion" data-controller="accordion">
 
           {%- assign tabs = 'pages,snapshots,history' | split: ',' -%}
 
           {% for item in tabs %}
 
-            <div class="accordion-header" {% if item == 'pages' %} data-open {% endif %}>
-              <button class="accordion-button bg-black d-flex jc-between ac-center upcase py-2 px-3">
-                {%- if item == 'history' -%}
-                  <span>{{ item }} API</span>
-                {%- else -%}
-                  <span>{{ item }}</span>
-                {%- endif -%}
 
-                {% svg "plus-square", 'icon icon-close' %}
-                {% svg "minus-square", 'icon icon-open' %}
-              </button>
+            <button class="accordion-button bg-black d-flex jc-between ac-center upcase py-2 px-3" aria-expanded="{% if item == 'pages' %}true{%else%}false{% endif %}">
+              {%- if item == 'history' -%}
+                <span>{{ item }} API</span>
+              {%- else -%}
+                <span>{{ item }}</span>
+              {%- endif -%}
 
-            </div>
+              {% svg "plus-square", 'icon icon-close' %}
+              {% svg "minus-square", 'icon icon-open' %}
+            </button>
 
             <div class="accordion-content">
               <div id="{{ item }}" class="accordion-inner px-2 py-4" data-session-target="{{ item }}"></div>

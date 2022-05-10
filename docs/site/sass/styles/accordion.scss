@@ -1,103 +1,58 @@
-$color-1: inherit;
-$background-color-1: $black;
-$accordion-border-color: $white-300 !default;
 $accordion-border-width: 1px !default;
-$accordion-header-button-bg: $black !default;
-$accordion-header-button-bg-open: $black !default;
-$accordion-header-button-bg-focus: $black !default;
-$accordion-content-bg: rgb(18 18 18) !default;
-$accordion-transition-button: background-color 0.2s linear !default;
-$accordion-transition-content-outer: height 0.1s linear 0.1s !default;
-$accordion-transition-content-outer-open: height 0.1s linear !default;
-$accordion-transition-content-inner: opacity 0.1s linear;
-$accordion-transition-content-inner-open: opacity 0.3s linear !default;
-$a
+$accordion-border-color: #e5e5e5 !default;
+$accordion-expanded-color: #03b5d2 !default;
+$accordion-disabled-opacity: 0.5 !default;
 
 .accordion {
-  display: block;
-  width: 100%;
-
-  &-header {
-    display: block;
-    margin: 0;
-
-    &.bd-bottom {
-      border-bottom: 1px solid transparent;
-    }
-
-    .icon-chevron-down {
-      visibility: hidden;
-    }
-
-    .icon-chevron-right {
-      visibility: visible;
-    }
-
-    &.open {
-      &.bd-bottom {
-        border-bottom: none;
-      }
-
-      .icon-chevron-down {
-        visibility: visible;
-      }
-
-      .icon-chevron-right {
-        visibility: hidden;
-      }
-    }
-
-    &.focus > .accordion-button {
-      outline: none;
-    }
-  }
-
-  &-button {
-    display: block;
-    width: 100%;
-    height: 40px;
-    margin: 0;
-    color: $color-1;
-    font-size: $font-size-base;
-    letter-spacing: 0.03rem;
-    text-align: left;
-    border: none;
-    border-radius: 0;
-    cursor: pointer;
-
-
-    &::-moz-focus-inner {
-      border: 0;
-    }
-  }
+  position: relative;
+  border: 1px solid $accordion-border-color;
+  border-top: none;
 
   &-content {
-    display: none;
     height: 0;
     overflow: hidden;
-    background-color: $background-color-1;
-    border-top: 1px solid transparent;
-    transform: translateY(-100%);
-    transition: 0.1s linear 0.1s;
+    opacity: 0;
+    will-change: opacity, height;
 
-    &.open {
-      display: block;
-      transform: translateY(0);
-      transition: 0.1s linear;
+    &.expanded {
+      height: auto;
+      opacity: 1;
     }
 
-    &.opened {
-      overflow: visible;
-
-      > .accordion-inner {
-        opacity: 1;
-        transition: opacity 0.145s linear;
-      }
+    > p {
+      padding: 0 25px;
     }
   }
 
-  &-inner {
-    opacity: 0;
-    transition: opacity 0.1s linear;
+  a,
+  button {
+    position: relative;
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    outline: none;
+
+
+    &[aria-expanded="false"][aria-disable="true"],
+    &[aria-expanded="false"].disabled {
+      opacity: $accordion-disabled-opacity;
+
+      &:focus {
+        color: inherit;
+        cursor: default;
+      }
+    }
+
+    &[aria-expanded="true"] {
+      color: $cyan;
+    }
+
+    &:hover,
+    &:focus {
+      color: $cyan;
+      cursor: pointer;
+    }
   }
 }

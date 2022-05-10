@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import { accordion, Accordion as Instance } from '../modules/accordion';
+import relapse  from 'relapse';
 import spx from 'spx';
 
 /* -------------------------------------------- */
@@ -8,7 +8,7 @@ import spx from 'spx';
 
 export class Accordion extends Controller {
 
-  accordion: Instance;
+  accordion: typeof relapse.accordion;
   buttonValue: boolean;
   multiselectValue: boolean;
   collapsibleValue: boolean;
@@ -23,7 +23,7 @@ export class Accordion extends Controller {
     },
     multiselect: {
       type: Boolean,
-      default: true
+      default: false
     },
     collapsible: {
       type: Boolean,
@@ -49,14 +49,11 @@ export class Accordion extends Controller {
    */
   connect (): void {
 
-    this.accordion = accordion(this.element, {
-      multiselect: this.multiselectValue,
-      button: this.buttonValue,
-      carouselFocus: true,
-      collapsible: this.collapsibleValue,
-      keyboard: this.keyboardValue,
-      initialOpen: this.initialOpenValue,
-      initialOpenDelay: this.initialDelayValue
+    this.accordion = relapse.accordion(this.element, {
+      multiple: this.multiselectValue,
+      transition: 250,
+      fade:false,
+      persist: false
     });
 
   }
