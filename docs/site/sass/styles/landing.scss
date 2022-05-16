@@ -1,3 +1,33 @@
+*,
+body,
+html {
+  scroll-behavior: auto !important;
+}
+
+h1,
+h2 {
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #222;
+}
+
+h2 {
+  margin-top: 50px;
+}
+
+h5 {
+  font-weight: 600;
+
+  a {
+    color: $sea;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 .menu {
   position: absolute;
   top: 30px;
@@ -28,17 +58,15 @@ header {
   margin-right: 250px;
   font-size: 1rem;
   letter-spacing: 00.06rem;
-  background-color: rgb(15 15 15 / 56.2%);
-  backdrop-filter: blur(15px);
+
+  //background-color: rgb(15 15 15 / 56.2%);
+
+  // backdrop-filter: blur(15px);
 }
 
-main {
-  margin: 0 349px 0 251px;
-  scroll-margin-top: 55px;
-}
 
 strong {
-  color: #76d9e6;
+
 }
 
 .hero {

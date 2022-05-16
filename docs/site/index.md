@@ -1,10 +1,10 @@
 ---
-layout: docs.liquid
+layout: landing.liquid
 title: 'SPX | Single Page XHR'
 permalink: '/index.html'
 ---
 
-<div class="hero d-grid ai-center vh-100">
+<div class="hero d-grid ai-center">
 
   <div class="hero-github">
     <a href="https://github.com/panoply/spx">
@@ -15,7 +15,7 @@ permalink: '/index.html'
   <div class="d-flex flex-column as-center jc-center">
     <a
       data-spx-target="['body']"
-      href=" {{- '/installation' | url }}"
+      href=" {{- '/introduction/' | slugify }}"
       class="hero-logo d-block">
       {% svg "logo", 'icon' %}
     </a>

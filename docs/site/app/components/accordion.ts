@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import relapse  from 'relapse';
+import relapse, { Scope } from 'relapse';
 import spx from 'spx';
 
 /* -------------------------------------------- */
@@ -8,40 +8,19 @@ import spx from 'spx';
 
 export class Accordion extends Controller {
 
-  accordion: typeof relapse.accordion;
-  buttonValue: boolean;
+  accordion: Scope;
   multiselectValue: boolean;
-  collapsibleValue: boolean;
-  keyboardValue: boolean;
-  initialOpenValue: boolean;
-  initialDelayValue: number;
+  persistValue: boolean;
 
   static values = {
-    button: {
-      type: Boolean,
-      default: true
-    },
-    multiselect: {
+    multiple: {
       type: Boolean,
       default: false
     },
-    collapsible: {
-      type: Boolean,
-      default: true
-    },
-    initialOpen: {
-      type: Boolean,
-      default: false
-    },
-    initialDelay: {
-      type: Number,
-      default: 100
-    },
-    keyboard: {
+    persist: {
       type: Boolean,
       default: true
     }
-
   };
 
   /**
@@ -49,11 +28,9 @@ export class Accordion extends Controller {
    */
   connect (): void {
 
-    this.accordion = relapse.accordion(this.element, {
+    this.accordion = relapse(this.element, {
       multiple: this.multiselectValue,
-      transition: 250,
-      fade:false,
-      persist: false
+      persist: this.persistValue
     });
 
   }

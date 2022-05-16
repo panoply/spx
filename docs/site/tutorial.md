@@ -1,3 +1,6 @@
+---
+order: 100
+---
 # Real World
 
 Below is a real world example you can use to better understand how this module works and how it can be applied to your web application. We are working on providing a live demonstration for more advanced use cases but the below example should give you a good understanding of how to leverage this module.

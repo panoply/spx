@@ -1,58 +1,19 @@
-$accordion-border-width: 1px !default;
-$accordion-border-color: #e5e5e5 !default;
-$accordion-expanded-color: #03b5d2 !default;
-$accordion-disabled-opacity: 0.5 !default;
-
-.accordion {
+.relapse {
   position: relative;
   border: 1px solid $accordion-border-color;
   border-top: none;
 
-  &-content {
-    height: 0;
-    overflow: hidden;
-    opacity: 0;
-    will-change: opacity, height;
-
-    &.expanded {
-      height: auto;
-      opacity: 1;
-    }
-
-    > p {
-      padding: 0 25px;
-    }
+  &-btn.opened,
+  &-btn.focused {
+    color: $cyan;
   }
 
-  a,
-  button {
-    position: relative;
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    outline: none;
-
-
-    &[aria-expanded="false"][aria-disable="true"],
-    &[aria-expanded="false"].disabled {
-      opacity: $accordion-disabled-opacity;
-
-      &:focus {
-        color: inherit;
-        cursor: default;
-      }
-    }
-
-    &[aria-expanded="true"] {
-      color: $cyan;
-    }
+  &-btn {
+    padding: 10px 20px;
 
     &:hover,
     &:focus {
       color: $cyan;
-      cursor: pointer;
     }
   }
 }

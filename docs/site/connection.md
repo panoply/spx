@@ -1,20 +1,17 @@
 ---
-title: 'Connection'
+title: 'Usage'
 permalink: '/connection/index.html'
 layout: docs.liquid
-position: 3
+order: 2
 sidebar:
-  - 'spx:prefetch'
-  - 'spx:visit'
-  - 'spx:fetch'
-  - 'spx:store'
-  - 'spx:render'
-  - 'spx:load'
+  - 'Connected'
+  - 'Options'
 ---
 
-# Connection
+# Usage
 
-To initialize, call `spx.connect()` in your bundle preferably before anything else is loaded. By default, the entire `<body>` fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis.Consider leveraging the pre-fetching capabilities for the most optimal performance.
+An SPX connection is how the module is initialized. Because SPX takes control of your SSR navigation it is recommended that
+mended which you can By default, the entire `<body></body>`{:.language-html} </code> fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis.Consider leveraging the pre-fetching capabilities for the most optimal performance.
 
 > The typings provided in this package will describe each option in good detail, below are the defaults. Settings are optional.
 
@@ -53,6 +50,33 @@ spx.connect({
     trickleSpeed: 200
   }
 });
+```
+
+# Connected
+
+SPX is initialized using the `spx.connect();` method. This method returns a curried functional callback which is triggered 1 time. This is the equivalent of the `DOMContentLoaded` event. Upon connection, SPX will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
+
+<!-- prettier-ignore -->
+```js
+import spx from 'spx'
+
+spx.connect({ /* options */ })(function(session) {
+
+  // The connect returns a callback function after
+  // connection was established. Lets inspect the session:
+  console.log(session);
+
+  // You initialize third party js in this callback
+  // It's the equivalent of DOMContentLoaded.
+
+});
+
+// You can alternatively establish an instance callback
+// using a curried variable assignment
+const connect = spx.connect({ /* options */ })
+
+// Later on...
+connect(function(session) {})
 ```
 
 # Options

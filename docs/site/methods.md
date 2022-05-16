@@ -2,9 +2,8 @@
 title: 'Methods'
 permalink: '/methods/index.html'
 layout: docs.liquid
-position: 3
+order: 4
 sidebar:
-  - 'spx.connect'
   - 'spx.session'
   - 'spx.supported'
   - 'spx.hydrate'
@@ -22,7 +21,7 @@ sidebar:
 
 In addition to Lifecycle events, you also have a list of methods available. Methods will allow you some basic programmatic control of the SPX session occurring, provides access to the cache store and various other operational utilities.
 
-```typescript
+```js
 import spx from 'spx'
 
 spx.supported: boolean
@@ -39,7 +38,7 @@ spx.prefetch(string | Element): Promise<IPage>
 
 spx.visit(url: string, options?:{}): Promise<IPage>
 
-spx.state(url?: string, merge?:{}): Page{}
+spx.store(url?: string, merge?:{}): Page{}
 
 spx.capture(targets: string[]): Promise<Element[]>
 
@@ -51,18 +50,12 @@ spx.disconnect(): void
 
 ```
 
-#### `spx.connect(options?)`
-
-The `connect` method is a **required** call and will initialize a SPX session. You can optionally provide options which inform SPX on how it should behave. See [options](#options) for list of settings.
-
-**Returns:** `void`
-**Dispatched Events:** `connected` <br>
-
-#### `spx.session()`
+## spx.session `spx.session()`
 
 The `session` method will return the current store instance. This includes all state, snapshots, options and settings of the current session which exists in memory. If you intend of augmenting the session, please note that the store records are created without prototype.
 
-**Returns:** `Promise<IPage>`
+<span class="fc-gray">Returns</span>: `Promise<IPage>`
+<span class="fc-gray">Asynchronous</span>: <span class="ff-code fs-md fc-cyan">false</span>
 
 #### `spx.hydrate(url: string, targets: string[])`
 
@@ -71,33 +64,37 @@ The `hydrate` method executed a programmatic hydration. The method expects a `ur
 **Returns:** `Promise<IPage>`<br>
 **Events:** `cache > hydrate > load`
 
-#### `spx.fetch(url: string)`
+<span class="fc-gray">Returns</span>: `Promise<IPage>`
+
+## spx.fetch `spx.fetch(url: string)`
 
 Triggers a programmatic fetch. The XHR request response is not cached and no state reference are touched.
 
-**Returns:** `Document`<br>
+<span class="fc-gray">Returns</span>: `Document`
 
-#### `spx.prefetch(link: string | Element)`
+## spx.prefetch `spx.prefetch(link: string | Element)`
 
 The `prefetch` method executed a programmatic Prefetch. The method expects a `url` or `<a href="*"></a>` node as an argument. This method behaves the same way as hover, intersect of proximity prefetches.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `request > cache`
 
-#### `spx.visit(url: string, options?: IOptions)`
+**Returns:** `Document`<br>
+
+## spx.visit `spx.visit(url: string, options?: IOptions)`
 
 The `visit` method executed a programmatic trigger visit. The method expects a `url` as an argument and optionally accepts an page state options model. This method behaves the same way as trigger.
 
 **Returns:** `Promise<IPage>`<br>
 **Events:** `replace > request > cache > render > load`
 
-#### `spx.state(url?: string, state?: IState)`
+## spx.store `spx.store(url?: string, state?: IState)`
 
 The `state` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
 
 **Returns:** `Promise<IPage>`
 
-#### `spx.capture(targets: string[])`
+## spx.capture `spx.capture(targets: string[])`
 
 The `capture` method performs a snapshot modification to the current document. Use this to align a snapshot cache record between navigations. This is helpful in situations where the dom is augmented and you want to preserve
 

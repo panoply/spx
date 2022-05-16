@@ -2,7 +2,7 @@
 title: 'Routing'
 layout: docs.liquid
 permalink: '/routing/index.html'
-position: 7
+order: 7
 sidebar:
   - 'Components'
   - 'Mounting'

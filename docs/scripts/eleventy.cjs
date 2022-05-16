@@ -1,29 +1,26 @@
+const eleventy = require('11ty');
 const highlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const svgsprite = require('eleventy-plugin-svg-sprite');
 const navigation = require('@11ty/eleventy-navigation');
 const htmlmin = require('@sardine/eleventy-plugin-tinyhtml');
 const md = require('markdown-it');
 const anchor = require('markdown-it-anchor');
+const { sorting, prism } = require('./plugins.cjs');
 
 /**
  * @type {import('./eleventy').LocalConfigFunction}
  */
-module.exports = function (config) {
+module.exports = eleventy(function (config) {
 
-  const markdown = md({ html: true, breaks: true }).use(anchor);
+  const markdown = md({ html: true }).use(anchor);
 
-  config.setBrowserSyncConfig({
-    notify: false,
-    files: [
-      'public/style.css',
-      'public/bundle.min.js'
-    ]
-  });
 
+  config.addLiquidFilter('sorting', sorting);
+  config.setBrowserSyncConfig();
   config.setLibrary('md', markdown);
   config.setDynamicPermalinks(false);
   config.addPlugin(navigation);
-  config.addPlugin(highlight);
+  config.addPlugin(highlight, { init: prism });
   config.addPlugin(svgsprite, {
     path: 'site/assets/svg',
     spriteConfig: {
@@ -80,4 +77,4 @@ module.exports = function (config) {
     }
   };
 
-};
+});

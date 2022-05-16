@@ -1,6 +1,6 @@
 code {
-  color: $pink;
-  font-size: 1.025rem;
+  color: $cyan;
+  font-size: 1rem;
 }
 
 code[class*="language-"] {
@@ -17,6 +17,7 @@ code[class*="language-"] {
 
 pre {
   position: relative;
+  margin-top: 25px;
   padding: 15px;
   overflow: auto;
   border: none;
@@ -40,16 +41,14 @@ pre {
   }
 
   > code[class*="language-"] {
-    font-size: 1.025rem;
+    font-size: 1rem;
   }
 }
 
 :not(pre) > code[class*="language-"] {
-  padding: 0.15em 0.2em 0.05em;
-  background: rgb(30 30 30);
-  border: 0.13em solid #7a6652;
+  font-size: $font-size-md;
+  background: $gray-800;
   border-radius: 0.3em;
-  box-shadow: 1px 1px 0.3em -0.1em #000 inset;
 }
 
 
@@ -127,24 +126,67 @@ pre {
 
 code.language-javascript,
 code.language-js {
-  color: $gray-300;
+  color: $gray-400;
 
   .token {
+    &.parameter-type,
+    &.return-type,
+    &.semi {
+      color: $gray-300;
+    }
+
+    &.punctuation {
+      color: $gray-400;
+    }
+
     &.comment {
       color: $gray-600;
     }
 
-    &.function {
-      color: $cyan;
-    }
-
+    &.parameter-optional,
     &.parameter {
       color: $orange;
     }
 
-    &.tag {
+    &.type-object,
+    &.type-array {
+      color: #228d9f;
+    }
+
+    &.types {
+      color: $sea;
+    }
+
+    &.method,
+    &.keyword,
+    &.browser-objects,
+    &.variable {
+      color: $cyan;
+    }
+
+    &.op,
+    &.tag,
+    &.punctuation-chars,
+    &.operator,
+    &.module {
       color: $pink;
     }
+
+
+    &.function {
+      color: $green;
+    }
+
+
+    &.number {
+      color: $salmon;
+    }
+
+    &.nil,
+    &.boolean {
+      color: $purple;
+    }
+
 
     &.attr-name {
       color: $green;
@@ -207,7 +249,7 @@ code.language-html {
 }
 
 code.language-bash {
-  color: $pink;
+  color: $gray-500;
 }
 
 code.language-markup {

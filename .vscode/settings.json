@@ -12,6 +12,7 @@
   },
   "npm.packageManager": "pnpm",
   "eslint.packageManager": "pnpm",
+  "eslint.workingDirectories": [{ "mode": "auto" }],
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true
@@ -21,8 +22,8 @@
     "**/.svn": true,
     "**/.hg": true,
     "**/CVS": true,
-    "**/.DS_Store": true
-    // "**/node_modules": true
+    "**/.DS_Store": true,
+    "**/node_modules": true
   },
   "cSpell.words": [
     "Alexey",

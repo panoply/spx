@@ -13,7 +13,7 @@ spx.connect({
     trigger: 'href'
   },
   progress: false
-})(function () {
+})(() => {
 
   const stimulus = Application.start();
 
@@ -23,5 +23,7 @@ spx.connect({
   stimulus.register('session', Session);
 
   window.spx = spx;
+
+
 
 });

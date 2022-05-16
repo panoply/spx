@@ -82,6 +82,7 @@
     "test": "ava --color --verbose --watch --timeout=2m"
   },
   "optionalDependencies": {
-    "eslint": "^8.14.0"
+    "eslint": "^8.14.0",
+    "prettier": "^2.6.2"
   }
 }

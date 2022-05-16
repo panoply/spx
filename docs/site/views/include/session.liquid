@@ -1,18 +1,17 @@
 {%- if page.url == '/' -%}
   {%- assign is_open = 'false' -%}
   {%- assign hidden = 'false' -%}
-  {%- assign active = '' -%}
+  {%- assign drawer = '' -%}
 {%- else -%}
   {%- assign is_open = 'true' -%}
   {%- assign hidden = 'true' -%}
-  {%- assign active = 'drawer-active' -%}
+  {%- assign drawer = 'drawer-active' -%}
 {%- endif -%}
 
 <aside
   id="session"
-  data-drawer-is-open-value=" {{- is_open }}"
-  class="drawer-panel drawer-right {{ active }} session vh-100 bd-left"
-  data-controller="drawer">
+  data-controller="drawer"
+  class="drawer-panel drawer-right {{ drawer }} session vh-100 bd-left">
 
   <div data-controller="session" class="w-100">
 
@@ -50,14 +49,14 @@
           </div>
         </div>
 
-        <div class="accordion" data-controller="accordion">
+        <div class="relapse" data-controller="accordion" data-relapse-persist="false">
 
           {%- assign tabs = 'pages,snapshots,history' | split: ',' -%}
 
           {% for item in tabs %}
 
-
-            <button class="accordion-button bg-black d-flex jc-between ac-center upcase py-2 px-3" aria-expanded="{% if item == 'pages' %}true{%else%}false{% endif %}">
+            <button class="relapse-btn bg-black d-flex jc-between ac-center upcase py-2 px-3 {% if item ==
+                'pages' %}initial{% endif %}">
               {%- if item == 'history' -%}
                 <span>{{ item }} API</span>
               {%- else -%}
@@ -68,8 +67,8 @@
               {% svg "minus-square", 'icon icon-open' %}
             </button>
 
-            <div class="accordion-content">
-              <div id="{{ item }}" class="accordion-inner px-2 py-4" data-session-target="{{ item }}"></div>
+            <div class="relapse-fold">
+              <div id="{{ item }}" class="px-2 py-4" data-session-target="{{ item }}"></div>
             </div>
 
           {% endfor %}

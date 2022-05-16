@@ -7,12 +7,15 @@ import * as pjax from 'spx';
 
 export class Drawer extends Controller {
 
-  isOpenValue: boolean;
+  openValue: boolean;
 
   static values = {
-    isOpen: Boolean,
-    isReady: Boolean
+    open: {
+      type: Boolean,
+      default: false
+    }
   };
+
 
   static targets = [
     'mount'
@@ -39,7 +42,7 @@ export class Drawer extends Controller {
     if (window.innerWidth < 400) {
       pjax.on('load', () => {
 
-        if (this.isOpenValue) setTimeout(this.doClose, 100);
+        if (this.openValue) setTimeout(this.doClose, 100);
 
       });
     }
@@ -61,21 +64,21 @@ export class Drawer extends Controller {
       }
     }
 
-    this.isOpenValue = !this.isOpenValue;
+    this.openValue = !this.openValue;
 
-    return this.isOpenValue ? this.doOpen() : this.doClose();
+    return this.openValue ? this.doOpen() : this.doClose();
 
   };
 
   click (event: MouseEvent) {
 
-    if (this.isOpenValue) this.doClose();
+    if (this.openValue) this.doClose();
 
   }
 
   touchMove = (event: TouchEvent) => {
 
-    if (this.isOpenValue) {
+    if (this.openValue) {
       if (this.element.scrollHeight <= this.element.clientHeight) {
         event.preventDefault();
       }
@@ -114,7 +117,7 @@ export class Drawer extends Controller {
       this.overlay.removeEventListener('click', this.doClose);
     }
 
-    this.isOpenValue = false;
+    this.openValue = false;
 
   };
 

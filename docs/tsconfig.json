@@ -15,7 +15,9 @@
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "pretty": true,
-    "typeRoots": ["./scripts/eleventy.d.ts"],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "types": ["./scripts/eleventy.d.ts"]
+    }
   }
 }

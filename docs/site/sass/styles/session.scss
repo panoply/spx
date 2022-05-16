@@ -3,7 +3,7 @@
   top: 0;
   right: 0;
   z-index: 200;
-  width: 350px;
+  width: 500px;
   border-color: $cyan;
 }
 
@@ -46,8 +46,9 @@
   }
 
 
-  .accordion-button {
+  .relapse-btn {
     color: $white;
+    border-bottom: $border-width solid $cyan;
 
     .icon {
       width: 20px;
@@ -74,10 +75,6 @@
         display: none;
       }
     }
-  }
-
-  .accordion-button {
-    border-bottom: $border-width solid $cyan;
   }
 }
 

@@ -8,28 +8,29 @@
   {%- assign active = 'drawer-active' -%}
 {%- endif -%}
 
-{{ page.url }}
 <aside
-  id="main-menu"
-  data-drawer-is-open-value=" {{- is_open }}"
-  class="drawer-panel drawer-left {{ active }} sidebar py-3 vh-100 bd-right"
+  id="sidebar"
+  class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 bd-right"
   data-controller="drawer">
-
   <div class="container-fluid g-0">
-    <div class="row ai-center jc-center mb-4 px-4">
+
+    <div class="row ai-center jc-center my-4 px-4">
+
       <a href="/" class="col-auto pr-1" data-spx-target="['body']">
         {% svg "logo", 'logo' %}
       </a>
+
       <span class="col-auto logo-text as-end upper italic">Single Page XHR</span>
+
     </div>
 
     <form class="mx-4">
       <input class="form-input form-input-sm rad-1" type="search" placeholder="Search...">
     </form>
 
-    <nav class="accordion mt-3 mb-2" data-controller="accordion">
+    <nav class="relapse mt-3 mb-2" data-controller="accordion">
 
-      {%- assign pages = collections.all | sort: 'data.position' -%}
+      {%- assign pages = collections.all | sorting -%}
 
       {%- for link in pages %}
 
@@ -37,18 +38,19 @@
           {%- continue -%}
         {%- endunless -%}
 
+        {%- capture initial -%}
+      {%- if page.url == link.url -%}initial{%- endif -%}
+      {%- endcapture -%}
         <a
-          class="accordion-button d-flex jc-between btn ff-base px-5"
-          data-spx-proximity
-          aria-expanded="{%- if page.url == link.url  -%}true{%- else -%}false{%- endif -%}"
+          class="relapse-btn d-flex jc-between btn py-2 ff-base {{ initial }}"
           href=" {{- link.url }}">
           <span>{{ link.data.title }}</span>
           {% svg "chevron-right", 'icon icon-close' %}
           {% svg "chevron-down", 'icon icon-open' %}
         </a>
 
-        <div class="accordion-content {% if page.url == link.url %}expanded{%- endif -%}">
-          <ul class="px-4 py-1 ml-0" id="{{- link.data.title | slugify -}}">
+        <div class="relapse-fold {% if page.url == link.url %}expanded{%- endif -%}">
+          <ul class="p-2 ml-0" id="{{- link.data.title | slugify -}}">
             {%- for item in link.data.sidebar %}
               <li class="pt-1 pl-3">
 

@@ -2,7 +2,7 @@
 title: 'Reference'
 permalink: '/reference/index.html'
 layout: docs.liquid
-position: 5
+order: 6
 sidebar:
   - 'Options'
   - 'Observers'
@@ -23,7 +23,7 @@ A SPX navigation sessions will begin immediately after a connection was initiali
 
 ## Model
 
-```typescript
+```js
 interface ISession {
   readonly selectors: object;
   readonly pages: { [key: string]: IPage };
@@ -79,7 +79,7 @@ State modifications can be carried out using attributes, methods or from within 
 
 ## Model
 
-```typescript
+```js
 interface IPage {
   uuid: string;
   key: string;
