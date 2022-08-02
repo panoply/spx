@@ -1,6 +1,6 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { empty, uuid, hasProp, log, forEach } from '../shared/utils';
+import { empty, uuid, hasProp, log, forEach, position } from '../shared/utils';
 import { assign, object, isArray, history } from '../shared/native';
 import { pages, snapshots, config } from './session';
 // import { getRoute } from './route';
@@ -104,29 +104,27 @@ export function create (page: IPage): IPage {
 
   if (!hasProp(page, 'visits')) page.visits = 0;
 
-  const state = pages[page.key] = page;
+  pages[page.key] = page;
 
-  return state;
+  return pages[page.key];
 
 }
 
 /**
  * Writes the page to memory. New visits are defined by an event
- * dispatched from a `href` link. Both a new new page visit or
+ * dispatched from a `href` link. Both a new page visit or
  * subsequent visit will pass through this function. This will
  * be called after an XHR fetch completes or when state is to be
  * added to the session memory.
  */
 export function set (state: IPage, snapshot: string): IPage {
 
-  // console.log(state);
-
   const event = emit('store', state, snapshot);
   const dom = typeof event === 'string' ? event : snapshot;
 
   // EventTypes above 6 are prefetch/trigger kinds.
   // We need to augment the page store to align with
-  // the record we handling.
+  // the record we are handling.
   if (state.type > 6) {
 
     // EventTypes above 10 are prefetch kinds
@@ -144,6 +142,7 @@ export function set (state: IPage, snapshot: string): IPage {
         pages[state.rev].position.x = window.scrollX;
         pages[state.rev].position.y = window.scrollY;
       }
+
     }
   }
 
@@ -153,6 +152,8 @@ export function set (state: IPage, snapshot: string): IPage {
   // If cache is disabled or the lifecycle event
   // returned a boolean false values we will return the record
   if (!config.cache || event === false) return state;
+
+  if (!hasProp(state, 'uuid')) return update(state, dom);
 
   // Lets assign this record to the session store
   pages[state.key] = state;
@@ -186,6 +187,7 @@ export function update (page: IPage, snapshot?: string): IPage {
   if (typeof snapshot === 'string') {
     snapshots[page.uuid] = snapshot;
     page.title = getTitle(snapshot);
+    page.position = position();
   }
 
   return assign(state, page);
@@ -225,7 +227,8 @@ export function has (key: string): boolean {
   return (
     hasProp(pages, key) &&
     hasProp(pages[key], 'uuid') &&
-    hasProp(snapshots, pages[key].uuid)
+    hasProp(snapshots, pages[key].uuid) &&
+    typeof snapshots[pages[key].uuid] === 'string'
   );
 
 }
