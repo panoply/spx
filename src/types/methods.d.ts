@@ -17,7 +17,7 @@ export const supported: boolean;
  * Establish a SPX connection with your web application.
  * Optionally pass in connect options.
  */
-export function connect(options?: IOptions): (state?: IPage) => void;
+export function connect(options?: IOptions): ((callback: (state?: IPage) => void) => Promise<void>);
 
 /**
  * Session
