@@ -28,6 +28,8 @@ function stack (page: IPage) {
   state.title = page.title;
   state.position = page.position;
 
+  // console.log('HISTORY STACK', page);
+
   return state;
 }
 
@@ -62,7 +64,7 @@ export function doReverse () {
 
 export function replace (state: IPage) {
 
-  // console.log('REPLACE', state);
+  // console.log('REPLACE STATE', state);
 
   history.replaceState(stack(state), state.title, state.key);
 
@@ -109,20 +111,17 @@ function pop (event: PopStateEvent & { state: HistoryState }) {
 
     const key = getKey(location);
 
-    // console.log(state.key, page.key, key);
-
     if (page.key === key) {
       return render.update(page);
     } else if (store.has(key)) {
       return render.update(pages[key]);
     } else {
-
       const data = store.create(getRoute(key, EventType.POPSTATE));
       await fetch(data);
       history.pushState(data, document.title, key);
-
     }
-  }, 300);
+
+  }, 200);
 
 };
 
