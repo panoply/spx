@@ -11,7 +11,7 @@ import * as store from './app/store';
 import * as hrefs from './observers/hrefs';
 import * as request from './app/fetch';
 import * as render from './app/render';
-import { on, off, emit } from './app/events';
+import { on, off } from './app/events';
 
 /**
  * RE-Exports
