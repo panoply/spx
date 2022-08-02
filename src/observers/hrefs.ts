@@ -1,5 +1,5 @@
 import { EventType } from '../shared/enums';
-import { hasProp } from '../shared/utils';
+import { hasProp, position } from '../shared/utils';
 import { deviceType } from 'detect-it';
 import { pointer } from '../shared/native';
 import { emit } from '../app/events';
@@ -99,6 +99,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
+      pages[page.rev].position = position();
       history.push(page);
       render.update(page);
     }, options);
@@ -111,6 +112,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
+      pages[page.rev].position = position();
       visit(page);
     }, options);
 
@@ -135,6 +137,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
+      pages[page.rev].position = position();
       visit(page);
     }, options);
 
