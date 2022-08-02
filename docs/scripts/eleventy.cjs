@@ -1,4 +1,4 @@
-const eleventy = require('11ty');
+const eleventy = require('@panoply/11ty');
 const highlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const svgsprite = require('eleventy-plugin-svg-sprite');
 const navigation = require('@11ty/eleventy-navigation');
@@ -13,7 +13,6 @@ const { sorting, prism } = require('./plugins.cjs');
 module.exports = eleventy(function (config) {
 
   const markdown = md({ html: true }).use(anchor);
-
 
   config.addLiquidFilter('sorting', sorting);
   config.setBrowserSyncConfig();
