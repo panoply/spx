@@ -1,8 +1,8 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { log, hasProp } from '../shared/utils';
+import { log, hasProp, position } from '../shared/utils';
 import { getRoute } from './location';
-import { config, memory } from './session';
+import { config, memory, pages } from './session';
 import * as store from './store';
 import { isArray, object } from '../shared/native';
 import { Errors, EventType } from '../shared/enums';
@@ -91,7 +91,7 @@ export function cleanup (key: string) {
 
   clearTimeout(timers[key]);
 
-  console.log('cleanup', timers);
+  // console.log('cleanup', timers);
 
   return delete timers[key];
 
@@ -178,7 +178,10 @@ export function preload (state: IPage) {
  */
 export async function reverse (key: string): Promise<void> {
 
-  if (store.has(key)) return;
+  if (store.has(key)) {
+    pages[key].position = position();
+    return;
+  }
 
   // console.log('REVERSE FETCH FOR', key);
 
