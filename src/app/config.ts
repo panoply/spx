@@ -3,7 +3,7 @@
 import { Attributes } from '../shared/enums';
 import { assign } from '../shared/native';
 import { config, memory } from './session';
-import { IConfig, IHover, IOptions } from 'types';
+import { IConfig, IHover, IOptions, ISelectors } from 'types';
 import { hasProp } from '../shared/utils';
 
 /**
@@ -46,33 +46,40 @@ export const configure = (options: IOptions = {}) => {
   const attr = schema ? 'data' : `data-${config.schema}`;
   const href = `:not([${attr}-disable]):not([href^="#"])`;
 
-  config.selectors.hrefs = config.annotate ? schema ? `a[data-spx]${href}` : `a[${attr}]${href}` : `a${href}`;
-  config.selectors.tracking = `[${attr}-track]:not([${attr}-track=false])`;
-  config.selectors.scripts = `script[${attr}-eval]:not([${attr}-eval=false])`;
-  config.selectors.styles = `style[${attr}-eval]:not([${attr}-eval=false])`;
-  config.selectors.attributes = new RegExp('^href|' + attr + '-(' + Attributes.NAMES + ')$', 'i');
-  config.selectors.proximity = `a[${attr}-proximity]${href}${not('proximity')}`;
-  config.selectors.intersector = `[${attr}-intersect]${not('intersect')}`;
-  config.selectors.intersects = `a${href}${not('intersect')}`;
-  config.selectors.hover = (config.hover as IHover).trigger === 'href'
-    ? `a${href}${not('hover')}`
-    : `a[${attr}-hover]${href}${not('hover')}`;
-
-  // MEMORY
-  memory.bytes = 0;
-  memory.visits = 0;
-  memory.limit = config.limit;
-
   /**
    * Selector Exclusion
    *
    * Omits observer selectors from the query and
    * applies a `false` to element selectors.
    */
-  function not (name: 'hover' | 'intersect' | 'proximity') {
+  const not = (name: 'hover' | 'intersect' | 'proximity') => {
     const s = `:not([${attr}-${name}=false])`;
     if (name.charCodeAt(0) === 104) return `${s}:not([${attr}-proximity]):not([${attr}-intersect])`;
     if (name.charCodeAt(0) === 105) return `${s}:not([${attr}-hover]):not([${attr}-proximity])`;
     if (name.charCodeAt(0) === 112) return `${s}:not([${attr}-intersect]):not([${attr}-hover])`;
   };
+
+  assign<ISelectors, ISelectors>(config.selectors, {
+    href: config.annotate
+      ? schema
+        ? `a[data-spx]${href}`
+        : `a[${attr}]${href}`
+      : `a${href}`,
+    hover: (config.hover as IHover).trigger === 'href'
+      ? `a${href}${not('hover')}`
+      : `a[${attr}-hover]${href}${not('hover')}`,
+    tracking: `[${attr}-track]:not([${attr}-track=false])`,
+    scripts: `script[${attr}-eval]:not([${attr}-eval=false])`,
+    styles: `style[${attr}-eval]:not([${attr}-eval=false])`,
+    attributes: new RegExp(`^href|${attr}-(${Attributes.NAMES})$`, 'i'),
+    proximity: `a[${attr}-proximity]${href}${not('proximity')}`,
+    intersector: `[${attr}-intersect]${not('intersect')}`,
+    intersects: `a${href}${not('intersect')}`
+  });
+
+  // MEMORY
+  memory.bytes = 0;
+  memory.visits = 0;
+  memory.limit = config.limit;
+
 };
