@@ -36,9 +36,9 @@ export function initialize (): Promise<IPage> {
 
       history.replace(page);
 
-      setTimeout(() => request.reverse(page.rev));
-      setTimeout(() => request.preload(page));
+      if (page.rev !== page.key) setTimeout(() => request.reverse(page.rev));
 
+      setTimeout(() => request.preload(page));
       resolve(page);
 
     }, { once: true });
