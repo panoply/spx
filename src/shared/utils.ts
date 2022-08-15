@@ -16,6 +16,18 @@ export function position (state: IPosition = object(null)): IPosition {
 }
 
 /**
+ * Decode Entities
+ *
+ * Used to ensure entries are correctly handled
+ */
+export function decodeEntities (string: string) {
+
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = string;
+  return textarea.value;
+}
+
+/**
  * Type Error
  *
  * Error wanrning handler
