@@ -66,24 +66,24 @@ export function getAttributes (element: Element, page?: IPage): IPage {
         state.key = state.location.pathname + state.location.search;
       }
 
-      continue;
-    }
-
-    const name = nodeName.slice(1 + nodeName.lastIndexOf('-'));
-    const value = nodeValue.replace(regex.Whitespace, nil);
-
-    if (regex.isArray.test(value)) {
-      state[name] = regex.isPender.test(name)
-        ? value.match(regex.ActionParams).reduce(chunk(2), [])
-        : value.match(regex.ActionParams);
-    } else if (regex.isPosition.test(value)) {
-      state[name] = parseAttribute(value.match(regex.inPosition));
-    } else if (regex.isBoolean.test(value)) {
-      if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
-    } else if (regex.isNumber.test(value)) {
-      state[name] = Number(value);
     } else {
-      state[name] = value;
+
+      const name = nodeName.slice(1 + nodeName.lastIndexOf('-'));
+      const value = nodeValue.replace(regex.Whitespace, nil);
+
+      if (regex.isArray.test(value)) {
+        state[name] = regex.isPender.test(name)
+          ? value.match(regex.ActionParams).reduce(chunk(2), [])
+          : value.match(regex.ActionParams);
+      } else if (regex.isPosition.test(value)) {
+        state[name] = parseAttribute(value.match(regex.inPosition));
+      } else if (regex.isBoolean.test(value)) {
+        if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
+      } else if (regex.isNumber.test(value)) {
+        state[name] = Number(value);
+      } else {
+        state[name] = value;
+      }
     }
 
   }
@@ -158,7 +158,7 @@ function getPath (url: string, proto: number) {
  *
  * Despite the name, this function will behave
  * identical to `parsePath` with the exception
- * that the `origin` value is validates against.
+ * that the `origin` value is validated against.
  *
  * > This is used when a URL was supplied.
  */
@@ -169,7 +169,7 @@ function parseOrigin (url: string) {
 
   if (name >= 0) {
     const key = path.slice(name);
-    if (path.slice(0, name) === hostname) return key.length ? parsePath(key) : parsePath('/');
+    if (path.slice(0, name) === hostname) return key.length > 0 ? parsePath(key) : parsePath('/');
   } else {
 
     const char = path.search(/[?#]/);
@@ -275,6 +275,8 @@ export function getKey (link: string | ILocation): string {
 
   if (typeof link === 'object') return link.pathname + link.search;
 
+  if (link === nil) return '/';
+
   const has = hasOrigin(link);
 
   if (has === 1) {
@@ -294,12 +296,26 @@ export function getKey (link: string | ILocation): string {
 
 };
 
+export function fallback (): ILocation {
+
+  return {
+    hostname,
+    origin,
+    pathname: location.pathname,
+    search: location.search,
+    hash: location.hash
+
+  };
+}
+
 /**
  * Get Location
  *
  * Parses link and returns an ILocation.
  */
 export function getLocation (path: string): ILocation {
+
+  if (path === nil) return fallback();
 
   const state = parseKey(path);
 
