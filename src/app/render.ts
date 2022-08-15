@@ -138,6 +138,8 @@ function hydrateNodes (state: IPage, target: Document): void {
  */
 export function update (page: IPage): IPage {
 
+  document.title = page.title;
+
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
