@@ -24,7 +24,7 @@ function onEnter (event: MouseEvent): void {
 
   const route = getRoute(target, EventType.HOVER);
 
-  if (hasProp(request.timers, route.key)) return;
+  if (hasProp(request.timers, route.key) || store.has(route.key)) return;
 
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
