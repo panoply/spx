@@ -13,6 +13,7 @@ export const defaults = (): IConfig => ({
   cache: true,
   limit: 100,
   preload: null,
+  async: true,
   annotate: false,
   hover: {
     trigger: 'attribute',
