@@ -139,7 +139,7 @@ export interface IPage {
    * - `x` - Equivalent to `scrollLeft` in pixels
    * - `y` - Equivalent to `scrollTop` in pixels
    */
-   position: IPosition;
+  position: IPosition;
 
   /**
    * Location Records reference. This holds a parsed path
