@@ -10,7 +10,7 @@ Single Page XHR enhancement for SSR powered web applications. SPX is a lightenin
 
 ### Documentation
 
-Documentation lives on **[spx.js.org](https://spx.js.org)**
+Documentation lives on **[spx.js.org](https://62fae000d45c632b43bdaa3c--spxjs.netlify.app)**
 
 ### Features
 
