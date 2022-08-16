@@ -10,8 +10,7 @@ sidebar:
 
 # Usage
 
-An SPX connection is how the module is initialized. Because SPX takes control of your SSR navigation it is recommended that
-mended which you can By default, the entire `<body></body>`{:.language-html} </code> fragment is replaced upon each navigation. You should define a set of `targets[]` whose inner contents change on a per-page basis.Consider leveraging the pre-fetching capabilities for the most optimal performance.
+An SPX connection is how the module is initialized. SPX takes control of your SSR navigation and by default it will swap out the entire `<body></body>`{:.language-html} fragment upon each navigation but you should define a set of `targets[]` whose inner contents change on a per-page basis. In addition to targeted replacements, one should consider leveraging the pre-fetching capabilities to ensure the most optimal performance.
 
 > The typings provided in this package will describe each option in good detail, below are the defaults. Settings are optional.
 
@@ -20,41 +19,42 @@ import spx from 'spx';
 
 spx.connect({
   targets: ['body'],
-  schema: 'spx',
   timeout: 30000,
-  poll: 15,
-  async: true,
+  schema: 'spx',
   cache: true,
-  session: false,
-  limit: 50,
+  limit: 100,
   preload: null,
+  async: true,
+  annotate: false,
   hover: {
     trigger: 'attribute',
     threshold: 250
   },
   intersect: {
-    rootMargin: '',
+    rootMargin: '0px 0px 0px 0px',
     threshold: 0
   },
   proximity: {
-    distance: 85,
-    throttle: 500,
-    threshold: 250
+    distance: 75,
+    threshold: 250,
+    throttle: 500
   },
   progress: {
-    minimum: 0.08,
+    background: '#111',
+    height: '3px',
+    minimum: 0.09,
     easing: 'linear',
-    speed: 200,
+    speed: 300,
     trickle: true,
     threshold: 500,
-    trickleSpeed: 200
+    trickleSpeed: 300
   }
 });
 ```
 
 # Connected
 
-SPX is initialized using the `spx.connect();` method. This method returns a curried functional callback which is triggered 1 time. This is the equivalent of the `DOMContentLoaded` event. Upon connection, SPX will save the current documents outer HTML to the snapshot cache using `document.documentElement.outerHTML` whereas all additional snapshots are saved after an XHR request completes.
+SPX is initialized using the `spx.connect();` method. This method returns a curried (functional) callback which is triggered once. This is the equivalent of the `DOMContentLoaded` event. Upon connection, SPX will save the outer HTML of current document to the snapshot cache using `document.documentElement.outerHTML`. All additional snapshots are saved after an XHR request completes.
 
 <!-- prettier-ignore -->
 ```js
@@ -122,7 +122,7 @@ Enable or Disable caching. Each page visit request is cached and used in subsequ
 **Type:** `boolean` <br>
 **Default:** `true` <br>
 
-#### `persist`
+#### `persist` _Coming Soon_
 
 The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
 
@@ -204,7 +204,7 @@ An offset rectangle applied to the root's href bounding box. The option is passe
 **Type:** `string` <br>
 **Default:** `0px 0px 0px 0px` <br>
 
-#### `intersect.throttle`
+#### `intersect.threshold`
 
 Throttle limit passed to the intersection observer instance.
 

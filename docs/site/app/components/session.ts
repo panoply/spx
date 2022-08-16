@@ -3,6 +3,7 @@ import { JSONTree, Tree } from '../modules/json-tree';
 import spx from 'spx';
 
 export class Session extends Controller {
+
   static targets: string[] = [
     'pages',
     'memory',
@@ -24,7 +25,7 @@ export class Session extends Controller {
   memoryTarget: HTMLElement;
   snapshotsTarget: HTMLElement;
 
-  initialize(): void {
+  initialize (): void {
     if (this.hasHistoryTarget) {
       this.history = JSONTree.create({}, this.historyTarget);
       this.pages = JSONTree.create({}, this.pagesTarget);
@@ -35,7 +36,7 @@ export class Session extends Controller {
   /**
    * Stimulus Initialize
    */
-  connect(): void {
+  connect (): void {
     spx.on('prefetch', () => {
       this.actionTarget.innerHTML = 'Prefetch Triggered';
     });
@@ -58,7 +59,8 @@ export class Session extends Controller {
     this.update();
   }
 
-  update() {
+  update () {
+
     const session = spx.session();
 
     this.memoryTarget.innerText = session.memory.size;
@@ -67,4 +69,5 @@ export class Session extends Controller {
     this.snapshots.loadData(Object.keys(session.snapshots));
     this.history.loadData(window.history.state);
   }
+
 }

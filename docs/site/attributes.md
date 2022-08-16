@@ -4,6 +4,7 @@ permalink: '/attributes/index.html'
 layout: docs.liquid
 order: 5
 sidebar:
+  - 'data-spx'
   - 'data-spx-eval'
   - 'data-spx-disable'
   - 'data-spx-hydrate'
@@ -13,6 +14,7 @@ sidebar:
   - 'data-spx-hover'
   - 'data-spx-threshold'
   - 'data-spx-proximity'
+  - 'data-spx-intersect'
   - 'data-spx-position'
   - 'data-spx-cache'
   - 'data-spx-history'
@@ -20,8 +22,9 @@ sidebar:
 
 # Attributes
 
-Elements can be annotated with `data-spx-*` attributes which you can leverage to customize how visits are rendered between navigations. By default, attributes are using a `-spx-` schema but you can optionally provide a custom schema upon `connect` via the `schema` option.
+Elements can be annotated with `data-spx-*` attributes which you can leverage to customize how visits are rendered between navigations directly from within documents. By default, attributes are using a `-spx-` schema reference but you can optionally provide a custom schema upon `connect` using the `schema` option.
 
+- [data-spx](#data-spx)
 - [data-spx-eval](#data-spx-eval)
 - [data-spx-disable](#data-spx-disable)
 - [data-spx-hydrate](#data-spx-hydrate)
@@ -31,9 +34,12 @@ Elements can be annotated with `data-spx-*` attributes which you can leverage to
 - [data-spx-hover](#data-spx-hover)
 - [data-spx-threshold](#data-spx-threshold)
 - [data-spx-proximity](#data-spx-proximity)
+- [data-spx-intersect](#data-spx-intersect)
 - [data-spx-position](#data-spx-position)
 - [data-spx-cache](#data-spx-cache)
 - [data-spx-history](#data-spx-history)
+
+## data-spx
 
 ## data-spx-eval
 
@@ -246,7 +252,7 @@ Example
 Lets assume we informed SPX to trigger replacements on the `#menu`, `#main` and `#note` between navigations upon connection, for example:
 
 ```js
-SPX.connect({ targets: ['#menu', '#main', '#note'] });
+spx.connect({ targets: ['#menu', '#main', '#note'] });
 ```
 
 When performing a navigation visit the target elements `#menu`, `#main` and `#note` would be replaced (as expected) but when a trigger tag element is using a `data-spx-hydrate` attribute then SPX will only preform replacements on the elements defined within the `data-spx-hydrate` annotation, for example:
@@ -309,7 +315,7 @@ When performing a navigation visit the target elements `#menu`, `#main` and `#no
 
 ## data-spx-target
 
-Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in `SPX.connect()` will be merged with those defined on this attribute.
+Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in `spx.connect()` will be merged with those defined on this attribute.
 
 <details>
 <summary>
@@ -474,9 +480,9 @@ Example
 
 ## data-spx-hover
 
-Performs a prefetch of the `href` url upon mouse enter (hover). By default, hover pre-fetching is enabled but expects attribute annotation on links. You can have SPX execute pre-fetching on all `<a>` links by setting the `trigger` option to `href` in `SPX.connect()`. If you have set `trigger` to `href`then you do not need to define the attribute on links, unless you wish to skip executing the pre-fetch for occurring, in such a case your annotate the href element with a `false` hover attribute, eg: `<a data-spx-hover="false">`.
+Performs a prefetch of the `href` url upon mouse enter (hover). By default, hover pre-fetching is enabled but expects attribute annotation on links. You can have SPX execute pre-fetching on all `<a>` links by setting the `trigger` option to `href` in `spx.connect()`. If you have set `trigger` to `href`then you do not need to define the attribute on links, unless you wish to skip executing the pre-fetch for occurring, in such a case your annotate the href element with a `false` hover attribute, eg: `<a data-spx-hover="false">`.
 
-If you set hover pre-fetching to `false` in your `SPX.connect()` settings then annotations will be ignored and hover pre-fetching will be disabled.
+If you set hover pre-fetching to `false` in your `spx.connect()` settings then annotations will be ignored and hover pre-fetching will be disabled.
 
 > On mobile devices the the prefetch will execute on the `touchstart` event
 
@@ -521,7 +527,7 @@ Example
 
 ## data-spx-threshold
 
-By default, this will be set to whatever preset configuration was defined in `SPX.connect()` but you can override those settings by annotating the link with this attribute. The `data-spx-threshold` attribute can only be used on attributes that accept threshold control. The per-page state session will write this to the `threshold` property.
+By default, this will be set to whatever preset configuration was defined in `spx.connect()` but you can override those settings by annotating the link with this attribute. The `data-spx-threshold` attribute can only be used on attributes that accept threshold control. The per-page state session will write this to the `threshold` property.
 
 <details>
 <summary>

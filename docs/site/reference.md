@@ -17,7 +17,7 @@ sidebar:
 
 ## Sessions
 
-A SPX navigation sessions will begin immediately after a connection was initialized via `spx.connect()` and ends when a browser refresh is executed or url origin changes occurs. You can access, view or modify the session store using the `spx.session()` method.
+A SPX navigation sessions will begin immediately after a connection was initialized via `spx.connect()` and ends when a browser refresh is executed or url origin change occurs. You can access, view or modify the session store using the `spx.session()` method.
 
 > The `spx.session()` method references a subset of null prototypical objects.
 

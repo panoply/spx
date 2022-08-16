@@ -22,8 +22,7 @@ spx.connect({
   stimulus.register('tabs', Tabs);
   stimulus.register('session', Session);
 
+  // @ts-ignore
   window.spx = spx;
-
-
 
 });

@@ -1,13 +1,14 @@
 ---
 order: 100
 ---
+
 # Real World
 
-Below is a real world example you can use to better understand how this module works and how it can be applied to your web application. We are working on providing a live demonstration for more advanced use cases but the below example should give you a good understanding of how to leverage this module.
+Below is a real world example you can use to better understand how this module works and can used in your web application. We are working on providing a live demonstration for more advanced use cases but the below example should give you a good understanding of how to leverage this module.
 
 ## Example
 
-The first thing we want to do is make a connection with SPX. In your JavaScript bundle we need to initialize it (connect). Our example web application has 3 pages, the **home** page, **about** page and **contact** page. We are going to instruct SPX to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-spx` attributes to replace an additional fragment when we navigate to the contact page.
+The first thing we want to do is make a connection with SPX. In your JavaScript bundle, initialize (connect) SPX preferably before any other scripts. This example web application has 3 pages, the **home** page, **about** page and **contact** page. We are going to instruct SPX to replace the `<nav>` and `<main>` fragments on every visit and then we are going to leverage `data-spx` attributes to replace an additional fragment when we navigate to the **contact** page.
 
 ### JavaScript Bundle
 
@@ -16,11 +17,15 @@ The first thing we want to do is make a connection with SPX. In your JavaScript 
 import spx from "SPX";
 
 
-SPX.connect({
+spx.connect({
   targets: [
     "nav",
     "main"
   ]
+})(function(){
+
+  console.log('Hello, this is the first trigger to run!');
+
 });
 
 
@@ -93,8 +98,6 @@ Below we have a very basic Home Page with SPX wired up. All `<a>` elements will 
 ```
 
 ## About Page
-
-<br>
 
 The about page in our web application would look practically identical to the home page. We instructed SPX to pre-fetch this page upon hover by annotating the `<a>` href link with `data-spx-hover` attribute. This attribute informs SPX to being fetching the page the moment the user hovers over the `<a>` link which results in the visit being instantaneous. The **about** page only has some minor differences, but for the sake of clarity, lets have look:
 

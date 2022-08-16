@@ -16,7 +16,6 @@ export class Drawer extends Controller {
     }
   };
 
-
   static targets = [
     'mount'
   ];

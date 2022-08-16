@@ -12,7 +12,7 @@ sidebar:
 
 # Introduction
 
-Single Page XHR enhancement for SSR powered web applications. SPX is a lightening fast, lightweight (8kb gzip) push~state solution that (pre)-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module maintains an in-memory cache of fetched pages which prevents subsequent requests and instantaneous navigation in a controlled a persisted manner.
+Single Page XHR enhancement for SSR powered web applications. SPX is a fast, lightweight (8kb gzip) push~state solution that (pre)-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module maintains an in-memory cache of fetched pages which prevents subsequent requests from occurring that results in instantaneous navigations.
 
 ##### KEY FEATURES
 
@@ -26,13 +26,13 @@ Single Page XHR enhancement for SSR powered web applications. SPX is a lightenin
 
 # What is SPX?
 
-SPX is an acronym for **Single Page XHR** and derived from terminologies used to describe modern JavaScript paradigms like **SPA** (Single Page Application) and **MPA** (Multiple Page Application). The approach **SPX** employs is otherwise known as **Pjax** (Push state Ajax). Pjax is a rendering technique first introduced by the Github Co-Founder [Chris Wanstrath](http://github.com/defunkt). In 2011, Chris created [jquery-pjax](https://pjax.herokuapp.com/) which intercepted clicks made on link elements and fetched pages over the wire instead of executing a full-page reloads between visits.
+SPX is drop-in enhancement for static and server side rendered web applications that observes actions of navigational intent. Link clicks, hovers, intersection and href proximal (cursor) positioning is intercepted and carried out using XHR (ajax). SPX uses the XHR response to perform partial replacement on a targeted set page persisted elements (nodes).
 
-SPX introduces new techniques to the paradigm and combines them with strategies standardized by similar projects in the nexus like Turbo. The aim is instantaneous navigation, progressive enhancement and simple integration.
+See [Key Concepts](/key/concepts).
 
 # Getting Started
 
-SPX aims to make it relatively simple to implement into new or existing projects. Before you start using SPX it is important that you consider if the solution is right for you. The JavaScript world is vast and there are many awesome open source projects that might be better suited to your project.
+SPX aims to make it relatively simple to implement into new or existing projects. Before you start using SPX it is important that you consider if this solution is right for you and your project. The JavaScript world is vast and there are many awesome open source alternatives that might be better suited to your project. That's not to say SPX should be a last choice option but one should always consider the practicality of usage.
 
 ### Installation
 
@@ -58,7 +58,7 @@ npm install spx --save
 
 ### Connection
 
-Bundling the recommended approach because this way you can better leverage the module into your stack. You can import SPX as `default` or `named` export. Using `named` exports allows for tree-shaking.
+Bundling SPX into your project is the recommended approach because this way you can better leverage the module into your stack. You can import SPX as a `default` or `named` export. Using `named` exports allows for tree-shaking.
 
 <!-- prettier-ignore -->
 ```js
@@ -76,7 +76,7 @@ spx.connect({ /* options */ })(function(session) {
 });
 ```
 
-# CDN
+#### CDN
 
 If you're new to JavaScript or just want a very simple setup, you can get SPX from a CDN and drop it into the `<head></head>` element of your website, ideally before any other scripts. By default, SPX will replace the entire `<body>` fragment.
 
@@ -98,7 +98,7 @@ Wherever your index or root page layout exists you can drop SPX into the `<head>
     <meta charset="UTF-8" />
     <title>SPX | Single Page XHR</title>
 
-    <!-- Include the module and establish a connection  -->
+    <!-- Include the module and establish a connection -->
     <script src="https://unpkg.com/spx" type="module">
       spx.connect()
     </script>
@@ -117,7 +117,7 @@ Wherever your index or root page layout exists you can drop SPX into the `<head>
 
 # Recommendations
 
-In order to get the most out of this module below are a few recommendations developers should consider when leveraging it within in their projects. The project was developed for our use cases and while it can be appropriated into other projects there are still a couple of minor features and/or capabilities that need work, so please bare that in mind.
+In order to get the most out of this module below are a few recommendations developers should consider when leveraging it in their projects. The project was developed for our use cases and while it can be appropriated into other projects there are still a couple of minor features and/or capabilities that need improvements, so please bare that in mind.
 
 ### Script Evaluation
 
@@ -145,4 +145,4 @@ By default, all fetched pages are stored in memory so for every request the HTML
 
 ### JavaScript Execution
 
-The best possible approach is to initialize JavaScript like Google Analytics and scripts which require per-page execution is to use the `SPX.on('load', function(){})` method event. This way you can be sure it will load between navigations.
+The best possible approach is to initialize JavaScript like Google Analytics and scripts which require per-page execution is to use the `spx.on('load', function(){})` method event. This way you can be sure it will load between navigations.

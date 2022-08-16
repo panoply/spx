@@ -4,11 +4,11 @@
   right: 0;
   z-index: 200;
   width: 500px;
-  border-color: $cyan;
+  border-color: $border-color;
 }
 
 .bd-bottom {
-  border-color: $cyan;
+  border-color: $border-color;
 }
 
 .session-scroll {
@@ -17,6 +17,7 @@
 
 .session-tabs {
   height: 40px;
+  border-radius: none;
 }
 
 .session-logs {
@@ -45,10 +46,13 @@
     height: 10%;
   }
 
+  .relapse-fold {
+    background-color: lighten($black, 0.9%);
+  }
 
   .relapse-btn {
     color: $white;
-    border-bottom: $border-width solid $cyan;
+    border-bottom: $border-width solid $border-color;
 
     .icon {
       width: 20px;
@@ -66,6 +70,7 @@
 
     &.opened {
       color: $cyan;
+
 
       .icon-open {
         display: flex;

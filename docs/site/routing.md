@@ -10,7 +10,7 @@ sidebar:
 
 # Routing
 
-SPX exposes a routing approach for cases where per-page lifecycle control is desired. Because we are dealing with SSR markup and intercepting navigations we are able to intercept and execution operations at different points in the render cycles. SPX routes accept components which can be leveraged in your application.
+SPX exposes a routing approach for cases where per-page lifecycle control is desired. Because we are dealing with SSR markup and intercepting navigations we are able to intercept and execute operations at different points in the render cycles. SPX routes accept components which can be leveraged in your application.
 
 # Components
 
@@ -52,7 +52,7 @@ spx.route('/path/:id', {
     spx.style('..')
 
   },
-  exit: function (route) {
+  leave: function (route) {
 
     // teardown
 
@@ -63,7 +63,7 @@ spx.route('/path/:id', {
 
 # Mounting
 
-The module exposes a low-level routing approach using simple wildcard path matching. Routes executed right before fragments are replaced in the rendering lifecycle. Routes allow you to augment the target documents and state before replacement occur.
+The module exposes a low-level routing approach using simple wildcard path matching. Routes execute right before fragments are replaced in the rendering lifecycle. Routes allow you to augment the target documents and state before replacement occur.
 
 <!-- prettier-ignore -->
 ```typescript
@@ -84,7 +84,7 @@ spx.route({
     cache: function() {},
     render: function(){},
     load: function () {},
-    exit: function () {}
+    leave: function () {}
   }
 
 });

@@ -19,14 +19,14 @@ sidebar:
 
 # Methods
 
-In addition to Lifecycle events, you also have a list of methods available. Methods will allow you some basic programmatic control of the SPX session occurring, provides access to the cache store and various other operational utilities.
+In addition to Lifecycle events, you also have a list of methods available. Methods will allow you some basic programmatic control of the SPX session occurring and provides access to the cache store, snapshot store and various other operational utilities.
 
 ```js
 import spx from 'spx'
 
 spx.supported: boolean
 
-spx.connect(options?: {}): void
+spx.connect(options?: {}): (callback: (session?: ISession) => void) => void
 
 spx.session(store?: string, merge?:{}): ISession
 
@@ -90,7 +90,7 @@ The `visit` method executed a programmatic trigger visit. The method expects a `
 
 ## spx.store `spx.store(url?: string, state?: IState)`
 
-The `state` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
+The `store` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
 
 **Returns:** `Promise<IPage>`
 
