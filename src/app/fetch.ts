@@ -32,7 +32,7 @@ export const timers: { [url: string]: NodeJS.Timeout } = object(null);
  * Extend the native XHR request class and add
  * a key value to the instance.
  */
-class XHR extends XMLHttpRequest { key: string = null;}
+class XHR extends XMLHttpRequest { key: string = null; }
 
 /**
  * XHR Requests
@@ -53,13 +53,14 @@ export function request (key: string) {
     const req = new XHR();
 
     req.key = key;
+    req.responseType = 'text';
 
     req.open('GET', key);
     req.setRequestHeader('X-SPX', 'true');
     req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     req.onload = function (this: XHR) {
-      resolve(this.responseText);
+      resolve(this.response);
     };
 
     req.onerror = function (this: XHR) {
@@ -101,8 +102,6 @@ export function cleanup (key: string) {
   if (!hasProp(timers, key)) return true;
 
   clearTimeout(timers[key]);
-
-  // console.log('cleanup', timers);
 
   return delete timers[key];
 
