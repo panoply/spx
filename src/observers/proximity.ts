@@ -1,7 +1,6 @@
 import { supportsPointerEvents } from 'detect-it';
 import { config, observers } from '../app/session';
 import { getTargets } from '../shared/links';
-import { object } from '../shared/native';
 import { isNumber } from '../shared/regexp';
 import { log } from '../shared/utils';
 import { getRoute } from '../app/location';
@@ -30,19 +29,17 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
 
 function setBounds (target: HTMLLinkElement) {
 
-  const state = object(null);
-
   const rect = target.getBoundingClientRect();
   const attr = target.getAttribute(config.selectors.proximity);
   const distance = isNumber.test(attr) ? Number(attr) : (config.proximity as IProximity).distance;
 
-  state.target = target;
-  state.top = rect.top - distance;
-  state.bottom = rect.bottom + distance;
-  state.left = rect.left - distance;
-  state.right = rect.right + distance;
-
-  return state;
+  return {
+    target,
+    top: rect.top - distance,
+    bottom: rect.bottom + distance,
+    left: rect.left - distance,
+    right: rect.right + distance
+  };
 
 }
 
@@ -60,7 +57,7 @@ function observer (targets?: {
 
   let wait = false;
 
-  console.log(targets);
+  // console.log(targets);
 
   return function (event: MouseEvent) {
 
@@ -71,10 +68,12 @@ function observer (targets?: {
     const node = targets.findIndex(node => inRange(event, node));
 
     if (node === -1) {
-      setTimeout(() => (wait = false), (config.proximity as IProximity).throttle);
+
+      setTimeout(() => { wait = false; }, (config.proximity as IProximity).throttle);
+
     } else {
+
       const { target } = targets[node];
-      console.log(targets);
       const page = store.create(getRoute(target, EventType.PROXIMITY));
       const delay = page.threshold || (config.proximity as IProximity).threshold;
 

@@ -1,12 +1,12 @@
+import { Key } from 'types';
 import { IPage } from '../types/page';
 import { emit } from './events';
 import { log, hasProp, position } from '../shared/utils';
 import { getRoute } from './location';
 import { config, memory, pages } from './session';
-import * as store from './store';
 import { isArray, object } from '../shared/native';
 import { Errors, EventType } from '../shared/enums';
-import { Key } from 'types';
+import * as store from './store';
 
 /**
  * Request Transits

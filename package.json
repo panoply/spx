@@ -1,6 +1,6 @@
 {
   "name": "spx",
-  "version": "0.0.2-beta.1",
+  "version": "0.0.4-beta.1",
   "private": false,
   "description": "Single Page XHR for enhancing SSR powered web applications using PushState + XHR",
   "homepage": "https://spx.js.org",

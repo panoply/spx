@@ -30,6 +30,10 @@ SPX is drop-in enhancement for static and server side rendered web applications 
 
 See [Key Concepts](/key/concepts).
 
+| one   | two    | tree |
+| ----- | ------ | ---- |
+| firsr | second |
+
 # Getting Started
 
 SPX aims to make it relatively simple to implement into new or existing projects. Before you start using SPX it is important that you consider if this solution is right for you and your project. The JavaScript world is vast and there are many awesome open source alternatives that might be better suited to your project. That's not to say SPX should be a last choice option but one should always consider the practicality of usage.

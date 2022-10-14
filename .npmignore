@@ -2,7 +2,6 @@
 .vscode/
 .github/
 node_modules/
-src/
 docs/
 test/
 
