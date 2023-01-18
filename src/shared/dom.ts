@@ -20,5 +20,5 @@ export function getTitle (dom: string) {
   const start = dom.indexOf('>', dom.indexOf('<title')) + 1;
   const end = dom.indexOf('</title', start);
 
-  return decodeEntities(dom.slice(start, end));
+  return decodeEntities(dom.slice(start, end).trim());
 }
