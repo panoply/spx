@@ -21,7 +21,7 @@ export function initialize (): Promise<IPage> {
 
   return new Promise(resolve => {
 
-    document.addEventListener('DOMContentLoaded', () => {
+    addEventListener('DOMContentLoaded', () => {
 
       hrefs.connect();
       hover.connect();
