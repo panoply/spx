@@ -62,17 +62,17 @@
     "detect-it": "^4.0.1"
   },
   "devDependencies": {
-    "@brixtol/browserslist-config": "^1.1.0",
-    "@brixtol/eslint-config": "^1.2.5",
-    "@brixtol/prettier-config": "^1.2.1",
-    "@octokit/core": "^3.6.0",
-    "ava": "^4.2.0",
+    "@brixtol/browserslist-config": "workspace:^1.1.0",
+    "@brixtol/eslint-config": "workspace:^1.2.5",
+    "@brixtol/prettier-config": "workspace:^1.2.1",
+    "@octokit/core": "^4.2.0",
+    "ava": "^5.2.0",
     "browser-env": "^3.3.0",
-    "esbuild": "^0.14.38",
+    "esbuild": "^0.17.8",
     "gzip-size-cli": "^5.1.0",
-    "pr-release": "^0.18.9",
-    "type-fest": "^2.12.2",
-    "typescript": "^4.6.4"
+    "pr-release": "^0.18.20",
+    "type-fest": "^3.6.0",
+    "typescript": "^4.9.5"
   },
   "scripts": {
     "dev": "esbuild src/index.ts --outfile=index.js --format=esm --bundle --watch",
@@ -82,7 +82,7 @@
     "test": "ava --color --verbose --watch --timeout=2m"
   },
   "optionalDependencies": {
-    "eslint": "^8.14.0",
-    "prettier": "^2.6.2"
+    "eslint": "^8.34.0",
+    "prettier": "^2.8.4"
   }
 }
