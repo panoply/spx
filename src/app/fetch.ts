@@ -4,7 +4,7 @@ import { emit } from './events';
 import { log, hasProp, position } from '../shared/utils';
 import { getRoute } from './location';
 import { config, memory, pages } from './session';
-import { isArray, object } from '../shared/native';
+import { isArray } from '../shared/native';
 import { Errors, EventType } from '../shared/enums';
 import * as store from './store';
 
@@ -15,7 +15,7 @@ import * as store from './store';
  * properties represent the the request URL and the
  * value is the XML Request instance.
  */
-export const transit: { [url: string]: ReturnType<typeof request> } = object(null);
+export const transit: Map<string, ReturnType<typeof request>> = new Map();
 
 /**
  * Request Timeouts
@@ -24,7 +24,7 @@ export const transit: { [url: string]: ReturnType<typeof request> } = object(nul
  * and trigger operations like hover or proximity
  * prefetching.
  */
-export const timers: { [url: string]: NodeJS.Timeout } = object(null);
+export const timers: Map<string, NodeJS.Timeout> = new Map();
 
 /**
  * Extends XMLHTTPRequest
@@ -89,8 +89,8 @@ export function request (key: string) {
  */
 export function throttle (key: string, callback: () => void, delay: number): void {
 
-  if (hasProp(timers, key)) return;
-  if (!store.has(key)) timers[key] = setTimeout(callback, delay);
+  if (timers.has(key)) return;
+  if (!store.has(key)) timers.set(key, setTimeout(callback, delay));
 
 };
 
@@ -99,11 +99,11 @@ export function throttle (key: string, callback: () => void, delay: number): voi
  */
 export function cleanup (key: string) {
 
-  if (!hasProp(timers, key)) return true;
+  if (!timers.has(key)) return true;
 
-  clearTimeout(timers[key]);
+  clearTimeout(timers.get(key));
 
-  return delete timers[key];
+  return timers.delete(key);
 
 }
 
@@ -197,9 +197,9 @@ export async function reverse (key: string): Promise<void> {
 
 export async function wait (state: IPage): Promise<IPage> {
 
-  if (!hasProp(transit, state.key)) return state;
+  if (!transit.has(state.key)) return state;
 
-  const snapshot = await transit[state.key];
+  const snapshot = await transit.get(state.key);
 
   return store.set(state, snapshot);
 
@@ -233,7 +233,7 @@ export async function fetch (state: IPage): Promise<false|IPage> {
 
   // create a transit queue reference of the
   // dispatched request in transit.
-  transit[state.key] = request(state.key);
+  transit.set(state.key, request(state.key));
 
   return wait(state);
 
