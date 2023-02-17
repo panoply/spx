@@ -16,7 +16,7 @@ export const config: IConfig = defaults();
  * Observers
  *
  * Determines the connection of various observers
- * and logic required for the Pjax instance.
+ * and logic required for the SPX instance.
  *
  * - History
  * - Href
@@ -51,7 +51,7 @@ export const pages: { [url: string]: IPage } = object(null);
  * Each document is stored in string type. The key values
  * are unique ids generated using nanoid.
  */
-export const snapshots:{ [id: string]: string } = object(null);
+export const snapshots: Map<string, string> = new Map();
 
 /**
  * Tracked Elements
