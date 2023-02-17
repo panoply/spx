@@ -35,7 +35,7 @@ export function canFetch (target: Element): boolean {
 
 /**
  * Returns a list of link elements to be prefetched. Filters out
- * any links which exist in cache to prevent extrenous transit.
+ * any links which exist in cache to prevent pointless transits.
  */
 export function getNodeTargets (selector: string, hrefs: string): Element[] {
 
