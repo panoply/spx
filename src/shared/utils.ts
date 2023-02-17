@@ -57,6 +57,7 @@ export function hasProp<T extends object> (
   object: T,
   property: keyof T
 ): boolean {
+
   return property in object;
 }
 
