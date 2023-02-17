@@ -116,7 +116,7 @@ function hydrateNodes (state: IPage, target: Document): void {
       if (!fetched[i]) return;
       if (!emit('hydrate', node, fetched[i])) return;
 
-      // InnerHTML replacment on text nodes
+      // InnerHTML replacement on text nodes
       if (node.firstChild.nodeType === Node.TEXT_NODE) {
         node.innerHTML = fetched[i].innerHTML;
       } else {
@@ -144,7 +144,7 @@ export function update (page: IPage): IPage {
   intersect.disconnect();
   proximity.disconnect();
 
-  const target = parse(snapshots[page.uuid]);
+  const target = parse(snapshots.get(page.uuid));
 
   if (page.type === EventType.HYDRATE) {
     hydrateNodes(page, target);
