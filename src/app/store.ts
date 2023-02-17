@@ -18,7 +18,7 @@ export function purge (key: string | string[] = []) {
   for (const p in pages) {
     const index = keys.indexOf(p);
     if (index >= 0) {
-      delete snapshots[pages[p].uuid];
+      snapshots.delete(pages[p].uuid);
       delete pages[p];
       keys.splice(index, 1);
     }
@@ -37,19 +37,19 @@ export function clear (key?: string[] | string): void {
   if (!key) {
 
     empty(pages);
-    empty(snapshots);
+    snapshots.clear();
 
   } else if (typeof key === 'string') {
 
-    delete snapshots[pages[key].uuid];
+    snapshots.delete(pages[key].uuid);
     delete pages[key];
 
   } else if (isArray(key)) {
 
     forEach(url => {
 
+      snapshots.delete(pages[url].uuid);
       delete pages[url];
-      delete snapshots[pages[url].uuid];
 
     }, key);
   }
@@ -157,7 +157,7 @@ export function set (state: IPage, snapshot: string): IPage {
 
   // Lets assign this record to the session store
   pages[state.key] = state;
-  snapshots[state.uuid] = dom;
+  snapshots.set(state.uuid, dom);
 
   emit('cached', state);
 
@@ -185,7 +185,7 @@ export function update (page: IPage, snapshot?: string): IPage {
   const state = hasProp(pages, page.key) ? pages[page.key] : create(page);
 
   if (typeof snapshot === 'string') {
-    snapshots[page.uuid] = snapshot;
+    snapshots.set(page.uuid, snapshot);
     page.title = getTitle(snapshot);
     page.position = position();
   }
@@ -210,7 +210,7 @@ export function get (key = history.state.key): { page: IPage, dom: Document } {
   if (hasProp(pages, key)) {
     const state = object(null);
     state.page = pages[key];
-    state.dom = parse(snapshots[state.page.uuid]);
+    state.dom = parse(snapshots.get(state.page.uuid));
     return state;
   }
 
@@ -227,8 +227,8 @@ export function has (key: string): boolean {
   return (
     hasProp(pages, key) &&
     hasProp(pages[key], 'uuid') &&
-    hasProp(snapshots, pages[key].uuid) &&
-    typeof snapshots[pages[key].uuid] === 'string'
+    snapshots.has(pages[key].uuid) &&
+    typeof snapshots.get(pages[key].uuid) === 'string'
   );
 
 }
