@@ -1,5 +1,5 @@
 import { EventType } from '../shared/enums';
-import { hasProp, position } from '../shared/utils';
+import { position } from '../shared/utils';
 import { deviceType } from 'detect-it';
 import { pointer } from '../shared/native';
 import { emit } from '../app/events';
@@ -104,7 +104,7 @@ function handleTrigger (event: MouseEvent): void {
       render.update(page);
     }, options);
 
-  } else if (hasProp(request.transit, key)) { // In-Transit visit
+  } else if (request.transit.has(key)) { // In-Transit visit
 
     const page = pages[key];
 

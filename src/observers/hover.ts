@@ -1,6 +1,6 @@
 import { IHover, IPage } from 'types';
 import { pointer } from '../shared/native';
-import { forEach, hasProp } from '../shared/utils';
+import { forEach } from '../shared/utils';
 import { emit } from '../app/events';
 import { config, observers } from '../app/session';
 import * as store from '../app/store';
@@ -24,7 +24,7 @@ function onEnter (event: MouseEvent): void {
 
   const route = getRoute(target, EventType.HOVER);
 
-  if (hasProp(request.timers, route.key) || store.has(route.key)) return;
+  if (request.timers.has(route.key) || store.has(route.key)) return;
 
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
