@@ -157,7 +157,6 @@ export interface IOptions {
    * @default ['body']
    */
   targets?: string[];
-
   /**
    * The timeout limit of the XHR request issued. If timeout limit is exceeded a
    * normal page visit will be executed.

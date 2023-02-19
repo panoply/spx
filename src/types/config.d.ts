@@ -57,7 +57,7 @@ export interface IIntersectConfig extends IIntersect {
  */
 export interface IProximitConfig extends IProximity {
   /**
-   * Href selctor for promity that applies
+   * Href selctor for proximity that applies
    * the correct schema.
    */
   selector: string
