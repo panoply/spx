@@ -60,3 +60,11 @@ export const snapshots: Map<string, string> = new Map();
  * and navigations to prevent extra appends from occuring.
  */
 export const tracked: Set<string> = new Set();
+
+/**
+ * Stylesheets
+ *
+ * Keeps a reference of rendered stylesheets applied
+ * within the DOM.
+ */
+export const stylesheets: Set<string> = new Set();

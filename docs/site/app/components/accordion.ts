@@ -9,7 +9,7 @@ import spx from 'spx';
 export class Accordion extends Controller {
 
   accordion: Scope;
-  multiselectValue: boolean;
+  multipleValue: boolean;
   persistValue: boolean;
 
   static values = {
@@ -26,10 +26,10 @@ export class Accordion extends Controller {
   /**
    * Stimulus Initialize
    */
-  connect (): void {
+  connect(): void {
 
     this.accordion = relapse(this.element, {
-      multiple: this.multiselectValue,
+      multiple: this.multipleValue,
       persist: this.persistValue
     });
 
@@ -38,7 +38,7 @@ export class Accordion extends Controller {
   /**
    * Stimulus Disconnect
    */
-  disconnect () {
+  disconnect() {
 
     this.accordion.destroy();
 
@@ -49,10 +49,11 @@ export class Accordion extends Controller {
    *
    * Executes a programmatic visit
    */
-  goto ({ target }: { target: HTMLButtonElement }) {
+  goto({ target }: { target: HTMLLinkElement }) {
 
-    spx.visit('/' + target.dataset.href);
-
+    setTimeout(() => {
+      spx.visit(target.id);
+    }, 200)
   }
 
   /**
@@ -60,7 +61,7 @@ export class Accordion extends Controller {
    *
    * Event target should be the the fold index to open
    */
-  open ({ target: { dataset: { index } } }) {
+  open({ target: { dataset: { index } } }) {
 
     return this.accordion.folds[parseInt(index)].open();
 
@@ -71,7 +72,7 @@ export class Accordion extends Controller {
    *
    * Event target should be the the fold index to close
    */
-  close ({ target: { dataset: { index } } }) {
+  close({ target: { dataset: { index } } }) {
 
     return this.accordion.folds[parseInt(index)].close();
 

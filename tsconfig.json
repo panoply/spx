@@ -17,7 +17,7 @@
     "pretty": true,
     "baseUrl": ".",
     "paths": {
-      "types": ["src/types"]
+      "types": ["./src/types/index.d.ts"]
     }
   }
 }

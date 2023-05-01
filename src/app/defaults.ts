@@ -10,11 +10,18 @@ export const defaults = (): IConfig => ({
   targets: [ 'body' ],
   timeout: 30000,
   schema: 'spx',
+  manual: false,
   cache: true,
   limit: 100,
   preload: null,
   async: true,
   annotate: false,
+  eval: {
+    script: null,
+    style: null,
+    link: null,
+    meta: false
+  },
   hover: {
     trigger: 'attribute',
     threshold: 250

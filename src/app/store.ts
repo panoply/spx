@@ -135,9 +135,8 @@ export function set (state: IPage, snapshot: string): IPage {
 
     } else {
 
-      // EventTypes are 7 or 10 which are trigger
-      // kinds, we need to update the current pages
-      // scroll position.
+      // EventTypes are 7 to 10 ~ these are trigger
+      // kinds, we need to update the current pages scroll position.
       if (hasProp(pages, state.rev)) {
         pages[state.rev].position.x = window.scrollX;
         pages[state.rev].position.y = window.scrollY;
@@ -185,7 +184,7 @@ export function update (page: IPage, snapshot?: string): IPage {
   const state = hasProp(pages, page.key) ? pages[page.key] : create(page);
 
   if (typeof snapshot === 'string') {
-    snapshots.set(page.uuid, snapshot);
+    snapshots.set(state.uuid, snapshot);
     page.title = getTitle(snapshot);
     page.position = position();
   }

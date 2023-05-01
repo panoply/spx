@@ -1,0 +1,56 @@
+/* stylelint-disable color-hex-length */
+
+:root {
+  --papyrus-html-text-content: #FAFAFA;
+  --papyrus-html-doctype: #FAFAFA;
+  --papyrus-html-delimiter: #BECAFF;
+  --papyrus-html-tag-name: #FF93BC;
+  --papyrus-html-equals: #FF93BC;
+  --papyrus-html-attr-name: #91EBC2;
+  --papyrus-html-attr-value: #FFF9A6;
+  --papyrus-html-comment: #888888;
+}
+
+
+.token {
+
+  &.doctype {
+
+
+    &-tag {
+      color: var(--papyrus-html-doctype);
+    }
+
+    .token.name {
+      color: var(--papyrus-html-delimiter);
+    }
+  }
+
+  &.name {
+    color: var(--papyrus-html-tag-name);
+  }
+
+  &.comment {
+    color: var(--papyrus-html-comment);
+  }
+
+  &.punctuation {
+    color: var(--papyrus-html-delimiter);
+  }
+
+  &.tag {
+    color: var(--papyrus-html-tag-name);
+  }
+
+  &.attr-equals {
+    color: var(--papyrus-html-equals);
+  }
+
+  &.attr-name {
+    color: var(--papyrus-html-attr-name);
+  }
+
+  &.attr-value {
+    color: var(--papyrus-html-attr-value);
+  }
+}

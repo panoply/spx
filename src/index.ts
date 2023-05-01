@@ -1,23 +1,20 @@
 import { IConfig, IPage } from 'types';
+import { log, size } from './shared/utils';
 import { config, snapshots, pages, observers, memory } from './app/session';
-import { log, position, size } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute, getKey } from './app/location';
 import { parse } from './shared/dom';
 import { Errors, EventType } from './shared/enums';
-import { assign, history, object, origin } from './shared/native';
-import { initialize, disconnect } from './app/controller';
+import { assign, isArray, object, origin } from './shared/native';
+import { initialize, disconnect, observe } from './app/controller';
+import { clear } from './app/store';
 import * as store from './app/store';
 import * as hrefs from './observers/hrefs';
 import * as request from './app/fetch';
 import * as render from './app/render';
+import * as history from './observers/history';
 import { on, off } from './app/events';
-
-/**
- * RE-Exports
- */
-export { on, off } from './app/events';
-export { disconnect } from './app/controller';
+import morphdom from 'morphdom';
 
 /**
  * Supported
@@ -46,11 +43,19 @@ export function connect (options: IConfig = {}) {
 
   const promise = initialize();
 
-  return async function (callback: (state?: IPage) => void) {
+  return async function (callback: any) {
 
     const state = (await promise);
 
-    callback(state);
+    if (callback.constructor.name === 'AsyncFunction') {
+      try {
+        await callback(state);
+      } catch (e) {
+        log(Errors.TYPE, 'Connection Established ⚡');
+      }
+    } else {
+      callback(state);
+    }
 
     log(Errors.INFO, 'Connection Established ⚡');
   };
@@ -95,7 +100,7 @@ export function session (key?: string, update?: object) {
  *
  * Returns page state
  */
-export async function state (key?: string | object, update?: object) {
+export function state (key?: string | object, update?: object) {
 
   if (key === undefined) return store.get();
 
@@ -121,12 +126,9 @@ export async function state (key?: string | object, update?: object) {
  *
  * Reloads the current page
  */
-export async function reload (options?: Omit<IPage, 'key' | 'location'>) {
+export async function reload () {
 
-  const state = pages[history.state.key] as IPage;
-
-  if (options) assign(state, options);
-
+  const state = pages[history.api.state.key];
   state.type = EventType.RELOAD;
   const page = await request.fetch(state);
 
@@ -142,7 +144,7 @@ export async function reload (options?: Omit<IPage, 'key' | 'location'>) {
 };
 
 /**
- * Flush Cache
+ * Fetch
  */
 export async function fetch (url: string) {
 
@@ -158,47 +160,30 @@ export async function fetch (url: string) {
 
 }
 
-/**
- * Flush Cache
- */
-export function clear (url?: string) {
+export function capture (targets?: string[]) {
 
-  return store.clear(url);
+  const { page, dom } = store.get();
+
+  targets = isArray(targets) ? targets : page.target;
+
+  if (targets.length === 1 && targets[0] === 'body') return dom.body.replaceWith(document.body);
+
+  const selector = targets.join(',');
+  const current = document.body.querySelectorAll<HTMLElement>(selector);
+
+  dom.body.querySelectorAll<HTMLElement>(selector).forEach((node, i) => {
+    if (!node.matches(targets[i])) return;
+    morphdom(node, current[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+  });
+
+  store.update(page, dom.documentElement.innerHTML);
 
 }
 
-export async function update (elements: string[]) {
-
-}
-
 /**
- * Hydrate the current document
+ * Prefetch
  */
-export async function hydrate (link: string, elements: string[]): Promise<void|IPage> {
-
-  const route = getRoute(EventType.HYDRATE);
-
-  route.position = position();
-  route.hydrate = elements;
-
-  const dom = await request.request(link);
-
-  if (!dom) return log(Errors.WARN, 'Hydration fetch failed');
-
-  const page = store.has(route.key)
-    ? store.update(route, dom)
-    : store.create(route);
-
-  setTimeout(() => request.reverse(route.rev));
-
-  return render.update(page);
-
-};
-
-/**
- * Visit
- */
-export async function prefetch (link: string | Element): Promise<void|IPage> {
+export async function prefetch (link: string): Promise<void|IPage> {
 
   const path = getRoute(link, EventType.PREFETCH);
 
@@ -208,7 +193,6 @@ export async function prefetch (link: string | Element): Promise<void|IPage> {
   }
 
   const prefetch = await request.fetch(store.create(path));
-
   if (prefetch) return prefetch;
 
   log(Errors.ERROR, `Prefetch failed for ${path.key}`);
@@ -216,9 +200,41 @@ export async function prefetch (link: string | Element): Promise<void|IPage> {
 };
 
 /**
+ * Hydrate the current document
+ */
+export async function hydrate (link: string, nodes?: string[]): Promise<void|IPage> {
+
+  const route = getRoute(link, EventType.HYDRATE);
+
+  request.fetch(route);
+
+  if (nodes) route.hydrate = nodes;
+
+  const page = await request.wait(route);
+
+  if (page) {
+
+    const { key } = history.api.state;
+
+    history.replace(page);
+    render.update(page);
+
+    if (route.key !== key) {
+      if (config.index === key) config.index = route.key;
+      for (const p in pages) if (pages[p].rev === key) pages[p].rev = route.key;
+      store.clear(key);
+    }
+
+  }
+
+  return page;
+
+};
+
+/**
  * Visit
  */
-export async function visit (link: string | Element, options?: IPage): Promise<void|IPage> {
+export async function visit (link: string, options?: IPage): Promise<void|IPage> {
 
   const route = getRoute(link);
   const merge = typeof options === 'object' ? assign(route, options) : route;
@@ -233,7 +249,9 @@ export default {
   supported,
   on,
   off,
+  observe,
   connect,
+  capture,
   session,
   state,
   reload,

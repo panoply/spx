@@ -1,7 +1,7 @@
 ---
 title: 'Methods'
 permalink: '/methods/index.html'
-layout: docs.liquid
+layout: base.liquid
 order: 4
 sidebar:
   - 'spx.session'

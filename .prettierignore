@@ -4,3 +4,4 @@
 *.cjs
 *.html
 *.liquid
+*.scss

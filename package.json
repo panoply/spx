@@ -1,6 +1,6 @@
 {
   "name": "spx",
-  "version": "0.0.5-beta.1",
+  "version": "0.0.6-beta.1",
   "private": false,
   "description": "Single Page XHR for enhancing SSR powered web applications using PushState + XHR",
   "homepage": "https://spx.js.org",
@@ -25,9 +25,7 @@
     "url": "https://github.com/panoply/spx/issues"
   },
   "engines": {
-    "node": "^14.0.0",
-    "pnpm": "^7.0.0",
-    "vscode": "^1.66.0"
+    "node": "^16.0.0"
   },
   "type": "module",
   "typings": "index.d.ts",
@@ -40,11 +38,11 @@
   ],
   "prettier": "@brixtol/prettier-config",
   "eslintConfig": {
+    "extends": "@brixtol/eslint-config",
     "ignorePatterns": [
       "index.js",
-      "docs/public"
+      "docs/*"
     ],
-    "extends": "@brixtol/eslint-config",
     "rules": {
       "no-prototype-builtins": "off",
       "multiline-ternary": "off"
@@ -59,7 +57,9 @@
     ]
   },
   "dependencies": {
-    "detect-it": "^4.0.1"
+    "detect-it": "^4.0.1",
+    "morphdom": "^2.7.0",
+    "nanomorph": "^5.4.3"
   },
   "devDependencies": {
     "@brixtol/browserslist-config": "workspace:^1.1.0",
@@ -68,11 +68,11 @@
     "@octokit/core": "^4.2.0",
     "ava": "^5.2.0",
     "browser-env": "^3.3.0",
-    "esbuild": "^0.17.8",
+    "esbuild": "^0.17.16",
     "gzip-size-cli": "^5.1.0",
     "pr-release": "^0.18.20",
-    "type-fest": "^3.6.0",
-    "typescript": "^4.9.5"
+    "type-fest": "^3.8.0",
+    "typescript": "^5.0.4"
   },
   "scripts": {
     "dev": "esbuild src/index.ts --outfile=index.js --format=esm --bundle --watch",
@@ -82,7 +82,7 @@
     "test": "ava --color --verbose --watch --timeout=2m"
   },
   "optionalDependencies": {
-    "eslint": "^8.34.0",
-    "prettier": "^2.8.4"
+    "eslint": "^8.38.0",
+    "prettier": "^2.8.7"
   }
 }

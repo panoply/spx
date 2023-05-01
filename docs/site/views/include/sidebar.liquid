@@ -1,76 +1,104 @@
-{%- if page.url == '/' -%}
-  {%- assign is_open = 'false' -%}
-  {%- assign hidden = 'false' -%}
-  {%- assign active = '' -%}
-{%- else -%}
-  {%- assign is_open = 'true' -%}
-  {%- assign hidden = 'true' -%}
-  {%- assign active = 'drawer-active' -%}
-{%- endif -%}
+{% if page.url == '/' %}
+  {% assign is_open = 'false' %}
+  {% assign hidden = 'false' %}
+  {% assign active = '' %}
+{% else %}
+  {% assign is_open = 'true' %}
+  {% assign hidden = 'true' %}
+  {% assign active = 'drawer-active' %}
+{% endif %}
 
 <aside
   id="sidebar"
-  class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 bd-right"
+  class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 br"
   data-controller="drawer">
   <div class="container-fluid g-0">
 
-    <div class="row ai-center jc-center my-4 px-4">
+    <div class="row ai-end px-3 py-4">
 
-      <a href="/" class="col-auto pr-1" data-spx-target="['body']">
+      <a
+        href="/"
+        class="col tc "
+        data-spx-target="['body']">
         {% svg "logo", 'logo' %}
       </a>
 
-      <span class="col-auto logo-text as-end upper italic">Single Page XHR</span>
+      <div class="col-auto fs-xs upper pl-1 italic d-none">
+        Single Page XHR
+      </div>
+
+      <small
+        href="{{ '/' | url }}"
+        class="col tr fs-xs uncase pl-0 pb-2 d-none">
+        VER 0.1.0
+      </small>
+
+      <a
+        href="{{ '/' | url }}"
+        class="col tr fw-bolder uncase pl-0 pr-3 d-none">
+        {% svg "github", 'home' %}
+      </a>
 
     </div>
 
-    <form class="mx-4">
-      <input class="form-input form-input-sm rad-1" type="search" placeholder="Search...">
-    </form>
+    <nav
+      class="accordion mt-0 mb-2 br-0"
+      data-controller="accordion">
 
-    <nav class="relapse mt-3 mb-2" data-controller="accordion">
+      {% for group in links.groups %}
 
-      {%- assign pages = collections.all | sorting -%}
+        {%
+          liquid
 
-      {%- for link in pages %}
+          assign name = group | downcase
 
-        {%- unless link.data.title and link.data.sidebar -%}
-          {%- continue -%}
-        {%- endunless -%}
+          if page.url contains name
+            assign open = true
+          else
+            assign open = false
+          endif
 
-        {%- capture initial -%}
-      {%- if page.url == link.url -%}initial{%- endif -%}
-      {%- endcapture -%}
-        <a
-          class="relapse-btn d-flex jc-between btn py-2 ff-base {{ initial }}"
-          href=" {{- link.url }}">
-          <span>{{ link.data.title }}</span>
-          {% svg "chevron-right", 'icon icon-close' %}
-          {% svg "chevron-down", 'icon icon-open' %}
-        </a>
+          if group == 'Attributes'
+            assign group_handle = group | slugify
+          elsif group == 'Events'
+            assign group_handle = group | slugify
+          elsif group == 'Methods'
+            assign group_handle = group | slugify
+          else
+            assign group_handle = nil
+          endif
+        %}
 
-        <div class="relapse-fold {% if page.url == link.url %}expanded{%- endif -%}">
-          <ul class="p-2 ml-0" id="{{- link.data.title | slugify -}}">
-            {%- for item in link.data.sidebar %}
-              <li class="pt-1 pl-3">
+        <button
+          {% if group_handle != nil %}
+            id="/{{ group_handle }}"
+            data-action="accordion#goto"
+          {% endif %}
+          class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}">
+          {{ group }}
+        </button>
 
-                <a href="{{ item | slugify | prepend: '#' }}">
-
-                  {%- if item contains 'data-' -%}
-                    {{- item | replace: '-', '<span class="fc-gray">–</span>'-}}
-                  {%- elsif item contains 'spx:' -%}
-                    {{- item | replace: ':', '<span class="fc-gray">:</span>'-}}
-                  {%- else -%}
-                    {{- item -}}
-                  {%- endif -%}
-
-                </a>
-              </li>
-            {%- endfor -%}
+        <div class="accordion-fold bg-code {% if open %}expanded{%- endif -%}">
+          <ul
+            class="list-dash py-4 pl-3"
+            id="{{ link.title | slugify }}">
+            {% for item in links.urls %}
+              {% if item.group == name %}
+                <li class="pt-1 pl-2">
+                  <a
+                    href="{{ item.url }}"
+                    {% if page.url == item.url %}
+                      class="fc-blue"
+                    {% endif %}>
+                    {{ item.title }}
+                  </a>
+                </li>
+              {% endif %}
+            {% endfor %}
           </ul>
         </div>
 
-      {%- endfor -%}
+      {% endfor %}
 
     </nav>
   </div>

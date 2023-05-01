@@ -1,7 +1,7 @@
 import { IPage } from './page';
-import { IOptions } from './options';
+import { IObserverOptions, IOptions } from './options';
 import { EventNames, LifecycleEvent } from './events';
-import { IConfig, IMemory, IObservers } from './config';
+import { IConfig, IObservers, IMemory } from './config';
 
 /**
  * Supported
@@ -49,8 +49,10 @@ export function reload(): Promise<IPage>;
  * Lifecycle event hook listener. Events are dispatched upon each
  * navigation. If you have multiple listeners they will trigger in
  * the order they are defined.
+ *
+ * Accepts an option `scope` parameter which will bind `this` context to the event.
  */
-export function on<T extends EventNames>(event: T, callback: LifecycleEvent<T>): void
+export function on<T extends EventNames>(event: T, callback: LifecycleEvent<T>, scope?: any): void
 
 /**
  * State
@@ -60,6 +62,14 @@ export function on<T extends EventNames>(event: T, callback: LifecycleEvent<T>):
 export function state (key?: string, store?: IPage): { page: IPage, dom: Document }
 
 /**
+ * Observe
+ *
+ * Either activates or restarts interception observers. Use this method if you are connecting
+ * with the `manual` option set to `true` to have SPX begin observing.
+ */
+export function observe(options?: IObserverOptions): void
+
+/**
  * Capture
  *
  * Performs a snapshot modification to the current document. Use
@@ -67,7 +77,7 @@ export function state (key?: string, store?: IPage): { page: IPage, dom: Documen
  * is helpful in situations where the dom is augmented and you want
  * to preserve the current DOM.
  */
-export function capture(targets?: Element[]): Element[]
+export function capture(targets?: string[]): void
 
 /**
  * Hydrate
@@ -75,7 +85,7 @@ export function capture(targets?: Element[]): Element[]
  * Programmatic hydrate execution. The method expects a `url` and string list
  * of element selectors to be replaced.
  */
-export function hydrate(url: string, elements: string[]): Promise<IPage>
+export function hydrate(url: string, nodes?: string[], pushState?: 'replace' | 'push'): Promise<IPage>
 
 /**
  * Prefetch
@@ -84,7 +94,7 @@ export function hydrate(url: string, elements: string[]): Promise<IPage>
  * node as an argument. This method behaves the same way as hover, intersect
  * or proximity prefetch.
  */
-export function prefetch(link: string | Element): Promise<IPage>
+export function prefetch(link: string): Promise<IPage>
 
 /**
  * Visit
@@ -92,7 +102,7 @@ export function prefetch(link: string | Element): Promise<IPage>
  * Executes a programmatic visit. The method optionally
  * accepts a page state modifier as second argument.
  */
-export function visit(link: string | Element, state?: IPage): Promise<IPage>;
+export function visit(link: string, state?: IPage): Promise<IPage>;
 
 /**
  * Fetch
@@ -109,7 +119,7 @@ export function fetch(url: string): Promise<Document>
  * Removes a cache references. Optionally clear a specific
  * record by passing a url key reference.
  */
-export function clear(url?: string): void;
+export function clear(url?: string | string[]): void;
 
 /**
  * Disconnect

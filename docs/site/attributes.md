@@ -1,7 +1,7 @@
 ---
 title: 'Attributes'
 permalink: '/attributes/index.html'
-layout: docs.liquid
+layout: base.liquid
 order: 5
 sidebar:
   - 'data-spx'

@@ -1,54 +1,73 @@
-code {
-  color: $cyan;
-  font-size: 1rem;
-}
+$code-font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
+  monospace;
 
-code[class*="language-"] {
-  color: $cyan;
-  font-size: $font-size-base;
-  font-family: $font-family-code;
+code[class*='language-'],
+pre[class*='language-'] {
+  color: $white;
+  font-family: $code-font-family;
+  text-shadow: 0 0.07rem rgb(0 0 0 / 90%);
+  font-size: 0.94em;
+  letter-spacing: 0.011rem;
+  text-align: left;
   white-space: pre;
-  white-space: pre-wrap;
-  text-shadow: none;
+  word-spacing: normal;
+  word-break: normal;
   word-wrap: normal;
+  line-height: 1.5;
+  font-variant-ligatures: none;
+  -moz-tab-size: 2;
+  -o-tab-size: 2;
   tab-size: 2;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
   hyphens: none;
+  overflow: clip;
+  height: auto;
 }
 
-pre {
-  position: relative;
-  margin-top: 25px;
-  padding: 15px;
-  overflow: auto;
-  border: none;
-  border-radius: 4px;
-
-  &[class*="language-"] {
-    color: $cyan;
-    font-family: $font-family-code;
-    white-space: pre;
-    white-space: pre-wrap;
+@media print {
+  code[class*='language-'],
+  pre[class*='language-'] {
     text-shadow: none;
-    word-wrap: normal;
-    tab-size: 2;
-    hyphens: none;
-    background: $gray-800;
-  }
-
-  code {
-    display: block;
-    white-space: pre;
-  }
-
-  > code[class*="language-"] {
-    font-size: 1rem;
   }
 }
 
-:not(pre) > code[class*="language-"] {
-  font-size: $font-size-md;
-  background: $gray-800;
-  border-radius: 0.3em;
+:not(pre) > code {
+  background: #1d242b; // $code-inline-bg; // #efefef;
+  padding: 0.1rem 0.5rem 0.15rem;
+  border-radius: 0.3rem;
+
+  color: $white; //#6eb2d3;
+
+  font-size: 0.775rem;
+  font-weight: 400;
+  text-shadow: 0 0.04rem rgb(0 0 0);
+  -webkit-font-smoothing: antialiased;
+}
+
+pre[class*='language-'] {
+  padding: 1.5rem 1.5rem 1.7rem 1.5rem;
+  margin: 0 0 40px 0;
+  overflow: auto;
+  border-radius: 4px;
+  background: $code-bg; // #282a36;
+  color: $white;
+  position: relative;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+
+  // [data-theme='dark'] & {
+  //   color: var(--color-neutral-100);
+  // }
+
+  &.line-numbers-mode {
+    padding-left: calc(1.5rem + 1.7em + 1.2rem);
+  }
+}
+
+pre[class*='language-none'] {
+  padding: 1rem;
 }
 
 

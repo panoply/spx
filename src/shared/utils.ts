@@ -39,7 +39,6 @@ export function log (error: Errors, message: string) {
     console.warn('SPX: ' + message);
   } else {
     console.error('SPX: ' + message);
-
     try {
       if (error === Errors.TYPE) {
         throw new TypeError(message);

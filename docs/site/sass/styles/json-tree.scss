@@ -45,6 +45,14 @@
     vertical-align: top;
     border-radius: 4px;
     cursor: default;
+
+    &:hover {
+      color: $blue;
+    }
+  }
+
+  &-node-expanded  > &-label-wrapper > &-label {
+      color: $blue;
   }
 
   &-node-marked > &-label-wrapper > &-label {

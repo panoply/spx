@@ -22,17 +22,24 @@ function evaluator (exec: ReturnType<typeof scriptTag>): Promise<void> {
     }
 
     if (document.contains(exec.target)) {
+
       exec.target.replaceWith(script);
+
     } else {
+
       document.head.append(script);
-      exec.external
-        ? script.addEventListener('load', () => script.remove(), { once: true })
-        : script.remove();
+
+      if (exec.external) {
+        script.addEventListener('load', () => script.remove(), { once: true });
+      } else {
+        script.remove();
+      }
+
     }
 
-    exec.external
-      ? script.addEventListener('load', () => resolve(), { once: true })
-      : resolve();
+    if (exec.external) script.addEventListener('load', () => resolve(), { once: true });
+
+    resolve();
 
   });
 

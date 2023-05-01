@@ -9,6 +9,7 @@ import { EventType, Errors } from '../shared/enums';
 import { getRoute } from './location';
 import { log, position } from '../shared/utils';
 import { IPage } from 'types';
+import { config } from './session';
 
 /**
  * Initialize
@@ -19,14 +20,20 @@ export function initialize (): Promise<IPage> {
 
   const state = store.create(getRoute(EventType.INITIAL));
 
+  // record first page
+  config.index = state.key;
+
   return new Promise(resolve => {
 
     addEventListener('DOMContentLoaded', () => {
 
       hrefs.connect();
-      hover.connect();
-      intersect.connect();
-      proximity.connect();
+
+      if (config.manual === false) {
+        hover.connect();
+        intersect.connect();
+        proximity.connect();
+      }
 
       const page = store.set(state, document.documentElement.outerHTML);
 
@@ -39,6 +46,7 @@ export function initialize (): Promise<IPage> {
       if (page.rev !== page.key) setTimeout(() => request.reverse(page.rev));
 
       setTimeout(() => request.preload(page));
+
       resolve(page);
 
     }, { once: true });
@@ -47,8 +55,21 @@ export function initialize (): Promise<IPage> {
 
 }
 
+export function observe () {
+
+  hover.disconnect();
+  hover.connect();
+
+  intersect.disconnect();
+  intersect.connect();
+
+  proximity.disconnect();
+  proximity.connect();
+
+}
+
 /**
- * Destory Pjax instances
+ * Destory SPX instances
  */
 export function disconnect (): void {
 

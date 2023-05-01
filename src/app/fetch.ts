@@ -60,6 +60,7 @@ export function request (key: string) {
     req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     req.onload = function (this: XHR) {
+
       resolve(this.response);
     };
 
@@ -215,15 +216,17 @@ export async function wait (state: IPage): Promise<IPage> {
 export async function fetch (state: IPage): Promise<false|IPage> {
 
   if (xhr.has(state.key)) {
+    if (state.type !== EventType.HYDRATE) {
 
-    if (state.type === EventType.REVERSE && xhr.has(state.rev)) {
-      xhr.get(state.rev).abort();
-      log(Errors.WARN, `Request aborted: ${state.rev}`);
-    } else {
-      log(Errors.WARN, `Request in transit: ${state.key}`);
+      if (state.type === EventType.REVERSE && xhr.has(state.rev)) {
+        xhr.get(state.rev).abort();
+        log(Errors.WARN, `Request aborted: ${state.rev}`);
+      } else {
+        log(Errors.WARN, `Request in transit: ${state.key}`);
+      }
+
+      return false;
     }
-
-    return false;
   }
 
   if (!emit('fetch', state)) {

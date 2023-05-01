@@ -3,6 +3,7 @@ import { Accordion } from './components/accordion';
 import { Tabs } from './components/tabs';
 import { Session } from './components/session';
 import { Drawer } from './components/drawer';
+import { Editor } from './components/flems';
 import spx from 'spx';
 
 spx.connect({
@@ -21,7 +22,7 @@ spx.connect({
   stimulus.register('accordion', Accordion);
   stimulus.register('tabs', Tabs);
   stimulus.register('session', Session);
-
+  stimulus.register('flems', Editor);
   // @ts-ignore
   window.spx = spx;
 

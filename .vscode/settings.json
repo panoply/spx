@@ -1,18 +1,18 @@
 {
   "stylelint.validate": ["scss", "sass", "less", "postcss"],
   "stylelint.packageManager": "pnpm",
-  "stylelint.enable": true,
+  "stylelint.enable": false,
   "scss.validate": false,
   "scss.scannerExclude": ["**/.git", "**/node_modules"],
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": true
   },
-  "[html]": {
-    "editor.defaultFormatter": "sissel.shopify-liquid"
+  "[liquid]": {
+    "editor.defaultFormatter": "sissel.shopify-liquid",
+    "editor.formatOnSave": true
   },
   "npm.packageManager": "pnpm",
   "eslint.packageManager": "pnpm",
-  "eslint.workingDirectories": [{ "mode": "auto" }],
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true

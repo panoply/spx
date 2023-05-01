@@ -1,6 +1,6 @@
 ---
 title: 'Routing'
-layout: docs.liquid
+layout: base.liquid
 permalink: '/routing/index.html'
 order: 7
 sidebar:

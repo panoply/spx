@@ -1,0 +1,60 @@
+.navbar {
+  position: fixed;
+  z-index: 300;
+  display: flex;
+  background-color: $body-bg;
+  right: 0;
+  height: 45px;
+  font-size: 1.075rem;
+  width: 100%;
+  left: 0px;
+  background-color: $body-bg;
+  z-index: 100;
+
+  .icon-github {
+    width: 25px;
+    height: 25px;
+    fill: $white;
+  }
+
+  .off {
+    color: $white;
+  }
+
+  a {
+    font-weight: 400;
+    font-size: .945rem;
+    margin-right: 14px;
+    text-transform: uppercase;
+
+    &.active {
+      color: $cyan;
+    }
+
+    &.mr {
+      margin-right: 0;
+    }
+
+    .home {
+      width: 18px;
+      height: 18px;
+      fill:#343644;
+    }
+    .logo {
+      width: 55px;
+      height: 40px;
+      color:$white // #343644;
+    }
+  }
+}
+
+.home {
+  width: 18px;
+  height: 18px;
+  fill:#343644;
+}
+.logo {
+  width: 65px;
+  height: 45px;
+  color:$white // #343644;
+}

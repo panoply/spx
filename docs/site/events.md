@@ -1,7 +1,7 @@
 ---
 title: 'Events'
 permalink: '/events/index.html'
-layout: docs.liquid
+layout: base.liquid
 order: 3
 sidebar:
   - 'Prefetch'

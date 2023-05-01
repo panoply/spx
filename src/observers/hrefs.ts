@@ -90,8 +90,6 @@ function handleTrigger (event: MouseEvent): void {
   proximity.disconnect();
   intersect.disconnect();
 
-  const options = { once: true };
-
   if (store.has(key)) { // Sub-sequent visit
 
     const attrs = getAttributes(target, pages[key]);
@@ -102,7 +100,9 @@ function handleTrigger (event: MouseEvent): void {
       pages[page.rev].position = position();
       history.push(page);
       render.update(page);
-    }, options);
+    }, {
+      once: true
+    });
 
   } else if (request.transit.has(key)) { // In-Transit visit
 
@@ -114,7 +114,9 @@ function handleTrigger (event: MouseEvent): void {
       event.preventDefault();
       pages[page.rev].position = position();
       visit(page);
-    }, options);
+    }, {
+      once: true
+    });
 
   } else { // New Visit
 
@@ -131,7 +133,7 @@ function handleTrigger (event: MouseEvent): void {
     const page = store.create(route);
 
     // Lets trigger a fetch, we will await its
-    // complete after click has concluded, we
+    // completion after click has concluded, we
     // have a head-start on the request.
     request.fetch(page);
 
@@ -139,7 +141,9 @@ function handleTrigger (event: MouseEvent): void {
       event.preventDefault();
       pages[page.rev].position = position();
       visit(page);
-    }, options);
+    }, {
+      once: true
+    });
 
   }
 }

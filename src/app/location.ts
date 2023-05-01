@@ -304,7 +304,6 @@ export function fallback (): ILocation {
     pathname: location.pathname,
     search: location.search,
     hash: location.hash
-
   };
 }
 
@@ -336,7 +335,7 @@ export function getLocation (path: string): ILocation {
  * This function is triggered for every visit request
  * or action which infers navigations, ie: mouseover.
  */
-export function getRoute (link: Element | string | EventType, type?: EventType): IPage {
+export function getRoute (link: Element | string | EventType, type: EventType = EventType.VISIT): IPage {
 
   // PASSED IN ELEMENT
   // Route state will be generated using node attributes
@@ -347,10 +346,18 @@ export function getRoute (link: Element | string | EventType, type?: EventType):
   }
 
   const state: IPage = object(null);
-  state.rev = location.pathname + location.search;
-  state.location = getLocation(typeof link === 'string' ? link : state.rev);
-  state.key = getKey(state.location);
-  state.type = type || EventType.VISIT;
+
+  if (type === EventType.HYDRATE) {
+    state.location = getLocation(link as string);
+    state.key = getKey(state.location);
+    state.rev = state.key;
+    state.type = type;
+  } else {
+    state.rev = location.pathname + location.search;
+    state.location = getLocation(typeof link === 'string' ? link : state.rev);
+    state.key = getKey(state.location);
+    state.type = type;
+  }
 
   return state;
 

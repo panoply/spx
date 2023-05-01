@@ -51,11 +51,11 @@ export function emit <T extends EventNames> (name: T, ...args: EmitterArguments<
  *
  * Exposed as public method on `spx`
  */
-export function on (name: EventNames, callback?: () => void) {
+export function on (name: EventNames, callback?: () => void, scope?: any) {
 
   if (!hasProp(events, name)) events[name] = [];
 
-  events[name].push(callback);
+  events[name].push(scope ? callback.bind(scope) : callback);
 
 }
 

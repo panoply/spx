@@ -1,8 +1,33 @@
-<header class="container pb-4">
-  <div class="row py-4">
-    <a href="{{ '/' | url }}" class="col-auto undecorate pl-0 pr-3">DOCS</a>
-    <a href="{{ '/examples' | url }}" class="col-auto undecorate fc-white">EXAMPLE</a>
+<header
+  id="navbar"
+  class="container-fluid navbar bb pl-3">
+  <div class="row jc-cent ai-center bg-white w-100 pr-0">
 
-    <a href="{{ '/' | url }}" class="col tc undecorate fs-xs pl-4 pr-5 offset-5">v 1.0.0-BETA-1</a>
+    <div class="col pr-0">
+      <a
+        href="{{ '/' | url }}"
+        class="col-auto fw-bolder uncase pl-0 pr-3">
+        {% svg "github", 'home' %}
+      </a>
+      <a
+        href="{{ '/' | url }}"
+        class="col-auto fw-bolder uncase pl-0 pr-3 active">
+        Documentation
+      </a>
+      <a
+        href="{{ '/' | url }}"
+        class="col-auto fw-bolder uncase pl-0 pr-3">
+        Examples
+      </a>
+    </div>
+
+    <a
+      href="/"
+      class="col-auto tc pl-0 pr-5"
+      data-spx-target="['body']">
+      {% svg "logo", 'logo' %}
+    </a>
+
+    <div class="col"></div>
   </div>
 </header>

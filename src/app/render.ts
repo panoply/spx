@@ -1,7 +1,8 @@
 import { emit } from './events';
 import { evaljs } from '../observers/scripts';
-import { EventType } from '../shared/enums';
+import { Errors, EventType } from '../shared/enums';
 import { toArray } from '../shared/native';
+import { log } from '../shared/utils';
 import { parse } from '../shared/dom';
 import { IPage } from '../types/page';
 import { tracked, snapshots, config } from './session';
@@ -10,6 +11,7 @@ import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
 import * as progress from './progress';
 import * as proximity from '../observers/proximity';
+import morphdom from 'morphdom';
 
 /**
  * Node Positions
@@ -28,9 +30,62 @@ function nodePosition (a: Element, b: Element) {
 async function scriptNodes (target: HTMLHeadElement) {
 
   const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(config.selectors.scripts));
-  scripts.sort(nodePosition);
 
-  await evaljs(scripts);
+  await evaljs(scripts.sort(nodePosition));
+
+}
+
+/**
+ * Evaluator Nodes
+ *
+ * Injects and/or replaced all nodes contained in the `<head>`
+ * element with an annotation of `data-spx-eval`
+ */
+function evalNodes (target: Document) {
+
+  document.head.querySelectorAll(config.selectors.evals).forEach(node => {
+    if (!target.head.contains(node)) node.remove();
+  });
+
+  document.head.append(...target.querySelectorAll(config.selectors.evals));
+
+  // if (config.eval.style !== false) {
+  //   document.querySelectorAll(config.selectors.styles).forEach(node => {
+  //     if (!target.contains(node)) {
+  //       node.remove();
+  //     } else {
+  //       target.removeChild(node);
+  //     }
+  //   });
+
+  //   target.querySelectorAll(config.selectors.styles).forEach(node => {
+  //     document.head.appendChild(node);
+  //   });
+  // }
+
+  // if (config.eval.link !== false || config.eval.meta !== false) {
+
+  //   if (config.eval.meta !== false) {
+
+  //     document.head.querySelectorAll(config.selectors.metas).forEach(node => {
+  //       if (!target.head.contains(node)) node.remove();
+  //     });
+
+  //     document.head.append(...target.querySelectorAll(config.selectors.metas));
+
+  //   }
+
+  //   if (config.eval.link !== false) {
+
+  //     document.head.querySelectorAll(config.selectors.links).forEach(node => {
+  //       if (!target.head.contains(node)) node.remove();
+  //     });
+
+  //     document.head.append(...target.querySelectorAll(config.selectors.links));
+
+  //   }
+
+  // }
 
 }
 
@@ -41,17 +96,18 @@ async function scriptNodes (target: HTMLHeadElement) {
  */
 function trackedNodes (target: HTMLElement): void {
 
-  target.querySelectorAll(config.selectors.tracking).forEach((node) => {
+  for (const node of target.querySelectorAll(config.selectors.tracking)) {
 
     // tracked element must contain id
-    if (!node.hasAttribute('id')) return;
+    if (!node.hasAttribute('id')) {
+      log(Errors.WARN, `Tracked node <${node.tagName.toLowerCase()}> must contain an id attribute`);
+    } else if (!tracked.has(node.id)) {
 
-    if (!tracked.has(node.id)) {
       document.body.appendChild(node);
       tracked.add(node.id);
-    }
 
-  });
+    }
+  }
 
 }
 
@@ -70,11 +126,9 @@ function renderNodes (page: IPage, target: Document) {
   if (nodes.length === 1 && nodes[0] === 'body') return document.body.replaceWith(target.body);
 
   const selector = nodes.join(',');
-  const current = document.body.querySelectorAll<HTMLElement>(selector);
   const fetched = target.body.querySelectorAll<HTMLElement>(selector);
-  // const ignored = isArray(state.ignore) ? state.ignore.join(',') : false;
 
-  current.forEach((node, i) => {
+  document.body.querySelectorAll<HTMLElement>(selector).forEach((node, i) => {
 
     if (!node.matches(nodes[i])) return;
     if (!emit('render', node, fetched[i])) return;
@@ -104,31 +158,28 @@ function renderNodes (page: IPage, target: Document) {
  */
 function hydrateNodes (state: IPage, target: Document): void {
 
-  const nodes = state.hydrate.join(',');
-  const current = document.body.querySelectorAll<HTMLElement>(nodes);
+  const selector = state.hydrate.join(',');
+  const current = document.body.querySelectorAll<HTMLElement>(selector);
 
   if (current.length > 0) {
 
-    const fetched = target.body.querySelectorAll<HTMLElement>(nodes);
+    const fetched = target.body.querySelectorAll<HTMLElement>(selector);
 
     current.forEach((node, i) => {
 
       if (!fetched[i]) return;
       if (!emit('hydrate', node, fetched[i])) return;
 
-      // InnerHTML replacement on text nodes
-      if (node.firstChild.nodeType === Node.TEXT_NODE) {
-        node.innerHTML = fetched[i].innerHTML;
-      } else {
-        node.replaceWith(fetched[i]);
-      }
+      morphdom(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+
     });
 
   }
 
   state.type = EventType.VISIT;
   store.update(state);
-  store.purge(state.key);
+
+  // store.purge(state.key);
 
 }
 
@@ -149,6 +200,7 @@ export function update (page: IPage): IPage {
   if (page.type === EventType.HYDRATE) {
     hydrateNodes(page, target);
   } else {
+    evalNodes(target);
     renderNodes(page, target);
     scrollTo(page.position.x, page.position.y);
   }

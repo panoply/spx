@@ -1,7 +1,7 @@
 ---
 title: 'Reference'
 permalink: '/reference/index.html'
-layout: docs.liquid
+layout: base.liquid
 order: 6
 sidebar:
   - 'Options'

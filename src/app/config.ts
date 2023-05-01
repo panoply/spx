@@ -1,20 +1,12 @@
 /* eslint-disable no-unused-vars */
 
-import { Attributes } from '../shared/enums';
-import { assign } from '../shared/native';
+import { Attributes, Errors } from '../shared/enums';
+import { assign, isArray } from '../shared/native';
 import { config, memory } from './session';
-import { IConfig, IHover, IOptions } from 'types';
-import { hasProp } from '../shared/utils';
+import { IConfig, IEval, IHover, IOptions } from 'types';
+import { hasProp, log } from '../shared/utils';
 
-/**
- * Initialize
- *
- * Connects store and intialized the workable
- * state management model. Connect MUST be called
- * upon SPX initialization. This function acts
- * as a class `constructor` establishing an instance.
- */
-export const configure = (options: IOptions = {}) => {
+export function observers (options: IOptions) {
 
   if (hasProp(options, 'hover')) {
     if (options.hover === false) config.hover = false;
@@ -40,7 +32,25 @@ export const configure = (options: IOptions = {}) => {
     delete options.progress;
   }
 
-  assign<IConfig, IOptions>(config, options);
+  return options;
+
+}
+
+/**
+ * Initialize
+ *
+ * Connects store and intialized the workable
+ * state management model. Connect MUST be called
+ * upon SPX initialization. This function acts
+ * as a class `constructor` establishing an instance.
+ */
+export function configure (options: IOptions = {}) {
+
+  assign<IConfig, IOptions>(config, observers(options));
+
+  if (hasProp(options, 'eval')) assign<IEval, IEval>(config.eval, options.eval);
+
+  config.index = null;
 
   const schema = config.schema === null;
   const attr = schema ? 'data' : `data-${config.schema}`;
@@ -48,8 +58,11 @@ export const configure = (options: IOptions = {}) => {
 
   config.selectors.hrefs = config.annotate ? schema ? `a[data-spx]${href}` : `a[${attr}]${href}` : `a${href}`;
   config.selectors.tracking = `[${attr}-track]:not([${attr}-track=false])`;
-  config.selectors.scripts = `script[${attr}-eval]:not([${attr}-eval=false])`;
-  config.selectors.styles = `style[${attr}-eval]:not([${attr}-eval=false])`;
+  config.selectors.scripts = evals('script');
+  config.selectors.styles = evals('style');
+  config.selectors.links = evals('link');
+  config.selectors.metas = evals('meta');
+  config.selectors.evals = `[${attr}-eval]:not([${attr}-eval=false]):not(script)`;
   config.selectors.attributes = new RegExp('^href|' + attr + '-(' + Attributes.NAMES + ')$', 'i');
   config.selectors.proximity = `a[${attr}-proximity]${href}${not('proximity')}`;
   config.selectors.intersector = `[${attr}-intersect]${not('intersect')}`;
@@ -62,6 +75,37 @@ export const configure = (options: IOptions = {}) => {
   memory.bytes = 0;
   memory.visits = 0;
   memory.limit = config.limit;
+
+  console.log(config);
+
+  /**
+   * Evaluators
+   *
+   * Constructs the selectors for evaluation
+   */
+  function evals (tag: 'style' | 'script' | 'link' | 'meta') {
+
+    const disable = `not([${attr}-eval=false])`;
+    const defaults = tag === 'link'
+      ? `${tag}[rel=stylesheet]:${disable},${tag}[rel~=preload]:${disable}`
+      : tag === 'script'
+        ? `${tag}[${attr}-eval]:${disable}`
+        : `${tag}:${disable}`;
+
+    if (config.eval[tag] === false || config.eval[tag] === null) return defaults;
+    if (config.eval[tag] === true) return `${tag}[${attr}-eval]:${disable}`;
+    if (isArray(config.eval[tag] as string[])) {
+      if ((config.eval[tag] as string[]).length > 0) {
+        return (config.eval[tag] as string[]).map(s => `${s}:${disable}`).join(',');
+      } else {
+        log(Errors.WARN, `Missing eval ${tag} option, SPX will use defaults`);
+        return defaults;
+      }
+    }
+
+    log(Errors.TYPE, `Invalid eval ${tag} option, expected boolean or array`);
+
+  }
 
   /**
    * Selector Exclusion

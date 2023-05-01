@@ -1,9 +1,10 @@
 ---
 title: 'Key Concepts'
-layout: docs.liquid
+layout: base.liquid
 permalink: '/key-concepts/index.html'
 order: 1
 sidebar:
+  - 'Caching'
   - 'Observing'
   - 'Prefetching'
   - 'Sessions'

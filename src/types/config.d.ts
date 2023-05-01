@@ -135,6 +135,10 @@ export interface IObservers {
  */
 export interface IConfig extends IOptions {
   /**
+   * Connection key (first page) SPX was started
+   */
+  index?: string;
+  /**
    * Progress Bar
    */
   progress?: false | IProgress;
@@ -164,10 +168,21 @@ export interface IConfig extends IOptions {
      */
     scripts?: string;
     /**
-     * Asset evaluation selector used for `<styles>`
-     * type tags
+     * HTML `<style>` element selectors to evaluate
      */
     styles?: string;
+    /**
+     * Any element annotated with `data-spx-eval="true"`
+     */
+    evals?: string;
+    /**
+     * The `<link>` elements selectors to evaluate
+     */
+    links?: string;
+    /**
+     * The `<meta>` elements selectors to evaluate
+     */
+    metas?: string;
     /**
      * The `href` elements to intercepts. Excluded certain
      * nodes from firing SPX visits
@@ -194,7 +209,7 @@ export interface IConfig extends IOptions {
     intersects?: string
     /**
      * Href selctor, which excludes node annotated with a
-     * `data-pjax-intersect="false"` attribute.
+     * `data-spx-intersect="false"` attribute.
      */
     intersector?: string
   }

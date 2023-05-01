@@ -1,11 +1,15 @@
 ---
 title: 'Usage'
 permalink: '/connection/index.html'
-layout: docs.liquid
+layout: base.liquid
 order: 2
 sidebar:
-  - 'Connected'
+  - 'Pre-Requisites'
+  - 'Connection'
   - 'Options'
+  - 'Instance'
+  - 'DOM Targets'
+  - 'Resource Evaluation'
 ---
 
 # Usage

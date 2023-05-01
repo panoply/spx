@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import * as pjax from 'spx';
+import spx from 'spx';
 
 /* -------------------------------------------- */
 /* CLASS                                        */
@@ -24,7 +24,7 @@ export class Drawer extends Controller {
     'overlay'
   ];
 
-  initialize () {
+  initialize() {
 
     if (this.element.classList.contains('d-none')) {
       this.element.classList.remove('d-none');
@@ -32,14 +32,14 @@ export class Drawer extends Controller {
 
   }
 
-  connect () {
+  connect() {
 
     // const element = `[data-drawer="${this.element.id}"]`
     // @ts-ignore
     this.buttons.forEach((btn) => btn.addEventListener('click', this.toggle));
 
     if (window.innerWidth < 400) {
-      pjax.on('load', () => {
+      spx.on('load', () => {
 
         if (this.openValue) setTimeout(this.doClose, 100);
 
@@ -47,7 +47,7 @@ export class Drawer extends Controller {
     }
   }
 
-  disconnect () {
+  disconnect() {
 
     this.buttons.forEach(btn => btn.removeEventListener('click', this.toggle));
 
@@ -69,7 +69,7 @@ export class Drawer extends Controller {
 
   };
 
-  click (event: MouseEvent) {
+  click(event: MouseEvent) {
 
     if (this.openValue) this.doClose();
 
@@ -93,7 +93,7 @@ export class Drawer extends Controller {
 
   };
 
-  doOpen () {
+  doOpen() {
 
     this.application.element.classList.add('drawer-open');
     this.overlay.addEventListener('click', this.doClose.bind(this), { passive: true });
@@ -120,7 +120,7 @@ export class Drawer extends Controller {
 
   };
 
-  touchStart ({ target }: TouchEvent) {
+  touchStart({ target }: TouchEvent) {
 
     if (target instanceof HTMLElement) {
 
@@ -135,7 +135,7 @@ export class Drawer extends Controller {
     }
   }
 
-  get transition () {
+  get transition() {
 
     const element = document.createElement('div');
     const transitions = {
@@ -151,14 +151,14 @@ export class Drawer extends Controller {
 
   }
 
-  get buttons () {
+  get buttons() {
 
     const attr = `[data-drawer="${this.element.id}"]`;
     return this.application.element.lastElementChild.querySelectorAll(attr);
 
   }
 
-  get overlay () {
+  get overlay() {
 
     return this.application.element.lastElementChild.querySelector('#drawer-overlay');
 

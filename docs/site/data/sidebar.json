@@ -1,0 +1,242 @@
+{
+  "groups": [
+    "Introduction",
+    "Usage",
+    "Methods",
+    "Events",
+    "Attributes",
+    "Routing",
+    "Misc"
+  ],
+  "urls": [
+    {
+      "group": "introduction",
+      "title": "What is SPX?",
+      "url": "/introduction/what-is-spx/"
+    },
+    {
+      "group": "introduction",
+      "title": "Key Concepts",
+      "url": "/introduction/key-concepts/"
+    },
+    {
+      "group": "introduction",
+      "title": "Session",
+      "url": "/introduction/session/"
+    },
+    {
+      "group": "introduction",
+      "title": "Caching",
+      "url": "/introduction/caching/"
+    },
+    {
+      "group": "introduction",
+      "title": "Recommendations",
+      "url": "/introduction/recommendations/"
+    },
+    {
+      "group": "introduction",
+      "title": "Tutorial",
+      "url": "/introduction/tutorial/"
+    },
+
+    {
+      "group": "usage",
+      "title": "Getting Started",
+      "url": "/usage/getting-started/"
+    },
+    {
+      "group": "usage",
+      "title": "DOM Targets",
+      "url": "/usage/dom-targets/"
+    },
+    {
+      "group": "usage",
+      "title": "Connection",
+      "url": "/usage/connection/"
+    },
+    {
+      "group": "usage",
+      "title": "Options",
+      "url": "/usage/options/"
+    },
+    {
+      "group": "usage",
+      "title": "Resource Evaluation",
+      "url": "/usage/resource-evaluation/"
+    },
+
+    {
+      "group": "methods",
+      "title": "spx.connect",
+      "url": "/methods/connect/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.on",
+      "url": "/methods/on/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.off",
+      "url": "/methods/off/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.visit",
+      "url": "/methods/visit/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.prefetch",
+      "url": "/methods/prefetch/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.fetch",
+      "url": "/methods/fetch/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.capture",
+      "url": "/methods/capture/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.reload",
+      "url": "/methods/reload/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.clear",
+      "url": "/methods/clear/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.hydrate",
+      "url": "/methods/hydrate/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.store",
+      "url": "/methods/store/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.observe",
+      "url": "/methods/observe/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.disconnect",
+      "url": "/methods/disconnect/"
+    },
+
+    {
+      "group": "events",
+      "title": "Prefetch",
+      "url": "/events/prefetch/"
+    },
+    {
+      "group": "events",
+      "title": "Visit",
+      "url": "/events/visit/"
+    },
+    {
+      "group": "events",
+      "title": "Fetch",
+      "url": "/events/fetch/"
+    },
+    {
+      "group": "events",
+      "title": "Store",
+      "url": "/events/store/"
+    },
+    {
+      "group": "events",
+      "title": "Cache",
+      "url": "/events/cache/"
+    },
+    {
+      "group": "events",
+      "title": "Render",
+      "url": "/events/render/"
+    },
+    {
+      "group": "events",
+      "title": "Load",
+      "url": "/events/load/"
+    },
+
+    {
+      "group": "attributes",
+      "title": "data-spx-target",
+      "url": "/attributes/data-spx-target/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-hover",
+      "url": "/attributes/data-spx-hover/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-eval",
+      "url": "/attributes/data-spx-eval/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-hydrate",
+      "url": "/attributes/data-spx-hydrate/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-prepend",
+      "url": "/attributes/data-spx-prepend/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-append",
+      "url": "/attributes/data-spx-append/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-threshold",
+      "url": "/attributes/data-spx-threshold/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-proximity",
+      "url": "/attributes/data-spx-proximity/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-position",
+      "url": "/attributes/data-spx-position/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-cache",
+      "url": "/attributes/data-spx-cache/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-disable",
+      "url": "/attributes/data-spx-disable/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-history",
+      "url": "/attributes/data-spx-history/"
+    },
+    {
+      "group": "misc",
+      "title": "Benchmarks",
+      "url": "/misc/benchmarks/"
+    },
+    {
+      "group": "misc",
+      "title": "Acknowledgements",
+      "url": "/misc/acknowledgements/"
+    }
+  ]
+}
