@@ -51,9 +51,9 @@ export class Accordion extends Controller {
    */
   goto({ target }: { target: HTMLLinkElement }) {
 
-    setTimeout(() => {
-      spx.visit(target.id);
-    }, 200)
+
+    spx.visit(target.id);
+
   }
 
   /**

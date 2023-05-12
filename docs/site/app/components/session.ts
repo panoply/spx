@@ -37,6 +37,7 @@ export class Session extends Controller {
    * Stimulus Initialize
    */
   connect (): void {
+
     spx.on('prefetch', () => {
       this.actionTarget.innerHTML = 'Prefetch Triggered';
     });
@@ -54,12 +55,11 @@ export class Session extends Controller {
       this.update();
     });
 
-    spx.on('load', () => this.update());
 
     this.update();
   }
 
-  update () {
+  async update () {
 
     const session = spx.session();
 

@@ -184,7 +184,7 @@ var config = defaults();
 var observers = object(null);
 var memory = object(null);
 var pages = object(null);
-var snapshots = /* @__PURE__ */ new Map();
+var snapshots = object(null);
 var tracked = /* @__PURE__ */ new Set();
 
 // src/app/config.ts
@@ -539,13 +539,13 @@ function off(name, callback) {
 function clear(key) {
   if (!key) {
     empty(pages);
-    snapshots.clear();
+    empty(snapshots);
   } else if (typeof key === "string") {
-    snapshots.delete(pages[key].uuid);
+    delete snapshots[pages[key].uuid];
     delete pages[key];
   } else if (isArray(key)) {
     forEach((url) => {
-      snapshots.delete(pages[url].uuid);
+      delete snapshots[pages[url].uuid];
       delete pages[url];
     }, key);
   }
@@ -600,14 +600,14 @@ function set(state2, snapshot) {
   if (!hasProp(state2, "uuid"))
     return update(state2, dom);
   pages[state2.key] = state2;
-  snapshots.set(state2.uuid, dom);
+  snapshots[state2.uuid] = dom;
   emit("cached", state2);
   return state2;
 }
 function update(page, snapshot) {
   const state2 = hasProp(pages, page.key) ? pages[page.key] : create(page);
   if (typeof snapshot === "string") {
-    snapshots.set(state2.uuid, snapshot);
+    snapshots[state2.uuid] = snapshot;
     page.title = getTitle(snapshot);
     page.position = position();
   }
@@ -617,13 +617,13 @@ function get(key = history.state.key) {
   if (hasProp(pages, key)) {
     const state2 = object(null);
     state2.page = pages[key];
-    state2.dom = parse(snapshots.get(state2.page.uuid));
+    state2.dom = parse(snapshots[state2.page.uuid]);
     return state2;
   }
   log(4 /* ERROR */, `No record exists: ${key}`);
 }
 function has(key) {
-  return hasProp(pages, key) && hasProp(pages[key], "uuid") && snapshots.has(pages[key].uuid) && typeof snapshots.get(pages[key].uuid) === "string";
+  return hasProp(pages, key) && hasProp(pages[key], "uuid") && hasProp(snapshots, pages[key].uuid) && typeof snapshots[pages[key].uuid] === "string";
 }
 
 // src/shared/links.ts
@@ -1683,7 +1683,7 @@ function update2(page) {
   disconnect();
   disconnect3();
   disconnect2();
-  const target = parse(snapshots.get(page.uuid));
+  const target = parse(snapshots[page.uuid]);
   if (page.type === 8 /* HYDRATE */) {
     hydrateNodes(page, target);
   } else {

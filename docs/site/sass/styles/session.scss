@@ -13,7 +13,14 @@
 }
 
 .session-scroll {
-  overflow-y: scroll;
+  overflow: scroll;
+  max-height: 500px;
+  height: auto;
+}
+
+.session-inner {
+  position: relative;
+  height: 100%;
 }
 
 .session-tabs {

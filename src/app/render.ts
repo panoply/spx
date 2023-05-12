@@ -199,7 +199,7 @@ export function update (page: IPage): IPage {
   intersect.disconnect();
   proximity.disconnect();
 
-  const target = parse(snapshots.get(page.uuid));
+  const target = parse(snapshots[page.uuid]);
 
   if (page.type === EventType.HYDRATE) {
     hydrateNodes(page, target);

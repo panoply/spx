@@ -29,7 +29,7 @@ export function connect(options?: IOptions): ((callback: (state?: IPage) => void
  */
 export function session(key?: string, merge?: object): {
   pages: { [key: string]: IPage };
-  snapshots: { [key: string]: string };
+  snapshots: Map<string, string>;
   memory: IMemory & { size: string };
   config: IConfig;
   observers: IObservers

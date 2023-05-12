@@ -91,10 +91,12 @@
             </button>
 
             <div class="accordion-fold">
-              <div
-                id="{{ item }}"
-                class="px-2 py-4"
-                data-session-target="{{ item }}"></div>
+              <div class="session-inner">
+                <div
+                  id="{{ item }}"
+                  class="px-2 py-4 session-scroll"
+                  data-session-target="{{ item }}"></div>
+              </div>
             </div>
 
           {% endfor %}

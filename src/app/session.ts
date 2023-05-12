@@ -51,7 +51,7 @@ export const pages: { [url: string]: IPage } = object(null);
  * Each document is stored in string type. The key values
  * are unique ids and exist on each page model.
  */
-export const snapshots: Map<string, string> = new Map();
+export const snapshots:{ [url: string]: string } = object(null);
 
 /**
  * Tracked Elements
