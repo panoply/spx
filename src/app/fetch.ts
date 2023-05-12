@@ -60,7 +60,6 @@ export function request (key: string) {
     req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     req.onload = function (this: XHR) {
-
       resolve(this.response);
     };
 

@@ -1,5 +1,3 @@
-
-import { toArray } from './native';
 import { getKey, validKey } from '../app/location';
 import { has } from '../app/store';
 
@@ -39,11 +37,19 @@ export function canFetch (target: Element): boolean {
  */
 export function getNodeTargets (selector: string, hrefs: string): Element[] {
 
-  return toArray(document.body.querySelectorAll(selector)).flatMap((node) => {
-    return node.nodeName !== 'A'
-      ? toArray(node.querySelectorAll(hrefs)).filter(canFetch)
-      : canFetch(node) ? node : [];
+  const targets: Element[] = [];
+
+  document.body.querySelectorAll(selector).forEach(node => {
+    if (node.nodeName !== 'A') {
+      node.querySelectorAll(hrefs).forEach(href => {
+        if (canFetch(node)) targets.push(href);
+      });
+    } else if (canFetch(node)) {
+      targets.push(node);
+    }
   });
+
+  return targets;
 
 };
 
@@ -53,6 +59,12 @@ export function getNodeTargets (selector: string, hrefs: string): Element[] {
  */
 export const getTargets = (selector: string): Element[] => {
 
-  return toArray(document.body.querySelectorAll(selector)).filter(canFetch);
+  const targets: Element[] = [];
+
+  document.body.querySelectorAll(selector).forEach(target => {
+    if (canFetch(target)) targets.push(target);
+  });
+
+  return targets;
 
 };

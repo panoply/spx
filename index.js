@@ -642,12 +642,26 @@ function canFetch(target) {
   return !has(getKey(href));
 }
 function getNodeTargets(selector, hrefs) {
-  return toArray(document.body.querySelectorAll(selector)).flatMap((node) => {
-    return node.nodeName !== "A" ? toArray(node.querySelectorAll(hrefs)).filter(canFetch) : canFetch(node) ? node : [];
+  const targets = [];
+  document.body.querySelectorAll(selector).forEach((node) => {
+    if (node.nodeName !== "A") {
+      node.querySelectorAll(hrefs).forEach((href) => {
+        if (canFetch(node))
+          targets.push(href);
+      });
+    } else if (canFetch(node)) {
+      targets.push(node);
+    }
   });
+  return targets;
 }
 var getTargets = (selector) => {
-  return toArray(document.body.querySelectorAll(selector)).filter(canFetch);
+  const targets = [];
+  document.body.querySelectorAll(selector).forEach((target) => {
+    if (canFetch(target))
+      targets.push(target);
+  });
+  return targets;
 };
 
 // src/app/fetch.ts

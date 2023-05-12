@@ -170,6 +170,11 @@
     },
     {
       "group": "attributes",
+      "title": "data-spx-render",
+      "url": "/attributes/data-spx-render/"
+    },
+    {
+      "group": "attributes",
       "title": "data-spx-replace",
       "url": "/attributes/data-spx-replace/"
     },
