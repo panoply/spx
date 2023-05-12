@@ -31,6 +31,8 @@ async function scriptNodes (target: HTMLHeadElement) {
 
   const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(config.selectors.scripts));
 
+  console.log(scripts);
+
   await evaljs(scripts.sort(nodePosition));
 
 }
@@ -133,7 +135,11 @@ function renderNodes (page: IPage, target: Document) {
     if (!node.matches(nodes[i])) return;
     if (!emit('render', node, fetched[i])) return;
 
-    node.replaceWith(fetched[i]);
+    if (node.getAttribute('data-spx-render') === 'morph') {
+      morphdom(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+    } else {
+      node.replaceWith(fetched[i]);
+    }
 
     if (page.append || page.prepend) {
       const fragment = document.createElement('div');
@@ -208,7 +214,6 @@ export function update (page: IPage): IPage {
   scriptNodes(target.head);
 
   progress.done();
-
   hover.connect();
   intersect.connect();
   proximity.connect();

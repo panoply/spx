@@ -3,15 +3,34 @@ title: 'Fetch'
 layout: base.liquid
 permalink: '/methods/fetch/index.html'
 prev:
-  label: 'Installation'
-  uri: '/usage/installation'
+  label: 'spx.prefetch'
+  uri: '/methods/prefetch/'
 next:
-  label: 'Options'
-  uri: '/usage/options/'
+  label: 'spx.capture'
+  uri: '/methods/capture/'
 ---
 
-# spx.fetch `spx.fetch(url: string)`
+# spx.fetch
 
-Triggers a programmatic fetch. The XHR request response is not cached and no state reference are touched.
+The `spx.fetch` method executes a programmatic fetch. The method expects a `url` as an argument.
 
-<span class="fc-gray">Returns</span>: `Document`
+# Events
+
+The fetch method will fire the following events:
+
+- TODO
+
+# Example
+
+<!--prettier-ignore-->
+```js
+import spx from 'spx';
+
+spx.fetch('/some-path').then(function(page) {
+
+  console.log(page)
+
+})
+
+
+```

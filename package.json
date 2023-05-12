@@ -58,8 +58,7 @@
   },
   "dependencies": {
     "detect-it": "^4.0.1",
-    "morphdom": "^2.7.0",
-    "nanomorph": "^5.4.3"
+    "morphdom": "^2.7.0"
   },
   "devDependencies": {
     "@brixtol/browserslist-config": "workspace:^1.1.0",
@@ -68,10 +67,10 @@
     "@octokit/core": "^4.2.0",
     "ava": "^5.2.0",
     "browser-env": "^3.3.0",
-    "esbuild": "^0.17.16",
+    "esbuild": "^0.17.18",
     "gzip-size-cli": "^5.1.0",
     "pr-release": "^0.18.20",
-    "type-fest": "^3.8.0",
+    "type-fest": "^3.9.0",
     "typescript": "^5.0.4"
   },
   "scripts": {
@@ -82,7 +81,7 @@
     "test": "ava --color --verbose --watch --timeout=2m"
   },
   "optionalDependencies": {
-    "eslint": "^8.38.0",
-    "prettier": "^2.8.7"
+    "eslint": "^8.39.0",
+    "prettier": "^2.8.8"
   }
 }

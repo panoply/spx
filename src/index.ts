@@ -58,6 +58,7 @@ export function connect (options: IConfig = {}) {
     }
 
     log(Errors.INFO, 'Connection Established ⚡');
+
   };
 
 };

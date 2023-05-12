@@ -6,8 +6,10 @@ prev:
   label: 'Key Concepts'
   uri: '/introduction/key-concepts/'
 next:
-  label: 'Cache'
-  uri: '/introduction/cache/'
+  label: 'Basic Example'
+  uri: '/introduction/basic-example/'
 ---
 
-# Cache
+# Session
+
+TODO

@@ -76,8 +76,6 @@ export function configure (options: IOptions = {}) {
   memory.visits = 0;
   memory.limit = config.limit;
 
-  console.log(config);
-
   /**
    * Evaluators
    *

@@ -1,9 +1,17 @@
 {
-  "stylelint.validate": ["scss", "sass", "less", "postcss"],
+  "stylelint.validate": [
+    "scss",
+    "sass",
+    "less",
+    "postcss"
+  ],
   "stylelint.packageManager": "pnpm",
   "stylelint.enable": false,
   "scss.validate": false,
-  "scss.scannerExclude": ["**/.git", "**/node_modules"],
+  "scss.scannerExclude": [
+    "**/.git",
+    "**/node_modules"
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": true
   },
@@ -17,6 +25,7 @@
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true
   },
+  "prettier.ignorePath": ".prettierignore",
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -27,7 +36,10 @@
   },
   "cSpell.words": [
     "Alexey",
+    "Barba",
+    "gtag",
     "hrefs",
+    "HTMX",
     "navigations",
     "spx",
     "Wanstrath",

@@ -62,6 +62,11 @@ export interface ILocation {
   hash?: string;
 }
 
+export interface IResource {
+  type: 'script' | 'style';
+  blob: Blob;
+}
+
 /**
  * Page Visit State
  *
@@ -74,7 +79,7 @@ export interface IPage {
    */
   uuid: string;
 
- /**
+  /**
    * The session identifier. This is used to determine the
    * connection digest. It is a random 4 digit number. When
    * using a `persisted` session this is the id used by the
@@ -193,17 +198,6 @@ export interface IPage {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   hydrate?: string[];
-
-  /**
-   * List of fragments contained within targets to ignore in
-   * the render cycle.
-   *
-   * **OPTION NOT YET AVAILABLE**
-   *
-   * @example
-   * ['#ignore']
-   */
-  ignore?: string[]
 
   /**
    * List of fragments to be appened from and to. Accepts multiple.

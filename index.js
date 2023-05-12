@@ -242,7 +242,6 @@ function configure(options2 = {}) {
   memory.bytes = 0;
   memory.visits = 0;
   memory.limit = config.limit;
-  console.log(config);
   function evals(tag) {
     const disable = `not([${attr}-eval=false])`;
     const defaults2 = tag === "link" ? `${tag}[rel=stylesheet]:${disable},${tag}[rel~=preload]:${disable}` : tag === "script" ? `${tag}[${attr}-eval]:${disable}` : `${tag}:${disable}`;
@@ -1619,6 +1618,7 @@ function nodePosition(a, b) {
 function scriptNodes(target) {
   return __async(this, null, function* () {
     const scripts = toArray(target.querySelectorAll(config.selectors.scripts));
+    console.log(scripts);
     yield evaljs(scripts.sort(nodePosition));
   });
 }
@@ -1650,7 +1650,11 @@ function renderNodes(page, target) {
       return;
     if (!emit("render", node, fetched[i]))
       return;
-    node.replaceWith(fetched[i]);
+    if (node.getAttribute("data-spx-render") === "morph") {
+      morphdom_esm_default(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+    } else {
+      node.replaceWith(fetched[i]);
+    }
     if (page.append || page.prepend) {
       const fragment = document.createElement("div");
       target.childNodes.forEach(fragment.appendChild);

@@ -49,7 +49,7 @@ export const pages: { [url: string]: IPage } = object(null);
  *
  * This object holds documents responses of every page.
  * Each document is stored in string type. The key values
- * are unique ids generated using nanoid.
+ * are unique ids and exist on each page model.
  */
 export const snapshots: Map<string, string> = new Map();
 
@@ -60,6 +60,15 @@ export const snapshots: Map<string, string> = new Map();
  * and navigations to prevent extra appends from occuring.
  */
 export const tracked: Set<string> = new Set();
+
+/**
+ * Resources
+ *
+ * This object holds resources which have rendered or loaded
+ * on a per-page basis. The key values are unique ids which exist
+ * on each page model.
+ */
+export const resources: Map<string, string> = new Map();
 
 /**
  * Stylesheets

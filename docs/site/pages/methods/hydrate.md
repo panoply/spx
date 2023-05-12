@@ -3,18 +3,28 @@ title: 'Hydrate'
 layout: base.liquid
 permalink: '/methods/hydrate/index.html'
 prev:
-  label: 'Installation'
-  uri: '/usage/installation'
+  label: 'spx.clear'
+  uri: '/methods/clear/'
 next:
-  label: 'Options'
-  uri: '/usage/options/'
+  label: 'spx.store'
+  uri: '/methods/store/'
 ---
 
-# `spx.hydrate(url: string, targets: string[])`
+# spx.hydrate
 
-The `hydrate` method executed a programmatic hydration. The method expects a `url` and string list of element selectors.
+Programmatic hydrate execution. The method expects a `url` as first parameter and accepts an options string list of element selectors to replace along with an optional `pushState` method to apply. When no replacement selectors are provided then the `targets` are used.
 
-**Returns:** `Promise<IPage>`<br>
-**Events:** `cache > hydrate > load`
+export function hydrate(url: string, nodes?: string[], pushState?: 'replace' | 'push'): Promise<IPage>
 
-<span class="fc-gray">Returns</span>: `Promise<IPage>`
+# Example
+
+<!--prettier-ignore-->
+```js
+import spx from 'spx';
+
+spx.hydrate('/some-path', ['#target', 'h1'], 'replace').then(function(page) {
+
+  console.log(page)
+
+})
+```

@@ -22,14 +22,52 @@ The typings provided in this package will describe each option in good detail, b
 ```js
 import spx from 'spx'
 
-spx.connect({ /* options */ })(function(session) {
+spx.connect({
+  targets: ['body'],
+  timeout: 30000,
+  schema: 'spx',
+  manual: false,
+  cache: true,
+  limit: 100,
+  preload: {},
+  async: true,
+  annotate: false,
+  eval: {
+    script: false,
+    style: true,
+    link: false,
+    meta: false
+  },
+  hover: {
+    trigger: 'attribute',
+    threshold: 250
+  },
+  intersect: {
+    rootMargin: '0px 0px 0px 0px',
+    threshold: 0
+  },
+  proximity: {
+    distance: 75,
+    threshold: 250,
+    throttle: 500
+  },
+  progress: {
+    background: '#111',
+    height: '3px',
+    minimum: 0.09,
+    easing: 'linear',
+    speed: 300,
+    trickle: true,
+    threshold: 500,
+    trickleSpeed: 300
+  }
+})(function(session) {
 
-  // The connect returns a callback function after
-  // connection was established. Lets inspect the session:
+  // Inspect the established session
   console.log(session);
 
-  // You initialize third party js in this callback
-  // It's the equivalent of DOMContentLoaded.
+  // You initialize third party js in this callback,
+  // it's the equivalent of DOMContentLoaded.
 
 });
 ```

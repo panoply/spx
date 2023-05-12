@@ -11,8 +11,7 @@ import { EventType, Errors } from '../shared/enums';
 import { IProximity } from 'types';
 
 /**
- * Detects is the cursor (mouse) is in range of a
- * target element.
+ * Detects if the cursor (mouse) is in range of a target element.
  */
 function inRange ({ clientX, clientY }: MouseEvent, bounds: {
   top: number;
@@ -45,7 +44,7 @@ function setBounds (target: HTMLLinkElement) {
 
 /**
  * Observes mouse movements and awaiting for the mouse to enter
- * bounds. One distance is a fetch is triggered.
+ * bounds. Once within distance a fetch is triggered.
  */
 function observer (targets?: {
   target: Element,

@@ -1,4 +1,10 @@
 {
+  "engine": "11ty",
+  "files": {
+    "snippets": [
+      "./docs/site/views/include/*"
+    ]
+  },
   "format": {
     "wrap": 125,
     "crlf": false,
@@ -8,7 +14,9 @@
     "liquid": {
       "commentIndent": true,
       "commentNewline": true,
-      "dedentTagList": ["schema"],
+      "dedentTagList": [
+        "schema"
+      ],
       "delimiterPlacement": "consistent",
       "delimiterTrims": "never",
       "lineBreakSeparator": "before",

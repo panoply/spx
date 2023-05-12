@@ -26,18 +26,13 @@
     },
     {
       "group": "introduction",
-      "title": "Caching",
-      "url": "/introduction/caching/"
+      "title": "Basic Example",
+      "url": "/introduction/basic-example/"
     },
     {
       "group": "introduction",
       "title": "Recommendations",
       "url": "/introduction/recommendations/"
-    },
-    {
-      "group": "introduction",
-      "title": "Tutorial",
-      "url": "/introduction/tutorial/"
     },
 
     {
@@ -172,6 +167,11 @@
       "group": "attributes",
       "title": "data-spx-target",
       "url": "/attributes/data-spx-target/"
+    },
+    {
+      "group": "attributes",
+      "title": "data-spx-replace",
+      "url": "/attributes/data-spx-replace/"
     },
     {
       "group": "attributes",
