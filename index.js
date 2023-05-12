@@ -1618,7 +1618,6 @@ function nodePosition(a, b) {
 function scriptNodes(target) {
   return __async(this, null, function* () {
     const scripts = toArray(target.querySelectorAll(config.selectors.scripts));
-    console.log(scripts);
     yield evaljs(scripts.sort(nodePosition));
   });
 }

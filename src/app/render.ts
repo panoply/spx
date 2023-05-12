@@ -31,8 +31,6 @@ async function scriptNodes (target: HTMLHeadElement) {
 
   const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(config.selectors.scripts));
 
-  console.log(scripts);
-
   await evaljs(scripts.sort(nodePosition));
 
 }
