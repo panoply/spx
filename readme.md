@@ -6,7 +6,7 @@
   <i>SINGLE PAGE XHR</i>
 </h1>
 
-Single Page XHR enhancement for SSR powered web applications. SPX is a lightening fast, lightweight (9kb gzip) push~state solution that (pre)-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module maintains an in-memory cache of fetched pages which prevents subsequent requests and instantaneous navigation in a controlled a persisted manner.
+Single Page XHR enhancement for SSR powered web applications. SPX is a lightening fast, lightweight (8kb gzip) push~state solution that (pre)-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module maintains an in-memory snapshot cache of fetched pages which prevents subsequent requests from occurring, and instantaneous navigation in a controlled a persisted manner.
 
 ### Documentation
 
@@ -48,6 +48,44 @@ npm install spx --save
 ```bash
 https://unpkg.com/spx
 ```
+
+# Usage
+
+SPX is distributed as an ESM module and designed for usage in browser. You need to establish a connection to invoke the module.
+
+<!--prettier-ignore-->
+```ts
+import spx from 'spx';
+
+spx.connect({
+  targets: [
+    'header',
+    'main'
+  ]
+})(function (session) {
+
+  // Callback is invoked on DOMContentLoaded.
+  console.log(session)
+
+});
+```
+
+An SPX connection will initialize an SPX session. In the above example we are targeting the `<header>` and `<main>` nodes. In your web application, ensure both elements exist for each page, for example:
+
+```html
+<header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Hello World!</h1>
+</main>
+```
+
+Take a look at the documentation to learn how to refine and configure SPX.
 
 ### Special Thanks
 
