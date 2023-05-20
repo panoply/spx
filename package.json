@@ -1,11 +1,11 @@
 {
   "name": "spx",
-  "version": "0.0.8-beta.1",
+  "version": "0.1.0-beta.1",
   "private": false,
   "description": "Single Page XHR for enhancing SSR powered web applications using PushState + XHR",
   "homepage": "https://spx.js.org",
   "license": "MIT",
-  "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ ",
+  "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
   "keywords": [
     "spx",
     "xhr",
@@ -64,19 +64,18 @@
     "@brixtol/browserslist-config": "workspace:^1.1.0",
     "@brixtol/eslint-config": "workspace:^1.2.5",
     "@brixtol/prettier-config": "workspace:^1.2.1",
-    "@octokit/core": "^4.2.0",
     "ava": "^5.2.0",
     "browser-env": "^3.3.0",
     "esbuild": "^0.17.18",
     "gzip-size-cli": "^5.1.0",
-    "pr-release": "^0.18.20",
+    "terser": "^5.17.3",
+    "tsup": "^6.7.0",
     "type-fest": "^3.9.0",
     "typescript": "^5.0.4"
   },
   "scripts": {
     "dev": "esbuild src/index.ts --outfile=index.js --format=esm --bundle --watch",
-    "build": "pnpm run prod && gzip-size index.js --include-original",
-    "prod": "esbuild src/index.ts --minify --tree-shaking=true --format=esm --bundle --outfile=index.js",
+    "build": "tsup --minify && gzip-size index.js --include-original",
     "deploy": "pnpm exec bin/docs.sh",
     "test": "ava --color --verbose --watch --timeout=2m"
   },
