@@ -1,5 +1,5 @@
-import { EventType } from '../shared/enums';
-import { position } from '../shared/utils';
+import { Errors, EventType } from '../shared/enums';
+import { log, position } from '../shared/utils';
 import { deviceType } from 'detect-it';
 import { pointer } from '../shared/native';
 import { emit } from '../app/events';
@@ -90,6 +90,22 @@ function handleTrigger (event: MouseEvent): void {
   proximity.disconnect();
   intersect.disconnect();
 
+  // Capture drag occurances on links, we will cancel
+  // visits when this occurs to prevent history push~state
+  // from not behaving correctly.
+  //
+  // Credit to the babe mansedan for catching this.
+  //
+  let drag: boolean = false;
+
+  target.addEventListener('dragstart', function handle () {
+    drag = true;
+    log(Errors.WARN, `Drag occurance on link: ${key}`);
+    target.removeEventListener('dragstart', handle);
+  }, {
+    once: true
+  });
+
   if (store.has(key)) { // Sub-sequent visit
 
     const attrs = getAttributes(target, pages[key]);
@@ -97,6 +113,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
+      if (drag) return;
       pages[page.rev].position = position();
       history.push(page);
       render.update(page);
@@ -112,6 +129,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
+      if (drag) return;
       pages[page.rev].position = position();
       visit(page);
     }, {
@@ -139,8 +157,10 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
+      if (drag) return;
       pages[page.rev].position = position();
       visit(page);
+
     }, {
       once: true
     });
