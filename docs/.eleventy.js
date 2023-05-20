@@ -31,10 +31,13 @@ module.exports = eleventy(function (config) {
 
   const markdown = md({ html: true })
     .use(anchor)
-    .use(mdcontainer, 'note', {
-      render: (tokens, idx) => notes(tokens, idx)
-    })
+    .use(mdcontainer, 'note', { render: notes })
     .disable("code");
+
+  config.addLiquidShortcode('version', function() {
+
+    return require('../package.json').version
+  })
 
   config.addLiquidFilter('sorting', sorting);
   config.setBrowserSyncConfig();
