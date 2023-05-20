@@ -49,14 +49,13 @@
     "@accede-web/tablist": "^2.0.1",
     "@brixtol/bootstrap": "workspace:^",
     "@hotwired/stimulus": "^3.2.1",
-    "@liquify/papyrus": "^0.1.0",
     "relapse": "^0.5.0",
     "spx": "link:.."
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
     "@11ty/eleventy-navigation": "^0.3.5",
-    "@11ty/eleventy-plugin-syntaxhighlight": "^4.2.0",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
     "@brixtol/browserslist-config": "workspace:^",
     "@brixtol/eslint-config": "workspace:^",
     "@fullhuman/postcss-purgecss": "^5.0.0",
@@ -68,18 +67,18 @@
     "@types/prismjs": "^1.26.0",
     "autoprefixer": "^10.4.14",
     "concurrently": "^8.0.1",
-    "cssnano": "^6.0.0",
-    "eleventy-plugin-svg-sprite": "^2.3.0",
-    "esbuild": "^0.17.15",
+    "cssnano": "^6.0.1",
+    "eleventy-plugin-svg-sprite": "^2.4.0",
+    "esbuild": "^0.17.18",
     "markdown-it": "^13.0.1",
     "markdown-it-anchor": "^8.6.7",
     "markdown-it-container": "^3.0.0",
-    "netlify-cli": "^13.2.2",
-    "postcss": "^8.4.21",
+    "netlify-cli": "^15.0.2",
+    "postcss": "^8.4.23",
     "postcss-cli": "^10.1.0",
-    "sass": "^1.60.0"
+    "sass": "^1.62.1"
   },
   "optionalDependencies": {
-    "stylelint": "^15.4.0"
+    "stylelint": "^15.6.1"
   }
 }
