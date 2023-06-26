@@ -62,6 +62,28 @@ export function on<T extends EventNames>(event: T, callback: LifecycleEvent<T>, 
 export function state (key?: string, store?: IPage): { page: IPage, dom: Document }
 
 /**
+ * Render
+ *
+ * Programmatic rendering. Allows document
+ */
+export function render <T = any>(url: string, pushState: 'replace' | 'push', fn: (
+  this: {
+    /**
+     * The current page state
+     */
+    page: IPage;
+    /**
+     * The current document
+     */
+    dom: Document;
+  },
+  /**
+   * The fetched document
+   */
+  dom: Document
+) => Document, context?: T): Promise<IPage>
+
+/**
  * Observe
  *
  * Either activates or restarts interception observers. Use this method if you are connecting
@@ -82,10 +104,16 @@ export function capture(targets?: string[]): void
 /**
  * Hydrate
  *
- * Programmatic hydrate execution. The method expects a `url` and string list
- * of element selectors to be replaced.
+ * Programmatic hydrate execution. The method expects a `url` and accepts an optional selector
+ * target string list. You can preserve certain elements from morphs by prefixing an `!` mark.
+ *
+ * @example
+ *
+ * // This would hydrate the <main> element but
+ * // preserve the <div id="navbar"> element.
+ * spx.hydrate('/path', ["main", "!#navbar"])
  */
-export function hydrate(url: string, nodes?: string[], pushState?: 'replace' | 'push'): Promise<IPage>
+export function hydrate(url: string, nodes: string[]): Promise<Document>
 
 /**
  * Prefetch
