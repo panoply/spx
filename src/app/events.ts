@@ -19,7 +19,7 @@ const events: { [name: string]: Array<() => void | boolean> } = object(null);
  * Private function use for emitting events
  * which users are subscribed.
  */
-export function emit <T extends EventNames> (name: T, ...args: EmitterArguments<T>) {
+export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T>) {
 
   const isCache = name === 'store';
 
