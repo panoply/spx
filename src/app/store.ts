@@ -193,6 +193,39 @@ export function update (page: IPage, snapshot?: string): IPage {
 
 }
 
+export function current () {
+
+  const key = history.state.key;
+
+  if (hasProp(pages, key)) return pages[key];
+
+  log(Errors.ERROR, `No record exists: ${key}`);
+
+}
+
+/**
+ * Returns a page snapshot parsed dom helper closure. By default, returns the current
+ * in-memory dom. An option `targets` parameter will return specific
+ * nodes.
+ */
+export function dom (page: IPage):{
+  get dom(): Document;
+  get page(): IPage
+} {
+
+  const snapshot = parse(snapshots[page.uuid]);
+
+  return {
+    get page () {
+      return page;
+    },
+    get dom () {
+      return snapshot;
+    }
+  };
+
+}
+
 /**
  * Returns the in-memory (session) page store and a
  * parsed document snapshot.
