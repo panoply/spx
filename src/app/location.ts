@@ -11,14 +11,14 @@ import { config } from './session';
 export const hostname = origin.replace(regex.Protocol, nil);
 
 /**
- * Constructs a JSON object from HTML `data-spx-*` attributes.
+ * Constructs a JSON object from HTML `spx-*` attributes.
  * Attributes are passed in as array items
  *
  * @example
  *
  * // Attribute values are seperated by whitespace
  * // For example, a HTML attribute would look like:
- * <data-spx-prop="string:foo number:200">
+ * <spx-prop="string:foo number:200">
  *
  * // Attribute values are split into an Array
  * // The array is passed to this reducer function
@@ -72,17 +72,27 @@ export function getAttributes (element: Element, page?: IPage): IPage {
       const value = nodeValue.replace(regex.Whitespace, nil);
 
       if (regex.isArray.test(value)) {
+
         state[name] = regex.isPender.test(name)
           ? value.match(regex.ActionParams).reduce(chunk(2), [])
           : value.match(regex.ActionParams);
+
       } else if (regex.isPosition.test(value)) {
+
         state[name] = parseAttribute(value.match(regex.inPosition));
+
       } else if (regex.isBoolean.test(value)) {
+
         if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
+
       } else if (regex.isNumber.test(value)) {
+
         state[name] = Number(value);
+
       } else {
+
         state[name] = value;
+
       }
     }
 
@@ -168,6 +178,7 @@ function parseOrigin (url: string) {
   const name = path.indexOf('/');
 
   if (name >= 0) {
+
     const key = path.slice(name);
     if (path.slice(0, name) === hostname) return key.length > 0 ? parsePath(key) : parsePath('/');
   } else {
