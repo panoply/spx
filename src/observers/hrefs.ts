@@ -36,10 +36,45 @@ function linkEvent (event: MouseEvent): boolean {
 
 }
 
+// const preload: Set<string> = new Set();
+
+// function linkPreload (url: string) {
+
+//   if (preload.has(url)) return;
+
+//   const linkElement = document.createElement('link');
+//   linkElement.rel = 'prefetch';
+//   linkElement.href = url;
+//   linkElement.fetchPriority = 'high';
+//   // By default, a prefetch is loaded with a low priority.
+//   // When there’s a fair chance that this prefetch is going to be used in the
+//   // near term (= after a touch/mouse event), giving it a high priority helps
+//   // make the page load faster in case there are other resources loading.
+//   // Prioritizing it implicitly means deprioritizing every other resource
+//   // that’s loading on the page. Due to HTML documents usually being much
+//   // smaller than other resources (notably images and JavaScript), and
+//   // prefetches happening once the initial page is sufficiently loaded,
+//   // this theft of bandwidth should rarely be detrimental.
+
+//   linkElement.as = 'document';
+//   // as=document is Chromium-only and allows cross-origin prefetches to be
+//   // usable for navigation. They call it “restrictive prefetch” and intend
+//   // to remove it: https://crbug.com/1352371
+//   //
+//   // This document from the Chrome team dated 2022-08-10
+//   // https://docs.google.com/document/d/1x232KJUIwIf-k08vpNfV85sVCRHkAxldfuIA5KOqi6M
+//   // claims (I haven’t tested) that data- and battery-saver modes as well as
+//   // the setting to disable preloading do not disable restrictive prefetch,
+//   // unlike regular prefetch. That’s good for prefetching on a touch/mouse
+//   // event, but might be bad when prefetching every link in the viewport.
+
+//   document.head.appendChild(linkElement);
+// }
+
 /**
  * Triggers a page fetch
  *
- * Mousedown is interpretended as intent-to-visit, it works like this:
+ * Mousedown is interpreted as intent-to-visit, it works like this:
  *
  * 1. We will validate the mousedown event was placed on a valid `<a>` node.
  * 2. We will validate the `href` value, ie: the `key` (pathname + search params).
@@ -49,7 +84,7 @@ function linkEvent (event: MouseEvent): boolean {
  * **Handling in-transit visits**
  *
  * At this point we need to determine the visit status. If the visit has already began,
- * which will have occured in a prefetch, then we do not need to trigger an addition
+ * which will have occured in a prefetch, then we do not need to trigger an additional
  * fetch, instead we will await on the initial fetch to complete before passing it to
  * the render cycle.
  *
@@ -90,22 +125,6 @@ function handleTrigger (event: MouseEvent): void {
   proximity.disconnect();
   intersect.disconnect();
 
-  // Capture drag occurances on links, we will cancel
-  // visits when this occurs to prevent history push~state
-  // from not behaving correctly.
-  //
-  // Credit to the babe mansedan for catching this.
-  //
-  let drag: boolean = false;
-
-  target.addEventListener('dragstart', function handle () {
-    drag = true;
-    log(Errors.WARN, `Drag occurance on link: ${key}`);
-    target.removeEventListener('dragstart', handle);
-  }, {
-    once: true
-  });
-
   if (store.has(key)) { // Sub-sequent visit
 
     const attrs = getAttributes(target, pages[key]);
@@ -113,7 +132,6 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      if (drag) return;
       pages[page.rev].position = position();
       history.push(page);
       render.update(page);
@@ -125,11 +143,16 @@ function handleTrigger (event: MouseEvent): void {
 
     const page = pages[key];
 
+    // linkPreload(page.location.hostname + page.key);
+
     request.cancel(key); // Cancel any other fetches in transit
+
+    log(Errors.INFO, `Request in transit: ${key}`);
+
+    // console.log(request.timers, request.transit, request.xhr);
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      if (drag) return;
       pages[page.rev].position = position();
       visit(page);
     }, {
@@ -157,10 +180,8 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      if (drag) return;
       pages[page.rev].position = position();
       visit(page);
-
     }, {
       once: true
     });
@@ -181,7 +202,7 @@ export async function visit (state: IPage) {
     history.push(page);
 
     // Let's begin the rendering cylce
-    render.update(page);
+    await render.update(page);
 
   } else {
 
