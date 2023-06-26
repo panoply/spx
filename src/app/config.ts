@@ -52,13 +52,19 @@ export function configure (options: IOptions = {}) {
 
   config.index = null;
 
-  const schema = config.schema === null;
-  const attr = schema ? 'data' : `data-${config.schema}`;
+  const attr = config.schema === 'spx'
+    ? 'spx'
+    : config.schema.endsWith('-')
+      ? config.schema.slice(0, -1)
+      : config.schema;
+
   const href = `:not([${attr}-disable]):not([href^="#"])`;
 
-  config.selectors.hrefs = config.annotate ? schema ? `a[data-spx]${href}` : `a[${attr}]${href}` : `a${href}`;
+  config.selectors.morph = `${attr}-morph`;
+  config.selectors.hrefs = config.annotate ? `a[${attr}-link]${href}` : `a${href}`;
   config.selectors.tracking = `[${attr}-track]:not([${attr}-track=false])`;
   config.selectors.scripts = evals('script');
+  config.selectors.scriptsHydrate = `script[${attr}-eval=hydrate]:not([${attr}-eval=false])`;
   config.selectors.styles = evals('style');
   config.selectors.links = evals('link');
   config.selectors.metas = evals('meta');
@@ -87,7 +93,7 @@ export function configure (options: IOptions = {}) {
     const defaults = tag === 'link'
       ? `${tag}[rel=stylesheet]:${disable},${tag}[rel~=preload]:${disable}`
       : tag === 'script'
-        ? `${tag}[${attr}-eval]:${disable}`
+        ? `${tag}[${attr}-eval]:${disable}:not([${attr}-eval=hydrate])`
         : `${tag}:${disable}`;
 
     if (config.eval[tag] === false || config.eval[tag] === null) return defaults;
@@ -112,7 +118,7 @@ export function configure (options: IOptions = {}) {
    * applies a `false` to element selectors.
    */
   function not (name: 'hover' | 'intersect' | 'proximity') {
-    const s = `:not([${attr}-${name}=false])`;
+    const s = `:not([${attr}-${name}=false]):not([${attr}-link])`;
     if (name.charCodeAt(0) === 104) return `${s}:not([${attr}-proximity]):not([${attr}-intersect])`;
     if (name.charCodeAt(0) === 105) return `${s}:not([${attr}-hover]):not([${attr}-proximity])`;
     if (name.charCodeAt(0) === 112) return `${s}:not([${attr}-intersect]):not([${attr}-hover])`;
