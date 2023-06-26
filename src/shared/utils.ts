@@ -1,6 +1,7 @@
 import { IPosition } from 'types';
 import { Errors } from './enums';
 import { object } from './native';
+import { config } from '../app/session';
 
 /**
  * Asserts the current X and Y page
@@ -12,6 +13,23 @@ export function position (state: IPosition = object(null)): IPosition {
   state.y = window.scrollY;
 
   return state;
+
+}
+
+export function onNextAnimationFrame () {
+
+  return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+export function onNextEventLoopTick () {
+
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), 0));
+
+}
+
+export function onNextResolveTick () {
+
+  return Promise.resolve();
 
 }
 
@@ -32,13 +50,24 @@ export function decodeEntities (string: string) {
  *
  * Error wanrning handler
  */
-export function log (error: Errors, message: string) {
-  if (error === Errors.INFO) {
+export function log (error: Errors, message: string, context?: any) {
+
+  if (error === Errors.INFO && config.logs === true) {
+
     console.info('SPX: ' + message);
-  } else if (error === Errors.WARN) {
+
+  } else if (error === Errors.WARN && config.logs === true) {
+
     console.warn('SPX: ' + message);
+
   } else {
-    console.error('SPX: ' + message);
+
+    if (context) {
+      console.error('SPX: ' + message, context);
+    } else {
+      console.error('SPX: ' + message);
+    }
+
     try {
       if (error === Errors.TYPE) {
         throw new TypeError(message);
