@@ -1,6 +1,24 @@
 import { History } from 'types';
 import { supportsPointerEvents } from 'detect-it';
 
+/* -------------------------------------------- */
+/* MORPH RELATED                                */
+/* -------------------------------------------- */
+
+/**
+ * Whether or not the document has `<template>` support
+ */
+export const hasTemplate = 'content' in document.createElement('template');
+
+/**
+ * Whether or not the document has `createRange` support
+ */
+export const hasRange = document.createRange && 'createContextualFragment' in document.createRange();
+
+/* -------------------------------------------- */
+/* CACHED REFERENCES                            */
+/* -------------------------------------------- */
+
 /**
  * Re-export of pointer events
  */
