@@ -163,16 +163,24 @@ export interface IConfig extends IOptions {
      */
     tracking?: string;
     /**
+     * Morph Children DOM attribute, eg: `spx-morph`
+     */
+    morph?: string;
+    /**
      * Asset evaluation selector used for `<script>`
      * type tags
      */
     scripts?: string;
     /**
+     * Hydration asset evaluation selector used for `<script>`
+     */
+    scriptsHydrate?: string;
+    /**
      * HTML `<style>` element selectors to evaluate
      */
     styles?: string;
     /**
-     * Any element annotated with `data-spx-eval="true"`
+     * Any element annotated with `spx-eval="true"`
      */
     evals?: string;
     /**
@@ -202,14 +210,14 @@ export interface IConfig extends IOptions {
      * Href selector for proximities that applies
      * the correct schema.
      */
-    proximity?: string
+    proximity?: string;
     /**
-     * Intersect Element which contains `href` nodes
+     * Href selctor, which excludes node annotated with a
+     * `spx-intersect="false"` attribute.
      */
     intersects?: string
     /**
-     * Href selctor, which excludes node annotated with a
-     * `data-spx-intersect="false"` attribute.
+     * Intersect Element which contains `href` nodes
      */
     intersector?: string
   }
