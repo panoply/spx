@@ -200,6 +200,15 @@ export interface IPage {
   hydrate?: string[];
 
   /**
+   * List of fragments to preserve during morph. This is typically used
+   * on `hydrate` and it will mimic `spx-morph="false"`
+   *
+   * @example
+   * ['#main', '.header', '[data-attr]', 'header']
+   */
+  preserve?: string[];
+
+  /**
    * List of fragments to be appened from and to. Accepts multiple.
    *
    * @example
@@ -218,7 +227,7 @@ export interface IPage {
   /**
    * Define proximity prefetch distance from which fetching should
    * begin. This value is relative to the cursor offset of defined
-   * elements using the `data-spx-proximity` attribute.
+   * elements using the `spx-proximity` attribute.
    *
    * @default 75
    */
