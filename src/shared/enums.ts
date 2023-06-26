@@ -10,6 +10,25 @@ export enum Attributes {
   NAMES = 'hydrate|append|prepend|target|progress|threshold|position|proximity|hover',
 }
 
+export enum Nodes {
+  /**
+   * An elements node, eg: `<div>`
+   */
+  ELEMENT_NODE = 1,
+  /**
+   * A document fragment node
+   */
+  DOCUMENT_FRAGMENT_NODE = 11,
+  /**
+   * A text node
+   */
+  TEXT_NODE = 3,
+  /**
+   * A Comment node
+   */
+  COMMENT_NODE = 8,
+}
+
 /**
  * Error Types
  */
