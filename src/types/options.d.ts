@@ -5,10 +5,10 @@ export interface IHover {
    * How mousover prefetches should be triggered. By default this option is set
    * to trigger on all `<a>` href link elements. You can instead use the `attribute`
    * option and only prefetch on href link elements that are annotated with a
-   * `data-spx-mouseover` or `data-spx-mouseover="true"` attribute.
+   * `spx-hover` or `spx-hover="true"` attribute.
    *
    * > If you set the trigger to `href` you can annotate links you wish to exclude
-   * from prefetch with `data-spx-mouseover="false"`.
+   * from prefetch with `spx-hover="false"`.
    *
    * ---
    *
@@ -53,7 +53,7 @@ export interface IProximity {
    *
    * For example:
    *
-   * An href element using `data-spx-proximity="50"` would infrom
+   * An href element using `spx-proximity="50"` would infrom
    * SPX to begin fetching when the mouse is within 50px of the
    * element.
    *
@@ -225,17 +225,17 @@ export interface IObserverOptions {
 
   /**
    * Intersection pre-fetching. Intersect prefetching leverages the
-   * [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when
-   * elements become visible in viewport. You can disable intersect prefetching
+   * [Intersection Observer](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+   * API to fire requests when elements become visible in viewport. You can disable intersect prefetching
    * by setting this to `false` (default), otherwise you can customize the
    * intersect fetching behaviour.
    *
    * To use default behaviour, set this to `true` and all elements annotated with
-   * with a `data-spx-intersect` or `data-spx-intersect="true"` attribute will be
+   * with a `spx-intersect` or `spx-intersect="true"` attribute will be
    * prefetched. You can annotate nodes containing href links or `<a>` directly.
    *
    * > Annotate any `<a>` links you wish to exclude from intersection prefetching
-   * using the `data-spx-intersect="false"`
+   * using the `spx-intersect="false"`
    *
    * ---
    *
@@ -248,11 +248,11 @@ export interface IObserverOptions {
    * enable predicative fetching to occur, so a request will trigger before any interaction.
    *
    * To use default behaviour, set this to `true` and all `<a>` annotated with
-   * with a `data-spx-proximity` or `data-spx-proximity="true"` attribute will be
+   * with a `spx-proximity` or `spx-proximity="true"` attribute will be
    * prefetched.
    *
    * > Annotate any `<a>` links you wish to exclude from intersection prefetching
-   * using the `data-spx-proximity="false"`
+   * using the `spx-proximity="false"`
    *
    * ---
    * @default true
@@ -263,13 +263,53 @@ export interface IObserverOptions {
 
 export interface IOptions extends IObserverOptions {
   /**
-   * Define page the selector schema
+   * Define page the selector schema. This will control
+   * `spx` attribute annotation identifiers. By default, SPX uses
+   * the following annotation schema:
+   *
+   * ```js
+   *
+   * <a
+   *  spx-hover="true"   // spx-
+   *  spx-position="y:0" // spx-
+   * ></a>
+   *
+   *
+   * ```
+   *
+   * The `data-` is prefix is not used in SPX but you can edit the
+   * prefix and attribute selector using this option.
    *
    * ---
    *
-   * @default 'SPX'
+   * @default 'spx'
+   *
    */
   schema?: string;
+
+  /**
+   * Whether or not the SPX connection should be made available
+   * to globalThis (e.g: `window.spx`).
+   *
+   * The instance is assigned as a **getter** method.
+   *
+   * ---
+   *
+   * @default true
+   *
+   */
+  globalThis?: boolean;
+
+  /**
+   * Controls information printed to `console`. By default, SPX
+   * will log warnings and execution information. Set this to
+   * `false` to suppress these.
+   *
+   * ---
+   *
+   * @default true
+   */
+  logs?: boolean;
   /**
    * Whether or not you want to manually invoke observers. This defaults
    * to `false` resulting in all pre-fetch and related interception observers
@@ -288,7 +328,7 @@ export interface IOptions extends IObserverOptions {
    * control DOM behaviour. These are _typically_ tags located in the `<head>`
    * region of documents.
    *
-   * This option behaves similar to `data-spx-eval` with the difference
+   * This option behaves similar to `spx-eval` with the difference
    * being that it can be used instead of attributes annotations.
    */
   eval?: IEval;
@@ -313,7 +353,7 @@ export interface IOptions extends IObserverOptions {
 
   /**
    * When `true` SPX visits will only trigger on `<a>` href elements
-   * annotated with `data-spx` attribute. Defaults to `false`
+   * annotated with `spx` attribute. Defaults to `false`
    * ---
    *
    * @default false
@@ -333,7 +373,7 @@ export interface IOptions extends IObserverOptions {
   /**
    * Enable or Disable caching. Each page visit request is cached and used in
    * subsequent visits to the same location. By disabling cache, all visits will
-   * be fetched over the network and any `data-spx-cache` attribute configs
+   * be fetched over the network and any `spx-cache` attribute configs
    * will be ignored.
    *
    * ---
@@ -353,15 +393,6 @@ export interface IOptions extends IObserverOptions {
    * @default 100
    */
   limit?: number;
-
-  /**
-   * Session
-   *
-   * ---
-   *
-   * @default true
-   */
-  session?: boolean
 
   /**
    * Anticipatory preloading (prefetches). Values defined here will be fetched
