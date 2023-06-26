@@ -7,6 +7,7 @@ import { IPage } from './page';
  */
 export type EventNames = (
  | 'connected'
+ | 'popstate'
  | 'prefetch'
  | 'visit'
  | 'fetch'
@@ -26,6 +27,12 @@ export type EmitterArguments<T extends EventNames> = (
   ] :
   T extends 'visit' ? [
     event: MouseEvent
+  ] :
+  T extends 'popstate' ? [
+    {
+      get dom(): Document;
+      get page(): IPage
+    }
   ] :
   T extends 'prefetch' ? [
     target: Element,
@@ -75,6 +82,16 @@ export type LifecycleEvent<T extends EventNames> = (
     event?: MouseEvent
 
   ) => void | false :
+  T extends 'popstate' ? (
+    /**
+     * The document reference
+     */
+    params?: {
+      get dom(): Document;
+      get page(): IPage
+    }
+
+  ) => HTMLElement | Document | void :
 
   T extends 'prefetch' ? (
     /**
