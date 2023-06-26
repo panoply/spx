@@ -1,16 +1,19 @@
 /* eslint-disable no-unused-vars */
 
+import { assign, object } from 'src/shared/native';
 import { IConfig } from 'types';
 
 /**
  * Default Configuration
  */
-export const defaults = (): IConfig => ({
-  selectors: {},
+export const defaults = (): IConfig => (assign(object(null), <IConfig>{
+  selectors: object(null),
   targets: [ 'body' ],
   timeout: 30000,
+  globalThis: true,
   schema: 'spx',
   manual: false,
+  logs: true,
   cache: true,
   limit: 100,
   preload: null,
@@ -23,7 +26,7 @@ export const defaults = (): IConfig => ({
     meta: false
   },
   hover: {
-    trigger: 'attribute',
+    trigger: 'href',
     threshold: 250
   },
   intersect: {
@@ -38,11 +41,11 @@ export const defaults = (): IConfig => ({
   progress: {
     background: '#111',
     height: '3px',
-    minimum: 0.09,
+    minimum: 0.08,
     easing: 'linear',
-    speed: 300,
+    speed: 200,
     trickle: true,
     threshold: 500,
-    trickleSpeed: 300
+    trickleSpeed: 200
   }
-});
+}));
