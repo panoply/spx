@@ -107,7 +107,7 @@ export const isAction: RegExp = /\b(?:append|prepend|hydrate|ignore)/g;
  *
  * Used to match and validate a cache attribute config
  */
-export const isCache: RegExp = /\b(?:false|true|reset|restore)\b/;
+export const isCache: RegExp = /\b(?:capture|false|true|reset|restore)\b/;
 
 /**
  * Threshold Attribute Value
@@ -134,7 +134,7 @@ export const ActionParams: RegExp = /\[?[^,'"[\]()\s]+\]?/g;
 /**
  * Array Value
  *
- * Used to test value for a string array attribute value, like data-spx-replace.
+ * Used to test value for a string array attribute value, like spx-replace.
  *
  * @see
  * https://regex101.com/r/bIQefA/1
