@@ -24,20 +24,22 @@ function onEnter (event: MouseEvent): void {
 
   const route = getRoute(target, EventType.HOVER);
 
-  if (request.timers.has(route.key) || store.has(route.key)) return;
+  if (store.has(route.key)) return;
+  if (request.timers.has(route.key)) return;
 
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
   const state = store.create(route);
   const delay = state.threshold || (config.hover as IHover).threshold;
 
-  request.throttle(route.key, async function () {
+  request.throttle(route.key, function () {
 
     if (!emit('prefetch', target, route)) return;
 
-    const fetched = await request.fetch(state);
-
-    if (fetched) removeListener(target);
+    request.fetch(state).then(function (page) {
+      request.timers.delete(route.key);
+      removeListener(target);
+    });
 
   }, delay);
 
@@ -77,7 +79,7 @@ function removeListener (target: EventTarget): void {
 
 /**
  * Starts mouseovers, will attach mouseover events
- * to all elements which contain a `data-spx-prefetch="hover"`
+ * to all elements which contain a `spx-prefetch="hover"`
  * data attribute
  */
 export function connect (): void {
@@ -92,7 +94,7 @@ export function connect (): void {
 
 /**
  * Stops mouseovers, will remove all mouseover and mouseout
- * events on elements which contains a `data-spx-prefetch="hover"`
+ * events on elements which contains a `spx-prefetch="hover"`
  * unless target href already exists in cache.
  */
 export function disconnect (): boolean {
