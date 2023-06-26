@@ -4,6 +4,7 @@ import * as intersect from '../observers/intersect';
 import * as request from './fetch';
 import * as history from '../observers/history';
 import * as proximity from '../observers/proximity';
+import * as scroll from '../observers/scroll';
 import * as store from './store';
 import { EventType, Errors } from '../shared/enums';
 import { getRoute } from './location';
@@ -19,37 +20,45 @@ export function initialize (): Promise<IPage> {
   history.connect();
 
   const state = store.create(getRoute(EventType.INITIAL));
+  const { readyState } = document;
 
   // record first page
   config.index = state.key;
 
+  function DOMReady () {
+
+    hrefs.connect();
+
+    if (config.manual === false) {
+      hover.connect();
+      intersect.connect();
+      proximity.connect();
+      scroll.connect();
+    }
+
+    const page = store.set(state, document.documentElement.outerHTML);
+
+    if (history.doReverse()) page.rev = history.api.state.rev;
+
+    page.position = position();
+
+    history.replace(page);
+
+    if (page.rev !== page.key) setTimeout(() => request.reverse(page.rev), 0);
+
+    setTimeout(() => request.preload(page), 0);
+
+    return page;
+
+  }
+
   return new Promise(resolve => {
 
-    addEventListener('DOMContentLoaded', () => {
+    if (readyState === 'complete' || readyState === 'interactive') {
+      return setTimeout(() => resolve(DOMReady()), 0);
+    }
 
-      hrefs.connect();
-
-      if (config.manual === false) {
-        hover.connect();
-        intersect.connect();
-        proximity.connect();
-      }
-
-      const page = store.set(state, document.documentElement.outerHTML);
-
-      if (history.doReverse()) page.rev = history.api.state.rev;
-
-      page.position = position();
-
-      history.replace(page);
-
-      if (page.rev !== page.key) setTimeout(() => request.reverse(page.rev));
-
-      setTimeout(() => request.preload(page));
-
-      resolve(page);
-
-    }, { once: true });
+    addEventListener('DOMContentLoaded', () => resolve(DOMReady()), { once: true });
 
   });
 
@@ -81,6 +90,8 @@ export function disconnect (): void {
 
   // Purge Store
   store.clear();
+
+  if (config.globalThis) delete window.spx;
 
   log(Errors.INFO, 'Disconnected 😔');
 
