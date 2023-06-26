@@ -1,4 +1,3 @@
-import { supportsPointerEvents } from 'detect-it';
 import { config, observers } from '../app/session';
 import { getTargets } from '../shared/links';
 import { isNumber } from '../shared/regexp';
@@ -9,6 +8,7 @@ import * as store from '../app/store';
 import * as request from '../app/fetch';
 import { EventType, Errors } from '../shared/enums';
 import { IProximity } from 'types';
+import { pointer } from '../shared/native';
 
 /**
  * Detects if the cursor (mouse) is in range of a target element.
@@ -115,13 +115,7 @@ export function connect (): void {
   if (targets.length > 0) {
 
     entries = observer(targets);
-
-    if (supportsPointerEvents) {
-      addEventListener('pointermove', entries, { passive: true });
-    } else {
-      addEventListener('mousemove', entries, { passive: true });
-    }
-
+    addEventListener(`${pointer}move`, entries, { passive: true });
     observers.proximity = true;
 
   }
@@ -135,11 +129,7 @@ export function disconnect (): void {
 
   if (!observers.proximity) return;
 
-  if (supportsPointerEvents) {
-    removeEventListener('pointermove', entries);
-  } else {
-    removeEventListener('mousemove', entries);
-  }
+  removeEventListener(`${pointer}move`, entries);
 
   observers.proximity = false;
 
