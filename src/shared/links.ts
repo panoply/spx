@@ -40,6 +40,9 @@ export function getNodeTargets (selector: string, hrefs: string): Element[] {
   const targets: Element[] = [];
 
   document.body.querySelectorAll(selector).forEach(node => {
+
+    // console.log(node);
+
     if (node.nodeName !== 'A') {
       node.querySelectorAll(hrefs).forEach(href => {
         if (canFetch(node)) targets.push(href);
