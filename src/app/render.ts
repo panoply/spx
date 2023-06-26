@@ -2,7 +2,7 @@ import { emit } from './events';
 import { evaljs } from '../observers/scripts';
 import { Errors, EventType } from '../shared/enums';
 import { toArray } from '../shared/native';
-import { log } from '../shared/utils';
+import { log, onNextAnimationFrame } from '../shared/utils';
 import { parse } from '../shared/dom';
 import { IPage } from '../types/page';
 import { tracked, snapshots, config } from './session';
@@ -11,7 +11,7 @@ import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
 import * as progress from './progress';
 import * as proximity from '../observers/proximity';
-import morphdom from 'morphdom';
+import { morph } from '../morph/morph';
 
 /**
  * Node Positions
@@ -27,9 +27,13 @@ function nodePosition (a: Element, b: Element) {
  * Executes `<script>` node javascript
  * evaluations and loading.
  */
-async function scriptNodes (target: HTMLHeadElement) {
+async function scriptNodes (target: Document, type?: EventType) {
 
-  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(config.selectors.scripts));
+  const selector = type === EventType.HYDRATE
+    ? config.selectors.scriptsHydrate
+    : config.selectors.scripts;
+
+  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(selector));
 
   await evaljs(scripts.sort(nodePosition));
 
@@ -39,7 +43,7 @@ async function scriptNodes (target: HTMLHeadElement) {
  * Evaluator Nodes
  *
  * Injects and/or replaced all nodes contained in the `<head>`
- * element with an annotation of `data-spx-eval`
+ * element with an annotation of `spx-eval`
  */
 function evalNodes (target: Document) {
 
@@ -92,7 +96,7 @@ function evalNodes (target: Document) {
 /**
  * Tracked Nodes
  *
- * '[data-spx-track]:not([data-spx-track="hydrate"])'
+ * '[spx-track]:not([spx-track="hydrate"])'
  */
 function trackedNodes (target: HTMLElement): void {
 
@@ -123,7 +127,7 @@ function renderNodes (page: IPage, target: Document) {
 
   const nodes = page.target;
 
-  if (nodes.length === 1 && nodes[0] === 'body') return document.body.replaceWith(target.body);
+  if (nodes.length === 1 && nodes[0] === 'body') return morph(document.body, target.body);
 
   const selector = nodes.join(',');
   const fetched = target.body.querySelectorAll<HTMLElement>(selector);
@@ -133,10 +137,13 @@ function renderNodes (page: IPage, target: Document) {
     if (!node.matches(nodes[i])) return;
     if (!emit('render', node, fetched[i])) return;
 
-    if (node.getAttribute('data-spx-render') === 'morph') {
-      morphdom(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+    morph(node, fetched[i]);
+
+    if (node.getAttribute('spx-render') === 'morph') {
+      // morphdom(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
     } else {
-      node.replaceWith(fetched[i]);
+    //  node.replaceWith(fetched[i]);
+
     }
 
     if (page.append || page.prepend) {
@@ -155,15 +162,29 @@ function renderNodes (page: IPage, target: Document) {
  * Node Hydration
  *
  * Executes node replacements hydrating the DOM with
- * the fetched target. All nodes provided with `data-spx-hydrate`
+ * the fetched target. All nodes provided with `spx-hydrate`
  * or via the `visit.hydrate[]` method are replaced. TextNode types
  * will be swapped out via `innerHTML` to prevent missing replacements
  * for occuring.
  */
 function hydrateNodes (state: IPage, target: Document): void {
 
-  const selector = state.hydrate.join(',');
+  const nodes = state.hydrate;
+
+  if (nodes.length === 1 && nodes[0] === 'body') {
+    morph(document.body, target.body);
+    return;
+  }
+
+  const selector = nodes.join(',');
   const current = document.body.querySelectorAll<HTMLElement>(selector);
+  const preserve = state.preserve && state.preserve.length > 0 ? state.preserve.join(',') : null;
+
+  if (preserve) {
+    document.body.querySelectorAll<HTMLElement>(preserve).forEach(node => {
+      node.setAttribute('spx-morph', 'false');
+    });
+  }
 
   if (current.length > 0) {
 
@@ -171,16 +192,29 @@ function hydrateNodes (state: IPage, target: Document): void {
 
     current.forEach((node, i) => {
 
-      if (!fetched[i]) return;
-      if (!emit('hydrate', node, fetched[i])) return;
+      if (fetched[i] instanceof HTMLElement) {
 
-      morphdom(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+        if (!emit('hydrate', node, fetched[i])) return;
 
+        morph(node, fetched[i]);
+
+      }
     });
 
   }
 
+  if (preserve) {
+    document.body.querySelectorAll<HTMLElement>(preserve).forEach(node => {
+      node.removeAttribute('spx-morph');
+    });
+  }
+
+  scriptNodes(target, EventType.HYDRATE);
+
+  state.hydrate = undefined;
+  state.preserve = undefined;
   state.type = EventType.VISIT;
+
   store.update(state);
 
   // store.purge(state.key);
@@ -191,13 +225,15 @@ function hydrateNodes (state: IPage, target: Document): void {
  * Update the DOM and execute page adjustments
  * to new navigation point
  */
-export function update (page: IPage): IPage {
+export async function update (page: IPage):Promise<IPage> {
 
-  document.title = page.title;
+  await onNextAnimationFrame();
 
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
+
+  document.title = page.title;
 
   const target = parse(snapshots[page.uuid]);
 
@@ -207,9 +243,8 @@ export function update (page: IPage): IPage {
     evalNodes(target);
     renderNodes(page, target);
     scrollTo(page.position.x, page.position.y);
+    scriptNodes(target, page.type);
   }
-
-  scriptNodes(target.head);
 
   progress.done();
   hover.connect();
