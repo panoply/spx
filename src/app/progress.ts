@@ -180,7 +180,7 @@ export function start (threshold?: number) {
 
     if (!status) setProgress(0);
 
-    const work = function () {
+    function work () {
 
       setTimeout(() => {
         if (!status) return;
