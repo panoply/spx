@@ -1,7 +1,8 @@
+/* eslint-disable n/no-callback-literal */
 import { Key } from 'types';
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { log, hasProp, position } from '../shared/utils';
+import { log, hasProp, position, onNextEventLoopTick } from '../shared/utils';
 import { getRoute } from './location';
 import { config, memory, pages } from './session';
 import { isArray } from '../shared/native';
@@ -15,7 +16,7 @@ import * as store from './store';
  * properties represent the the request URL and the
  * value is the XML Request instance.
  */
-export const transit: Map<string, ReturnType<typeof request>> = new Map();
+export const transit: Map<string, Promise<string>> = new Map();
 
 /**
  * Request Timeouts
@@ -41,19 +42,19 @@ class XHR extends XMLHttpRequest { key: string = null; }
  * XHR requests for each fetch dispatched. This allows
  * for aborting in-transit requests.
  */
-const xhr: Map<string, XMLHttpRequest> = new Map();
+export const xhr: Map<string, XMLHttpRequest> = new Map();
 
 /**
  * Fetch XHR Request wrapper function
  */
-export function request (key: string) {
+export function request <T> (key: string, responseType: XMLHttpRequestResponseType = 'text') {
 
-  return new Promise<string>(function (resolve, reject) {
+  return new Promise<T extends string ? string : Document>(function (resolve, reject) {
 
     const req = new XHR();
 
     req.key = key;
-    req.responseType = 'text';
+    req.responseType = responseType;
 
     req.open('GET', key);
     req.setRequestHeader('X-SPX', 'true');
@@ -68,29 +69,21 @@ export function request (key: string) {
     };
 
     req.onabort = function (this: XHR) {
+      timers.delete(this.key);
       xhr.delete(this.key);
+      transit.delete(this.key);
     };
 
     req.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
+      xhr.delete(this.key);
       memory.bytes = memory.bytes + event.loaded;
       memory.visits = memory.visits + 1;
-      xhr.delete(this.key);
     };
 
     req.send();
     xhr.set(key, req);
 
   });
-
-};
-
-/**
- * Fetch Throttle
- */
-export function throttle (key: string, callback: () => void, delay: number): void {
-
-  if (timers.has(key)) return;
-  if (!store.has(key)) timers.set(key, setTimeout(callback, delay));
 
 };
 
@@ -108,6 +101,16 @@ export function cleanup (key: string) {
 }
 
 /**
+ * Fetch Throttle
+ */
+export function throttle (key: string, callback: (cancel?: boolean) => void, delay: number): void {
+
+  if (timers.has(key)) return;
+  if (!store.has(key)) timers.set(key, setTimeout(callback, delay));
+
+};
+
+/**
  * Abort Single Request
  *
  * Aborts a specific request in transit.
@@ -116,7 +119,7 @@ export function abort (key: string): void {
 
   if (xhr.has(key)) {
     xhr.get(key).abort();
-    log(Errors.WARN, `Request aborted: ${key}`);
+    log(Errors.WARN, `Cancelled request: ${key}`);
   }
 
 };
@@ -163,9 +166,11 @@ export function preload (state: IPage) {
 
       if (hasProp(config.preload, state.key as Key)) {
 
-        const promises = config.preload[state.key].map((path: Key) => fetch(
-          store.create(getRoute(path, EventType.PRELOAD))
-        ));
+        const promises = config.preload[state.key].map(function (path: Key) {
+
+          return fetch(store.create(getRoute(path, EventType.PRELOAD)));
+
+        });
 
         return Promise.allSettled(promises);
 
@@ -188,10 +193,23 @@ export async function reverse (key: string): Promise<void> {
     return;
   }
 
-  const route = getRoute(key, EventType.REVERSE);
-  const page = store.create(route);
+  const page = store.create(getRoute(key, EventType.REVERSE));
 
-  setTimeout(() => fetch(page));
+  requestIdleCallback(function (deadline) {
+
+    fetch(page).then(page => {
+
+      if (page) {
+        log(Errors.INFO, `Reverse fetch completed: ${page.key}`);
+      } else {
+        log(Errors.WARN, `Reverse fetch failed: ${key}`);
+      }
+
+    });
+
+  }, {
+    timeout: 3000
+  });
 
 }
 
@@ -199,7 +217,12 @@ export async function wait (state: IPage): Promise<IPage> {
 
   if (!transit.has(state.key)) return state;
 
+  await onNextEventLoopTick();
+
   const snapshot = await transit.get(state.key);
+
+  transit.delete(state.key);
+  timers.delete(state.key);
 
   return store.set(state, snapshot);
 
@@ -233,9 +256,8 @@ export async function fetch (state: IPage): Promise<false|IPage> {
     return false;
   }
 
-  // create a transit queue reference of the
-  // dispatched request in transit.
-  transit.set(state.key, request(state.key));
+  // create a transit queue reference of the dispatched request in transit.
+  transit.set(state.key, request<string>(state.key));
 
   return wait(state);
 
