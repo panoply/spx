@@ -100,19 +100,18 @@ function evalNodes (target: Document) {
  */
 function trackedNodes (target: HTMLElement): void {
 
-  for (const node of target.querySelectorAll(config.selectors.tracking)) {
+  const tracking = target.querySelectorAll(config.selectors.tracking);
 
-    // tracked element must contain id
-    if (!node.hasAttribute('id')) {
-      log(Errors.WARN, `Tracked node <${node.tagName.toLowerCase()}> must contain an id attribute`);
-    } else if (!tracked.has(node.id)) {
-
-      document.body.appendChild(node);
-      tracked.add(node.id);
-
+  if (tracking !== null) {
+    for (const node of tracking) {
+      if (!node.hasAttribute('id')) {
+        log(Errors.WARN, `Tracked node <${node.tagName.toLowerCase()}> must contain an id attribute`);
+      } else if (!tracked.has(node.id)) {
+        document.body.appendChild(node);
+        tracked.add(node.id);
+      }
     }
   }
-
 }
 
 /**
@@ -126,35 +125,54 @@ function trackedNodes (target: HTMLElement): void {
 function renderNodes (page: IPage, target: Document) {
 
   const nodes = page.target;
+  const method = page.render;
 
-  if (nodes.length === 1 && nodes[0] === 'body') return morph(document.body, target.body);
+  if (nodes.length === 1 && nodes[0] === 'body') {
 
-  const selector = nodes.join(',');
-  const fetched = target.body.querySelectorAll<HTMLElement>(selector);
-
-  document.body.querySelectorAll<HTMLElement>(selector).forEach((node, i) => {
-
-    if (!node.matches(nodes[i])) return;
-    if (!emit('render', node, fetched[i])) return;
-
-    morph(node, fetched[i]);
-
-    if (node.getAttribute('spx-render') === 'morph') {
-      // morphdom(node, fetched[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+    if (method === 'morph') {
+      morph(document.body, target.body);
+    } else if (method === 'replace') {
+      document.body.replaceChildren(target.body);
     } else {
-    //  node.replaceWith(fetched[i]);
-
+      document.body.innerHTML = target.body.innerHTML;
     }
 
-    if (page.append || page.prepend) {
-      const fragment = document.createElement('div');
-      target.childNodes.forEach(fragment.appendChild);
-      return page.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
-    }
+  } else {
 
-  });
+    const selector = nodes.join(',');
+    const fetched = target.body.querySelectorAll<HTMLElement>(selector);
 
-  trackedNodes(target.body);
+    document.body.querySelectorAll<HTMLElement>(selector).forEach((node, i) => {
+
+      if (node.isEqualNode(fetched[i])) return;
+      if (!emit('render', node, fetched[i])) return;
+
+      let renderer = method;
+
+      if (node.hasAttribute(config.selectors.render)) {
+        const value = node.getAttribute(config.selectors.render) as any;
+        if (value !== renderer) renderer = value;
+      }
+
+      if (renderer === 'morph') {
+        morph(node, fetched[i]);
+      } else if (page.render === 'replace') {
+        node.replaceWith(fetched[i]);
+      } else {
+        node.innerHTML = fetched[i].innerHTML;
+      }
+
+      if (page.append || page.prepend) {
+        const fragment = document.createElement('div');
+        target.childNodes.forEach(fragment.appendChild);
+        return page.append ? node.appendChild(fragment) : node.insertBefore(fragment, node.firstChild);
+      }
+
+    });
+
+    trackedNodes(target.body);
+
+  }
 
 }
 
@@ -179,34 +197,27 @@ function hydrateNodes (state: IPage, target: Document): void {
   const selector = nodes.join(',');
   const current = document.body.querySelectorAll<HTMLElement>(selector);
   const preserve = state.preserve && state.preserve.length > 0 ? state.preserve.join(',') : null;
+  const elements: HTMLElement[] = []
 
   if (preserve) {
     document.body.querySelectorAll<HTMLElement>(preserve).forEach(node => {
       node.setAttribute('spx-morph', 'false');
+      elements.push(node)
     });
   }
 
   if (current.length > 0) {
-
     const fetched = target.body.querySelectorAll<HTMLElement>(selector);
-
     current.forEach((node, i) => {
-
       if (fetched[i] instanceof HTMLElement) {
-
         if (!emit('hydrate', node, fetched[i])) return;
-
         morph(node, fetched[i]);
-
       }
     });
-
   }
 
   if (preserve) {
-    document.body.querySelectorAll<HTMLElement>(preserve).forEach(node => {
-      node.removeAttribute('spx-morph');
-    });
+    for (const node of elements) node.removeAttribute('spx-morph');
   }
 
   scriptNodes(target, EventType.HYDRATE);
