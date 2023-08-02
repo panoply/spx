@@ -61,6 +61,7 @@ export function configure (options: IOptions = {}) {
   const href = `:not([${attr}-disable]):not([href^="#"])`;
 
   config.selectors.morph = `${attr}-morph`;
+  config.selectors.render = `${attr}-render`;
   config.selectors.hrefs = config.annotate ? `a[${attr}-link]${href}` : `a${href}`;
   config.selectors.tracking = `[${attr}-track]:not([${attr}-track=false])`;
   config.selectors.scripts = evals('script');
