@@ -1,6 +1,6 @@
 import { hasRange, hasTemplate } from '../shared/native';
 
-let range; // Create a range object for efficently rendering strings to elements.
+let range: Range; // Create a range object for efficently rendering strings to elements.
 
 function createFragmentFromTemplate (innerHTML: string) {
 
@@ -18,9 +18,7 @@ function createFragmentFromRange (innerHTML: string) {
     range.selectNode(document.body);
   }
 
-  const fragment = range.createContextualFragment(innerHTML);
-
-  return fragment.childNodes[0];
+  return range.createContextualFragment(innerHTML).childNodes[0];
 
 }
 
@@ -33,11 +31,10 @@ function createFragmentFromWrap (innerHTML: string) {
 
 }
 
-export function addChild (parent: Element, child: Element) {
-
-  return parent.appendChild(child);
-
-};
+/**
+ * Appends the parent to the child
+ */
+// export function addChild (parent: Element, child: Element) { return parent.appendChild(child); };
 
 /**
  * Get default node key
