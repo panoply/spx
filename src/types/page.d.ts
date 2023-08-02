@@ -190,6 +190,13 @@ export interface IPage {
   threshold?: number;
 
   /**
+   * The renderer method to apply on the next navigation.
+   *
+   * @default 'replace'
+   */
+  render?: 'replace' | 'morph' | 'assign'
+
+  /**
    * List of fragments to replace. When `hydrate` is used,
    * it will run precedence over `targets` and only execute
    * a replacement on the elements defined.
