@@ -163,6 +163,10 @@ export interface IConfig extends IOptions {
      */
     tracking?: string;
     /**
+     * Render method DOM attribute, eg: `spx-render`
+     */
+    render?: string;
+    /**
      * Morph Children DOM attribute, eg: `spx-morph`
      */
     morph?: string;
