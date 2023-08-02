@@ -12,6 +12,7 @@ export const defaults = (): IConfig => (assign(object(null), <IConfig>{
   timeout: 30000,
   globalThis: true,
   schema: 'spx',
+  render: 'replace',
   manual: false,
   logs: true,
   cache: true,
