@@ -22,7 +22,7 @@ export { history as api } from '../shared/native';
  * will omit render specific options that could otherwise be applied
  * via attribute annotation.
  */
-function stack (page: IPage) {
+function stack (page?: IPage) {
 
   const state: HistoryState = object(null);
 
@@ -31,18 +31,9 @@ function stack (page: IPage) {
   state.title = page.title;
   state.position = page.position;
 
-  // console.log('HISTORY STACK', page);
-
   return state;
+
 }
-
-// async function load () {
-
-//   await onNextResolveTick();
-
-//   loaded = true;
-
-// }
 
 /**
  * Returns History State
@@ -56,9 +47,8 @@ export function get () {
 /**
  * Check if history state holds reverse
  * last path reference. Returns a boolean
- *
  */
-export function doReverse () {
+export function doReverse (): boolean {
 
   return (
     history.state !== null &&
@@ -82,8 +72,6 @@ export function replace (state: IPage) {
 
 export function push (state: IPage) {
 
-  // console.log('PUSH STATE', state);
-
   history.pushState(stack(state), state.title, state.key);
 
   return state;
@@ -106,8 +94,6 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
   }
 
   if (event.state === null) return;
-
-  // clearInterval(timeout);
 
   if (store.has(event.state.key)) {
 
@@ -158,15 +144,23 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 /**
  * Start History API
  *
- * Attached `history` event listener.
+ * Attached `history` event listener. Optionally accepts a `page`
+ * reference, which is passed on initialisation and used to execute
+ * assignment for history push~state when no context exists.
  */
-export function connect (): void {
+export function connect (page?: IPage): void {
 
   if (observers.history) return;
+
+  // Scroll restoration is set to manual for Safari and iOS
+  // when auto, content flashes are incurred, manual is a far better approach here.
   if (history.scrollRestoration) history.scrollRestoration = 'manual';
 
+  // Connection allows page state to be passed
+  // this will ensure history push~state is aligned on initial runs
+  if (history.state === null && page) history.replaceState(stack(page), page.title, page.key);
+
   addEventListener('popstate', pop, false);
-  // addEventListener('load', load, false);
 
   observers.history = true;
 
@@ -180,12 +174,11 @@ export function connect (): void {
 export function disconnect (): void {
 
   if (!observers.history) return;
+
+  // Revert scroll restoration to defaults
   if (history.scrollRestoration) history.scrollRestoration = 'auto';
 
   removeEventListener('popstate', pop, false);
-  // removeEventListener('load', load, false);
-
-  // removeEventListener('beforeunload', persist, { capture: true });
 
   observers.history = false;
 
