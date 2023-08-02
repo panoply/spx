@@ -13,18 +13,31 @@ import { IPage } from 'types';
 import { config } from './session';
 
 /**
- * Initialize
+ * Initialize SPX
+ *
+ * This function is invoked upon connection and is used to generate
+ * an SPX instance. It will run only once, unless SPX re-invokes.
  */
 export function initialize (): Promise<IPage> {
 
-  history.connect();
-
   const state = store.create(getRoute(EventType.INITIAL));
-  const { readyState } = document;
 
-  // record first page
+  // Connect HistoryAPI push~state observers
+  // This MUST be called after we've obtained the initial
+  // state reference (above) as history.state will be assigned
+  //
+  history.connect(state);
+
+  // Record first page
+  //
   config.index = state.key;
 
+  /**
+   * DOM Ready
+   *
+   * This function is called returns the intitial page state and is responsible
+   * for SPX activation. The promise callback will resolve the return value.
+   */
   function DOMReady () {
 
     hrefs.connect();
@@ -54,10 +67,13 @@ export function initialize (): Promise<IPage> {
 
   return new Promise(resolve => {
 
-    if (readyState === 'complete' || readyState === 'interactive') {
-      return setTimeout(() => resolve(DOMReady()), 0);
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      return resolve(DOMReady());
     }
 
+    // FALLBACK
+    // Invoked id readyState is matched, likely obsolete
+    //
     addEventListener('DOMContentLoaded', () => resolve(DOMReady()), { once: true });
 
   });
