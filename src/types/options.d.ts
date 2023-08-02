@@ -286,6 +286,39 @@ export interface IOptions extends IObserverOptions {
    *
    */
   schema?: string;
+  /**
+   * Specify the renderer method SPX should use when applying fragment
+   * swaps. By default, SPX uses `replaceWith` to apply replacements, which
+   * while not as performant as `morph` will give you the least amount of
+   * considerations.
+   *
+   * > **NOTE**
+   * >
+   * > _You can customize the render approach via DOM attributes `spx-render` on a per-page basis_
+   *
+   *
+   * SPX provides 3 renderer methods:
+   *
+   *
+   * **`replace`** (default)
+   *
+   * _Applies fragment swaps using the `Node.replaceWith(node)` method_
+   *
+   * **`morph`** (default)
+   *
+   * _Uses a refined variation of the [morphdom](https://github.com/patrick-steele-idem/morphdom) algorithm._
+   *
+   * **`assign`**
+   *
+   * _Applies fragment swaps using `node.innerHTML = '...'` re-assignment_
+   *
+   *
+   * ---
+   *
+   * @default 'replace'
+   *
+   */
+  render?: 'morph' | 'replace' | 'assign';
 
   /**
    * Whether or not the SPX connection should be made available
