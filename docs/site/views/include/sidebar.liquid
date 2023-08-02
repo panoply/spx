@@ -8,98 +8,84 @@
   {% assign active = 'drawer-active' %}
 {% endif %}
 
-<aside
-  id="sidebar"
-  class="drawer-panel drawer-left {{ drawer }} sidebar vh-100 br"
-  data-controller="drawer">
-  <div class="container-fluid g-0">
+<div class="container-fluid g-0 vh-100">
 
-    <div class="row ai-end px-3 py-4">
+  <div class="row ai-end px-3 py-sm-4">
 
-      <a
-        href="/"
-        class="col tc "
-        data-spx-target="['body']">
-        {% svg "logo", 'logo' %}
-      </a>
+    <a
+      href="/"
+      class="col tc d-none d-sm-block"
+      spx-target="['body']">
+      {% svg "logo", 'logo' %}
+    </a>
 
-      <div class="col-auto fs-xs upper pl-1 italic d-none">
-        Single Page XHR
-      </div>
-
-      <small
-        href="{{ '/' | url }}"
-        class="col tr fs-xs uncase pl-0 pb-2 d-none">
-        VER 0.1.0
-      </small>
-
-      <a
-        href="{{ '/' | url }}"
-        class="col tr fw-bolder uncase pl-0 pr-3 d-none">
-        {% svg "github", 'home' %}
-      </a>
-
+    <div class="col-auto fs-xs upper pl-1 italic d-none">
+      Single Page XHR
     </div>
 
-    <nav
-      class="accordion mt-0 mb-2 br-0"
-      data-controller="accordion">
+    <small
+      href="{{ '/' | url }}"
+      class="col tr fs-xs uncase pl-0 pb-2 d-none">
+      VER 0.1.0
+    </small>
 
-      {% for group in links.groups %}
+    <a
+      href="{{ '/' | url }}"
+      class="col tr fw-bolder uncase pl-0 pr-3 d-none">
+      {% svg "github", 'home' %}
+    </a>
 
-        {%
-          liquid
-
-          assign name = group | downcase
-
-          if page.url contains name
-            assign open = true
-          else
-            assign open = false
-          endif
-
-          if group == 'Attributes'
-            assign group_handle = group | slugify
-          elsif group == 'Events'
-            assign group_handle = group | slugify
-          elsif group == 'Methods'
-            assign group_handle = group | slugify
-          else
-            assign group_handle = nil
-          endif
-        %}
-
-        <button
-          {% if group_handle != nil %}
-            id="/{{ group_handle }}"
-            data-action="accordion#goto"
-          {% endif %}
-          class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}">
-          {{ group }}
-        </button>
-
-        <div class="accordion-fold bg-code {% if open %}expanded{%- endif -%}">
-          <ul
-            class="list-dash py-4 pl-3"
-            id="{{ link.title | slugify }}">
-            {% for item in links.urls %}
-              {% if item.group == name %}
-                <li class="pt-1 pl-2">
-                  <a
-                    href="{{ item.url }}"
-                    {% if page.url == item.url %}
-                      class="fc-blue"
-                    {% endif %}>
-                    {{ item.title }}
-                  </a>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-
-      {% endfor %}
-
-    </nav>
   </div>
-</aside>
+
+  <nav
+    class="accordion mt-0 mb-2 br-0"
+    spx-morph="children"
+    data-controller="accordion">
+
+    {% for group in links.groups %}
+
+      {% liquid
+
+        assign name = group | downcase
+
+        if page.url contains name
+          assign open = true
+        else
+          assign open = false
+        endif
+      %}
+
+      <button
+        spx-morph="children"
+        class="accordion-btn px-3 py-2 {% if open %}initial{%- endif -%}">
+        {{ group }}
+      </button>
+
+      <div
+        spx-morph="children"
+        class="accordion-fold bg-code {% if open %}expanded{%- endif -%}">
+        <ul
+          class="list-dash py-4 pl-3"
+          id="{{ link.title | slugify }}">
+          {% for item in links.urls %}
+            {% if item.group == name %}
+              <li class="pt-1 pl-2">
+                <a
+                  href="{{ item.url }}"
+                  spx-position="y:0"
+                  {% if page.url == item.url %}
+                    class="fc-blue"
+                  {% endif %}>
+                  {{ item.title }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+    {% endfor %}
+
+  </nav>
+
+</div>

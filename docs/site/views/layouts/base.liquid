@@ -11,21 +11,37 @@
     <title>
       {{ title }}
     </title>
+
     <meta charset="UTF-8">
+    <meta
+      name="description"
+      content="{{ description }}">
     <meta
       http-equiv="X-UA-Compatible"
       content="IE=edge">
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0">
+
+    <link
+      href="https://fonts.googleapis.com"
+      rel="preconnect">
+    <link
+      href="https://fonts.gstatic.com"
+      crossorigin
+      rel="preconnect">
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
+      rel="stylesheet">
     <link
       href="{{'/style.css' | url }}"
+      spx-eval="false"
       rel="stylesheet">
-    <script src="{{'/bundle.min.js' | url }}"></script>
 
-    <meta
-      name="spx:capture"
-      content="abcdefg" />
+    <script
+      src="{{'/bundle.min.js' | url }}"
+      spx-eval="false"
+      type="module"></script>
 
   </head>
 
@@ -33,26 +49,91 @@
 
     {% if page.url != '/' %}
 
+      <header
+        id="navbar"
+        class="container-fluid d-block d-sm-none navbar-fixed">
+        <div class="row py-2">
+          <div class="col-3">
+            <button
+              data-drawer="sidebar"
+              type="button"
+              class="navbar-drawer">
+              {% svg 'menu', 'icon-menu' %}
+            </button>
+          </div>
+          <div class="col">
+            <a
+              href="/"
+              spx-position="y:0"
+              class="navbar-logo m-auto">
+              {% svg 'logo' %}
+            </a>
+          </div>
+          <div class="col-3"></div>
+        </div>
+      </header>
+
       <main
         id="main"
-        class="container-fluid">
+        class="container-fluid pt-4 pt-sm-0">
+
         <div class="row">
 
-          <div class="col-auto px-0 sidebar vh-100 br">
-            {% include 'sidebar', links: sidebar %}
-          </div>
-          <div class="col px-5 py-4">
+          <aside
+            id="sidebar"
+            class="col-auto px-0 drawer-panel drawer-active sidebar vh-100 br d-none d-sm-block"
+            data-controller="drawer"
+            data-drawer-direction-value="left"
+            data-drawer-width-value="290px"
+            data-drawer-shift-value="#navbar,#content,#session"
+            data-drawer-mode-value="push">
+
+            {% if page.url contains '/examples/' %}
+              {% include 'sidebar', links: examples %}
+            {% else %}
+              {% include 'sidebar', links: sidebar %}
+            {% endif %}
+
+            <div class="sidebar-footer px-4">
+              <div class="row jc-between">
+                <div class="col fs-xs">
+                  <small>V</small> {% version %}
+                </div>
+                <div class="col fs-xs tr">
+                  <a class="link-example" href="/examples">
+                  Examples
+                  <span class="ml-2 mr-4">
+                    {% svg 'chevron-right', 'icon icon-right' %}
+                  </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </aside>
+
+          <div
+            id="content"
+            class="col-7 offset-2 px-sm-5 py-4">
+
             <div class="d-block">
               {% include 'breadcrumbs' %}
             </div>
-            <div class="px-4">
+
+            <div class="px-4 col">
               {{ content }}
             </div>
-            <div class="py-4">
-              {% include 'navigators' %}
-            </div>
+
+            {% unless page.url contains '/examples/' %}
+              <div class="py-4">
+                {% include 'navigators' %}
+              </div>
+            {% endunless %}
+
           </div>
-          <div class="col-3 col-xl-4 col-xxl-3 d-none d-xl-flex">
+
+          <div
+            class="col-3 col-xl-4">
             {% include 'session' %}
           </div>
         </div>

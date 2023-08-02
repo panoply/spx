@@ -1,0 +1,113 @@
+{
+  "version": 1.1,
+  "globalAttributes": [
+    {
+      "name": "data-drawer-direction-value",
+      "description": "This is a **required** value which specifies the drawer direction.",
+      "valueSet": "direction"
+    },
+    {
+      "name": "data-drawer-mode-value",
+      "description": "The drawer transition mode. This defaults to using `overlay`",
+      "valueSet": "mode"
+    },
+    {
+      "name": "data-drawer-height-value",
+      "description": "The `height` of the drawer. This acts as an override option and can be omitted is drawer heights are specified via class name. When provided, the provided value will be applied inline on the `style` attribute."
+    },
+    {
+      "name": "data-drawer-width-value",
+      "description": "The `width` of the drawer. This acts as an override option and can be omitted is drawer heights are specified via class name. When provided, the provided value will be applied inline on the `style` attribute."
+    },
+    {
+      "name": "data-drawer-shift-value",
+      "description": "This option is only required when using the `pull` or `push` mode. It accepts a comma separated list of element selectors which will shift when revealing to the drawer panel.",
+      "valueSet": "mode"
+    },
+    {
+      "name": "data-drawer-offset-value",
+      "description": "This offset value is a positional override option which can be used to apply marginal offsets to the drawer. When provided the offset will also apply to the backdrop overlay. The value accepts short-code expression _inset_ formation in the follow order:\n\n- top\n- right\n- bottom\n- left\n\nAs an example, say you want to offset a drawer `50px` from the `top` and `100` from the bottom:\n\n```html\n<div\n id=\"foo\"\n  data-controller=\"drawer\"\n data-drawer-offset-value=\"50px 0 100px 0\">\n```"
+    },
+    {
+      "name": "data-drawer-key-bindings-value",
+      "description": "Whether or not key bindings are enabled for opened drawers. This defaults to `true` and when a drawer panel is active it can be closed by pressing the `Esc` or `Spacebar` on the keyboard. When `false` then keyboard event listeners will not be applied.",
+      "valueSet": "boolean"
+    },
+    {
+      "name": "data-drawer-body-scroll-value",
+      "description": "Whether or not to disable scrolling of the body when a drawer is toggled. This defaults to `true` and sets the `<body>` elements overflow to `hidden` to prevent scrolling.",
+      "valueSet": "boolean"
+    },
+    {
+      "name": "data-drawer-backdrop-class",
+      "description": "The backdrop overlay class to apply when a drawer panel is active."
+    },
+    {
+      "name": "data-drawer",
+      "valueSet": "drawers",
+      "description": "Toggle a drawer upon click. Apply to `<button>` of `<a>` nodes in the document. The `value` must expects the `id` value of the drawer to be provided.\n\nTake the following drawer controller:\n\n```html\n<aside\n id=\"cart\"\n data-controller=\"drawer\">\n\n</aside>\n```\n\nThe `id` value of `cart` is considered the identifier of the drawer. Provide that `id` value to this attribute, for example:\n\n```html\n<button\n type=\"button\"\n data-drawer=\"cart\">Open</button>\n```"
+    }
+  ],
+  "valueSets": [
+    {
+      "name": "drawers",
+      "values": [
+        { "name": "bag" },
+        { "name": "locale" },
+        { "name": "mobile-menu" },
+        { "name": "gdrp" }
+      ]
+    },
+    {
+      "name": "direction",
+      "values": [
+        {
+          "name": "top",
+          "description": "The drawer panel will reveal from the `top` of the document."
+        },
+        {
+          "name": "right",
+          "description": "The drawer panel will reveal from `right` side of the document."
+        },
+        {
+          "name": "bottom",
+          "description": "The push mode will reveal from the `bottom` of the document."
+        },
+        {
+          "name": "left",
+          "description": "The drawer panel will reveal from `left` side of the document."
+        }
+      ]
+    },
+    {
+      "name": "mode",
+      "values": [
+        {
+          "name": "overlay",
+          "description": "This is the default mode. This will transition drawers as an overlay wherein the panel will be expanded on top of the document. Unlike the `pull` and `push` modes you do not need provide a list of `shifts` because the document remain still when revealing the panel."
+        },
+        {
+          "name": "pull",
+          "description": "The pull mode will reveal the drawer panel from behind the document. The document is shifted in the mode. When using `pull` you will need to provide a list of **shifts** via the `data-drawer-shift-value` attribute."
+        },
+        {
+          "name": "push",
+          "description": "The push mode will slide in the drawer panel and shift the document. When using this mode you will need to provide a list of **shifts** via the `data-drawer-shift-value` attribute."
+        }
+      ]
+    },
+    {
+      "name": "boolean",
+      "values": [
+        {
+          "name": "true",
+          "description": "Enabled"
+        },
+        {
+          "name": "false",
+          "description": "Disabled"
+        }
+      ]
+    }
+  ]
+}

@@ -12,168 +12,246 @@ next:
 
 # Options
 
-The `spx.connect` method accepts an object of configuration options, all of which are optional. The module defaults to using the below configuration. It is **recommended** that you configure SPX for optimal performance, this would involve setting `targets`, defining how evaluations should be handled and refining observers.
+The `spx.connect` method accepts an object of configuration options, all of which are optional (see [connection](/usage/connection)). It is **recommended** that you configure SPX for optimal performance, this would involve setting `targets`, define how evaluations should be handled and refine observers.
 
-#### targets
+### targets
 
-Define page fragment targets which are expected to change on a per-page basis. By default, SPX will replace the entire `<body>` fragment but it is best to define specific fragments.
+A list of element selectors to swap on a per-page basis. By default, SPX will replace the entire `<body>` fragment. It is best to define specific fragments.
 
-**Type:** `string[]` <br>
-**Default:** `['body']` <br>
+#### Example
 
----
-
-#### schema
-
-By default, attribute identifiers use a `-spx-` identifier. You can use a custom attribute identifier or if you wish to opt-out of an identifier you can pass `null` so annotations can be expressed using `data-` only.
-
-**Type:** `string` <br>
-**Default:** `spx` <br>
+```js
+spx.connect({
+  targets: ['body'] // The default target is <body>
+});
+```
 
 ---
 
-#### timeout
+### globalThis
 
-Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `30000` which means requests will wait `30s` before being a new request is triggered.
+Whether or not the SPX connection instance should be made available to globalThis (e.g: `window.spx`). This enabled by default, and as such SPX is made accessible in global scope, the instance is assigned as a getter method on documents `window`.
 
----
+#### Example
 
-#### poll
-
-Request polling limit is used when a request is already in transit. Request completion is checked every 10ms, by default this is set to `1000` which means requests will wait `1s` before being a new request is triggered.
-
-**Type:** `number` <br>
-**Default:** `1000` <br>
-
----
-
-#### async
-
-Determine if page requests should be fetched asynchronously or synchronously. Setting this to `false` is not recommended.
-
-**Type:** `boolean` <br>
-**Default:** `true` <br>
+```js
+spx.connect({
+  globalThis: true // Access SPX using window.spx
+});
+```
 
 ---
 
-#### cache
+### render
 
-Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discourage as all visits will be fetched over the network and `data-spx-cache` attribute configs will be ignored.
+Define the fragment render method that SPX should use. SPX supports 3 different renderers and defaults to using `replace`. For most cases, the default `replace` method works fine but the `morph` method will likely be faster. The `assign` method is typically discourages but by be necessary in some situations.
 
-> If `cache` is disabled then prefetches will be dispatched using HTML5 `<link>` prefetches, else when cache is enabled it uses XHR.
+#### Example
 
-**Type:** `boolean` <br>
-**Default:** `true` <br>
-
----
-
-#### persist` \_Coming Soon
-
-The `persist` option can be used to restore cache into memory after a browser refresh has been triggered. When persisting cache a reference is maintained in session storage.
-
-**Type:** `boolean` <br>
-**Default:** `false` <br>
+```js
+spx.connect({
+  render: 'replace' // Access SPX using window.spx
+});
+```
 
 ---
 
-#### limit
+### manual
 
-Cache size limit. This pjax variation limits cache size to `50mb`and once it exceeds that limit, records will be removed starting from the earliest point of known cache entries.
+Whether or not you want to manually invoke observers. This defaults to `false` resulting in all pre-fetch and related interception observers running upon connection. When disabled (i.e: `false`) the invocation is left up to you. Use the `spx.observe()` method to enable observers.
 
-**Type:** `number` <br>
-**Default:** `50` <br>
+#### Example
 
----
-
-#### hover
-
-Hover pre-fetching. You can disable hover pre-fetching by setting this to `false` which will prevent observers from executing and any `data-spx-hover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
-
-**Type:** `boolean` or `object` <br>
-**Default:** `{ trigger: 'attribute', threshold: 250 }` <br>
+```js
+spx.connect({
+  manual: false // Prevents SPX from initializing the internal observers
+});
+```
 
 ---
 
-#### hover.trigger
+### schema
 
-How hover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `data-spx-hover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `data-spx-hover="false"`.
+By default, attribute identifiers use an `spx-` identifier. You can use a custom attribute identifier or if you wish to opt-out of an identifier you can pass `null`. When `null` is passed then annotations can be expressed using `data-` only. W3C HTML [validators](https://validator.w3.org/) will declare the default `spx-` attribute as invalid, but browsers can easily reason with the annotation and it's common practice in projects. Consider validations as a warning, or change to `data-spx` if you wish to respect the W3 markup preference.
 
-**Type:** `string` <br>
-**Accepts:** `attribute` or `href` <br>
-**Default:** `attribute` <br>
+#### Example
 
----
-
-#### hover.threshold
-
-Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
-
-**Type:** `number` <br>
-**Default:** `250` <br>
+```js
+spx.connect({
+  schema: 'spx' // The default attribute, eg: <a spx-hover></a>
+});
+```
 
 ---
 
-#### proximity
+### timeout
 
-Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `data-spx-proximity` attribute will be pre-fetched.
+Request polling limit is used when a request is already in transit. By default this is set to `30000` which means requests will wait `30s` before the limit of the XHR request will timeout. If timeout limit is exceeded a normal page visit will be executed.
 
-> Annotate any `<a>` links you wish to exclude from pre-fetching using the `data-spx-proximity="false"`
+#### Example
 
-**Type:** `boolean` or `object` <br>
-**Default:** `{ distance: 75, throttle: 500, threshold: 250 }` <br>
-
----
-
-#### proximity.distance
-
-The distance range the mouse should be within before the prefetch is triggered. You can optionally override this by assigning a number value to the proximity attribute. An href element using `data-spx-proximity="50"` would inform Pjax to begin fetching when the mouse is within `50px` of the element.
-
-**Type:** `number` <br>
-**Default:** `75` <br>
+```js
+spx.connect({
+  timeout: 30000 // The default time is set to 30s
+});
+```
 
 ---
 
-#### proximity.throttle
+### async
 
-Controls the fetch delay threshold. Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
+Determine if page requests should be fetched asynchronously or synchronously. Setting this to `false` is not recommended, and in future releases async fetches will be enforced. This option is exposed for legacy purposes only.
 
-**Type:** `number` <br>
-**Default:** `250` <br>
+#### Example
+
+```js
+spx.connect({
+  async: true // All XHR requests will execute asynchronously
+});
+```
 
 ---
 
-#### proximity.threshold
+### cache
+
+Enable or Disable caching. Each page visit request is cached and used in subsequent visits to the same location. Setting this to `false` is discouraged as all visits will be fetched over the network and `spx-cache` attribute configs will be ignored.
+
+#### Example
+
+```js
+spx.connect({
+  cache: true // Cache is enabled by default, you should avoid disabling
+});
+```
+
+---
+
+### limit
+
+Cache size limit. This pjax variation limits cache size to `100mb`and once it exceeds that limit, records will be removed starting from the earliest point of known cache entries.
+
+#### Example
+
+```js
+spx.connect({
+  limit: 100 // Use smaller limit if your HTML pages are large
+});
+```
+
+---
+
+### hover
+
+Hover pre-fetching. You can disable hover pre-fetching by setting this to `false` which will prevent observers from executing and any `spx-hover` attributes will be ignored. To use the default configurations you can set this to `true` or simply omit it.
+
+##### hover → trigger
+
+How hover prefetches should be triggered. By default this option is set to trigger only when `<a>` href link elements are attributed with a `spx-hover` attribute. You can instruct pjax to execute pre-fetching on all `<a>` elements by setting this option to `href`. If you set the trigger to `href` you can annotate links you wish to exclude from prefetch with `spx-hover="false"`.
+
+##### hover → threshold
+
+Controls the fetch delay threshold, defaults to `250` (250ms). Requests will fire only when the mouse is both within range and the threshold time limit defined here has exceeded.
+
+#### Example
+
+<!--prettier-ignore-->
+```js
+spx.connect({
+  hover: {
+    trigger: 'href', // When attribute, SPX assumes <a spx-hover> annotation
+    threshold: 250   // The amount of time before executing pre-fetch
+  }
+});
+```
+
+---
+
+### proximity
+
+Proximity pre-fetching allow for requests to be dispatched when the cursor is within a proximity range of a href link element. Coupling proximity with mouseover prefetches enable predicative fetching to occur, so a request will trigger before any interaction with a link element happens. To use default behavior, set this to `true` and all `<a>` annotated with a `spx-proximity` attribute will be pre-fetched. Annotate any `<a>` links you wish to exclude from pre-fetching using the `spx-proximity="false"`
+
+##### proximity → distance
+
+The proximity distance range defaults to `75`. Distance controls cursor range before the prefetch is triggered. You can optionally override this by assigning a number value on the proximity attribute. An href element using `spx-proximity="50"` would inform SPX to begin fetching when the mouse is within `50px` of the element.
+
+##### proximity → throttle
+
+The proximity throttle defaults to `250` (250ms) and controls the mouseover trigger throttle. This helps limit the amount of times an internal callback fires once cursor is in range. It is highly discouraged to set this to a limit less than 250ms.
+
+##### proximity → threshold
 
 Controls the fetch delay threshold. Requests will fire only when the mouse has exceeded the range and the threshold time limit defined here has been exceeded.
 
-**Type:** `number` <br>
-**Default:** `250` <br>
+#### Example
+
+<!--prettier-ignore-->
+```js
+spx.connect({
+  proximity: {
+    distance: 75,   // The distance the cursor must be within before executing pre-fetch
+    threshold: 250, // The amount of time before executing pre-fetch
+    throttle: 500   // Limit the amount of times an internal callback
+  }
+});
+```
 
 ---
 
-#### intersect
+### intersect
 
-Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `data-spx-intersect` or `data-spx-intersect="true"` attribute will be pre-fetched. You can annotate elements that contain href links or `<a>` elements directly.
+Intersection pre-fetching. Intersect pre-fetching leverages the [Intersection Observer](https://shorturl.at/drLW9) API to fire requests when elements become visible in viewport. You can disable intersect pre-fetching by setting this to `false`, otherwise you can customize the intersect fetching behavior. To use default behavior, set this to `true` and all elements annotated with with a `spx-intersect` or `spx-intersect="true"` attribute will be pre-fetched. You can annotate elements that contain href links or `<a>` elements directly. Annotate any `<a>` links you wish to exclude from intersection pre-fetching using the `spx-intersect="false"`
 
-> Annotate any `<a>` links you wish to exclude from intersection pre-fetching using the `data-spx-intersect="false"`
-
-**Type:** `boolean` or `object` <br>
-**Default:** `{ rootMargin: '0px 0px 0px 0px', throttle: 0 }` <br>
-
----
-
-#### intersect.rootMargin
+##### intersect → rootMargin
 
 An offset rectangle applied to the root's href bounding box. The option is passed to the Intersection Observer.
 
-**Type:** `string` <br>
-**Default:** `0px 0px 0px 0px` <br>
-
----
-
-#### intersect.threshold
+##### intersect → threshold
 
 Throttle limit passed to the intersection observer instance.
 
-**Type:** `number` <br>
-**Default:** `500` <br>
+#### Example
+
+<!--prettier-ignore-->
+```js
+spx.connect({
+  intersect: {
+    rootMargin: '0px 0px 0px 0px', // Passed to intersection observer
+    threshold: 0 // Passed to intersection observer
+  }
+});
+```
+
+---
+
+### eval
+
+Control evaluation of specific tags which either refer to resources or control DOM behavior. These are typically tags located in the `<head>` region of documents. This option behaves similar to `spx-eval` with the difference being that it can be used instead of attributes annotations.
+
+##### eval → script
+
+Whether or not `<script>` and/or `<script src="*">` tags should evaluate between page visits. This option accepts either a `boolean` or list of selectors. By default, SPX will evaluate all inline `<script>` tags but will not evaluate `<script src="">` tags. Setting this to true is discouraged and you should instead leverage attribute annotations for external scripts.
+
+##### eval → style
+
+Whether or not `<style>` and/or `<link rel="stylesheet">` tags should evaluate between page visits. This option accepts either a boolean or list of selectors. By default, SPX will always evaluate inline styles. SPX will maintain a cache reference of inline styles and only even re-render changes between visits. Use the link reference for evaluation of stylesheets.
+
+##### eval → link
+
+Whether or not `<link>` tags should evaluate between page visits. This option accepts either a boolean or list of selectors. By default, SPX evaluates `<link rel="preload">` and `<link rel="stylesheet">` elements only.
+
+##### eval → meta
+
+Whether or not `<meta>` tags should evaluate between page visits. This option accepts either a boolean or list of selectors. By default, SPX ignores `<meta>` tag evaluation. Setting this to true is discouraged.
+
+#### Example
+
+```js
+spx.connect({
+  eval: {
+    script: ['script:not(script[src])'], // SPX defaults to this evaluation
+    style: ['style'], // SPX defaults to evaluate all inline <style> elements
+    link: ['link[rel=stylesheet]', 'link[rel~=preload]'], // SPX defaults to this
+    meta: false // SPX will not evaluate <meta> tag occurrences
+  }
+});
+```

@@ -122,6 +122,7 @@ $container-max-widths: (
 /* BODY                                         */
 /* -------------------------------------------- */
 
+
 $body-bg: #0f1215; // $black; //#282a36; // $gray-100;
 $body-color: $white; //$gray-900;
 $code-bg: #181b20; //$black; // #282a36;
@@ -164,6 +165,7 @@ $font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
   Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
   'Segoe UI Symbol';
 
+$font-family-other: 'JetBrains Mono', monospace;
 $font-family-heading: $font-family-base;
 $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
   monospace;
@@ -228,4 +230,10 @@ $tooltip-radius: 0;
 $tooltip-border-width: 0.03rem;
 $tooltip-animation: true;
 $tooltip-use-outline: false;
+
+/* -------------------------------------------- */
+/* PAPYRUS                                      */
+/* -------------------------------------------- */
+
+$papyrus-line-number-width: 2.8em
 

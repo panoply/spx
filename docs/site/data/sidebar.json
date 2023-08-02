@@ -26,24 +26,14 @@
     },
     {
       "group": "introduction",
-      "title": "Basic Example",
-      "url": "/introduction/basic-example/"
-    },
-    {
-      "group": "introduction",
       "title": "Recommendations",
       "url": "/introduction/recommendations/"
     },
 
     {
       "group": "usage",
-      "title": "Getting Started",
-      "url": "/usage/getting-started/"
-    },
-    {
-      "group": "usage",
-      "title": "DOM Targets",
-      "url": "/usage/dom-targets/"
+      "title": "Installation",
+      "url": "/usage/intallation/"
     },
     {
       "group": "usage",
@@ -59,6 +49,11 @@
       "group": "usage",
       "title": "Resource Evaluation",
       "url": "/usage/resource-evaluation/"
+    },
+    {
+      "group": "usage",
+      "title": "Basic Example",
+      "url": "/usage/basic-example/"
     },
 
     {
@@ -90,6 +85,11 @@
       "group": "methods",
       "title": "spx.fetch",
       "url": "/methods/fetch/"
+    },
+    {
+      "group": "methods",
+      "title": "spx.render",
+      "url": "/methods/render/"
     },
     {
       "group": "methods",
@@ -165,73 +165,78 @@
 
     {
       "group": "attributes",
-      "title": "data-spx-target",
-      "url": "/attributes/data-spx-target/"
+      "title": "spx-target",
+      "url": "/attributes/spx-target/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-render",
-      "url": "/attributes/data-spx-render/"
+      "title": "spx-morph",
+      "url": "/attributes/spx-morph/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-replace",
-      "url": "/attributes/data-spx-replace/"
+      "title": "spx-replace",
+      "url": "/attributes/spx-replace/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-hover",
-      "url": "/attributes/data-spx-hover/"
+      "title": "spx-hover",
+      "url": "/attributes/spx-hover/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-eval",
-      "url": "/attributes/data-spx-eval/"
+      "title": "spx-eval",
+      "url": "/attributes/spx-eval/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-hydrate",
-      "url": "/attributes/data-spx-hydrate/"
+      "title": "spx-hydrate",
+      "url": "/attributes/spx-hydrate/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-prepend",
-      "url": "/attributes/data-spx-prepend/"
+      "title": "spx-intersect",
+      "url": "/attributes/spx-intersect/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-append",
-      "url": "/attributes/data-spx-append/"
+      "title": "spx-prepend",
+      "url": "/attributes/spx-prepend/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-threshold",
-      "url": "/attributes/data-spx-threshold/"
+      "title": "spx-append",
+      "url": "/attributes/spx-append/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-proximity",
-      "url": "/attributes/data-spx-proximity/"
+      "title": "spx-threshold",
+      "url": "/attributes/spx-threshold/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-position",
-      "url": "/attributes/data-spx-position/"
+      "title": "spx-proximity",
+      "url": "/attributes/spx-proximity/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-cache",
-      "url": "/attributes/data-spx-cache/"
+      "title": "spx-position",
+      "url": "/attributes/spx-position/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-disable",
-      "url": "/attributes/data-spx-disable/"
+      "title": "spx-cache",
+      "url": "/attributes/spx-cache/"
     },
     {
       "group": "attributes",
-      "title": "data-spx-history",
-      "url": "/attributes/data-spx-history/"
+      "title": "spx-disable",
+      "url": "/attributes/spx-disable/"
+    },
+    {
+      "group": "attributes",
+      "title": "spx-history",
+      "url": "/attributes/spx-history/"
     },
     {
       "group": "misc",

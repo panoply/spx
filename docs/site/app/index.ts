@@ -3,18 +3,23 @@ import { Accordion } from './components/accordion';
 import { Tabs } from './components/tabs';
 import { Session } from './components/session';
 import { Drawer } from './components/drawer';
+import { Examples } from './components/examples';
 import spx from 'spx';
+// import papyrus from '@liquify/papyrus'
+// import Prism from 'prismjs'
+
+// papyrus.potion(Prism)()
 
 spx.connect({
   targets: [
-    'main'
+    '#main',
   ],
   hover: {
     threshold: 100,
     trigger: 'href'
   },
-  progress: false
 })(() => {
+
 
   const stimulus = Application.start();
 
@@ -22,8 +27,10 @@ spx.connect({
   stimulus.register('accordion', Accordion);
   stimulus.register('tabs', Tabs);
   stimulus.register('session', Session);
+  stimulus.register('examples', Examples);
 
-  // @ts-ignore
-  window.spx = spx;
+  console.log(stimulus)
+
+  spx.capture()
 
 });

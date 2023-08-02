@@ -1,8 +1,29 @@
 .sidebar {
   top: 0px;
-  width: 250px;
+  width: 290px;
   height: 100%;
-  z-index: 99;
+
+  + .col {
+    margin-left: 280px;
+  }
+
+  &-footer {
+    display: block;
+    position: absolute;
+    margin-top: 100%;
+    bottom: 25px;
+    width: 290px;
+  }
+
+  @include media-breakpoint-down(sm) {
+    top: 0px;
+    width: auto;
+
+    + .col {
+      margin-left: initial;
+    }
+
+  }
 
   .accordion-btn {
     height: 45px;

@@ -3,18 +3,18 @@ title: 'Introduction'
 layout: base.liquid
 permalink: '/introduction/recommendations/index.html'
 prev:
-  label: 'Tutorial'
-  uri: '/introduction/tutorial/'
+  label: 'Session'
+  uri: '/introduction/session/'
 next:
   label: 'Usage'
-  uri: '/usage/getting-started'
+  uri: '/usage/installation'
 ---
 
 # Recommendations
 
-In order to get the most out of this module below are a few recommendations developers should consider when leveraging it in their projects. The project was developed for our use cases and while it can be appropriated into other projects there are still a couple of minor features and/or capabilities that need improvements, so please bare that in mind.
+In order to get the most out of this module below are a few recommendations developers should consider when leveraging it in their projects. SPX was developed for certain use cases but using it on its own can be a tad vanilla, as such developers are encouraged to couple it with other modules.
 
-# Script Evaluation
+### Script Evaluation
 
 JavaScript evaluation between navigations is supported when `<script>` elements are contained within the document `<head>` or `<body>` elements, though the latter is discouraged. A better approach is to use external scripts or leverage dynamic imports (`import('.')`) within your bundle.
 
@@ -22,7 +22,7 @@ JavaScript evaluation between navigations is supported when `<script>` elements 
 <head>
   <script src="https://unpkg.com/spx"></script>
 
-  <script data-spx-eval="false">
+  <script spx-eval="false">
     console.log('Run once');
   </script>
 
@@ -44,7 +44,7 @@ JavaScript evaluation between navigations is supported when `<script>` elements 
 
 ### Style Evaluation
 
-Stylesheet and inline CSS evaluation is supported for `<style>` and `<link rel="stylesheet>` elements contained in the `<head>` or `<body>` elements. External stylesheets reference using `<link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `data-spx-eval="true"` attribute annotations.
+Stylesheet and inline CSS evaluation is supported for `<style>` and `<link rel="stylesheet>` elements contained in the `<head>` or `<body>` elements. External stylesheets reference using `<link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `spx-eval="true"` attribute annotations.
 
 ```html
 <head>
@@ -59,7 +59,7 @@ Stylesheet and inline CSS evaluation is supported for `<style>` and `<link rel="
   </style>
 
   <!-- Evaluated every visit -->
-  <style data-spx-eval="true">
+  <style spx-eval="true">
     .class {
       color: white;
     }
@@ -99,7 +99,7 @@ SPX works great with [stimulus.js](https://stimulusjs.org/). SPX can used as an 
 <!-- prettier-ignore -->
 ```js
 import spx from 'spx';
-import { Application } from 'application/controller';
+import { Application } from '@hotwired/stimulus';
 import { Carousel } from './controllers/carousel'
 
 spx.connect({

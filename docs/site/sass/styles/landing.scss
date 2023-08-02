@@ -2,6 +2,14 @@
 
 .hero {
 
+
+  h5 {
+  @include media-breakpoint-down(md) {
+    font-size: $font-size-md;
+  }
+}
+
+
   @keyframes move {
     0% {
       opacity: 0;
@@ -89,6 +97,7 @@
     // }
 
 
+     &::before,
      &::after {
        position: absolute;
        top: 29px;
@@ -107,7 +116,20 @@
        z-index: 100;
        animation-fill-mode: forwards;
        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+
+       @include media-breakpoint-down(md) {
+        top: 14px;
+      }
+
      }
+
+     &::before {
+      animation: move 3s;
+     }
+
+     &:nth-child(1)::before {
+      opacity: 0;
+    }
 
      &::after {
       animation: move 3s infinite;
@@ -124,8 +146,9 @@
   &-logo {
     color: #282a36;
     z-index: 101;
+
     &:hover {
-      transition: color .5s linear 50ms;
+      transition: color 200ms ease-in-out 50ms;
       color: $white;
     }
 
@@ -134,7 +157,6 @@
       text-decoration: none;
 
       &:hover {
-
         text-decoration: underline;
       }
     }
@@ -143,6 +165,10 @@
       width: 200px;
       height: 80px;
 
+      @include media-breakpoint-down(md) {
+        width: 150px;
+        height: 40px;
+      }
 
       &:hover {
         fill: $cyan;

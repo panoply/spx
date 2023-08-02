@@ -1,8 +1,8 @@
 {
   "engine": "11ty",
   "files": {
-    "snippets": [
-      "./docs/site/views/include/*"
+    "includes": [
+      "./docs/site/views/include/*.liquid"
     ]
   },
   "format": {
@@ -31,10 +31,10 @@
       "quoteConvert": "double",
       "lineBreakValue": "preserve",
       "commentNewline": true,
-      "forceIndent": true,
+      "forceIndent": false,
       "ignoreJS": false,
       "forceAttribute": 2,
-      "preserveText": false
+      "preserveText": true
     },
     "json": {
       "braceAllman": true,

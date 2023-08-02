@@ -1,18 +1,18 @@
 ---
-title: 'Getting Started'
+title: 'Installation'
 layout: base.liquid
-permalink: '/usage/getting-started/index.html'
+permalink: '/usage/installation/index.html'
 prev:
   label: 'Tutorial'
-  uri: '/introduction/tutorial'
+  uri: '/introduction/recommendations'
 next:
   label: 'Connection'
   uri: '/usage/connection/'
 ---
 
-# Bundle
+# Bundling SPX
 
-SPX is developed for the browser environment and is distributed as an [ESM](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) module. The generated bundle is compiled into ECMAScript 6 ([ES6](https://kangax.github.io/compat-table/es6/)) from TypeScript. Bundling SPX into your project is the recommended approach because this way you can better leverage the module into your stack. You can import SPX as a `default` or `named` export. Using `named` exports allows for tree-shaking.
+SPX is designed specifically for the browser environment and is distributed as an [ESM](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) module. The generated bundle is compiled into ECMAScript 6 ([ES6](https://kangax.github.io/compat-table/es6/)) from TypeScript. It is highly recommended to bundle SPX into your project, this will alow you to fully harness its potential and seamlessly integrate it into your stack.
 
 <!-- prettier-ignore -->
 ```js
@@ -32,29 +32,23 @@ spx.connect({ /* options */ })(function(session) {
 
 # CDN
 
-If you're new to JavaScript or just want a very simple setup, you can get SPX from a CDN and drop it into the `<head></head>` element of your website, ideally before any other scripts. By default, SPX will replace the entire `<body>` fragment. Wherever your index or root page layout exists you can drop SPX into the `<head>` element and then establish a connection. Be sure to include SPX before any other JavaScript files and to also include the `type="module"` attribute.
+If you're new to JavaScript or just want a very simple setup, you can get SPX from CDN and drop it into your website. Be sure to include SPX before any other JavaScript files and to also include the `type="module"` attribute. By default, SPX will replace the entire `<body>` fragment.
 
 <!-- prettier-ignore -->
 ```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>SPX | Single Page XHR</title>
+<head>
+  <meta charset="UTF-8" />
+  <title>SPX | Single Page XHR</title>
 
-    <!-- Include the module and establish a connection -->
-    <script src="https://unpkg.com/spx" type="module">
-      spx.connect()
-    </script>
+  <!-- Include the module and establish a connection -->
+  <script src="https://unpkg.com/spx" type="module">
+    spx.connect()
+  </script>
 
-    <!-- Other JavaScript modules -->
+  <!-- Other JavaScript modules -->
+</head>
 
-  </head>
-
-  <body>
-
-    <h1>Hello World</h1>
-
-  </body>
-</html>
+<body>
+  <h1>Hello World</h1>
+</body>
 ```

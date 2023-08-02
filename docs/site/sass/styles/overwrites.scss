@@ -30,16 +30,18 @@ p > a {
 }
 
 
-h4 {
-  font-family: $font-family-code;
-  font-size: $h5-font-size;
-  text-transform: lowercase;
-  background-color: $code-inline-bg;
-  padding: 5px 8px;
-  width: fit-content;
-  border-radius: 5px;
+h3 {
+  font-family: $font-family-other;
+  font-size: $h3-font-size;
   font-weight: 400;
 }
+
+h5 {
+  font-family: $font-family-other;
+  font-size: $h4-font-size;
+  font-weight: 400;
+}
+
 
 blockquote {
   margin-top: 40px;
@@ -112,6 +114,21 @@ p {
   }
 }
 
+.link-example {
+  font-size: $font-size-xs;
+
+  span {
+    color: $blue;
+
+    > .icon {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+    }
+  }
+
+}
+
 
 .navigators {
   padding-top: 10px;
@@ -150,4 +167,10 @@ p {
       color: $blue;
     }
   }
+}
+
+
+.img-fluid {
+  width: 100%;
+  height: auto;
 }

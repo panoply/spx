@@ -12,6 +12,9 @@
     "**/.git",
     "**/node_modules"
   ],
+  "html.customData": [
+    "./.vscode/custom-data/drawer.html-data.json",
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": true
   },
@@ -37,9 +40,11 @@
   "cSpell.words": [
     "Alexey",
     "Barba",
+    "Gervonta",
     "gtag",
     "hrefs",
     "HTMX",
+    "Livewire",
     "navigations",
     "spx",
     "Wanstrath",

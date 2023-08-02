@@ -17,6 +17,7 @@ export class Session extends Controller {
   history: Tree;
   snapshots: Tree;
 
+  pagesHeight: HTMLElement;
   hasHistoryTarget: boolean;
   historyTarget: HTMLElement;
   visitsTarget: HTMLElement;
@@ -26,11 +27,13 @@ export class Session extends Controller {
   snapshotsTarget: HTMLElement;
 
   initialize (): void {
+
     if (this.hasHistoryTarget) {
       this.history = JSONTree.create({}, this.historyTarget);
       this.pages = JSONTree.create({}, this.pagesTarget);
       this.snapshots = JSONTree.create({}, this.snapshotsTarget);
     }
+
   }
 
   /**
@@ -38,12 +41,10 @@ export class Session extends Controller {
    */
   connect (): void {
 
+    this.pagesHeight = this.pagesTarget.parentElement.parentElement
+
     spx.on('prefetch', () => {
       this.actionTarget.innerHTML = 'Prefetch Triggered';
-    });
-
-    spx.on('visit', () => {
-      this.actionTarget.innerHTML = 'Visit Triggered';
     });
 
     spx.on('visit', () => {
@@ -57,17 +58,23 @@ export class Session extends Controller {
 
 
     this.update();
+
   }
 
-  async update () {
+  update () {
 
     const session = spx.session();
 
+
     this.memoryTarget.innerText = session.memory.size;
     this.visitsTarget.innerText = String(session.memory.visits);
+
     this.pages.loadData(session.pages);
     this.snapshots.loadData(Object.keys(session.snapshots));
     this.history.loadData(window.history.state);
+
+    this.pagesHeight.style.maxHeight = this.pagesHeight.firstElementChild.clientHeight + 'px'
+
   }
 
 }

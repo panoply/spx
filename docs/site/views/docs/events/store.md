@@ -1,5 +1,5 @@
 ---
-title: 'Store Event'
+title: 'SPX Events - Store'
 layout: base.liquid
 permalink: '/events/store/index.html'
 prev:

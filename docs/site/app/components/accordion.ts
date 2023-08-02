@@ -33,6 +33,13 @@ export class Accordion extends Controller {
       persist: this.persistValue
     });
 
+    console.log(this.element, 'accordion')
+
+    spx.on('load', () => {
+
+      console.log(this.element, 'accordion')
+    })
+
   }
 
   /**

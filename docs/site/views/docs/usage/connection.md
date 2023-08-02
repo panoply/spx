@@ -12,10 +12,10 @@ next:
 
 # Connection
 
-SPX is initialized using the `spx.connect()` method. This method returns a curried (function) callback which is triggered once. The `connect` call fires on `DOMContentLoaded`. SPX will save the outer HTML of current document to the snapshot cache using `document.documentElement.outerHTML` upon connection whereas all additional snapshots are saved after an XHR request completes.
+SPX requires invoking and can be initialized using the `spx.connect()` method. This method returns a curried (function) callback which is triggered once which fires upon `DOMContentLoaded`. SPX will save the outer HTML of the current document in snapshot cache using `document.documentElement.outerHTML` upon connection whereas all additional snapshots are saved after an XHR request completes.
 
 ::: note
-The typings provided in this package will describe each option in good detail, below are the defaults. Settings are optional.
+Below is the default configuration used by SPX. The type declarations provided will describe each option in good detail. All settings are completely optional.
 :::
 
 <!-- prettier-ignore -->
@@ -27,19 +27,21 @@ spx.connect({
   timeout: 30000,
   schema: 'spx',
   manual: false,
+  globalThis: true,
   cache: true,
   limit: 100,
-  preload: {},
   async: true,
+  render: 'replace',
   annotate: false,
+  preload: {},
   eval: {
-    script: false,
     style: true,
+    script: false,
     link: false,
     meta: false
   },
   hover: {
-    trigger: 'attribute',
+    trigger: 'href',
     threshold: 250
   },
   intersect: {

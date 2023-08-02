@@ -1,29 +1,12 @@
 $code-font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
   monospace;
 
-code[class*='language-'],
-pre[class*='language-'] {
-  color: $white;
-  font-family: $code-font-family;
-  text-shadow: 0 0.07rem rgb(0 0 0 / 90%);
-  font-size: 0.94em;
-  letter-spacing: 0.011rem;
-  text-align: left;
-  white-space: pre;
-  word-spacing: normal;
-  word-break: normal;
-  word-wrap: normal;
-  line-height: 1.5;
-  font-variant-ligatures: none;
-  -moz-tab-size: 2;
-  -o-tab-size: 2;
-  tab-size: 2;
-  -webkit-hyphens: none;
-  -moz-hyphens: none;
-  -ms-hyphens: none;
-  hyphens: none;
-  overflow: clip;
-  height: auto;
+:root {
+  --papyrus-font-size-root: 14px;
+  --papyrus-font-size: 1em;
+  --papyrus-font-family: consolas, monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  --papyrus-line-height: 1.6;
+  --papyrus-js-punctuation-comment: #888888
 }
 
 @media print {
@@ -34,7 +17,7 @@ pre[class*='language-'] {
 }
 
 :not(pre) > code {
-  background: #1d242b; // $code-inline-bg; // #efefef;
+  background: #181b20; // $code-inline-bg; // #efefef;
   padding: 0.1rem 0.5rem 0.15rem;
   border-radius: 0.3rem;
 
@@ -46,278 +29,92 @@ pre[class*='language-'] {
   -webkit-font-smoothing: antialiased;
 }
 
-pre[class*='language-'] {
-  padding: 1.5rem 1.5rem 1.7rem 1.5rem;
-  margin: 0 0 40px 0;
-  overflow: auto;
-  border-radius: 4px;
-  background: $code-bg; // #282a36;
-  color: $white;
-  position: relative;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-    0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+pre.papyrus {
 
-  // [data-theme='dark'] & {
-  //   color: var(--color-neutral-100);
-  // }
-
-  &.line-numbers-mode {
-    padding-left: calc(1.5rem + 1.7em + 1.2rem);
-  }
+  margin-top: 25px;
+  margin-bottom: 25px;
 }
 
 pre[class*='language-none'] {
   padding: 1rem;
 }
 
-
 .token {
-  &.selector,
-  &.inserted {
-    color: $green;
+  &.function {
+    color: var(--papyrus-js-function);
+  }
+  &.punctuation-chars {
+    color: var(--papyrus-js-special-chars);
   }
 
-  &.atrule,
-  &.attr-value,
-  &.keyword,
-  &.important,
-  &.deleted {
-    color: $pink;
+  &.browser-objects {
+    color: var(--papyrus-js-variable);
   }
 
-  &.regex,
-  &.statement {
-    color: $cyan;
-  }
-
-  &.placeholder,
-  &.variable {
-    color: $white;
-  }
-
-  &.important,
-  &.statement,
-  &.bold {
-    font-weight: bold;
-  }
-
-  &.punctuation {
-    color: #ccc;
-  }
-
-  &.entity {
-    cursor: help;
-  }
-
-  &.italic {
-    font-style: italic;
-  }
-
-  &.namespace {
-    opacity: 0.7;
-  }
-
-  &.comment,
-  &.prolog,
-  &.doctype,
-  &.cdata {
-    color: #ccc;
-  }
-
-  &.operator,
-  &.boolean,
-  &.number {
-    color: $purple;
-  }
-
-  &.attr-name,
-  &.string,
-  &.entity,
-  &.url {
-    color: $yellow;
-  }
 }
+// .token {
+//   &.selector,
+//   &.inserted {
+//     color: $green;
+//   }
 
-.language-css .token.string,
-.style .token.string {
-  color: $yellow;
-}
+//   &.atrule,
+//   &.attr-value,
+//   &.keyword,
+//   &.important,
+//   &.deleted {
+//     color: $pink;
+//   }
 
-code.language-javascript,
-code.language-js {
-  color: $gray-400;
+//   &.regex,
+//   &.statement {
+//     color: $cyan;
+//   }
 
-  .token {
-    &.parameter-type,
-    &.return-type,
-    &.semi {
-      color: $gray-300;
-    }
+//   &.placeholder,
+//   &.variable {
+//     color: $white;
+//   }
 
-    &.punctuation {
-      color: $gray-400;
-    }
+//   &.important,
+//   &.statement,
+//   &.bold {
+//     font-weight: bold;
+//   }
 
-    &.comment {
-      color: $gray-600;
-    }
+//   &.punctuation {
+//     color: #ccc;
+//   }
 
-    &.parameter-optional,
-    &.parameter {
-      color: $orange;
-    }
+//   &.entity {
+//     cursor: help;
+//   }
 
-    &.type-object,
-    &.type-array {
-      color: #228d9f;
-    }
+//   &.italic {
+//     font-style: italic;
+//   }
 
-    &.types {
-      color: $sea;
-    }
+//   &.namespace {
+//     opacity: 0.7;
+//   }
 
-    &.method,
-    &.keyword,
-    &.browser-objects,
-    &.variable {
-      color: $cyan;
-    }
+//   &.comment,
+//   &.prolog,
+//   &.doctype,
+//   &.cdata {
+//     color: #ccc;
+//   }
 
-    &.op,
-    &.tag,
-    &.punctuation-chars,
-    &.operator,
-    &.module {
-      color: $pink;
-    }
+//   &.operator,
+//   &.boolean,
+//   &.number {
+//     color: $purple;
+//   }
 
-
-    &.function {
-      color: $green;
-    }
-
-
-    &.number {
-      color: $salmon;
-    }
-
-    &.nil,
-    &.boolean {
-      color: $purple;
-    }
-
-
-    &.attr-name {
-      color: $green;
-    }
-
-    &.attr-value {
-      color: $yellow;
-    }
-
-    &.style {
-      color: $cyan;
-    }
-
-    &.script {
-      color: $cyan;
-
-      .token.keyword {
-        color: $cyan;
-      }
-    }
-  }
-}
-
-code.language-html {
-  color: $gray-200;
-
-  .token {
-    &.comment {
-      color: $gray-600;
-    }
-
-    &.tag {
-      color: $pink;
-    }
-
-    &.attr-name {
-      color: $green;
-    }
-
-    &.attr-value {
-      color: $yellow;
-    }
-
-    &.style {
-      color: $cyan;
-    }
-
-    &.script {
-      color: $gray-200;
-
-      .token.function {
-        color: $cyan;
-      }
-
-      .token.keyword {
-        color: $cyan;
-      }
-    }
-  }
-}
-
-code.language-bash {
-  color: $gray-500;
-}
-
-code.language-markup {
-  color: $gray-200;
-
-  .token {
-    &.tag {
-      color: $pink;
-    }
-
-    &.attr-name {
-      color: $green;
-    }
-
-    &.attr-value {
-      color: $yellow;
-    }
-
-    &.style {
-      color: $cyan;
-    }
-
-    &.script {
-      color: $cyan;
-
-      .token.function {
-        color: $cyan;
-      }
-
-      .token.keyword {
-        color: $cyan;
-      }
-    }
-  }
-}
-
-/* Line highlight plugin */
-
-.line-highlight.line-highlight {
-  padding: 0;
-  background: rgb(255 255 255 / 8%);
-
-  &::before,
-  &[data-end]::after {
-    height: 1em;
-    padding: 0.2em 0.5em;
-    color: black;
-    line-height: 1em;
-    background-color: rgb(255 255 255 / 40%);
-    box-shadow: 0 1px 1px rgb(255 255 255 / 70%);
-  }
-}
+//   &.attr-name,
+//   &.string,
+//   &.entity,
+//   &.url {
+//     color: $yellow;
+//   }
+// }

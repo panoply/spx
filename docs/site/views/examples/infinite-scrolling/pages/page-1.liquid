@@ -1,0 +1,25 @@
+---
+title: 'SPX Examples | Infinite Scrolling (Page 1)'
+layout: base.liquid
+permalink: '/examples/infinite-scrolling/page-1/index.html'
+---
+
+<div
+  class="row"
+  id="load-more">
+  {% for image in (5..9) %}
+    <div class="col-3 mb-4">
+      <img
+        class="img-fluid"
+        src="/assets/img/{{ image }}.webp">
+    </div>
+  {% endfor %}
+</div>
+
+<a
+  class="btn btn-outline btn-white mx-auto my-3 px-3 d-block"
+  href="/examples/infinite-scrolling/page-2/"
+  id="load"
+  spx-intersect="50px">
+  Load More
+</a>

@@ -1,21 +1,10 @@
-/* -------------------------------------------- */
-/*                    DRAWER                    */
-/* -------------------------------------------- */
-
-$zindex-drawer: 200;
-$drawer-duration: 0.3s !default;
-$drawer-easing: ease-in-out !default;
-$drawer-overlay-z-index: $zindex-drawer + 10 !default;
-$drawer-overlay-duration: $drawer-duration !default;
-$drawer-overlay-bg: rgb(0 0 0 / 60%) !default;
-$drawer-directions: (left, right, top, bottom) !default;
-
 @mixin drawer(
   $direction: left,
   $mode: push,
-  $width: 350px,
+  $width: 320px,
   $height: 100%,
-  $background: inherit
+  $zindex: 99999,
+  $background: $body-bg
 ) {
   width: $width;
   height: $height;
@@ -67,38 +56,36 @@ $drawer-directions: (left, right, top, bottom) !default;
     }
   }
 
-  @if (
-    $mode == overlay or $direction == top or $direction == bottom
-  ) {
-    z-index: $zindex-drawer;
+  @if $mode == overlay or $direction == top or $direction == bottom {
+    z-index: $zindex;
   } @else {
-    z-index: $zindex-drawer;
+    z-index: $zindex;
   }
 
   @if $mode == push or $mode == pull or $mode == overlay {
-    transition: visibility 0s linear $drawer-duration,
-      opacity 0.05s linear $drawer-duration,
-      transform $drawer-duration $drawer-easing;
-  }
-
-  &.drawer-active {
-    //	transition: opacity 0.05s, transform $drawer-duration $drawer-easing;
+    @include transition(
+      visibility 0s linear $drawer-duration,
+      opacity 5ms linear $drawer-duration,
+      transform $drawer-duration $drawer-easing
+    );
   }
 }
 
 @mixin drawer-transform-x($width) {
+  &.drawer-active ~ .drawer-pull,
   &.drawer-active ~ .drawer-push,
-  &.drawer-active ~ .drawer-overlay,
-  &.drawer-active ~ .wrapper {
+  &.drawer-active ~ .drawer-backdrop {
     transform: translateX($width);
+    will-change: transform;
   }
 }
 
 @mixin drawer-transform-y($height) {
+  &.drawer-active ~ .drawer-pull,
   &.drawer-active ~ .drawer-push,
-  &.drawer-active ~ .drawer-overlay,
-  &.drawer-active ~ .wrapper {
+  &.drawer-active ~ .drawer-backdrop {
     transform: translateY($height);
+    will-change: transform;
   }
 }
 
@@ -120,59 +107,55 @@ $drawer-directions: (left, right, top, bottom) !default;
   }
 }
 
-.wrapper,
+.drawer-pull,
 .drawer-push {
-  transition: transform $drawer-duration $drawer-easing;
+  position: relative;
+  z-index: 600;
+  background-color: inherit;
+
+  @include transition(transform $drawer-duration $drawer-easing);
 }
 
 .drawer-panel {
   position: fixed;
-  z-index: 99999;
   display: flex;
   visibility: hidden;
   opacity: 0;
-  will-change: transform;
 }
-
 
 @if index($drawer-directions, left) {
   .drawer-left {
     @include drawer(left);
-
-    z-index: 99999;
   }
 }
 
 @if index($drawer-directions, right) {
   .drawer-right {
-    @include drawer(right);
-
-    z-index: 99999;
+    @include drawer(right, overlay);
   }
 }
 
 @if index($drawer-directions, top) {
   .drawer-top {
-    @include drawer(top, push, 100%, 260px);
+    @include drawer(top, overlay, 260px, 100%);
   }
 }
 
 @if index($drawer-directions, bottom) {
   .drawer-bottom {
-    @include drawer(bottom, push, 100%, 400px);
+    @include drawer(bottom, overlay, 100%, 400px);
   }
 }
 
 .drawer-active {
-  transform: translateX(0);
+  transform: none !important;
   visibility: visible;
   opacity: 1;
-  transition: transform $drawer-duration $drawer-easing;
 
-  // opacity $drawer-overlay-duration ease-in;
+  @include transition(transform $drawer-duration $drawer-easing);
 }
 
-.drawer-overlay {
+.drawer-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -182,24 +165,32 @@ $drawer-directions: (left, right, top, bottom) !default;
   background-color: $drawer-overlay-bg;
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s linear $drawer-duration,
-    transform $drawer-duration $drawer-easing,
-    opacity $drawer-overlay-duration ease;
   user-select: none;
-  -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
+
+  @include transition(
+    visibility 5ms linear $drawer-duration,
+    transform $drawer-duration $drawer-easing,
+    opacity $drawer-overlay-duration ease
+  );
 
   .bg-visible & {
     visibility: visible;
     opacity: 1;
-    transition: visibility 0.5s linear $drawer-duration,
-      opacity 0.5s linear;
+
+    @include transition(
+      visibility 5ms linear $drawer-duration,
+      opacity 5ms linear
+    );
   }
 
   .drawer-open & {
     visibility: visible;
     opacity: 1;
-    transition: transform $drawer-duration $drawer-easing,
-      opacity $drawer-overlay-duration ease;
     will-change: transform, opacity;
+
+    @include transition(
+      transform $drawer-duration $drawer-easing,
+      opacity $drawer-overlay-duration ease
+    );
   }
 }

@@ -1,12 +1,56 @@
 const eleventy = require('@panoply/11ty');
-const highlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 const svgsprite = require('eleventy-plugin-svg-sprite');
-const navigation = require('@11ty/eleventy-navigation');
 const htmlmin = require('@sardine/eleventy-plugin-tinyhtml');
 const md = require('markdown-it');
 const mdcontainer = require('markdown-it-container')
 const anchor = require('markdown-it-anchor');
-const { sorting, prism } = require('./scripts/plugins.cjs');
+//const { sorting, prism } = require('./scripts/plugins.cjs');
+const papyrus = require('papyrus')
+
+function highlighter (md, raw, language) {
+
+  let code = '';
+
+
+  if (language) {
+
+    if(language === 'json:rules') return raw;
+
+    try {
+
+
+      code = papyrus.create(raw, {
+        language,
+        trimStart: true,
+        trimEnd: true,
+        insertPreElement: true,
+        lineNumbers: true,
+        spellcheck: false,
+        indentSize: 2,
+        editor: false
+      });
+
+
+
+
+    } catch (err) {
+
+      code = md.utils.escapeHtml(raw);
+
+      console.error(
+        'HIGHLIGHTER ERROR\n',
+        'LANGUAGE: ' + language + '\n\n', err);
+    }
+
+  } else {
+    code = md.utils.escapeHtml(raw);
+    input = md.utils.escapeHtml(raw);
+  }
+
+
+  return code
+
+};
 
 /**
  * Generates HTML markup for various blocks
@@ -27,22 +71,18 @@ function notes (tokens, index) {
  */
 module.exports = eleventy(function (config) {
 
-  config.addPlugin(navigation);
-
-  const markdown = md({ html: true })
+  const markdown = md({
+    html: true,
+    highlight: (str, lang) => highlighter(markdown, str, lang)
+   })
     .use(anchor)
     .use(mdcontainer, 'note', { render: notes })
     .disable("code");
 
-  config.addLiquidShortcode('version', function() {
-
-    return require('../package.json').version
-  })
-
-  config.addLiquidFilter('sorting', sorting);
+    config.addPassthroughCopy('./site/assets/img/**')
+  config.addLiquidShortcode('version', () => require('../package.json').version)
   config.setBrowserSyncConfig();
   config.setLibrary('md', markdown);
-  config.addPlugin(highlight, { init: prism });
   config.addPlugin(svgsprite, {
     path: 'site/assets/svg',
     spriteConfig: {
@@ -66,17 +106,17 @@ module.exports = eleventy(function (config) {
     }
   });
 
-  // config.addPlugin(htmlmin, {
-  //   collapseBooleanAttributes: false,
-  //   collapseWhitespace: true,
-  //   decodeEntities: true,
-  //   html5: true,
-  //   removeAttributeQuotes: true,
-  //   removeComments: true,
-  //   removeOptionalTags: true,
-  //   sortAttributes: true,
-  //   sortClassName: true
-  // });
+  config.addPlugin(htmlmin, {
+    collapseBooleanAttributes: false,
+    collapseWhitespace: true,
+    decodeEntities: true,
+    html5: true,
+    removeAttributeQuotes: true,
+    removeComments: true,
+    removeOptionalTags: true,
+    sortAttributes: true,
+    sortClassName: true
+  });
 
   return {
     htmlTemplateEngine: 'liquid',

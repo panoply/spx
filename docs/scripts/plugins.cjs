@@ -31,6 +31,66 @@ exports.sorting = function (values) {
  */
 exports.prism = function ({ Prism }) {
 
+  Prism.languages['html'] = {
+    tag: {
+      lookbehind: true,
+      pattern: /({%-?\s*)([a-z_$][\w$]+)(?=\s)/
+    },
+    output: {
+      lookbehind: true,
+      pattern: /({{-?\s*)([a-z_$][\w$]+)(?=\s)/
+    },
+    delimiters: {
+      global: true,
+      pattern: /{%|{{|}}|%}/
+    },
+    comment: {
+      lookbehind: true,
+      global: true,
+      pattern: /(?:\{%-?\s*comment\s*-?%\}[\s\S]+\{%-?\s*endcomment\s*-?%\}|\{%-?\s*#[\s\S]+?-?%\})/
+    },
+    object: {
+      lookbehind: true,
+      pattern: /\b[a-z_$]+(?=\.\s*)/i
+    },
+    property: {
+      lookbehind: true,
+      pattern: /(\.\s*)[a-z_$][\w$]+(?=[.\s])/i
+    },
+    filter: {
+      lookbehind: true,
+      pattern: /(\|)\s*(\w+)(?=[:]?)/
+    },
+    string: {
+      lookbehind: true,
+      pattern: /['"].*?['"]/
+    },
+    punctuation: {
+      global: true,
+      lookbehind: true,
+      pattern: /[.,|:?]/
+    },
+    operator: {
+      pattern: /[!=]=|<|>|[<>]=?|[|?:=-]|\b(?:in|and|contains(?=\s)|or)\b/
+    },
+    array: {
+      lookbehind: true,
+      pattern: /(\s+in\s+)(\b[a-z_$][\w$]+)(?=\.\s*)/
+    },
+    boolean: {
+      pattern: /\b(?:true|false|nil)\b/
+    },
+    number: {
+      pattern: /\b(?:\d+)\b/
+    },
+    parameter: {
+      lookbehind: true,
+      global: true,
+      greedy: true,
+      pattern: /([,:])\s*(\w+)(?=:)/i
+    }
+  }
+
   Prism.languages.insertBefore('js', 'keyword', {
     variable: {
       pattern: /\b(?:const|var|let)\b/

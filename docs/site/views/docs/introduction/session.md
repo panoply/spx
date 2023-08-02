@@ -6,8 +6,8 @@ prev:
   label: 'Key Concepts'
   uri: '/introduction/key-concepts/'
 next:
-  label: 'Basic Example'
-  uri: '/introduction/basic-example/'
+  label: 'Recommendations'
+  uri: '/introduction/recommendations'
 ---
 
 # Session
