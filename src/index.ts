@@ -3,7 +3,6 @@ import { log, size } from './shared/utils';
 import { config, snapshots, pages, observers, memory } from './app/session';
 import { configure } from './app/config';
 import { getRoute, getKey } from './app/location';
-import { parse } from './shared/dom';
 import { Errors, EventType } from './shared/enums';
 import { assign, isArray, object, origin } from './shared/native';
 import { initialize, disconnect, observe } from './app/controller';
@@ -11,10 +10,10 @@ import { clear } from './app/store';
 import * as store from './app/store';
 import * as hrefs from './observers/hrefs';
 import * as request from './app/fetch';
-import * as render from './app/render';
+import * as renderer from './app/render';
 import * as history from './observers/history';
 import { on, off } from './app/events';
-import morphdom from 'morphdom';
+import { morph } from './morph/morph';
 
 /**
  * Supported
@@ -26,10 +25,35 @@ export const supported = !!(
   window.DOMParser
 );
 
+const spx = assign(object(null), {
+  supported,
+  on,
+  off,
+  observe,
+  history,
+  connect,
+  capture,
+  render,
+  session,
+  state,
+  reload,
+  fetch,
+  clear,
+  hydrate,
+  prefetch,
+  visit,
+  disconnect,
+  get config () { return config; }
+});
+
 /**
  * Connect SPX
  */
 export function connect (options: IConfig = {}) {
+
+  if (typeof document === 'undefined') {
+    return log(Errors.ERROR, 'SPX only runs in the browser');
+  }
 
   if (!supported) {
     return log(Errors.ERROR, 'Browser does not support SPX');
@@ -47,11 +71,15 @@ export function connect (options: IConfig = {}) {
 
     const state = (await promise);
 
+    if (config.globalThis) {
+      Object.defineProperty(window, 'spx', { get () { return spx; } });
+    }
+
     if (callback.constructor.name === 'AsyncFunction') {
       try {
         await callback(state);
       } catch (e) {
-        log(Errors.TYPE, 'Connection Established ⚡');
+        log(Errors.WARN, 'Connection Error', e);
       }
     } else {
       callback(state);
@@ -135,7 +163,7 @@ export async function reload () {
 
   if (page) {
     log(Errors.INFO, 'Triggered reload, page was re-cached');
-    return render.update(page);
+    return renderer.update(page);
   }
 
   log(Errors.WARN, 'Reload failed, triggering refresh (cache will be purged)');
@@ -155,9 +183,42 @@ export async function fetch (url: string) {
     log(Errors.ERROR, 'Cross origin fetches are not allowed');
   }
 
-  const response = await request.request(link.key);
+  const dom = await request.request<Document>(link.key);
 
-  if (response) return parse(response);
+  if (dom) return dom;
+
+}
+
+export async function render (url: string, pushState: 'intersect' | 'replace' | 'push', fn: (
+  this: IPage,
+  dom: Document,
+) => Document) {
+
+  const page = store.current();
+  const route = getRoute(url);
+
+  if (route.location.origin !== origin) log(Errors.ERROR, 'Cross origin fetches are not allowed');
+
+  const dom = await request.request<Document>(route.key, 'document');
+
+  if (!dom) log(Errors.ERROR, `Fetch failed for: ${route.key}`, dom);
+
+  await fn.call(page, dom) as Document;
+
+  if (pushState === 'replace') {
+
+    page.title = dom.title;
+    const state = store.update(assign(page, route), dom.documentElement.outerHTML);
+
+    history.replace(state);
+
+    return state;
+
+  } else {
+
+    return renderer.update(store.set(route, dom.documentElement.outerHTML));
+
+  }
 
 }
 
@@ -167,14 +228,17 @@ export function capture (targets?: string[]) {
 
   targets = isArray(targets) ? targets : page.target;
 
-  if (targets.length === 1 && targets[0] === 'body') return dom.body.replaceWith(document.body);
+  if (targets.length === 1 && targets[0] === 'body') {
+    dom.body.replaceChildren(document.body);
+    store.update(page, dom.documentElement.innerHTML);
+    return
+  }
 
   const selector = targets.join(',');
   const current = document.body.querySelectorAll<HTMLElement>(selector);
 
   dom.body.querySelectorAll<HTMLElement>(selector).forEach((node, i) => {
-    if (!node.matches(targets[i])) return;
-    morphdom(node, current[i], { onBeforeElUpdated: (from, to) => !from.isEqualNode(to) });
+    morph(node, current[i])
   });
 
   store.update(page, dom.documentElement.innerHTML);
@@ -203,13 +267,28 @@ export async function prefetch (link: string): Promise<void|IPage> {
 /**
  * Hydrate the current document
  */
-export async function hydrate (link: string, nodes?: string[]): Promise<void|IPage> {
+export async function hydrate (link: string, nodes?: string[]): Promise<Document> {
 
   const route = getRoute(link, EventType.HYDRATE);
 
   request.fetch(route);
 
-  if (nodes) route.hydrate = nodes;
+  if (isArray(nodes)) {
+
+    route.hydrate = [];
+    route.preserve = [];
+
+    for (const node of nodes) {
+      if (node.charCodeAt(0) === 33) {
+        route.preserve.push(node.slice(1));
+      } else {
+        route.hydrate.push(node);
+      }
+    }
+
+  } else {
+    route.hydrate = config.targets;
+  }
 
   const page = await request.wait(route);
 
@@ -218,7 +297,7 @@ export async function hydrate (link: string, nodes?: string[]): Promise<void|IPa
     const { key } = history.api.state;
 
     history.replace(page);
-    render.update(page);
+    renderer.update(page);
 
     if (route.key !== key) {
       if (config.index === key) config.index = route.key;
@@ -228,7 +307,7 @@ export async function hydrate (link: string, nodes?: string[]): Promise<void|IPa
 
   }
 
-  return page;
+  return store.get(page.key).dom;
 
 };
 
@@ -246,20 +325,4 @@ export async function visit (link: string, options?: IPage): Promise<void|IPage>
 
 };
 
-export default {
-  supported,
-  on,
-  off,
-  observe,
-  connect,
-  capture,
-  session,
-  state,
-  reload,
-  fetch,
-  clear,
-  hydrate,
-  prefetch,
-  visit,
-  disconnect
-};
+export default spx;
