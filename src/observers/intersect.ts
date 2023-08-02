@@ -7,10 +7,12 @@ import * as request from '../app/fetch';
 import * as store from '../app/store';
 import { Errors, EventType } from '../shared/enums';
 
+
 /**
  * @type IntersectionObserver
  */
 let entries: IntersectionObserver;
+
 
 /**
  * Intersection callback when entries are in viewport.
@@ -26,7 +28,9 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
     const response = await request.fetch(store.create(route));
 
     if (response) {
+
       entries.unobserve(entry.target);
+
     } else {
       log(Errors.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
       entries.observe(entry.target);
