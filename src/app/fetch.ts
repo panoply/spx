@@ -2,9 +2,9 @@
 import { Key } from 'types';
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { log, hasProp, position, onNextEventLoopTick } from '../shared/utils';
+import { log, hasProp, onNextEventLoopTick } from '../shared/utils';
 import { getRoute } from './location';
-import { config, memory, pages } from './session';
+import { config, memory } from './session';
 import { isArray } from '../shared/native';
 import { Errors, EventType } from '../shared/enums';
 import * as store from './store';
@@ -189,7 +189,7 @@ export function preload (state: IPage) {
 export async function reverse (key: string): Promise<void> {
 
   if (store.has(key)) {
-    pages[key].position = position();
+    // pages[key].position = position();
     return;
   }
 
