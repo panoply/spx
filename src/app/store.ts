@@ -102,6 +102,7 @@ export function create (page: IPage): IPage {
     page.progress = config.progress.threshold;
   }
 
+  if (!hasProp(page, 'render')) page.render = 'replace';
   if (!hasProp(page, 'visits')) page.visits = 0;
 
   pages[page.key] = page;
@@ -122,24 +123,24 @@ export function set (state: IPage, snapshot: string): IPage {
   const event = emit('store', state, snapshot);
   const dom = typeof event === 'string' ? event : snapshot;
 
-  // EventTypes above 6 are prefetch/trigger kinds.
+  // EventTypes above 5 are prefetch/trigger kinds.
   // We need to augment the page store to align with
   // the record we are handling.
-  if (state.type > 6) {
+  if (state.type > EventType.POPSTATE) {
 
-    // EventTypes above 10 are prefetch kinds
+    // EventTypes above 9 are prefetch kinds
     // we need to update the type reference
-    if (state.type > 10) {
+    if (state.type > EventType.RELOAD) {
 
       state.type = EventType.PREFETCH;
 
     } else {
 
-      // EventTypes are 7 to 10 ~ these are trigger
+      // EventTypes are 6 to 10 ~ these are trigger
       // kinds, we need to update the current pages scroll position.
       if (hasProp(pages, state.rev)) {
-        pages[state.rev].position.x = window.scrollX;
-        pages[state.rev].position.y = window.scrollY;
+        pages[state.rev].position.x = scrollX;
+        pages[state.rev].position.y = scrollY;
       }
 
     }
@@ -237,7 +238,12 @@ export function dom (page: IPage):{
  *
  * If no `key` exists an error is thrown.
  */
-export function get (key = history.state.key): { page: IPage, dom: Document } {
+export function get (key?: string): { page: IPage, dom: Document } {
+
+  if (!key) {
+    if (history.state === null) return;
+    key = history.state.key;
+  }
 
   if (hasProp(pages, key)) {
     const state = object(null);
