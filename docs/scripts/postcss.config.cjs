@@ -7,15 +7,6 @@ module.exports = {
     autoprefixer(),
     cssnano({
       preset: 'default'
-    }),
-    purge(
-      {
-        variables: true,
-        content: [
-          'public/**/*.html',
-          'public/**/*.js'
-        ]
-      }
-    )
+    })
   ]
 };
