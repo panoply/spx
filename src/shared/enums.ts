@@ -18,7 +18,7 @@ export enum Nodes {
   /**
    * A document fragment node
    */
-  DOCUMENT_FRAGMENT_NODE = 11,
+  FRAGMENT_NODE = 11,
   /**
    * A text node
    */
@@ -59,23 +59,19 @@ export enum Errors {
  *
  * Reference ()
  *
- * A `reference` event type refers to an action
- * which has taken place.
+ * A `reference` event type refers to an action which has taken place.
  *
  * Trigger
  *
- * A `trigger` event type refers to a visit
- * operation of intent, like a link click.
+ * A `trigger` event type refers to a visit operation of intent, like a link click.
  *
  * Prefetch
  *
- * A `prefetch` event type refers to an fetch
- * operation which an occured from an observer.
+ * A `prefetch` event type refers to an fetch operation which an occured from an observer.
  *
  * Fetch
  *
- * A `fetch` event type refers to a request
- * operation of some kind, like a programmatic fetch.
+ * A `fetch` event type refers to a request operation of some kind, like a programmatic fetch.
  */
 export enum EventType {
   /**
@@ -83,7 +79,7 @@ export enum EventType {
    *
    * @kind `reference`
    */
-  INITIAL = 1,
+  INITIAL,
   /**
    * Request is programmatic prefetch
    *
