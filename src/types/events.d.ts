@@ -95,12 +95,15 @@ export type LifecycleEvent<T extends EventNames> = (
 
   T extends 'prefetch' ? (
     /**
+     * The target element that will be replaced
+     */
+    element?: Element,
+    /**
      * Page state reference
      */
     state?: IPage,
 
   ) => void | false :
-
   T extends 'fetch' ? (
     /**
      * Page state reference
