@@ -1,7 +1,7 @@
 'use strict';
 
-import { compareNodeNames, moveChildren, createElementNS, getDefaultNodeKey, addChild } from './utils';
-import { object } from '../shared/native';
+import { compareNodeNames, moveChildren, createElementNS, getDefaultNodeKey } from './utils';
+// import { object } from '../shared/native';
 import { Nodes } from '../shared/enums';
 import { morphAttrs } from './attributes';
 import * as elements from './elements';
@@ -13,7 +13,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
 
   if (!options) options = {};
 
-  if (newNode.nodeType === Nodes.DOCUMENT_FRAGMENT_NODE) newNode = newNode.firstElementChild;
+  if (newNode.nodeType === Nodes.FRAGMENT_NODE) newNode = newNode.firstElementChild;
 
   const getNodeKey = options.getNodeKey || getDefaultNodeKey;
   const onNodeAdded = options.onNodeAdded || noop;
@@ -23,7 +23,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
 
   // This object is used as a lookup to quickly find all
   // keyed elements in the original DOM tree.
-  const fromNodesLookup: { [key: string]: any } = object(null);
+  const fromNodesLookup: Map<string, any> = new Map(); // { [key: string]: any } = object(null);
   const keyedRemovalList = [];
 
   function walkDiscardedChildNodes (node: Element, skipKeyedNodes: boolean) {
@@ -47,7 +47,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
           // Only report the node as discarded if it is not keyed. We do this because
           // at the end we loop through all keyed elements that were unmatched
           // and then discard them in one final pass.
-          onNodeDiscarded(curChild);
+          // onNodeDiscarded(curChild);
 
           if (curChild.firstChild) {
             walkDiscardedChildNodes(curChild as Element, skipKeyedNodes);
@@ -55,6 +55,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
         }
 
         curChild = curChild.nextSibling;
+
       }
     }
   }
@@ -76,23 +77,27 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
     if (onBeforeNodeDiscarded(node) === false) return;
     if (parentNode) parentNode.removeChild(node);
 
-    onNodeDiscarded(node);
+    //  onNodeDiscarded(node);
+
     walkDiscardedChildNodes(node, skipKeyedNodes);
 
   }
 
   function indexTree (node: Element) {
 
-    if (node.nodeType === Nodes.ELEMENT_NODE || node.nodeType === Nodes.DOCUMENT_FRAGMENT_NODE) {
+    if (node.nodeType === Nodes.ELEMENT_NODE || node.nodeType === Nodes.FRAGMENT_NODE) {
 
       let curChild = node.firstChild;
 
       while (curChild) {
 
         const key = getNodeKey(curChild);
-        if (key) fromNodesLookup[key] = curChild;
 
-        indexTree(curChild as Element); // walk recursively
+        if (key) fromNodesLookup.set(key, curChild);
+
+        // Walk recursively
+        //
+        indexTree(curChild as Element);
 
         curChild = curChild.nextSibling;
 
@@ -116,7 +121,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
 
       if (key) {
 
-        const unmatchedFromEl = fromNodesLookup[key];
+        const unmatchedFromEl = fromNodesLookup.get(key);
 
         // if we find a duplicate #id node in cache, replace `el` with cache
         // value and morph it to the child node.
@@ -148,6 +153,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
     while (curFromNodeChild) {
 
       const fromNextSibling = curFromNodeChild.nextSibling;
+
       if ((curFromNodeKey = getNodeKey(curFromNodeChild))) {
 
         // Since the node is keyed it might be matched up later so we defer
@@ -171,7 +177,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
 
     // If an element with an ID is being morphed then it will be in the final
     // DOM so clear it out of the saved elements collection
-    if (toElKey) delete fromNodesLookup[toElKey];
+    if (toElKey) fromNodesLookup.delete(toElKey);
 
     // optional
 
@@ -246,7 +252,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
                 // The current element in the original DOM tree does not have a matching key so
                 // let's check our lookup to see if there is a matching element in the original
                 // DOM tree
-                if ((matchingFromEl = fromNodesLookup[curToNodeKey])) {
+                if ((matchingFromEl = fromNodesLookup.get(curToNodeKey))) {
 
                   if (fromNextSibling === matchingFromEl) {
 
@@ -288,6 +294,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
                     }
 
                     curFromNodeChild = matchingFromEl;
+                    curFromNodeKey = getNodeKey(curFromNodeChild);
                   }
                 } else {
                   // The nodes are not compatible since the "to" node has a key and there
@@ -297,6 +304,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
               }
 
             } else if (curFromNodeKey) {
+
               // The original has a key
               isCompatible = false;
             }
@@ -314,8 +322,8 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
             // controllers and alike.
             if (
               isCompatible === false &&
-              fromNodesLookup[curFromNodeKey] &&
-              fromNodesLookup[curFromNodeKey].getAttribute(config.selectors.morph) === 'children') {
+              fromNodesLookup.has(curFromNodeKey) &&
+              fromNodesLookup.get(curFromNodeKey).getAttribute(config.selectors.morph) === 'children') {
 
               isCompatible = true;
 
@@ -382,30 +390,37 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
       // to the end
       if (
         curToNodeKey &&
-        (matchingFromEl = fromNodesLookup[curToNodeKey]) &&
+        (matchingFromEl = fromNodesLookup.get(curToNodeKey)) &&
         compareNodeNames(matchingFromEl, curToNodeChild as Element)
       ) {
 
         // MORPH
-        addChild(oldElement, matchingFromEl);
+        //
+        // Original: addChild(oldElement, matchingFromEl);
+        //
+        oldElement.appendChild(matchingFromEl);
 
         morphEl(matchingFromEl, curToNodeChild as Element);
 
       } else {
 
         // const onBeforeNodeAddedResult = onBeforeNodeAdded(curToNodeChild);
-
         // if (onBeforeNodeAddedResult !== false) {
-
-        //  if (onBeforeNodeAddedResult) curToNodeChild = onBeforeNodeAddedResult;
+        // if (onBeforeNodeAddedResult) curToNodeChild = onBeforeNodeAddedResult;
 
         // @ts-ignore
         if (curToNodeChild.actualize) curToNodeChild = curToNodeChild.actualize(oldElement.ownerDocument || document);
 
-        addChild(oldElement, curToNodeChild as Element);
+        // MORPH
+        //
+        // Original: addChild(oldElement, curToNodeChild as Element);
+        //
+        oldElement.appendChild(curToNodeChild);
+
         handleNodeAdded(curToNodeChild as Element);
 
         // }
+
       }
 
       curToNodeChild = toNextSibling;
@@ -478,7 +493,7 @@ export function morph (oldNode: Element, newNode: Element, options?: any) {
     // if a keyed node has been matched up or not
     if (keyedRemovalList) {
       for (let i = 0, len = keyedRemovalList.length; i < len; i++) {
-        const elToRemove = fromNodesLookup[keyedRemovalList[i]];
+        const elToRemove = fromNodesLookup.get(keyedRemovalList[i]);
         if (elToRemove) removeNode(elToRemove, elToRemove.parentNode, false);
       }
     }
