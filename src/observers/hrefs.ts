@@ -202,7 +202,7 @@ export async function visit (state: IPage) {
     history.push(page);
 
     // Let's begin the rendering cylce
-    await render.update(page);
+    render.update(page);
 
   } else {
 
