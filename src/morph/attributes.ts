@@ -6,9 +6,7 @@ export function morphAttrs (oldNode: Element, newNode: Element) {
   //
   // DOCUMENT_FRAGMENT_NODE
   //
-  if (
-    newNode.nodeType === Nodes.DOCUMENT_FRAGMENT_NODE ||
-    oldNode.nodeType === Nodes.DOCUMENT_FRAGMENT_NODE) return;
+  if (newNode.nodeType === Nodes.FRAGMENT_NODE || oldNode.nodeType === Nodes.FRAGMENT_NODE) return;
 
   const newNodeAttrs = newNode.attributes;
 
@@ -42,7 +40,8 @@ export function morphAttrs (oldNode: Element, newNode: Element) {
 
       if (fromValue !== attrValue) {
 
-        // It's not allowed to set an attribute with the XMLNS namespace without specifying the `xmlns` prefix
+        // It's not allowed to set an attribute with the XMLNS namespace without
+        // specifying the `xmlns` prefix
         if (attr.prefix === 'xmlns') attrName = attr.name;
 
         oldNode.setAttributeNS(attrNamespaceURI, attrName, attrValue);
