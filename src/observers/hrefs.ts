@@ -1,5 +1,5 @@
 import { Errors, EventType } from '../shared/enums';
-import { log, position } from '../shared/utils';
+import { log } from '../shared/utils';
 import { deviceType } from 'detect-it';
 import { pointer } from '../shared/native';
 import { emit } from '../app/events';
@@ -100,10 +100,8 @@ function linkEvent (event: MouseEvent): boolean {
  * This is typical for visits with no pre-fetch operation configured.
  *
  *
- * @param {MouseEvent} event
- * @returns {void}
  */
-function handleTrigger (event: MouseEvent): void {
+const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (event: MouseEvent): void {
 
   if (!linkEvent(event)) return;
 
@@ -116,6 +114,31 @@ function handleTrigger (event: MouseEvent): void {
 
   // Skip id href value is not a valid key
   if (key === null) return;
+
+  // Capture drag occurances on links, we will cancel
+  // visits when this occurs to prevent history push~state
+  // from not behaving correctly.
+  //
+  // Credit to the babe mansedan for catching this.
+  //
+  function handleMove (this: HTMLLinkElement) {
+
+    handleTrigger.drag = true;
+
+    log(Errors.WARN, `Drag occurance on link: ${key}`);
+
+    this.removeEventListener(`${pointer}move`, handleMove);
+
+  }
+
+  target.addEventListener(`${pointer}move`, handleMove, { passive: true, once: true });
+
+  if (handleTrigger.drag === true) {
+    handleTrigger.drag = false;
+    return handleTrigger(event);
+  }
+
+  target.removeEventListener(`${pointer}move`, handleMove);
 
   // Event lifecycle, cancel if returned false
   if (!emit('visit', event)) return;
@@ -132,7 +155,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      pages[page.rev].position = position();
+      history.replace(pages[page.rev]);
       history.push(page);
       render.update(page);
     }, {
@@ -153,7 +176,7 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      pages[page.rev].position = position();
+      history.replace(pages[page.rev]);
       visit(page);
     }, {
       once: true
@@ -180,14 +203,14 @@ function handleTrigger (event: MouseEvent): void {
 
     target.addEventListener('click', function handle (event: MouseEvent) {
       event.preventDefault();
-      pages[page.rev].position = position();
+      history.replace(pages[page.rev]);
       visit(page);
     }, {
       once: true
     });
 
   }
-}
+};
 
 export async function visit (state: IPage) {
 
@@ -252,6 +275,8 @@ export async function navigate (key: string, state?: IPage): Promise<void> {
 export function connect (): void {
 
   if (observers.hrefs) return;
+
+  handleTrigger.drag = false;
 
   if (deviceType === 'mouseOnly') {
     addEventListener(`${pointer}down`, handleTrigger, false);
