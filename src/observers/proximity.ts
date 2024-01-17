@@ -1,4 +1,4 @@
-import { config, observers } from '../app/session';
+import { $ } from '../app/session';
 import { getTargets } from '../shared/links';
 import { isNumber } from '../shared/regexp';
 import { log } from '../shared/utils';
@@ -29,8 +29,8 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
 function setBounds (target: HTMLLinkElement) {
 
   const rect = target.getBoundingClientRect();
-  const attr = target.getAttribute(config.selectors.proximity);
-  const distance = isNumber.test(attr) ? Number(attr) : (config.proximity as IProximity).distance;
+  const attr = target.getAttribute($.qs.$proximity);
+  const distance = isNumber.test(attr) ? Number(attr) : ($.config.proximity as IProximity).distance;
 
   return {
     target,
@@ -54,11 +54,11 @@ function observer (targets?: {
   right: number;
 }[]) {
 
-  let wait = false;
+  let wait: boolean = false;
 
   // console.log(targets);
 
-  return function (event: MouseEvent) {
+  return (event: MouseEvent) => {
 
     if (wait) return;
 
@@ -68,13 +68,13 @@ function observer (targets?: {
 
     if (node === -1) {
 
-      setTimeout(() => { wait = false; }, (config.proximity as IProximity).throttle);
+      setTimeout(() => { wait = false; }, ($.config.proximity as IProximity).throttle);
 
     } else {
 
       const { target } = targets[node];
       const page = store.create(getRoute(target, EventType.PROXIMITY));
-      const delay = page.threshold || (config.proximity as IProximity).threshold;
+      const delay = page.threshold || ($.config.proximity as IProximity).threshold;
 
       request.throttle(page.key, async () => {
 
@@ -108,15 +108,15 @@ let entries: ReturnType<typeof observer>;
  */
 export function connect (): void {
 
-  if (!config.proximity || observers.proximity) return;
+  if (!$.config.proximity || $.observe.proximity) return;
 
-  const targets = getTargets(config.selectors.proximity).map(setBounds);
+  const targets = getTargets($.qs.$proximity).map(setBounds);
 
   if (targets.length > 0) {
 
     entries = observer(targets);
     addEventListener(`${pointer}move`, entries, { passive: true });
-    observers.proximity = true;
+    $.observe.proximity = true;
 
   }
 
@@ -127,10 +127,10 @@ export function connect (): void {
  */
 export function disconnect (): void {
 
-  if (!observers.proximity) return;
+  if (!$.observe.proximity) return;
 
   removeEventListener(`${pointer}move`, entries);
 
-  observers.proximity = false;
+  $.observe.proximity = false;
 
 };

@@ -33,7 +33,7 @@
       "commentNewline": true,
       "forceIndent": false,
       "ignoreJS": false,
-      "forceAttribute": 2,
+      "forceAttribute": 3,
       "preserveText": true
     },
     "json": {

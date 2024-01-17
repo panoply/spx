@@ -1,0 +1,131 @@
+.navbar {
+  position: fixed;
+  z-index: 300;
+  display: flex;
+  background-color: rgba($color: $body-bg, $alpha: .9) ;
+  z-index: 9999;
+  right: 0;
+  height: 50px;
+  font-size: 1.075rem;
+  width: 100%;
+  left: 0px;
+  z-index: 100;
+
+  @include media-breakpoint-down(sm) {
+    backdrop-filter: blur(5px);
+    border-bottom: $border-color $border-width solid;
+  }
+
+
+  @include media-breakpoint-up(sm) {
+    background-color: transparent;
+  }
+
+  &-drawer {
+    background-color: transparent;
+    border: none;
+    width: 30px;
+    height: 30px;
+
+    .icon-menu {
+      width: 30px;
+      height: 30px;
+      color: #282a36;
+    }
+  }
+
+  &-logo {
+    width: 60px;
+    display: flex;
+    height: 30px;
+    color: #282a36;
+  }
+
+  .icon-github {
+    width: 25px;
+    height: 25px;
+    fill: $white;
+  }
+
+  .off {
+    color: $white;
+  }
+
+
+  .dropdown {
+    z-index: 9999999;
+
+    > .btn {
+      padding: 3px 25px 3px 10px;
+      text-transform: none;
+      font-size: $font-size-base * 0.625;
+      border-color: $accordion-border-color;
+      border-radius: 5px;
+      background-image: url(icon-arrow($white));
+    }
+
+    ul > li {
+      padding: 5px;
+      list-style-type: none;
+      text-align: center;
+
+      &:hover {
+        background-color: transparent;
+      }
+
+      > a {
+        font-size: $font-size-base * 0.625;
+        margin-right: 0;
+        color: $white;
+
+        &:hover {
+          color: $pink;
+        }
+
+        &::before {
+          content: '';
+          margin-right: 7px;
+        }
+      }
+    }
+  }
+
+  a {
+    font-weight: 400;
+    font-size: .945rem;
+    text-transform: uppercase;
+
+    &.active {
+      color: $cyan;
+    }
+
+    &.mr {
+      margin-right: 0;
+    }
+
+    .icon-github {
+      width: 17px;
+      height: 17px;
+      fill:$white;
+    }
+
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      color:$white; // #343644;
+      opacity: .9;
+    }
+  }
+}
+
+.home {
+  width: 18px;
+  height: 18px;
+  fill:#343644;
+}
+.logo {
+  width: 65px;
+  height: 45px;
+  color:$white // #343644;
+}

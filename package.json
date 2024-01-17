@@ -24,9 +24,6 @@
   "bugs": {
     "url": "https://github.com/panoply/spx/issues"
   },
-  "engines": {
-    "node": "^16.0.0"
-  },
   "type": "module",
   "typings": "index.d.ts",
   "module": "./index.js",
@@ -62,31 +59,28 @@
       "./test/__browser.js"
     ]
   },
-  "dependencies": {
-    "detect-it": "^4.0.1",
-    "morphdom": "^2.7.0"
-  },
   "devDependencies": {
-    "@brixtol/browserslist-config": "workspace:^1.1.0",
-    "@brixtol/eslint-config": "workspace:^1.2.5",
-    "@brixtol/prettier-config": "workspace:^1.2.1",
-    "ava": "^5.2.0",
+    "@brixtol/browserslist-config": "workspace:^",
+    "@brixtol/eslint-config": "workspace:^",
+    "@brixtol/prettier-config": "workspace:^",
+    "ava": "^6.0.1",
     "browser-env": "^3.3.0",
-    "esbuild": "^0.17.18",
+    "detect-it": "^4.0.1",
+    "esbuild": "^0.19.11",
     "gzip-size-cli": "^5.1.0",
-    "terser": "^5.17.3",
-    "tsup": "^6.7.0",
-    "type-fest": "^3.9.0",
-    "typescript": "^5.0.4"
+    "terser": "^5.26.0",
+    "tsup": "^8.0.1",
+    "type-fest": "^4.9.0",
+    "typescript": "^5.3.3"
   },
   "scripts": {
-    "dev": "esbuild src/index.ts --outfile=index.js --format=esm --bundle --watch",
-    "build": "tsup --minify && gzip-size index.js --include-original",
+    "dev": "tsup --watch",
+    "build": "tsup --minify --env.NODE_ENV production && gzip-size index.js --include-original",
     "deploy": "pnpm exec bin/docs.sh",
     "test": "ava --color --verbose --watch --timeout=2m"
   },
   "optionalDependencies": {
-    "eslint": "^8.39.0",
-    "prettier": "^2.8.8"
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1"
   }
 }

@@ -1,0 +1,51 @@
+.tabs {
+  padding-top: 0px;
+
+  nav > button {
+    color: $black;
+    font-weight: 900;
+    font-size: 0.825rem;
+    font-family:$headings-font-family;
+    text-transform: uppercase;
+    background-color: transparent;
+    border: 0;
+    border-bottom: 1px solid $border-color;
+    cursor: pointer;
+    // border-top-right-radius: 10px;
+    // border-top-left-radius: 10px;
+
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: $black;
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    &[aria-selected="true"] {
+      color: $black;
+      background-color: $blue;
+    }
+
+    &[aria-selected="false"] {
+      color: $white;
+    }
+  }
+
+  .panel,
+  .panel > ul {
+    position: relative;
+
+    > li {
+      list-style-type: inherit;
+    }
+  }
+}
+
+[role="tabpanel"][aria-hidden="true"] {
+  display: none;
+}
+

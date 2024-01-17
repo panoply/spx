@@ -122,18 +122,18 @@ test('getAttributes tests hover annotated attributes', t => {
 
   a.setAttribute('href', '/foo/bar?param=baz');
 
-  t.log('NODE: <a data-spx-threshold="250"></a>');
-  a.setAttribute('data-spx-threshold', '250');
+  t.log('NODE: <a spx-threshold="250"></a>');
+  a.setAttribute('spx-threshold', '250');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
 
-  t.log('NODE: <a data-spx-threshold="250" data-spx-hover="true"></a>');
-  a.setAttribute('data-spx-hover', 'true');
+  t.log('NODE: <a spx-threshold="250" spx-hover="true"></a>');
+  a.setAttribute('spx-hover', 'true');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
 
-  t.log('NODE: <a data-spx-threshold="250" data-spx-hover="false"></a>');
-  a.setAttribute('data-spx-hover', 'false');
+  t.log('NODE: <a spx-threshold="250" spx-hover="false"></a>');
+  a.setAttribute('spx-hover', 'false');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log({ threshold: 250 });
@@ -161,20 +161,20 @@ test('getAttributes tests proximity annotated attributes', t => {
 
   /* FIRST TEST --------------------------------- */
 
-  t.log('NODE: <a data-spx-proximity="100" data-spx-threshold="250"></a>');
+  t.log('NODE: <a spx-proximity="100" spx-threshold="250"></a>');
 
-  a.setAttribute('data-spx-threshold', '250');
-  a.setAttribute('data-spx-proximity', '100');
+  a.setAttribute('spx-threshold', '250');
+  a.setAttribute('spx-proximity', '100');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log({ proximity: 100, threshold: 250 });
 
   /* SECOND TEST -------------------------------- */
 
-  t.log('NODE: <a data-spx-threshold="300" data-spx-proximity="true"></a>');
+  t.log('NODE: <a spx-threshold="300" spx-proximity="true"></a>');
 
-  a.setAttribute('data-spx-proximity', 'true');
-  a.setAttribute('data-spx-threshold', '300');
+  a.setAttribute('spx-proximity', 'true');
+  a.setAttribute('spx-threshold', '300');
 
   delete expects.proximity;
   expects.threshold = 300;
@@ -184,9 +184,9 @@ test('getAttributes tests proximity annotated attributes', t => {
 
   /* THIRD TEST --------------------------------- */
 
-  t.log('NODE: <a data-spx-threshold="250" data-spx-proximity="false"></a>');
-  a.setAttribute('data-spx-proximity', 'false');
-  a.setAttribute('data-spx-threshold', '100');
+  t.log('NODE: <a spx-threshold="250" spx-proximity="false"></a>');
+  a.setAttribute('spx-proximity', 'false');
+  a.setAttribute('spx-threshold', '100');
 
   expects.threshold = 100;
 
@@ -215,8 +215,8 @@ test('getAttributes tests append/prepend annotated attributes', t => {
 
   /* FIRST TEST --------------------------------- */
 
-  t.log('NODE: <a data-spx-append="([".parent", ".child"])"></a>');
-  a.setAttribute('data-spx-append', '([".parent", ".child"])');
+  t.log('NODE: <a spx-append="([".parent", ".child"])"></a>');
+  a.setAttribute('spx-append', '([".parent", ".child"])');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log(expects.append);
@@ -225,8 +225,8 @@ test('getAttributes tests append/prepend annotated attributes', t => {
 
   expects.append.push(([ '#parent', '#child' ]));
 
-  t.log('NODE: <a data-spx-append="([".parent", ".child"], ["#parent", "#child"])"></a>');
-  a.setAttribute('data-spx-append', '([".parent", ".child"],["#parent", "#child"])');
+  t.log('NODE: <a spx-append="([".parent", ".child"], ["#parent", "#child"])"></a>');
+  a.setAttribute('spx-append', '([".parent", ".child"],["#parent", "#child"])');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log(expects.append);
@@ -235,8 +235,8 @@ test('getAttributes tests append/prepend annotated attributes', t => {
 
   expects.append = [ [ '.a', '.b' ], [ '.c', '.d' ], [ '.e', '.f' ] ];
 
-  t.log('NODE: <a data-spx-append="([".a",".b"],[".c",".d"],[".e",".f"])"></a>');
-  a.setAttribute('data-spx-append', '([".a",".b"],[".c",".d"],[".e",".f"])');
+  t.log('NODE: <a spx-append="([".a",".b"],[".c",".d"],[".e",".f"])"></a>');
+  a.setAttribute('spx-append', '([".a",".b"],[".c",".d"],[".e",".f"])');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log(expects.append);
@@ -245,8 +245,8 @@ test('getAttributes tests append/prepend annotated attributes', t => {
 
   expects.prepend = [ [ '.p1', '.p2' ], [ '.p3', '.p4' ] ];
 
-  t.log('NODE: <a data-spx-prepend="([".p1",".p2"],[".p3",".p4"])"></a>');
-  a.setAttribute('data-spx-prepend', '([".p1",".p2"],[".p3",".p4"])');
+  t.log('NODE: <a spx-prepend="([".p1",".p2"],[".p3",".p4"])"></a>');
+  a.setAttribute('spx-prepend', '([".p1",".p2"],[".p3",".p4"])');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log(expects.prepend);
@@ -271,8 +271,8 @@ test('getAttributes tests position annotated attributes', t => {
 
   a.setAttribute('href', '/foo/bar?param=baz');
 
-  t.log('NODE: <a data-spx-position="x:100 y:1000"></a>');
-  a.setAttribute('data-spx-position', 'x:100 y:1000');
+  t.log('NODE: <a spx-position="x:100 y:1000"></a>');
+  a.setAttribute('spx-position', 'x:100 y:1000');
 
   t.deepEqual(getAttributes(a), expects); // RESULT
   // t.log(expects.position);

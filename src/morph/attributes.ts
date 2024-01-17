@@ -1,6 +1,25 @@
 import { Nodes } from '../shared/enums';
+import { nil } from '../shared/native';
 
-export function morphAttrs (oldNode: Element, newNode: Element) {
+/**
+ * Set or Remove boolean attribute annotations, specifically used for Form elements
+ */
+export function setBooleanAttribute (oldElement: Element, newElement: Element, name: string) {
+
+  if (oldElement[name] !== newElement[name]) {
+
+    oldElement[name] = newElement[name];
+
+    if (oldElement[name]) {
+      oldElement.setAttribute(name, nil);
+    } else {
+      oldElement.removeAttribute(name);
+    }
+  }
+
+}
+
+export function doAttributeMorph (oldNode: Element, newNode: Element) {
 
   // document-fragments dont have attributes so lets not do anything
   //
@@ -26,9 +45,9 @@ export function morphAttrs (oldNode: Element, newNode: Element) {
   let fromValue: string;
 
   // update attributes on original DOM element
-  for (let i = newNodeAttrs.length - 1; i >= 0; i--) {
+  for (let n = newNodeAttrs.length - 1; n >= 0; n--) {
 
-    attr = newNodeAttrs[i];
+    attr = newNodeAttrs[n];
     attrName = attr.name;
     attrValue = attr.value;
     attrNamespaceURI = attr.namespaceURI;
@@ -61,9 +80,9 @@ export function morphAttrs (oldNode: Element, newNode: Element) {
   // weren't found on the target element.
   const oldNodeAttrs = oldNode.attributes;
 
-  for (let d = oldNodeAttrs.length - 1; d >= 0; d--) {
+  for (let o = oldNodeAttrs.length - 1; o >= 0; o--) {
 
-    attr = oldNodeAttrs[d];
+    attr = oldNodeAttrs[o];
     attrName = attr.name;
     attrValue = attr.value;
 

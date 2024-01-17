@@ -2,86 +2,90 @@
 import { Key } from 'types';
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { log, hasProp, onNextEventLoopTick } from '../shared/utils';
+import { log, hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
-import { config, memory } from './session';
-import { isArray } from '../shared/native';
+import { $ } from './session';
+import { XHR, isArray } from '../shared/native';
 import { Errors, EventType } from '../shared/enums';
 import * as store from './store';
 
-/**
- * Request Transits
- *
- * This object holds the XHR requests in transit. The object
- * properties represent the the request URL and the
- * value is the XML Request instance.
- */
-export const transit: Map<string, Promise<string>> = new Map();
-
-/**
- * Request Timeouts
- *
- * Transit timers used to keep track of promises
- * and trigger operations like hover or proximity
- * prefetching.
- */
-export const timers: Map<string, NodeJS.Timeout> = new Map();
-
-/**
- * Extends XMLHTTPRequest
- *
- * Extend the native XHR request class and add
- * a key value to the instance.
- */
-class XHR extends XMLHttpRequest { key: string = null; }
-
-/**
- * XHR Requests
- *
- * The promise-like queue reference which holds the
- * XHR requests for each fetch dispatched. This allows
- * for aborting in-transit requests.
- */
-export const xhr: Map<string, XMLHttpRequest> = new Map();
+interface RequestParams {
+  /**
+   * The Request body
+   *
+   * @default null
+   */
+  body?: Document | XMLHttpRequestBodyInit;
+  /**
+   * The Response type
+   *
+   * @default 'text'
+   */
+  type?: XMLHttpRequestResponseType
+  /**
+   * The Request method
+   *
+   * @default 'GET'
+   */
+  method?: string;
+  /**
+   * Optional Request headers
+   *
+   * @default null
+   */
+  headers?: { [key: string]: string };
+}
 
 /**
  * Fetch XHR Request wrapper function
  */
-export function request <T> (key: string, responseType: XMLHttpRequestResponseType = 'text') {
+export function request <T> (key: string, {
+  method = 'GET',
+  body = null,
+  headers = null,
+  type = 'text'
+}: RequestParams = {}) {
 
   return new Promise<T extends string ? string : Document>(function (resolve, reject) {
 
-    const req = new XHR();
+    const xhr = new XHR();
 
-    req.key = key;
-    req.responseType = responseType;
+    xhr.key = key;
+    xhr.responseType = type;
+    xhr.open(method, key);
+    xhr.setRequestHeader('spx-request', 'true');
 
-    req.open('GET', key);
-    req.setRequestHeader('X-SPX', 'true');
-    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    if (headers !== null) {
+      for (const prop in headers) {
+        xhr.setRequestHeader(prop, headers[prop]);
+      }
+    }
 
-    req.onload = function (this: XHR) {
+    xhr.onloadstart = function (this: XHR) {
+      XHR.request.set(this.key, xhr);
+    };
+
+    xhr.onload = function (this: XHR) {
       resolve(this.response);
     };
 
-    req.onerror = function (this: XHR) {
+    xhr.onerror = function (this: XHR) {
       reject(this.statusText);
     };
 
-    req.onabort = function (this: XHR) {
-      timers.delete(this.key);
-      xhr.delete(this.key);
-      transit.delete(this.key);
+    xhr.onabort = function (this: XHR) {
+      XHR.timeout.delete(this.key);
+      XHR.transit.delete(this.key);
+      XHR.request.delete(this.key);
     };
 
-    req.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
-      xhr.delete(this.key);
-      memory.bytes = memory.bytes + event.loaded;
-      memory.visits = memory.visits + 1;
+    xhr.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
+      XHR.request.delete(this.key);
+      $.memory.bytes = $.memory.bytes + event.loaded;
+      $.memory.visits = $.memory.visits + 1;
     };
 
-    req.send();
-    xhr.set(key, req);
+    xhr.send(body);
 
   });
 
@@ -92,11 +96,11 @@ export function request <T> (key: string, responseType: XMLHttpRequestResponseTy
  */
 export function cleanup (key: string) {
 
-  if (!timers.has(key)) return true;
+  if (!XHR.timeout.has(key)) return true;
 
-  clearTimeout(timers.get(key));
+  clearTimeout(XHR.timeout.get(key));
 
-  return timers.delete(key);
+  return XHR.timeout.delete(key);
 
 }
 
@@ -105,8 +109,8 @@ export function cleanup (key: string) {
  */
 export function throttle (key: string, callback: (cancel?: boolean) => void, delay: number): void {
 
-  if (timers.has(key)) return;
-  if (!store.has(key)) timers.set(key, setTimeout(callback, delay));
+  if (XHR.timeout.has(key)) return;
+  if (!store.has(key)) XHR.timeout.set(key, setTimeout(callback, delay));
 
 };
 
@@ -117,8 +121,8 @@ export function throttle (key: string, callback: (cancel?: boolean) => void, del
  */
 export function abort (key: string): void {
 
-  if (xhr.has(key)) {
-    xhr.get(key).abort();
+  if (XHR.request.has(key)) {
+    XHR.request.get(key).abort();
     log(Errors.WARN, `Cancelled request: ${key}`);
   }
 
@@ -133,12 +137,12 @@ export function abort (key: string): void {
  */
 export function cancel (key?: string): void {
 
-  return xhr.forEach((req, url) => {
+  for (const [ url, xhr ] of XHR.request) {
     if (key !== url) {
-      req.abort();
+      xhr.abort();
       log(Errors.WARN, `Pending request aborted: ${url}`);
     }
-  });
+  }
 
 };
 
@@ -151,26 +155,33 @@ export function cancel (key?: string): void {
  */
 export function preload (state: IPage) {
 
-  if (config.preload !== null) {
+  if ($.config.preload !== null) {
 
-    if (isArray(config.preload)) {
+    if (isArray($.config.preload)) {
 
-      const promises = config.preload.filter(path => {
+      const promises = $.config.preload.filter(path => {
         const route = getRoute(path, EventType.PRELOAD);
-        return route.key !== path ? fetch(store.create(route)) : false;
+        return route.key !== path
+          ? fetch(store.create(route))
+          : false;
       });
 
       return Promise.allSettled(promises);
 
-    } else if (typeof config.preload === 'object') {
+    } else if (typeof $.config.preload === 'object') {
 
-      if (hasProp(config.preload, state.key as Key)) {
+      if (hasProp($.config.preload, state.key as Key)) {
 
-        const promises = config.preload[state.key].map(function (path: Key) {
-
-          return fetch(store.create(getRoute(path, EventType.PRELOAD)));
-
-        });
+        const promises = $.config.preload[state.key].map((path: Key) => (
+          fetch(
+            store.create(
+              getRoute(
+                path,
+                EventType.PRELOAD
+              )
+            )
+          )
+        ));
 
         return Promise.allSettled(promises);
 
@@ -188,41 +199,32 @@ export function preload (state: IPage) {
  */
 export async function reverse (key: string): Promise<void> {
 
-  if (store.has(key)) {
-    // pages[key].position = position();
-    return;
-  }
-
   const page = store.create(getRoute(key, EventType.REVERSE));
 
-  requestIdleCallback(function (deadline) {
+  await onNextTickResolve();
 
-    fetch(page).then(page => {
+  fetch(page).then(page => {
 
-      if (page) {
-        log(Errors.INFO, `Reverse fetch completed: ${page.key}`);
-      } else {
-        log(Errors.WARN, `Reverse fetch failed: ${key}`);
-      }
+    if (page) {
+      log(Errors.INFO, `Reverse fetch completed: ${page.key}`);
+    } else {
+      log(Errors.WARN, `Reverse fetch failed: ${key}`);
+    }
 
-    });
-
-  }, {
-    timeout: 3000
   });
 
 }
 
 export async function wait (state: IPage): Promise<IPage> {
 
-  if (!transit.has(state.key)) return state;
+  if (!XHR.transit.has(state.key)) return state;
 
-  await onNextEventLoopTick();
+  // await onNextTickResolve();
 
-  const snapshot = await transit.get(state.key);
+  const snapshot = await XHR.transit.get(state.key);
 
-  transit.delete(state.key);
-  timers.delete(state.key);
+  XHR.transit.delete(state.key);
+  XHR.timeout.delete(state.key);
 
   return store.set(state, snapshot);
 
@@ -237,11 +239,11 @@ export async function wait (state: IPage): Promise<IPage> {
  */
 export async function fetch (state: IPage): Promise<false|IPage> {
 
-  if (xhr.has(state.key)) {
+  if (XHR.request.has(state.key)) {
     if (state.type !== EventType.HYDRATE) {
 
-      if (state.type === EventType.REVERSE && xhr.has(state.rev)) {
-        xhr.get(state.rev).abort();
+      if (state.type === EventType.REVERSE && XHR.request.has(state.rev)) {
+        XHR.request.get(state.rev).abort();
         log(Errors.WARN, `Request aborted: ${state.rev}`);
       } else {
         log(Errors.WARN, `Request in transit: ${state.key}`);
@@ -257,7 +259,7 @@ export async function fetch (state: IPage): Promise<false|IPage> {
   }
 
   // create a transit queue reference of the dispatched request in transit.
-  transit.set(state.key, request<string>(state.key));
+  XHR.transit.set(state.key, request<string>(state.key));
 
   return wait(state);
 

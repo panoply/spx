@@ -1,4 +1,4 @@
-import { object, toArray } from '../shared/native';
+import { o, toArray } from '../shared/native';
 import { MimeType } from '../shared/regexp';
 
 /**
@@ -58,12 +58,12 @@ function scriptTag (tag: HTMLScriptElement) {
 
   const mime = tag.type ? tag.type.trim().toLowerCase() : 'text/javascript';
   const type = MimeType.test(mime) ? 1 : mime === 'module' ? 2 : NaN;
-  const exec: {
+  const exec = o<{
     target: HTMLScriptElement;
     external: boolean;
     evaluate: boolean;
     blocking: boolean;
-  } = object(null);
+  }>();
 
   exec.blocking = true;
   exec.evaluate = false;
@@ -83,18 +83,20 @@ function scriptTag (tag: HTMLScriptElement) {
 /**
  * Execute JavaScript
  *
- * Async script execution. Executes evaluation of the
- * `<script></script>` tags.
+ * Async script execution. Executes evaluation of the `<script></script>` tags.
  */
 async function execute (script: ReturnType<typeof scriptTag>) {
 
   try {
 
     const evaluate = evaluator(script);
+
     if (script.blocking) await evaluate;
 
   } catch (e) {
+
     console.error(e);
+
   }
 
 }
@@ -106,11 +108,16 @@ async function execute (script: ReturnType<typeof scriptTag>) {
 export async function evaljs (scripts: Iterable<HTMLScriptElement>): Promise<void> {
 
   const scriptjs = toArray(scripts, scriptTag).filter(script => script.evaluate);
+
   const executed = scriptjs.reduce(async (promise: Promise<unknown>, script) => {
+
     if (script.external) return Promise.all([ promise, execute(script) ]);
+
     await promise;
+
     const exec = await execute(script);
     return exec;
+
   }, Promise.resolve());
 
   await Promise.race([ executed ]);

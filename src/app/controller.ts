@@ -4,13 +4,16 @@ import * as intersect from '../observers/intersect';
 import * as request from './fetch';
 import * as history from '../observers/history';
 import * as proximity from '../observers/proximity';
-import * as scroll from '../observers/scroll';
+import * as components from '../components/initialize';
+import * as fragments from '../observers/fragments';
 import * as store from './store';
 import { EventType, Errors } from '../shared/enums';
 import { getRoute } from './location';
-import { log, position } from '../shared/utils';
+import { log, onNextTick } from '../shared/utils';
 import { IPage } from 'types';
-import { config } from './session';
+import { $ } from './session';
+
+// import * as timer from '../test/timer';
 
 /**
  * Initialize SPX
@@ -20,17 +23,17 @@ import { config } from './session';
  */
 export function initialize (): Promise<IPage> {
 
-  const state = store.create(getRoute(EventType.INITIAL));
+  const route = getRoute(EventType.INITIAL);
 
   // Connect HistoryAPI push~state observers
   // This MUST be called after we've obtained the initial
   // state reference (above) as history.state will be assigned
   //
-  history.connect(state);
+  const state = history.connect(store.create(route));
 
   // Record first page
   //
-  config.index = state.key;
+  $.index = state.key;
 
   /**
    * DOM Ready
@@ -38,41 +41,40 @@ export function initialize (): Promise<IPage> {
    * This function is called returns the intitial page state and is responsible
    * for SPX activation. The promise callback will resolve the return value.
    */
-  function DOMReady () {
-
-    hrefs.connect();
-
-    if (config.manual === false) {
-      hover.connect();
-      intersect.connect();
-      proximity.connect();
-      scroll.connect();
-    }
+  const DOMReady = () => {
 
     const page = store.set(state, document.documentElement.outerHTML);
 
-    if (history.doReverse()) page.rev = history.api.state.rev;
+    hrefs.connect();
 
-    page.position = position();
+    if ($.config.manual === false) {
 
-    history.replace(page);
+      hover.connect();
+      intersect.connect();
+      proximity.connect();
+      components.connect();
+      fragments.connect();
+    }
 
-    if (page.rev !== page.key) setTimeout(() => request.reverse(page.rev), 0);
-
-    setTimeout(() => request.preload(page), 0);
+    onNextTick(() => {
+      if (page.rev !== page.key) request.reverse(page.rev);
+      request.preload(page);
+    });
 
     return page;
 
-  }
+  };
 
   return new Promise(resolve => {
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
+
       return resolve(DOMReady());
+
     }
 
     // FALLBACK
-    // Invoked id readyState is matched, likely obsolete
+    // Invoked if readyState is matched, likely obsolete
     //
     addEventListener('DOMContentLoaded', () => resolve(DOMReady()), { once: true });
 
@@ -107,8 +109,8 @@ export function disconnect (): void {
   // Purge Store
   store.clear();
 
-  if (config.globalThis) delete window.spx;
+  if ($.config.globalThis) delete window.spx;
 
-  log(Errors.INFO, 'Disconnected 😔');
+  log(Errors.INFO, 'Disconnected');
 
 }

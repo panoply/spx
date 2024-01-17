@@ -1,0 +1,43 @@
+{% liquid
+  if page.url contains '/examples/'
+    assign links = navigation.examples
+  else
+    assign links = navigation.menu
+  endif
+%}
+
+<nav class="accordion mt-0 mb-2 br-0 bt-0" data-relapse="sidebar">
+  {% for nav in links %}
+
+    {% assign group = nav.group
+      | slugify
+      | prepend: '/'
+      | append: '/' %}
+
+    <details
+      {% if page.url contains group %}
+        open
+      {% endif %}>
+      <summary>
+        {{ nav.group }}
+      </summary>
+      <section>
+        <ul class="list mb-0 py-2">
+          {% for item in nav.links %}
+            <li class="pb-1 pl-2">
+              <a
+                href="{{ item.url }}"
+                spx-scroll="0"
+                spx-target="true"
+                {% if page.url == item.url %}
+                  class="fc-blue active"
+                {% endif %}>
+                {{ item.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    </details>
+  {% endfor %}
+</nav>

@@ -2,26 +2,6 @@ import { IOptions, IProximity, IHover, IIntersect, IProgress } from './options';
 import { IPage } from './page';
 
 /**
- * Selectors
- *
- * String `key > value` references to DOM attributes
- * selectors used in the SPX instance.
- */
-export interface ISelectors {
-  attrs?: RegExp;
-  script?: string;
-  style?: string;
-  styleLink?: string;
-  hydrate?: string;
-  track?: string;
-  href?: string;
-  hover?: string;
-  intersect?: string;
-  interHref?: string;
-  proximity?: string;
-}
-
-/**
  * Hovers
  *
  * Configuration specific hover observer
@@ -87,6 +67,12 @@ export interface IMemory {
    * @default 0
    */
   visits: number;
+  /**
+   * String Representation
+   *
+   * @example '500kb'
+   */
+  size?: string;
 }
 
 /**
@@ -96,6 +82,11 @@ export interface IMemory {
  * Assigns a connection status to each observer.
  */
 export interface IObservers {
+  /**
+   * Whether of not fragment mutation observer has connected,
+   * always `true` unless disconnected
+   */
+  fragments: boolean;
   /**
    * Whether of not the scroll observer has connected,
    * always `true` unless disconnected
@@ -126,6 +117,103 @@ export interface IObservers {
    * can be disabled via session.
    */
   proximity?: boolean;
+  /**
+   * Whether of not components connection was initialied
+   */
+  components?: boolean;
+}
+
+/**
+ * Selectors
+ *
+ * String `key > value` references to DOM attributes
+ * selectors used in the SPX instance.
+ */
+export interface ISelectors {
+  /**
+   * Tracked element selector
+   */
+  $tracking?: string;
+  /**
+   * Render method DOM attribute, eg: `spx-render`
+   */
+  $render?: string;
+  /**
+   * Component attribute selector, eg: `spx-component`
+   */
+  $component?: string;
+  /**
+   * Component Attributes regular expression for matching attributes of interest
+   */
+  $componentAttrs?: RegExp;
+  /**
+   * Component Attributes regular expression for matching event bindind attrs
+   */
+  $componentBinds?: RegExp;
+  /**
+   * Component node attribute, eg: `spx-node`
+   */
+  $node?: string;
+  /**
+   * Data attribute provider for href nodes, which ends in colon, eg: `spx-data:`
+   */
+  $data?: string;
+  /**
+   * Morph Children DOM attribute, eg: `spx-morph`
+   */
+  $morph?: string;
+  /**
+   * Asset evaluation selector used for `<script>` type tags
+   */
+  $scripts?: string;
+  /**
+   * Hydration asset evaluation selector used for `<script>`
+   */
+  $scriptsHydrate?: string;
+  /**
+   * HTML `<style>` element selectors to evaluate
+   */
+  $styles?: string;
+  /**
+   * Any element annotated with `spx-eval="true"`
+   */
+  $evals?: string;
+  /**
+   * The `spx-target` attribute annotation
+   */
+  $target?: string;
+  /**
+   * The `<link>` elements selectors to evaluate
+   */
+  $links?: string;
+  /**
+   * The `<meta>` elements selectors to evaluate
+   */
+  $metas?: string;
+  /**
+   * The `href` elements to intercept. Excludes certain nodes from firing SPX visits
+   */
+  $hrefs?: string;
+  /**
+   * Regular Expression used for matching attribute annotations
+   */
+  $attributes?: RegExp;
+  /**
+   * Href selctor for proximities that applies the correct schema.
+   */
+  $hover?: string;
+  /**
+   * Href selector for proximities that applies the correct schema.
+   */
+  $proximity?: string;
+  /**
+   * Href selctor, which excludes node annotated with a `spx-intersect="false"` attribute.
+   */
+  $intersects?: string
+  /**
+   * Intersect Element which contains `href` nodes
+   */
+  $intersector?: string
 }
 
 /**
@@ -141,7 +229,7 @@ export interface IConfig extends IOptions {
   /**
    * Progress Bar
    */
-  progress?: false | IProgress;
+  progress?: IProgress;
   /**
    * Hover Prefeching
    */
@@ -154,78 +242,6 @@ export interface IConfig extends IOptions {
    * Proximity Prefetching
    */
   proximity?: false | IProximity;
-  /**
-   * Query Selectors
-   */
-  selectors?: {
-    /**
-     * Tracked element selector
-     */
-    tracking?: string;
-    /**
-     * Render method DOM attribute, eg: `spx-render`
-     */
-    render?: string;
-    /**
-     * Morph Children DOM attribute, eg: `spx-morph`
-     */
-    morph?: string;
-    /**
-     * Asset evaluation selector used for `<script>`
-     * type tags
-     */
-    scripts?: string;
-    /**
-     * Hydration asset evaluation selector used for `<script>`
-     */
-    scriptsHydrate?: string;
-    /**
-     * HTML `<style>` element selectors to evaluate
-     */
-    styles?: string;
-    /**
-     * Any element annotated with `spx-eval="true"`
-     */
-    evals?: string;
-    /**
-     * The `<link>` elements selectors to evaluate
-     */
-    links?: string;
-    /**
-     * The `<meta>` elements selectors to evaluate
-     */
-    metas?: string;
-    /**
-     * The `href` elements to intercepts. Excluded certain
-     * nodes from firing SPX visits
-     */
-    hrefs?: string;
-    /**
-     * Regular Expression used for matching attribute
-     * annotations
-     */
-    attributes?: RegExp;
-    /**
-     * Href selctor for proximities that applies
-     * the correct schema.
-     */
-    hover?: string;
-    /**
-     * Href selector for proximities that applies
-     * the correct schema.
-     */
-    proximity?: string;
-    /**
-     * Href selctor, which excludes node annotated with a
-     * `spx-intersect="false"` attribute.
-     */
-    intersects?: string
-    /**
-     * Intersect Element which contains `href` nodes
-     */
-    intersector?: string
-  }
-
 }
 
 /**
@@ -234,13 +250,12 @@ export interface IConfig extends IOptions {
  * Partial references extracted from the
  * page store. Written to the history stack API.
  */
-type HistoryState = Omit<IPage, (
-  | 'hydrate'
-  | 'append'
-  | 'prepend'
-  | 'proximity'
-  | 'threshold'
-  | 'ignore'
+type HistoryState = Pick<IPage, (
+  | 'key'
+  | 'rev'
+  | 'scrollX'
+  | 'scrollY'
+  | 'title'
 )>
 
 /**

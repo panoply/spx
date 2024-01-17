@@ -10,7 +10,7 @@ const nil = '';
 const location = { pathname: '/foo/bar', search: '' };
 const origin = 'https://brixtol.com';
 const selectors = {
-  attrs: /^href|data-spx-(hydrate|append|prepend|replace|progress|threshold|position|proximity|hover)$/i
+  attrs: /^href|spx-(hydrate|append|prepend|replace|progress|threshold|position|proximity|hover)$/i
 };
 
 /* -------------------------------------------- */

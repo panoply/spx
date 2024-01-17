@@ -10,15 +10,15 @@ export const HTTP = /^(?:https?:)?\/\//;
  *
  * Used to cahce values
  */
-export const CacheValue: RegExp = /^(reset|clear)$/i;
+export const CacheValue: RegExp = /^(reset|clear|update)$/i;
 
 /**
  * URL Protocol
  *
  * @see
- * https://regex101.com/r/oC1gn9/1
+ * https://regex101.com/r/fCK0sH/1
  */
-export const Protocol: RegExp = /(?:https?:)?\/\/(?:www\.)?/;
+export const Protocol: RegExp = /(?:https?:)?(?:\/\/(?:www\.)?|(?:www\.))/;
 
 /**
  * URL Pathname
@@ -44,6 +44,13 @@ export const Pathname: RegExp = /(?:https?:)?\/\/(?:www\.)?([^/]*?)?([/?][^;]*?)
 export const FormInputs: RegExp = /^(input|textarea|select|datalist|button|output)$/i;
 
 /**
+ * JavaScript Mime Type
+ *
+ * Captures `<script>` tag mime types
+ */
+export const MimeType: RegExp = /^(?:application|text)\/(?:x-)?(?:ecma|java)script|text\/javascript$/;
+
+/**
  * Ready State
  *
  * Ready State Match
@@ -62,11 +69,11 @@ export const isReady: RegExp = /^(interactive|complete)$/i;
 export const isPender: RegExp = /\b(?:append|prepend)/;
 
 /**
- * JavaScript Mime Type
+ * Matches whitespaces (greedy)
  *
- * Captures `<script>` tag mime types
+ * Used to Match whitspaces
  */
-export const MimeType: RegExp = /^(?:application|text)\/(?:x-)?(?:ecma|java)script|text\/javascript$/;
+export const Whitespace: RegExp = /\s+/g;
 
 /**
  * Boolean Attribute value
@@ -81,19 +88,32 @@ export const isBoolean: RegExp = /^\b(?:true|false)$/i;
 /**
  * Matches decimal number
  *
- * Used to Match number, respected negative numbers
+ * Used to Match number, supports the following patterns:
+ *
+ * - `100` (Number)
+ * - `1.10` (Floats)
+ * - `.20` (Starting zero points)
  *
  * @see
- * https://regex101.com/r/QDIAN0/1
+ * https://regex101.com/r/gsU6Gm/1
  */
-export const isNumber: RegExp = /^[+-]?\d*\.?\d+$/;
+export const isNumber: RegExp = /^\d*\.?\d+$/;
 
 /**
- * Matches whitespaces (greedy)
+ * Matches decimal number
  *
- * Used to Match whitspaces
+ * Used to Match numerics, supports the following patterns:
+ *
+ * - `100` (Number)
+ * - `-100` (Negatives)
+ * - `1.10` (Floats)
+ * - `.20` (Starting zero points)
+ * - `NaN` (NaN)
+ *
+ * @see
+ * https://regex101.com/r/tOv8Br/1
  */
-export const Whitespace: RegExp = /\s+/g;
+export const isNumeric: RegExp = /^(?:[.-]?\d*\.?\d+|NaN)$/;
 
 /**
  * Attribute Action Caller
@@ -132,6 +152,13 @@ export const isNumberOrBoolean: RegExp = /\b(?:progress|proximity)/;
 export const ActionParams: RegExp = /\[?[^,'"[\]()\s]+\]?/g;
 
 /**
+ * Attribute Parameter Value
+ *
+ * Used to match a class event caller target attributes
+ */
+export const ArrayParams: RegExp = /\[(['"]?.*['"]?,?)\]/g;
+
+/**
  * Array Value
  *
  * Used to test value for a string array attribute value, like spx-replace.
@@ -140,22 +167,18 @@ export const ActionParams: RegExp = /\[?[^,'"[\]()\s]+\]?/g;
  * https://regex101.com/r/bIQefA/1
  *
  */
-export const isArray: RegExp = /\(?\[(['"]?.*['"]?,?)\]\)?/;
-
-/**
- * Test Position Attributes
- *
- * Tests attribute values for a position config
- *
- * @see
- * https://regex101.com/r/DG2LI1/1
- *
- */
-export const isPosition: RegExp = /[xy]:[0-9.]+/;
+export const isArray: RegExp = /\[(['"]?.*['"]?,?)\]/;
 
 /**
  * Mached Position Attributes
  *
  * Used to match `x:0` and `y:0` JSON space separated attributes
  */
-export const inPosition: RegExp = /[xy]|\d*\.?\d+/g;
+export const inPosition: RegExp = /[xy]\s*|\d*\.?\d+/gi;
+
+/**
+ * Mached Position Attributes
+ *
+ * Used to match `x:0` and `y:0` JSON space separated attributes
+ */
+export const inObject: RegExp = /[a-zA-Z0-9]+:[a-zA-Z0-9]+/g;

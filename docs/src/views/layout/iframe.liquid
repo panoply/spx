@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>
+      {{ title }}
+    </title>
+
+    <meta charset="UTF-8">
+    <meta name="description" content="{{ description }}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+      href="{{ '/style.css' | url }}"
+      spx-eval="false"
+      rel="stylesheet">
+    <script
+      src="{{ '/spx.min.js' | url }}"
+      spx-eval="false"
+      async></script>
+  </head>
+
+  <body class="iframe-bg">
+    <div class="container-fluid py-3">
+      <div class="row jc-center">
+        <nav class="col-11 rd bg-code py-2">
+          <ul class="list-pipe jc-center py-1 mb-0">
+            {% for link in examples[data].links %}
+              <li>
+                <a
+                  href="{{ link.url }}"
+                  {% if page.url == link.url %}
+                    class="fc-blue"
+                  {% endif %}
+                  {% if link.disable %}
+                    spx-disable="true"
+                  {% endif %}>
+                  {{ link.title }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+
+        <main class="col-11">
+
+          <div class="pt-3">
+            {{ content }}
+          </div>
+
+        </main>
+
+        <footer class="col-12 pt-3 upper fs-xs fw-bold tc fc-gray">
+          SINGLE PAGE XHR
+        </footer>
+
+      </div>
+    </div>
+  </body>
+</html>

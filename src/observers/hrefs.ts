@@ -1,16 +1,16 @@
 import { Errors, EventType } from '../shared/enums';
-import { log } from '../shared/utils';
+import { log, ts } from '../shared/utils';
 import { deviceType } from 'detect-it';
-import { pointer } from '../shared/native';
+import { XHR, pointer } from '../shared/native';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
 import { IPage } from '../types/page';
-import { config, observers, pages } from '../app/session';
 import { getAttributes, getKey, getRoute } from '../app/location';
+import { progress } from '../app/progress';
+import { $ } from '../app/session';
 import * as hover from '../observers/hover';
 import * as proximity from '../observers/proximity';
 import * as intersect from '../observers/intersect';
-import * as progress from '../app/progress';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as store from '../app/store';
@@ -99,13 +99,17 @@ function linkEvent (event: MouseEvent): boolean {
  * or sub-sequent then we trigger a fetch and await its completion in the next phase.
  * This is typical for visits with no pre-fetch operation configured.
  *
+ * **NOTE**
+ *
+ * The final event of `click` is applied via `onclick` and not event listener. This ensures
+ * that attachments are only ever added a single time.
  *
  */
 const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (event: MouseEvent): void {
 
   if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, config.selectors.hrefs);
+  const target = getLink(event.target, $.qs.$hrefs);
 
   // Skip id target is not a valid href element
   if (!target) return;
@@ -121,17 +125,13 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
   //
   // Credit to the babe mansedan for catching this.
   //
-  function handleMove (this: HTMLLinkElement) {
-
+  const handleMove = () => {
     handleTrigger.drag = true;
+    log(Errors.WARN, `Drag occurance, visit was cancelled to link: ${key}`);
+    target.removeEventListener(`${pointer}move`, handleMove);
+  };
 
-    log(Errors.WARN, `Drag occurance on link: ${key}`);
-
-    this.removeEventListener(`${pointer}move`, handleMove);
-
-  }
-
-  target.addEventListener(`${pointer}move`, handleMove, { passive: true, once: true });
+  target.addEventListener(`${pointer}move`, handleMove, { once: true });
 
   if (handleTrigger.drag === true) {
     handleTrigger.drag = false;
@@ -150,21 +150,20 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
   if (store.has(key)) { // Sub-sequent visit
 
-    const attrs = getAttributes(target, pages[key]);
+    const attrs = getAttributes(target, $.pages[key]);
     const page = store.update(attrs);
 
-    target.addEventListener('click', function handle (event: MouseEvent) {
+    target.onclick = (event: MouseEvent) => {
       event.preventDefault();
-      history.replace(pages[page.rev]);
+      $.pages[page.key].ts = ts();
+      $.pages[page.rev].scrollX = window.scrollX;
+      $.pages[page.rev].scrollY = window.scrollY;
+      history.replace($.pages[page.rev]);
       history.push(page);
       render.update(page);
-    }, {
-      once: true
-    });
+    };
 
-  } else if (request.transit.has(key)) { // In-Transit visit
-
-    const page = pages[key];
+  } else if (XHR.transit.has(key)) { // In-Transit visit
 
     // linkPreload(page.location.hostname + page.key);
 
@@ -174,13 +173,16 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
     // console.log(request.timers, request.transit, request.xhr);
 
-    target.addEventListener('click', function handle (event: MouseEvent) {
+    const page = $.pages[key];
+
+    target.onclick = (event: MouseEvent) => {
       event.preventDefault();
-      history.replace(pages[page.rev]);
+      $.pages[page.key].ts = ts();
+      $.pages[page.rev].scrollX = window.scrollX;
+      $.pages[page.rev].scrollY = window.scrollY;
+      history.replace($.pages[page.rev]);
       visit(page);
-    }, {
-      once: true
-    });
+    };
 
   } else { // New Visit
 
@@ -193,28 +195,29 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
     // We need to (re)parse the element and acquire
     // any attribute annotations
-    const route = getRoute(target, EventType.VISIT);
-    const page = store.create(route);
+    const page = store.create(getRoute(target, EventType.VISIT));
 
     // Lets trigger a fetch, we will await its
-    // completion after click has concluded, we
+    // completion after click has concluded, so we
     // have a head-start on the request.
     request.fetch(page);
 
-    target.addEventListener('click', function handle (event: MouseEvent) {
+    target.onclick = (event: MouseEvent) => {
       event.preventDefault();
-      history.replace(pages[page.rev]);
+      $.pages[page.key].ts = ts();
+      $.pages[page.rev].scrollX = window.scrollX;
+      $.pages[page.rev].scrollY = window.scrollY;
+      history.replace($.pages[page.rev]);
       visit(page);
-    }, {
-      once: true
-    });
+    };
 
   }
 };
 
 export async function visit (state: IPage) {
 
-  progress.start(state.progress as number);
+  // Trigger progress bar loading
+  if (state.progress) progress.start(state.progress as number);
 
   // We will await the fetch in transit
   const page = await request.wait(state);
@@ -231,7 +234,7 @@ export async function visit (state: IPage) {
 
     // Something failed, we will trigger a
     // traditional navigation
-    return location.assign(state.key);
+    location.assign(state.key);
 
   }
 
@@ -248,7 +251,7 @@ export async function navigate (key: string, state?: IPage): Promise<void> {
     if (typeof state.cache === 'string') state.cache === 'clear' ? store.clear() : store.clear(state.key);
 
     // Trigger progress bar loading
-    progress.start(state.progress as number);
+    if (state.progress) progress.start(state.progress as number);
 
     const page = await request.fetch(state);
 
@@ -261,7 +264,7 @@ export async function navigate (key: string, state?: IPage): Promise<void> {
 
   } else {
 
-    return visit(pages[key]);
+    return visit($.pages[key]);
 
   }
 
@@ -269,12 +272,10 @@ export async function navigate (key: string, state?: IPage): Promise<void> {
 
 /**
  * Attached `click` event listener.
- *
- * @returns {void}
  */
 export function connect (): void {
 
-  if (observers.hrefs) return;
+  if ($.observe.hrefs) return;
 
   handleTrigger.drag = false;
 
@@ -287,7 +288,7 @@ export function connect (): void {
     addEventListener('touchstart', handleTrigger, false);
   }
 
-  observers.hrefs = true;
+  $.observe.hrefs = true;
 
 }
 
@@ -296,7 +297,7 @@ export function connect (): void {
  */
 export function disconnect (): void {
 
-  if (!observers.hrefs) return;
+  if (!$.observe.hrefs) return;
 
   if (deviceType === 'mouseOnly') {
     removeEventListener(`${pointer}down`, handleTrigger, false);
@@ -307,6 +308,6 @@ export function disconnect (): void {
     removeEventListener('touchstart', handleTrigger, false);
   }
 
-  observers.hrefs = false;
+  $.observe.hrefs = false;
 
 }

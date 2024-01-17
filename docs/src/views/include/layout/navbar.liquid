@@ -1,0 +1,26 @@
+<header id="navbar" class="container-fluid navbar d-unset d-sm-none">
+  <div class="row jc-between ai-center">
+
+    <input
+      type="button"
+      class="col-auto btn drawer-toggle ml-2 d-flex d-sm-none"
+      spx@click="drawer.toggle">
+
+    <a
+      href="/"
+      class="col-auto tc-sm"
+      spx-target="['body']">
+      {% svg 'logo', 'logo' %}
+    </a>
+
+    <div class="d-none d-sm-flex col-auto pt-sm-2">
+      {% include 'layout/version' %}
+    </div>
+    <a
+      class="col-auto d-none"
+      href="{{ navigation.github.url }}"
+      target="_blank">
+      {% svg 'github', 'icon-github' %}
+    </a>
+  </div>
+</header>

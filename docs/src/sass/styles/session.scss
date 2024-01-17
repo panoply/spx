@@ -1,0 +1,198 @@
+.session {
+
+  top: 0;
+  right: 0;
+  z-index: 200;
+  width: 430px;
+  border-color: $border-color;
+  background-color: $body-bg;
+
+  @include media-breakpoint-up(sm) {
+    border-top-right-radius: 10px;
+    transform: translateX(0);
+    width: 430px !important;
+    opacity: 1;
+    visibility: visible;
+    top: 0px;
+  }
+
+
+}
+
+.bd-bottom {
+  border-color: $border-color;
+}
+
+.session-accordion {
+  font-family: system-ui;
+  display: block;
+  position: relative;
+  font-size: .945rem;
+  padding-right: 0;
+  border: $border-width solid $border-color;
+
+  span[aria-label][data-tooltip] {
+
+    &::after {
+      white-space: initial;
+      width: 330px;
+      transition-delay: 1s;
+      transition: opacity .10s ease-out .10s, transform .10s ease-out .10s;
+    }
+
+    &::before {
+      transition-delay: 1s;
+      transition: opacity .10s ease-out .10s, transform .10s ease-out .10s;
+    }
+
+  }
+
+  a {
+    color: $white;
+    position: relative;
+
+    &.active {
+
+      &::before {
+        background-color: $blue;
+        position: absolute;
+        left: -20px;
+        top: 1px;
+        height: 18px;
+        width: 3px;
+        display: block;
+        content: "";
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+      }
+    }
+
+    &:hover {
+      color: $blue;
+    }
+  }
+
+
+  > details  {
+    background-color: $code-bg;
+
+    &:first-of-type > summary { border-top: none }
+    &:last-of-type > summary { border-bottom: none; }
+
+    > summary {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: $body-bg;
+      border-bottom: $border-width solid $border-color;
+      font-size: .825rem;
+      font-weight: $font-weight-bolder;
+      font-family: $font-family-heading;
+      color: $gray-400;
+      text-transform: uppercase;
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 15px;
+      background-image: url(icon-plus($white));
+      list-style: none;
+
+      &:hover {
+        color: $white;
+      }
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+
+    &[open] > summary {
+      color: $white;
+      background-image: url(icon-minus($white));
+    }
+
+
+
+  }
+
+}
+
+.session-scroll {
+  overflow-y: auto;
+  overflow-x: visible;
+  max-height: 700px;
+  height: auto;
+}
+
+.session-inner {
+  position: relative;
+  height: 100%;
+}
+
+.session-tabs {
+  height: 40px;
+  border-radius: none;
+}
+
+.session-logs {
+  position: absolute;
+  top: 41px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+
+  .active {
+    height: 20%;
+  }
+
+  .action {
+    height: 40%;
+  }
+
+  .history {
+    height: 40%;
+  }
+}
+
+.session-details {
+  .memory {
+    height: 10%;
+  }
+
+  .relapse-fold {
+    background-color: lighten($black, 0.9%);
+  }
+
+  .relapse-btn {
+    color: $white;
+    border-bottom: $border-width solid $border-color;
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      color: $white;
+    }
+
+    .icon-open {
+      display: none;
+    }
+
+    .icon-close {
+      display: flex;
+    }
+
+    &.opened {
+      color: $blue;
+
+
+      .icon-open {
+        display: flex;
+      }
+
+      .icon-close {
+        display: none;
+      }
+    }
+  }
+}
+

@@ -1,34 +1,18 @@
-import { hasRange, hasTemplate } from '../shared/native';
+/**
+ * Create an element, optionally with a known namespace URI.
+ *
+ * @param {string} name
+ * The element name, e.g. 'div' or 'svg'
+ *
+ * @param {string} [namespaceURI]
+ * The element's namespace URI, i.e. the value of its `xmlns` attribute or
+ * its inferred namespace.
+ */
+export function createElementNS (name: string, namespaceURI?: string): Element {
 
-let range: Range; // Create a range object for efficently rendering strings to elements.
-
-function createFragmentFromTemplate (innerHTML: string) {
-
-  const template = document.createElement('template');
-  template.innerHTML = innerHTML;
-
-  return template.content.childNodes[0];
-
-}
-
-function createFragmentFromRange (innerHTML: string) {
-
-  if (!range) {
-    range = document.createRange();
-    range.selectNode(document.body);
-  }
-
-  return range.createContextualFragment(innerHTML).childNodes[0];
-
-}
-
-function createFragmentFromWrap (innerHTML: string) {
-
-  const fragment = document.createElement('body');
-  fragment.innerHTML = innerHTML;
-
-  return fragment.childNodes[0];
-
+  return !namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml'
+    ? document.createElement(name)
+    : document.createElementNS(namespaceURI, name);
 }
 
 /**
@@ -39,31 +23,11 @@ function createFragmentFromWrap (innerHTML: string) {
 /**
  * Get default node key
  */
-export function getDefaultNodeKey (node: Element) {
+export function getNodeKey (node: ChildNode) {
 
-  return node ? ((node.getAttribute && node.getAttribute('id')) || node.id) : undefined;
-
-}
-
-/**
- * This is about the same:
- *
- * ```js
- * const html = new DOMParser().parseFromString(str, 'text/html');
- * return html.body.firstChild;
- * ```
- */
-export function toElement (node: string) {
-
-  node = node.trim();
-
-  // avoid restrictions on content for things like `<tr><th>Hi</th></tr>` which
-  // createContextualFragment doesn't support
-  // <template> support not available in IE
-  if (hasTemplate) return createFragmentFromTemplate(node);
-  if (hasRange) return createFragmentFromRange(node);
-
-  return createFragmentFromWrap(node);
+  return node ? ((
+    (node as Element).getAttribute &&
+    (node as Element).getAttribute('id')) || (node as Element).id) : undefined;
 
 }
 
@@ -71,6 +35,7 @@ export function toElement (node: string) {
  * Returns true if two node's names are the same.
  *
  * **NOTE**
+ *
  * We don't bother checking `namespaceURI` because you will never find
  * two HTML elements with the same nodeName and different namespace URIs.
  */
@@ -92,23 +57,6 @@ export function compareNodeNames (oldElement: Element, newElement: Element): boo
 
   return false;
 
-}
-
-/**
- * Create an element, optionally with a known namespace URI.
- *
- * @param {string} name
- * The element name, e.g. 'div' or 'svg'
- *
- * @param {string} [namespaceURI]
- * The element's namespace URI, i.e. the value of its `xmlns` attribute or
- * its inferred namespace.
- */
-export function createElementNS (name: string, namespaceURI?: string): Element {
-
-  return !namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml'
-    ? document.createElement(name)
-    : document.createElementNS(namespaceURI, name);
 }
 
 /**

@@ -1,0 +1,22 @@
+<div class="sidebar-header">
+  <div class="row jc-between ai-center w-100">
+    <a
+      href="/"
+      class="col-auto tc-sm"
+      spx-target="['body']">
+      {% svg 'logo', 'icon-logo' %}
+    </a>
+
+    {% comment %}
+      <div class="col-auto pt-sm-2 d-none">
+      {% include 'version' %}
+      </div>
+    {% endcomment %}
+    <a
+      class="col-auto tr pr-0"
+      href="{{ navigation.github.url }}"
+      target="_blank">
+      {% svg 'github', 'icon-github' %}
+    </a>
+  </div>
+</div>

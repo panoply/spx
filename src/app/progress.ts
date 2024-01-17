@@ -1,216 +1,258 @@
-import { IProgress } from 'types';
-import { config } from './session';
+import { d } from '../shared/native';
+import { glue } from '../shared/utils';
+import { IProgress } from '../types/options';
+import { $ } from './session';
 
-/**
- * Progress Status
- */
-let status = null;
+function Progress () {
 
-/**
- * Progress Status
- */
-let timeout: NodeJS.Timeout;
+  /**
+   * Pending Queue
+   */
+  const pending: Array<(update?: () => void) => void> = [];
 
-/**
- * Progress Element
- */
-let element: HTMLDivElement = null;
+  /**
+   * Progress Element
+   */
+  const node = document.createElement('div');
 
-/**
- * Pending Queue
- */
-const pending = [];
+  /**
+   * Progress Status
+   */
+  let status = null;
 
-/**
- * Sets the progress bar status, where `n` is a number from `0.0` to `1.0`.
- */
-function setProgress (n: number) {
+  /**
+   * Progress Status
+   */
+  let timeout: NodeJS.Timeout;
 
-  const { speed, easing, minimum } = config.progress as IProgress;
-  const started = typeof status === 'number';
+  /**
+   * Progress Element
+   */
+  let element: HTMLDivElement = null;
 
-  n = clamp(n, minimum, 1);
+  /**
+   * Progress Style
+   *
+   * Customize the inline CSS styling of the progress bar node.
+   */
+  const style = ({ bgColor, barHeight, speed, easing }: IProgress) => {
 
-  status = (n === 1 ? null : n);
+    node.style.cssText = glue(
+      'pointer-events:none;',
+      `background-color:${bgColor};`,
+      `height:${barHeight};`,
+      'position:fixed;',
+      'z-index:9999999;',
+      'top:0;',
+      'left:0;',
+      'width:100%;',
+      'will-change:opacity,transform;',
+      `transition:transform ${speed}ms ${easing};`
+    );
 
-  const progress = render(!started);
+  };
 
-  progress.offsetWidth; // eslint-disable-line no-unused-expressions
+  /**
+   * Progress Percent
+   *
+   * Converts a percentage (`0..1`) to a bar translateX percent (`-100%..0%`).
+   */
+  const percent = (n: number) => (-1 + n) * 100;
 
-  queue((next: () => void) => {
+  /**
+   * Current
+   *
+   * Utility clamp for min/max values
+   */
+  const current = (n: number, min: number, max: number) => n < min ? min : n > max ? max : n;
 
-    // Add transition
-    progress.style.transform = `translate3d(${percentage(n)}%,0,0)`;
-    progress.style.transition = `all ${speed}ms ${easing}`;
+  /**
+   * Render Progress
+   *
+   * Renders the progress bar element node to the DOM.
+   */
+  const render = (): HTMLDivElement => {
 
-    if (n !== 1) return setTimeout(next, speed);
+    if (element) return element;
 
-    progress.style.transition = 'none';
-    progress.style.opacity = '1';
-    progress.offsetWidth; // eslint-disable-line no-unused-expressions
+    node.style.setProperty('transform', `translateX(${percent(status || 0)}%)`);
+    element = d().appendChild(node);
+
+    return node;
+
+  };
+
+  /**
+   * Removes the element. Opposite of render().
+   */
+  const remove = () => {
+
+    const dom = d();
+
+    if (dom.contains(element)) {
+
+      const animate = element.animate(
+        { opacity: [ '1', '0' ] },
+        { easing: 'ease-out', duration: 100 }
+      );
+
+      animate.onfinish = () => {
+        dom.removeChild(element);
+        element = null;
+      };
+
+    } else {
+
+      element = null;
+
+    }
+
+  };
+
+  /**
+   * Dequeue
+   *
+   * Dequeue pending update callbacks
+   */
+  const dequeue = () => {
+
+    const update = pending.shift();
+
+    if (update) {
+      update(dequeue);
+    }
+  };
+
+  /**
+   * Enqueue
+   *
+   * Queue execution for the progress bar
+   */
+  const enqueue = (call: any) => {
+
+    pending.push(call);
+
+    if (pending.length === 1) dequeue();
+
+  };
+
+  /**
+   * Sets the progress bar status, where `amount` is a number from `0.0` to `1.0`.
+   */
+  const set = (amount: number) => {
+
+    amount = current(amount, $.config.progress.minimum, 1);
+    status = amount === 1 ? null : amount;
+
+    const progress = render();
+
+    enqueue((update: () => void) => {
+
+      progress.style.setProperty('transform', `translateX(${percent(amount)}%)`);
+
+      if (amount === 1) {
+        setTimeout(() => {
+          remove();
+          update();
+        }, $.config.progress.speed * 2);
+      } else {
+        setTimeout(update, $.config.progress.speed);
+      }
+
+    });
+
+  };
+
+  /**
+   * Progress Increment
+   *
+   * Increments by a random amount.
+   */
+  const inc = (amount?: number) => {
+
+    let n = status;
+
+    if (!n) return start();
+
+    if (n < 1) {
+
+      if (typeof amount !== 'number') {
+
+        // Incremental offsets in randomised float
+        // Credit: https://github.com/rstacruz/nprogress
+        //
+        if (n >= 0 && n < 0.2) amount = 0.1;
+        else if (n >= 0.2 && n < 0.5) amount = 0.04;
+        else if (n >= 0.5 && n < 0.8) amount = 0.02;
+        else if (n >= 0.8 && n < 0.99) amount = 0.005;
+        else amount = 0;
+      }
+
+      n = current(n + amount, 0, 0.994);
+
+      return set(n);
+
+    }
+  };
+
+  /**
+   * Progress Trickle
+   *
+   * Increments by a random amount.
+   */
+  const doTrickle = () => {
 
     setTimeout(() => {
 
-      progress.style.transition = `all ${speed}ms ${easing}`;
-      progress.style.opacity = '0';
-      setTimeout(() => [ remove(), next() ], speed);
+      if (!status) return;
 
-    }, speed);
+      inc();
+      doTrickle();
 
-  });
+    }, $.config.progress.trickleSpeed);
 
-};
-
-/**
- * Increments by a random amount.
- */
-function increment (amount?: number) {
-
-  let n = status;
-
-  if (!n) return start();
-
-  if (n < 1) {
-
-    if (typeof amount !== 'number') {
-      if (n >= 0 && n < 0.2) amount = 0.1;
-      else if (n >= 0.2 && n < 0.5) amount = 0.04;
-      else if (n >= 0.5 && n < 0.8) amount = 0.02;
-      else if (n >= 0.8 && n < 0.99) amount = 0.005;
-      else amount = 0;
-    }
-
-    n = clamp(n + amount, 0, 0.994);
-    return setProgress(n);
-  }
-};
-
-/**
- * Renders the progress bar markup.
- */
-function render (fromStart: boolean): HTMLDivElement {
-
-  if (element) return element;
-
-  document.documentElement.classList.add('spx-load');
-
-  const percent = fromStart ? '-100' : percentage(status || 0);
-  const progress = document.createElement('div');
-
-  progress.id = 'spx-progress';
-  progress.style.pointerEvents = 'none';
-  progress.style.background = (config.progress as IProgress).background;
-  progress.style.height = (config.progress as IProgress).height;
-  progress.style.position = 'fixed';
-  progress.style.zIndex = '9999999';
-  progress.style.top = '0';
-  progress.style.left = '0';
-  progress.style.width = '100%';
-  progress.style.transition = 'all 0 linear';
-  progress.style.transform = `translate3d(${percent}%,0,0)`;
-
-  document.body.appendChild(progress);
-
-  element = progress;
-
-  return progress;
-
-};
-
-/**
- * Removes the element. Opposite of render().
- */
-function remove () {
-
-  document.documentElement.classList.remove('spx-load');
-
-  const progress = document.getElementById('spx-progress');
-  progress && document.body.removeChild(element);
-  element = null;
-
-};
-
-/**
- * Utility clamp for min/max values
- */
-function clamp (n: number, min: number, max: number) {
-
-  if (n < min) return min;
-  if (n > max) return max;
-
-  return n;
-}
-
-/**
- * Converts a percentage (`0..1`) to a bar translateX percentage (`-100%..0%`).
- */
-function percentage (n: number) {
-
-  return (-1 + n) * 100;
-
-}
-
-/**
- * Queue execution for the progress bar
- */
-function queue (fn: Function) {
-
-  const next = () => {
-    const fn = pending.shift();
-    if (fn) fn(next);
   };
 
-  pending.push(fn);
+  /**
+   * Begin Progress
+   *
+   * Shows the progress bar. This is the same as setting the status to 0%,
+   * except that it doesn't go backwards.
+   */
+  function start (threshold?: number) {
 
-  if (pending.length === 1) next();
+    if (!$.config.progress) return;
 
-};
+    timeout = setTimeout(() => {
 
-/**
- * Begin Progress
- *
- * Shows the progress bar. This is the same as setting the status to 0%,
- * except that it doesn't go backwards.
- */
-export function start (threshold?: number) {
+      if (!status) set(0);
+      if ($.config.progress.trickle) doTrickle();
 
-  if (!config.progress) return;
+    }, threshold || 0);
 
-  timeout = setTimeout(function () {
+  };
 
-    if (!status) setProgress(0);
+  /**
+   * Progress Done
+   *
+   * Hides the progress bar. This is the *sort of* the same as
+   * setting the status to 100%, with the difference being `done()`
+   * makes some placebo effect of some realistic motion.
+   *
+   * > If `true` is passed, it will show the progress bar even if its hidden.
+   */
+  function done (force?: boolean) {
 
-    function work () {
+    clearTimeout(timeout);
 
-      setTimeout(() => {
-        if (!status) return;
-        increment();
-        work();
-      }, (config.progress as IProgress).trickleSpeed);
+    if (!force && !status) return;
 
-    };
+    inc(0.3 + 0.5 * Math.random());
+    set(1);
 
-    if ((config.progress as IProgress).trickle) work();
+  };
 
-  }, threshold || 0);
-};
+  return { start, done, style };
+}
 
-/**
- * Progress Done
- *
- * Hides the progress bar. This is the *sort of* the same as
- * setting the status to 100%, with the difference being `done()`
- * makes some placebo effect of some realistic motion.
- *
- * > If `true` is passed, it will show the progress bar even if its hidden.
- */
-export function done (force?: boolean) {
-
-  clearTimeout(timeout);
-
-  if (!force && !status) return;
-
-  increment(0.3 + 0.5 * Math.random());
-
-  return setProgress(1);
-};
+export const progress = Progress();

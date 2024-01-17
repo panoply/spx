@@ -1,9 +1,8 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
-import { empty, uuid, hasProp, log, forEach, position } from '../shared/utils';
-import { assign, object, isArray, history } from '../shared/native';
-import { pages, snapshots, config } from './session';
-// import { getRoute } from './route';
+import { empty, uuid, hasProp, log, forEach, hasProps, targets, ts } from '../shared/utils';
+import { assign, o, isArray, history } from '../shared/native';
+import { $ } from './session';
 import { Errors, EventType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
 
@@ -15,11 +14,11 @@ export function purge (key: string | string[] = []) {
 
   const keys = isArray(key) ? key : [ key ];
 
-  for (const p in pages) {
+  for (const p in $.pages) {
     const index = keys.indexOf(p);
     if (index >= 0) {
-      delete snapshots[pages[p].uuid];
-      delete pages[p];
+      delete $.snaps[$.pages[p].uuid];
+      delete $.pages[p];
       keys.splice(index, 1);
     }
   }
@@ -36,78 +35,83 @@ export function clear (key?: string[] | string): void {
 
   if (!key) {
 
-    empty(pages);
-    empty(snapshots);
+    empty($.pages);
+    empty($.snaps);
 
   } else if (typeof key === 'string') {
 
-    delete snapshots[pages[key].uuid];
-    delete pages[key];
+    delete $.snaps[$.pages[key].uuid];
+    delete $.pages[key];
 
   } else if (isArray(key)) {
 
     forEach(url => {
 
-      delete snapshots[pages[url].uuid];
-      delete pages[url];
+      delete $.snaps[$.pages[url].uuid];
+      delete $.pages[url];
 
     }, key);
   }
 }
 
 /**
- * Generates a page state record which will be written
- * to our `pages` store and history state. This is called
- * for all new SPX visits to locations that do not exist
- * in the session.
+ * Generates a page state record which will be written to our `pages` store and history state.
+ * This is called for all new SPX visits to locations that do not exist in the session.
  *
- * This function will typically be triggers following a
- * a call to `getRoute`. The `getRoute()` will have assigned
- * the location preset and in addition any attribute annotations
- * provided on the intercepted `<a href="*"></a>` element.
+ * This function will typically be triggered following a call to `getRoute`. The `getRoute()`
+ * will have assigned the location information and in addition any attribute annotations passed
+ * on the intercepted `<a href="*"></a>` element.
  *
- * The function will assign options in accordance to the SPX
- * connection if they did not exist in the `page` state value
- * that was passed.
+ * The function will assign options in accordance to the SPX connection if they did not exist in
+ * the `page` state value that was passed.
  */
 export function create (page: IPage): IPage {
 
-  page.target = hasProp(page, 'target')
-    ? (page.target.length === 1 && page.target[0] === 'body')
-      ? page.target
-      : [].concat(config.targets, page.target)
-    : config.targets;
+  const has = hasProps(page);
 
-  if (config.cache) {
-    if (!hasProp(page, 'cache')) page.cache = config.cache;
-    if (!hasProp(page, 'uuid')) page.uuid = uuid();
+  page.components = [];
+  page.target = targets(page);
+  page.ts = ts();
+
+  if ($.config.cache) {
+    if (!has('cache')) page.cache = $.config.cache;
+    if (!has('uuid')) page.uuid = uuid();
   }
 
-  if (!hasProp(page, 'position')) {
-    page.position = object(null);
-    page.position.y = 0;
-    page.position.x = 0;
+  if (!has('scrollY')) page.scrollY = 0;
+  if (!has('scrollX')) page.scrollX = 0;
+
+  if ($.config.hover !== false && page.type === EventType.HOVER) {
+    if (!has('threshold')) page.threshold = $.config.hover.threshold;
   }
 
-  if (config.hover !== false && page.type === EventType.HOVER) {
-    if (!hasProp(page, 'threshold')) page.threshold = config.hover.threshold;
+  if ($.config.proximity !== false && page.type === EventType.PROXIMITY) {
+    if (!has('proximity')) page.proximity = $.config.proximity.distance;
+    if (!has('threshold')) page.threshold = $.config.proximity.threshold;
   }
 
-  if (config.proximity !== false && page.type === EventType.PROXIMITY) {
-    if (!hasProp(page, 'proximity')) page.proximity = config.proximity.distance;
-    if (!hasProp(page, 'threshold')) page.threshold = config.proximity.threshold;
+  if ($.config.progress && !has('progress')) {
+    page.progress = $.config.progress.threshold;
   }
 
-  if (config.progress !== false && !hasProp(page, 'progress')) {
-    page.progress = config.progress.threshold;
+  if (!has('render')) page.render = $.config.method;
+  if (!has('visits')) page.visits = 0;
+
+  $.pages[page.key] = page;
+
+  return $.pages[page.key];
+
+}
+
+export function patch <T extends keyof IPage> (prop: T, value: IPage[T], key = history.state.key) {
+
+  if (prop === 'location') {
+    $.pages[key][prop] = assign($.pages[key][prop], value);
+  } else {
+    $.pages[key][prop] = value;
   }
 
-  if (!hasProp(page, 'render')) page.render = 'replace';
-  if (!hasProp(page, 'visits')) page.visits = 0;
-
-  pages[page.key] = page;
-
-  return pages[page.key];
+  return $.pages[key];
 
 }
 
@@ -120,7 +124,7 @@ export function create (page: IPage): IPage {
  */
 export function set (state: IPage, snapshot: string): IPage {
 
-  const event = emit('store', state, snapshot);
+  const event = emit('before:cache', state, snapshot as any);
   const dom = typeof event === 'string' ? event : snapshot;
 
   // EventTypes above 5 are prefetch/trigger kinds.
@@ -138,28 +142,29 @@ export function set (state: IPage, snapshot: string): IPage {
 
       // EventTypes are 6 to 10 ~ these are trigger
       // kinds, we need to update the current pages scroll position.
-      if (hasProp(pages, state.rev)) {
-        pages[state.rev].position.x = scrollX;
-        pages[state.rev].position.y = scrollY;
-      }
+      // if (hasProp($.pages, state.rev)) {
+
+      //   console.log('SCROLL IS UPDATING HERE');
+      //   $.pages[state.rev].scrollX = window.scrollX;
+      //   $.pages[state.rev].scrollY = window.scrollY;
+      // }
 
     }
   }
 
-  // Update to document title reference
-  state.title = getTitle(dom);
+  // Update to document title and timestamp reference
+  state.title = getTitle(snapshot);
 
   // If cache is disabled or the lifecycle event
   // returned a boolean false values we will return the record
-  if (!config.cache || event === false) return state;
-
+  if (!$.config.cache || event === false) return state;
   if (!hasProp(state, 'uuid')) return update(state, dom);
 
   // Lets assign this record to the session store
-  pages[state.key] = state;
-  snapshots[state.uuid] = dom;
+  $.pages[state.key] = state;
+  $.snaps[state.uuid] = dom;
 
-  emit('cached', state);
+  emit('after:cache', state);
 
   return state;
 
@@ -182,12 +187,14 @@ export function set (state: IPage, snapshot: string): IPage {
  */
 export function update (page: IPage, snapshot?: string): IPage {
 
-  const state = hasProp(pages, page.key) ? pages[page.key] : create(page);
+  const state = hasProp($.pages, page.key) ? $.pages[page.key] : create(page);
+
+  page.target = targets(page);
+  page.visits = page.visits + 1;
 
   if (typeof snapshot === 'string') {
-    snapshots[state.uuid] = snapshot;
+    $.snaps[state.uuid] = snapshot;
     page.title = getTitle(snapshot);
-    page.position = position();
   }
 
   return assign(state, page);
@@ -198,7 +205,7 @@ export function current () {
 
   const key = history.state.key;
 
-  if (hasProp(pages, key)) return pages[key];
+  if (hasProp($.pages, key)) return $.pages[key];
 
   log(Errors.ERROR, `No record exists: ${key}`);
 
@@ -214,7 +221,7 @@ export function dom (page: IPage):{
   get page(): IPage
 } {
 
-  const snapshot = parse(snapshots[page.uuid]);
+  const snapshot = parse($.snaps[page.uuid]);
 
   return {
     get page () {
@@ -245,14 +252,15 @@ export function get (key?: string): { page: IPage, dom: Document } {
     key = history.state.key;
   }
 
-  if (hasProp(pages, key)) {
-    const state = object(null);
-    state.page = pages[key];
-    state.dom = parse(snapshots[state.page.uuid]);
-    return state;
+  if (hasProp($.pages, key)) {
+    const state = o();
+    state.page = $.pages[key];
+    state.dom = parse($.snaps[state.page.uuid]);
+    return o();
   }
 
   log(Errors.ERROR, `No record exists: ${key}`);
+
 }
 
 /**
@@ -263,10 +271,10 @@ export function get (key?: string): { page: IPage, dom: Document } {
 export function has (key: string): boolean {
 
   return (
-    hasProp(pages, key) &&
-    hasProp(pages[key], 'uuid') &&
-    hasProp(snapshots, pages[key].uuid) &&
-    typeof snapshots[pages[key].uuid] === 'string'
+    hasProp($.pages, key) &&
+    hasProp($.pages[key], 'uuid') &&
+    hasProp($.snaps, $.pages[key].uuid) &&
+    typeof $.snaps[$.pages[key].uuid] === 'string'
   );
 
 }

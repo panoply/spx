@@ -1,9 +1,9 @@
 import * as regex from '../shared/regexp';
 import { IPage, ILocation } from 'types';
-import { nil, object, origin } from '../shared/native';
-import { forEach, chunk } from '../shared/utils';
-import { EventType } from '../shared/enums';
-import { config } from './session';
+import { nil, o, origin } from '../shared/native';
+import { chunk, log, hasProp, attrJSON, camelCase } from '../shared/utils';
+import { Errors, EventType } from '../shared/enums';
+import { $ } from './session';
 
 /**
  * Location hostname eg: brixtol.com
@@ -11,91 +11,110 @@ import { config } from './session';
 export const hostname = origin.replace(regex.Protocol, nil);
 
 /**
- * Constructs a JSON object from HTML `spx-*` attributes.
- * Attributes are passed in as array items
- *
- * @example
- *
- * // Attribute values are seperated by whitespace
- * // For example, a HTML attribute would look like:
- * <spx-prop="string:foo number:200">
- *
- * // Attribute values are split into an Array
- * // The array is passed to this reducer function
- * ["string", "foo", "number", "200"]
- *
- * // This reducer function will return:
- * { string: 'foo', number: 200 }
- *
- */
-function parseAttribute (attributes: any[]): { [key: string]: string | number } {
-
-  const state = object(null);
-
-  forEach((current: string, index: number, source: string[]) => {
-    const prop = (source.length - 1) >= index ? (index - 1) : index;
-    if (index % 2) state[source[prop]] = regex.isNumber.test(current) ? Number(current) : current;
-  }, attributes);
-
-  return state;
-
-};
-
-/**
  * Get Attributes
  *
- * Parses `href` or `form` attributes and assigns them to
- * configuration options. This function contructs the initial
- * page state model.
+ * Parses `href` or `form` attributes and assigns them to  configuration options.
+ * This function contructs the initial page state model.
  */
 export function getAttributes (element: Element, page?: IPage): IPage {
 
-  const state: IPage = page || object(null);
+  const state: IPage = page || o();
 
   for (const { nodeName, nodeValue } of element.attributes) {
 
-    if (!config.selectors.attributes.test(nodeName)) continue;
+    if (nodeName.startsWith($.qs.$data)) {
 
-    // KEY REFERENCE
-    if (nodeName === 'href') {
+      // Create reference in page state if it does not exist
+      if (!hasProp(state, 'data')) state.data = o();
 
-      state.rev = location.pathname + location.search;
+      // Obtain the data key property value, e.g: spx-data:foo
+      // will be used on the object, resulting in { data: { foo: <type> } }
+      const name = camelCase(nodeName.slice($.qs.$data.length));
+      const value = nodeValue.trim();
 
-      if (!page) {
-        state.location = getLocation(nodeValue);
-        state.key = state.location.pathname + state.location.search;
+      if (regex.isNumeric.test(value)) {
+        state.data[name] = value === 'NaN' ? NaN : +value;
+      } else if (regex.isBoolean.test(value)) {
+        state.data[name] = value === 'true';
+      } else if (value.charCodeAt(0) === 123 || value.charCodeAt(0) === 91) { // { or [
+        state.data[name] = attrJSON(nodeName, value);
+      } else {
+        state.data[name] = value; // string value
       }
 
     } else {
 
-      const name = nodeName.slice(1 + nodeName.lastIndexOf('-'));
-      const value = nodeValue.replace(regex.Whitespace, nil);
+      if (!$.qs.$attributes.test(nodeName)) continue;
 
-      if (regex.isArray.test(value)) {
+      // KEY REFERENCE
+      if (nodeName === 'href') {
 
-        state[name] = regex.isPender.test(name)
-          ? value.match(regex.ActionParams).reduce(chunk(2), [])
-          : value.match(regex.ActionParams);
+        state.rev = location.pathname + location.search;
 
-      } else if (regex.isPosition.test(value)) {
-
-        state[name] = parseAttribute(value.match(regex.inPosition));
-
-      } else if (regex.isBoolean.test(value)) {
-
-        if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
-
-      } else if (regex.isNumber.test(value)) {
-
-        state[name] = Number(value);
+        if (!page) {
+          state.location = getLocation(nodeValue);
+          state.key = state.location.pathname + state.location.search;
+        }
 
       } else {
 
-        state[name] = value;
+        const name = nodeName.slice(nodeName.lastIndexOf('-') + 1);
+        const value = nodeValue.replace(regex.Whitespace, nil).trim();
 
+        if (regex.isArray.test(value)) {
+
+          state[name] = regex.isPender.test(name)
+            ? value.match(regex.ActionParams).reduce(chunk(2), [])
+            : value.match(regex.ActionParams);
+
+        } else if (name === 'position') {
+
+          if (regex.inPosition.test(value)) {
+
+            const XY = value.match(regex.inPosition);
+
+            state[`scroll${XY[0].toUpperCase()}`] = +XY[1];
+            if (XY.length === 4) {
+              state[`scroll${XY[2].toUpperCase()}`] = +XY[3];
+            }
+
+          } else {
+            log(Errors.WARN, `Invalid attribute value on ${nodeName}, expects: y:number or x:number`);
+          }
+
+        } else if (name === 'scroll') {
+
+          if (regex.isNumber.test(value)) {
+            state.scrollY = +value;
+          } else {
+            log(Errors.WARN, `Invalid attribute value on ${nodeName}, expects: number`);
+          }
+
+        } else if (name === 'target') {
+
+          // edge cases wherein href element is annotated with "spx-target"
+          // but has empty attribute value, which means user wants to morph/replace
+          if (value === 'true') {
+            state[name] = [];
+          } else {
+            state[name] = value !== nil ? value.split(',') : [];
+          }
+
+        } else if (regex.isBoolean.test(value)) {
+
+          if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
+
+        } else if (regex.isNumeric.test(value)) {
+
+          state[name] = +value;
+
+        } else {
+
+          state[name] = value;
+
+        }
       }
     }
-
   }
 
   return state;
@@ -110,7 +129,7 @@ export function getAttributes (element: Element, page?: IPage): IPage {
  */
 function parsePath (path: string) {
 
-  const state: ILocation = object(null);
+  const state: ILocation = o();
   const size = path.length;
 
   if (size === 1 && path.charCodeAt(0) === 47) {
@@ -309,13 +328,13 @@ export function getKey (link: string | ILocation): string {
 
 export function fallback (): ILocation {
 
-  return {
+  return o({
     hostname,
     origin,
     pathname: location.pathname,
     search: location.search,
     hash: location.hash
-  };
+  });
 }
 
 /**
@@ -328,6 +347,10 @@ export function getLocation (path: string): ILocation {
   if (path === nil) return fallback();
 
   const state = parseKey(path);
+
+  if (state === null) {
+    log(Errors.ERROR, `Invalid pathname: ${path}`);
+  }
 
   state.origin = origin;
   state.hostname = hostname;
@@ -356,9 +379,15 @@ export function getRoute (link: Element | string | EventType, type: EventType = 
     return state;
   }
 
-  const state: IPage = object(null);
+  const state: IPage = o();
 
-  if (type === EventType.HYDRATE) {
+  if (link === EventType.INITIAL) {
+    state.location = fallback();
+    state.key = getKey(state.location);
+    state.rev = state.key;
+    state.type = link;
+    state.visits = 1;
+  } else if (type === EventType.HYDRATE) {
     state.location = getLocation(link as string);
     state.key = getKey(state.location);
     state.rev = state.key;

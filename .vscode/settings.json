@@ -8,22 +8,137 @@
   "stylelint.packageManager": "pnpm",
   "stylelint.enable": false,
   "scss.validate": false,
-  "scss.scannerExclude": [
-    "**/.git",
-    "**/node_modules"
-  ],
+  "highlight.regexes": {
+    "(?<=:{3,4}\\s)(grid|example|tabs|css|scss|html|note)": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+          "fontWeight": "900"
+        }
+      ]
+    },
+    "(?<=:{3,4}[a-z ]+)([colsxmd0-9-]+)": {
+      "regexFlags": "g",
+      "decorations": [
+        {
+          "color": "#91EBC2",
+          "isWholeLine": true
+        }
+      ]
+    },
+    "(XHR)(?=\\.)": {
+      "decorations": [
+        {
+          "color": "#81D4FA"
+        }
+      ]
+    },
+    "(?<=\\.)(\\$[a-zA-Z]+)": {
+      "decorations": [
+        {
+          "color": "#c5c5c5"
+        }
+      ]
+    },
+    "(spx)(@)([a-z]+)[='\"]{2}.*([.])": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+        },
+        {
+          "color": "#E91E63",
+        },
+        {
+          "color": "#9EE34F"
+        }
+      ]
+    },
+    "(spx)(@)(window)(\\:)([a-z]+)(?=\\=)": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+        },
+        {
+          "color": "#E91E63",
+        },
+        {
+          "color": "#81D4FA",
+        },
+        {
+          "color": "#E91E63",
+        },
+        {
+          "color": "#9EE34F"
+        }
+      ]
+    },
+    "(spx-[a-z]+)": {
+      "filterFileRegex": ".*\\.liquid",
+      "decorations": [
+        {
+          "color": "#81D4FA",
+        }
+      ]
+    },
+    "(?<=spx-[a-z]+:[a-z-]+\\=\")(window)(\\.)": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+        },
+        {
+          "color": "#E91E63",
+        },
+      ]
+    },
+    "(?<=spx-.*?\\=\")([$a-zA-Z0-9_-]+)(\\.)": {
+      "decorations": [
+        {
+          "color": "#FFAB40",
+        },
+        {
+          "color": "#E91E63",
+        },
+      ]
+    },
+    "(?<=spx-[a-z]+:[a-z-]+\\=\")(\\d+)": {
+      "decorations": [
+        {
+          "color": "#A96EE4",
+        }
+      ]
+    },
+    "(?<=spx-[a-z]+:[a-z-]+\\=\")(false|true)": {
+      "decorations": [
+        {
+          "color": "#F48FB1"
+        }
+      ]
+    },
+    "(spx-[a-z]+)(:)([a-z-]+)(?=[=])": {
+      "decorations": [
+        {
+          "color": "#81D4FA",
+        },
+        {
+          "color": "#E91E63",
+        },
+        {
+          "color": "#FFFFFF",
+        }
+      ]
+    },
+  },
   "html.customData": [
     "./.vscode/custom-data/drawer.html-data.json",
   ],
   "editor.codeActionsOnSave": {
-    "source.fixAll.stylelint": true
+    "source.fixAll.stylelint": "explicit"
   },
   "[liquid]": {
     "editor.defaultFormatter": "sissel.shopify-liquid",
     "editor.formatOnSave": true
   },
   "npm.packageManager": "pnpm",
-  "eslint.packageManager": "pnpm",
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true

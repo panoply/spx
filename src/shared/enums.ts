@@ -7,7 +7,7 @@ export enum Attributes {
   /**
    * Regex Capture Attribute List
    */
-  NAMES = 'hydrate|append|prepend|target|progress|threshold|position|proximity|hover',
+  NAMES = 'hydrate|append|prepend|target|progress|threshold|scroll|position|proximity|hover|cache',
 }
 
 export enum Nodes {
@@ -35,21 +35,26 @@ export enum Nodes {
 export enum Errors {
 
   /**
-   * Prints info to console (does not thrown)
+   * Prints trace info to console (does not throw)
    */
-  INFO = 1,
+  TRACE = 1,
+
+  /**
+   * Prints info to console (does not throw)
+   */
+  INFO = 2,
   /**
    * Prints warning to console (does not throw)
    */
-  WARN = 2,
+  WARN = 3,
   /**
    * Prints error to console (will throw TypeError)
    */
-  TYPE = 3,
+  TYPE = 4,
   /**
    * Prints error to console (will throw Error)
    */
-  ERROR = 4
+  ERROR = 5
 }
 
 /**

@@ -1,9 +1,22 @@
 {
-  "exclude": ["node_modules/**", "test", "docs"],
-  "include": ["src/**/*.ts", "types/*"],
+  "exclude": [
+    "node_modules/**",
+    "test",
+    "docs"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "types/*",
+    "docs/src/app/**/*.ts",
+    ".vscode/closure.ts"
+  ],
   "compilerOptions": {
     "target": "ES6",
-    "lib": ["es2020", "dom", "dom.iterable"],
+    "lib": [
+      "es2020",
+      "dom",
+      "dom.iterable"
+    ],
     "declaration": true,
     "emitDeclarationOnly": true,
     "outFile": "index.d.ts",
@@ -15,9 +28,10 @@
     "noEmitOnError": true,
     "noUnusedLocals": true,
     "pretty": true,
-    "baseUrl": ".",
     "paths": {
-      "types": ["./src/types/index.d.ts"]
+      "types": [
+        "./src/types/index.d.ts"
+      ]
     }
   }
 }

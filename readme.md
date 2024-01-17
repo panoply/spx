@@ -6,7 +6,7 @@
   <i>SINGLE PAGE XHR</i>
 </h1>
 
-Single Page XHR enhancement for SSR powered web applications. SPX is a lightening fast, lightweight (8kb gzip) push~state solution that (pre)-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module maintains an in-memory snapshot cache of fetched pages which prevents subsequent requests from occurring, and instantaneous navigation in a controlled a persisted manner.
+Single Page XHR - An enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (8kb gzip) push~state solution for fetching HTML over the wire and maintains an in-memory snapshot cache.
 
 ### Documentation
 
@@ -15,11 +15,11 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 ### Features
 
 - Simple and painless drop-in integration.
+- Supports components extendability.
 - Pre-fetching capabilities using hover, intersection or proximity observers.
 - Snapshot caching engine and per-page state control.
 - Powerful pub/sub event driven lifecycle triggers.
 - Provides a client side DOM hydration approach.
-- Supports multiple replace, append and prepend fragment targets.
 - Gracefully handles script and style asset evaluation.
 - Attribute driven programmatic control.
 
@@ -58,7 +58,7 @@ SPX is distributed as an ESM module and designed for usage in browser. You need 
 import spx from 'spx';
 
 spx.connect({
-  targets: [
+  fragments: [
     'header',
     'main'
   ]
@@ -86,10 +86,6 @@ An SPX connection will initialize an SPX session. In the above example we are ta
 ```
 
 Take a look at the documentation to learn how to refine and configure SPX.
-
-### Special Thanks
-
-Special Thanks / Спасибі to [Alexey](https://github.com/gigi) for the **SPX** npm registry name.
 
 # License
 

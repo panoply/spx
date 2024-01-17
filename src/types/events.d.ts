@@ -11,8 +11,8 @@ export type EventNames = (
  | 'prefetch'
  | 'visit'
  | 'fetch'
- | 'store'
- | 'cached'
+ | 'before:cache'
+ | 'after:cache'
  | 'hydrate'
  | 'render'
  | 'load'
@@ -41,11 +41,13 @@ export type EmitterArguments<T extends EventNames> = (
   T extends 'fetch' ? [
     state: IPage
   ] :
-  T extends 'store' ? [
+  T extends 'before:cache' ? [
     state: IPage,
-    snapshot: string
+    dom: Document
+  ] : T extends 'after:cache' ? [
+    state: IPage
   ] :
-  T extends 'cached' ? [
+  T extends 'before:render' ? [
     state: IPage
   ] :
   T extends 'hydrate' ? [
@@ -112,7 +114,7 @@ export type LifecycleEvent<T extends EventNames> = (
 
   ) => void | false :
 
-  T extends 'cached' ? (
+  T extends 'before:cache' ? (
     /**
      * Page state reference
      */
@@ -124,6 +126,14 @@ export type LifecycleEvent<T extends EventNames> = (
     snapshot?: Document
 
   ) => void | false | Document :
+
+  T extends 'after:cache' ? (
+    /**
+     * Page state reference
+     */
+    state?: IPage
+
+  ) => void :
 
   T extends 'hydrate' ? (
     /**

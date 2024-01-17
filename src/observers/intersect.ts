@@ -1,18 +1,16 @@
 import { forEach, log } from '../shared/utils';
 import { getNodeTargets } from '../shared/links';
-import { config, observers } from '../app/session';
+import { $ } from '../app/session';
 import { emit } from '../app/events';
 import { getRoute } from '../app/location';
 import * as request from '../app/fetch';
 import * as store from '../app/store';
 import { Errors, EventType } from '../shared/enums';
 
-
 /**
  * @type IntersectionObserver
  */
 let entries: IntersectionObserver;
-
 
 /**
  * Intersection callback when entries are in viewport.
@@ -44,15 +42,15 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
  */
 export function connect (): void {
 
-  if (!config.intersect || observers.intersect) return;
-  if (!entries) entries = new IntersectionObserver(forEach(onIntersect), config.intersect);
+  if (!$.config.intersect || $.observe.intersect) return;
+  if (!entries) entries = new IntersectionObserver(forEach(onIntersect), $.config.intersect);
 
   const observe = forEach<Element>(target => entries.observe(target));
-  const targets = getNodeTargets(config.selectors.intersector, config.selectors.intersects);
+  const targets = getNodeTargets($.qs.$intersector, $.qs.$intersects);
 
   observe(targets);
 
-  observers.intersect = true;
+  $.observe.intersect = true;
 
 }
 
@@ -62,9 +60,9 @@ export function connect (): void {
  */
 export function disconnect (): void {
 
-  if (!observers.intersect) return;
+  if (!$.observe.intersect) return;
 
   entries.disconnect();
-  observers.intersect = false;
+  $.observe.intersect = false;
 
 };

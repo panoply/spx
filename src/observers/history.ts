@@ -1,54 +1,23 @@
 import { HistoryState, IPage } from 'types';
-import { pages, observers } from '../app/session';
-import { history, object } from '../shared/native';
-import { hasProp, log, onNextResolveTick } from '../shared/utils';
-import { fetch, reverse } from '../app/fetch';
+import { $ } from '../app/session';
+import { assign, history, o } from '../shared/native';
+import { hasProp, hasProps, log } from '../shared/utils';
+import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as store from '../app/store';
 import { Errors, EventType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
-// import { emit } from '../app/events';
 
 /**
  * History API - Re-export of the `window.history` native constant
  */
 export { history as api } from '../shared/native';
 
-// let loaded: boolean = false;
-
-/**
- * The state reference to be populated and saved in the browser state.
- * This is a partial copy of the in-memory page state. The function
- * will omit render specific options that could otherwise be applied
- * via attribute annotation.
- */
-function stack (page?: IPage) {
-
-  const state: HistoryState = object(null);
-
-  state.key = page.key;
-  state.rev = page.rev;
-  state.title = page.title;
-  state.position = page.position;
-
-  return state;
-
-}
-
-/**
- * Returns History State
- */
-export function get () {
-
-  return history.state;
-
-}
-
 /**
  * Check if history state holds reverse
  * last path reference. Returns a boolean
  */
-export function doReverse (): boolean {
+export function reverse (): boolean {
 
   return (
     history.state !== null &&
@@ -58,23 +27,79 @@ export function doReverse (): boolean {
 
 }
 
-export function replace (state: IPage) {
+/**
+ * Check if an SPX hsitory state reference exists.
+ * Accepts a `key` reference, when passed will apply an
+ * additional check to ensure history record matches key.
+ */
+export function exists (key?: string): boolean {
 
-  // console.log('REPLACE STATE', state);
+  if (history.state == null) return false;
+  if (typeof history.state !== 'object') return false;
 
-  history.replaceState(stack(state), state.title, state.key);
+  const match = hasProps(history.state)([
+    'key',
+    'rev',
+    'scrollX',
+    'scrollY',
+    'title'
+  ]);
 
-  log(Errors.INFO, `ReplaceState triggered for: ${state.key}`);
-
-  return state;
+  return typeof key === 'string'
+    ? match && history.state.key === key
+    : match;
 
 }
 
-export function push (state: IPage) {
+/**
+ * Initialise history reference and align scroll position
+ */
+export function initialize (page: IPage) {
 
-  history.pushState(stack(state), state.title, state.key);
+  if (exists(page.key)) {
+    scrollTo(history.state.scrollX, history.state.scrollY);
+    return assign(page, history.state);
+  } else {
+    replace(page);
+  }
 
-  return state;
+  return page;
+
+}
+
+export function replace (page: HistoryState) {
+
+  const state: HistoryState = o();
+
+  state.key = page.key;
+  state.rev = page.rev;
+  state.title = page.title || document.title;
+  state.scrollX = page.scrollX;
+  state.scrollY = page.scrollY;
+
+  history.replaceState(state, state.title, state.key);
+
+  log(Errors.TRACE, `History replaceState: ${history.state.key}`);
+
+  return history.state;
+
+}
+
+export function push ({ key, rev, title }: IPage) {
+
+  const state: HistoryState = o<HistoryState>({
+    key,
+    rev,
+    title,
+    scrollY: 0,
+    scrollX: 0
+  });
+
+  history.pushState(state, state.title, state.key);
+
+  log(Errors.TRACE, `History pushState: ${history.state.key}`);
+
+  return history.state;
 
 }
 
@@ -85,27 +110,27 @@ export function push (state: IPage) {
  */
 async function pop (event: PopStateEvent & { state: HistoryState }) {
 
-  log(Errors.INFO, 'PopState visit incurred');
-
-  if (document.readyState !== 'complete') {
-
-    await onNextResolveTick();
-
-  }
+  // console.log('POP', event.state.key, event.state.position);
 
   if (event.state === null) return;
 
   if (store.has(event.state.key)) {
 
-    reverse(event.state.rev);
+    if (store.has(event.state.rev) === false && event.state.rev !== event.state.key) {
+      request.reverse(event.state.rev);
+    }
 
-    await render.update(pages[event.state.key]);
+    log(Errors.TRACE, `History popState: ${event.state.key}`);
+
+    $.pages[event.state.key].type = EventType.POPSTATE;
+
+    await render.update($.pages[event.state.key]);
 
   } else {
 
     event.state.type = EventType.POPSTATE;
 
-    const page = await fetch(event.state);
+    const page = await request.fetch(event.state);
 
     if (!page) return location.assign(event.state.key);
 
@@ -117,29 +142,19 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
     } else if (store.has(key)) {
 
-      await render.update(pages[key]);
+      await render.update($.pages[key]);
 
     } else {
 
       const data = store.create(getRoute(key, EventType.POPSTATE));
 
-      await fetch(data);
+      await request.fetch(data);
 
       history.pushState(data, document.title, key);
     }
+
   }
 };
-
-/**
- * Listener Callback
- *
- * Event History dispatch controller, handles popstate,
- * push and replace events via third party module
- */
-// eslint-disable-next-line no-unused-vars
-// function persist ({ timeStamp }: BeforeUnloadEvent) {
-//  window.sessionStorage.setItem(config.session, JSON.stringify({ snapshots, pages }));
-// };
 
 /**
  * Start History API
@@ -148,21 +163,23 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
  * reference, which is passed on initialisation and used to execute
  * assignment for history push~state when no context exists.
  */
-export function connect (page?: IPage): void {
+export function connect (page?: IPage): IPage {
 
-  if (observers.history) return;
+  if ($.observe.history) return;
 
   // Scroll restoration is set to manual for Safari and iOS
   // when auto, content flashes are incurred, manual is a far better approach here.
   if (history.scrollRestoration) history.scrollRestoration = 'manual';
 
-  // Connection allows page state to be passed
-  // this will ensure history push~state is aligned on initial runs
-  if (history.state === null && page) history.replaceState(stack(page), page.title, page.key);
-
   addEventListener('popstate', pop, false);
 
-  observers.history = true;
+  $.observe.history = true;
+
+  // Connection allows page state to be passed
+  // this will ensure history push~state is aligned on initial runs
+  if (typeof page === 'object' && page.type === EventType.INITIAL) return initialize(page);
+
+  return page;
 
 }
 
@@ -173,13 +190,13 @@ export function connect (page?: IPage): void {
  */
 export function disconnect (): void {
 
-  if (!observers.history) return;
+  if (!$.observe.history) return;
 
   // Revert scroll restoration to defaults
   if (history.scrollRestoration) history.scrollRestoration = 'auto';
 
   removeEventListener('popstate', pop, false);
 
-  observers.history = false;
+  $.observe.history = false;
 
 }

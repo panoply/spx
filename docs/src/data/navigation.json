@@ -1,0 +1,297 @@
+{
+  "github": {
+    "title": "Github",
+    "url": "https://github.com/panoply/spx",
+    "target": "_blank"
+  },
+  "npm": {
+    "title": "NPM",
+    "url": "https://www.npmjs.com/package/spx",
+    "target": "_blank"
+  },
+  "discord": {
+    "title": "Discord",
+    "url": "https://discord.gg/shopify-developers-597504637167468564",
+    "target": "_blank"
+  },
+  "examples": [
+    {
+      "group": "Components",
+      "links": [
+        {
+          "title": "Todo List",
+          "url": "/examples/components/todo-list/"
+        },
+        {
+          "title": "Tabs",
+          "url": "/examples/components/tabs/"
+        },
+        {
+          "title": "Infinite Scrolling",
+          "url": "/examples/components/infinate-scrolling/"
+        }
+      ]
+    },
+    {
+      "group": "Prefetching",
+      "links": [
+        {
+          "title": "Hover",
+          "url": "/examples/prefetching/hover/"
+        },
+        {
+          "title": "Proximity",
+          "url": "/examples/prefetching/proximity/"
+        },
+        {
+          "title": "Intersect",
+          "url": "/examples/prefetching/intersect/"
+        }
+      ]
+    }
+  ],
+  "menu": [
+    {
+      "group": "Introduction",
+      "links": [
+        {
+          "title": "What is SPX?",
+          "url": "/introduction/what-is-spx/"
+        },
+        {
+          "title": "Key Concepts",
+          "url": "/introduction/key-concepts/"
+        },
+        {
+          "title": "Session",
+          "url": "/introduction/session/"
+        },
+        {
+          "title": "Lifecycle",
+          "url": "/introduction/lifecycle/"
+        }
+      ]
+    },
+    {
+      "group": "Usage",
+      "links": [
+        {
+          "title": "Installation",
+          "url": "/usage/installation/"
+        },
+        {
+          "title": "Connection",
+          "url": "/usage/connection/"
+        },
+        {
+          "title": "Options",
+          "url": "/usage/options/"
+        },
+        {
+          "title": "Resource Evaluation",
+          "url": "/usage/resource-evaluation/"
+        },
+        {
+          "title": "Best Practices",
+          "url": "/usage/best-practices/"
+        }
+      ]
+    },
+    {
+      "group": "Components",
+      "links": [
+        {
+          "title": "Overview",
+          "url": "/components/overview/"
+        },
+        {
+          "title": "Directives",
+          "url": "/components/directives/"
+        },
+        {
+          "title": "State",
+          "url": "/components/state/"
+        },
+        {
+          "title": "Events",
+          "url": "/components/events/"
+        },
+        {
+          "title": "Nodes",
+          "url": "/components/nodes/"
+        },
+        {
+          "title": "TypeScript",
+          "url": "/components/typescript/"
+        }
+      ]
+    },
+    {
+      "group": "Attributes",
+      "links": [
+        {
+          "title": "spx-target",
+          "url": "/attributes/spx-target/"
+        },
+        {
+          "title": "spx-morph",
+          "url": "/attributes/spx-morph/"
+        },
+        {
+          "title": "spx-replace",
+          "url": "/attributes/spx-replace/"
+        },
+        {
+          "title": "spx-hover",
+          "url": "/attributes/spx-hover/"
+        },
+        {
+          "title": "spx-eval",
+          "url": "/attributes/spx-eval/"
+        },
+        {
+          "title": "spx-data",
+          "url": "/attributes/spx-data/"
+        },
+        {
+          "title": "spx-hydrate",
+          "url": "/attributes/spx-hydrate/"
+        },
+        {
+          "title": "spx-intersect",
+          "url": "/attributes/spx-intersect/"
+        },
+        {
+          "title": "spx-prepend",
+          "url": "/attributes/spx-prepend/"
+        },
+        {
+          "title": "spx-append",
+          "url": "/attributes/spx-append/"
+        },
+        {
+          "title": "spx-threshold",
+          "url": "/attributes/spx-threshold/"
+        },
+        {
+          "title": "spx-proximity",
+          "url": "/attributes/spx-proximity/"
+        },
+        {
+          "title": "spx-position",
+          "url": "/attributes/spx-position/"
+        },
+        {
+          "title": "spx-scroll",
+          "url": "/attributes/spx-scroll/"
+        },
+        {
+          "title": "spx-cache",
+          "url": "/attributes/spx-cache/"
+        },
+        {
+          "title": "spx-disable",
+          "url": "/attributes/spx-disable/"
+        },
+        {
+          "title": "spx-history",
+          "url": "/attributes/spx-history/"
+        }
+      ]
+    },
+    {
+      "group": "API",
+      "links": [
+        {
+          "title": "spx.connect",
+          "url": "/api/connect/"
+        },
+        {
+          "title": "spx.component",
+          "url": "/api/component/"
+        },
+        {
+          "title": "spx.on",
+          "url": "/api/on/"
+        },
+        {
+          "title": "spx.off",
+          "url": "/api/off/"
+        },
+        {
+          "title": "spx.visit",
+          "url": "/api/visit/"
+        },
+        {
+          "title": "spx.prefetch",
+          "url": "/api/prefetch/"
+        },
+        {
+          "title": "spx.fetch",
+          "url": "/api/fetch/"
+        },
+        {
+          "title": "spx.form",
+          "url": "/api/form/"
+        },
+        {
+          "title": "spx.render",
+          "url": "/api/render/"
+        },
+        {
+          "title": "spx.capture",
+          "url": "/api/capture/"
+        },
+        {
+          "title": "spx.reload",
+          "url": "/api/reload/"
+        },
+        {
+          "title": "spx.clear",
+          "url": "/api/clear/"
+        },
+        {
+          "title": "spx.hydrate",
+          "url": "/api/hydrate/"
+        },
+        {
+          "title": "spx.store",
+          "url": "/api/store/"
+        },
+        {
+          "title": "spx.observe",
+          "url": "/api/observe/"
+        },
+        {
+          "title": "spx.disconnect",
+          "url": "/api/disconnect/"
+        }
+      ]
+    },
+    {
+      "group": "Misc",
+      "links": [
+        {
+          "title": "VSCode Extension",
+          "url": "/misc/vscode-extension/"
+        },
+        {
+          "title": "Shopify Themes",
+          "url": "/misc/shopify-themes/"
+        },
+        {
+          "title": "Benchmarks",
+          "url": "/misc/benchmarks/"
+        },
+        {
+          "title": "Acknowledgements",
+          "url": "/misc/acknowledgements/"
+        },
+        {
+          "title": "Contributing",
+          "url": "/misc/contributing/"
+        }
+      ]
+    }
+  ]
+}

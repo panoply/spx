@@ -1,18 +1,87 @@
-import { IPosition } from 'types';
 import { Errors } from './enums';
-import { object } from './native';
-import { config } from '../app/session';
+import { $ } from '../app/session';
+import { IPage } from '../types/page';
+import { assign, defineProp, d, nil } from './native';
+import * as regex from './regexp';
 
 /**
- * Asserts the current X and Y page
- * offset position of the document
+ * Whether DOM has loaded
  */
-export function position (state: IPosition = object(null)): IPosition {
+export async function load () {
 
-  state.x = window.scrollX;
-  state.y = window.scrollY;
+  await onNextResolveTick();
 
-  return state;
+  $.loaded = true;
+  console.log('loaded');
+
+  return $.loaded || document.readyState === 'complete';
+
+}
+
+/**
+ * Attribute JSON
+ *
+ * Parses Attribute values as JSON. Supports both Array or Object types
+ * and does not require quotations be applied.
+ */
+export function attrJSON (attr: string, string?: string) {
+
+  try {
+
+    const json = (string || attr)
+      .replace(/\\'|'/g, (m) => m[0] === '\\' ? m : '"')
+      .replace(/([{,])\s*(.+?)\s*:/g, '$1 "$2":');
+
+    return JSON.parse(json);
+
+  } catch (e) {
+
+    log(Errors.ERROR, `Invalid JSON expression in attribute value: ${(string || attr)}`, e);
+
+    return string;
+
+  }
+
+}
+
+/**
+ * Attribute Value InstanceOf
+ *
+ * Normalizes the `spx-component` attribute value and corrects possible malformed
+ * identifiers. This `spx-component` attribute can accept multiple component references,
+ * this function ensure we can read each entry.
+ */
+export function attrValueInstanceOf (input: string) {
+
+  return input
+    .trim()
+    .replace(/\s+/, ' ')
+    .split(/[|, ]/);
+}
+
+/**
+ * Attribute Value Notation
+ *
+ * Normalizes and corrects possibly malformed attribute values which use dot `.`
+ * notation entries. Returns a string list and all entries contained.
+ */
+export function attrValueNotation (input: string) {
+
+  return input
+    .replace(/[\s .]+/g, '.')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(/[ ,]/);
+
+}
+
+export function attrValueFromType (input: string) {
+
+  if (regex.isNumeric.test(input)) return input === 'NaN' ? NaN : +input;
+  if (regex.isBoolean.test(input)) return input === 'true';
+  if (input.charCodeAt(0) === 123 || input.charCodeAt(0) === 91) return attrJSON(input); // { or [
+
+  return input; // string value
 
 }
 
@@ -21,9 +90,36 @@ export function onNextAnimationFrame () {
   return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-export function onNextEventLoopTick () {
+/**
+ * On Next Tick Resolve
+ *
+ * Resolves a promise outside the of the event loop.
+ */
+export function onNextTickResolve () {
 
   return new Promise<void>((resolve) => setTimeout(() => resolve(), 0));
+
+}
+
+/**
+ * On Next Tick
+ *
+ * Executes the provided `callback()` parameter outside of the event loop.
+ */
+export function onNextTick (callback: () => void) {
+
+  setTimeout(() => callback(), 1);
+
+}
+
+/**
+ * Delay
+ *
+ * Resolves a Promise after the provided `timeout` has finished.
+ */
+export function delay (timeout: number) {
+
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 
 }
 
@@ -41,26 +137,46 @@ export function onNextResolveTick () {
 export function decodeEntities (string: string) {
 
   const textarea = document.createElement('textarea');
+
   textarea.innerHTML = string;
+
   return textarea.value;
+
+}
+
+/**
+ * Timestamp
+ *
+ * Returns the current time value in milliseconds
+ */
+export function ts () {
+
+  return new Date().getTime();
 }
 
 /**
  * Type Error
  *
- * Error wanrning handler
+ * Error handler for console logging operations. The function allows for
+ * throws, warnings and other SPX related logs.
  */
 export function log (error: Errors, message: string, context?: any) {
 
-  if (error === Errors.INFO && config.logs === true) {
+  const { logLevel } = $.config;
+
+  if ((
+    error === Errors.TRACE && logLevel === 1
+  ) || (
+    error === Errors.INFO && (logLevel === 1 || logLevel === 2)
+  )) {
 
     console.info('SPX: ' + message);
 
-  } else if (error === Errors.WARN && config.logs === true) {
+  } else if (error === Errors.WARN && logLevel < 4) {
 
     console.warn('SPX: ' + message);
 
-  } else {
+  } else if (error === Errors.ERROR || error === Errors.TYPE) {
 
     if (context) {
       console.error('SPX: ' + message, context);
@@ -79,42 +195,139 @@ export function log (error: Errors, message: string, context?: any) {
 }
 
 /**
+ * Has Properties
+ *
+ * Same as `hasProp` but accepts an array list of properties.
  * Used to validate the null prototype objects used in the module.
  */
-export function hasProp<T extends object> (
-  object: T,
-  property: keyof T
-): boolean {
+export function hasProps<T extends object> (object: T) {
 
-  return property in object;
+  return <
+    S extends keyof T,
+    A extends Array<S>,
+    P extends S | A
+  >(property: P) => {
+
+    if (!property) return false;
+    if (typeof property === 'string') return hasProp(object, property);
+
+    return (property as A).every(prop => prop in object);
+
+  };
+
 }
 
 /**
- * Creates a UUID string used for snapshot
- * record references.
+ * Has Property
+ *
+ * Used to validate the `null` prototype objects used in the module.
+ */
+export function hasProp<T extends object> (object: T, property: keyof T | string) {
+
+  return object ? property in object : false;
+
+}
+
+/**
+ * Define Getter
+ *
+ * Creates a getter on an object. Accepts curried callback.
+ */
+export function defineGetter <T> (object: T, name?: string, value?: any) {
+
+  if (arguments.length > 1) {
+
+    defineProp(object, name, { get: () => value });
+
+  } else {
+
+    return (name: string, value: any, options?: Omit<PropertyDescriptor, 'get'>) => {
+
+      if (hasProp<any>(object, name)) return;
+
+      const get = () => value;
+
+      defineProp(object, name, options
+        ? assign(options, { get })
+        : <PropertyDescriptor>{ get });
+    };
+
+  }
+
+}
+
+/**
+ * Returns a concated string list of `target` selectors.
+ *
+ * Always the last known target to be applied is the `spx-target` selector
+ * this is because when executing the render() cycle, we will first querySelect
+ * all targets and keep a record of them, then when we come accross the spx-target
+ * node, we check to see if it is a decendent of an already morphed target and exclude
+ */
+export function targets (page: IPage) {
+
+  if (hasProp(page, 'target')) {
+
+    if (page.target.length === 1 && page.target[0] === 'body') return page.target;
+
+    return [].concat($.config.fragments, page.target).filter((v, i, a) => (
+      v !== 'body' &&
+      v !== nil &&
+      v.indexOf(',') === -1 ? a.indexOf(v) === i : false
+    ));
+
+  } else if ($.config.fragments.length === 1 && $.config.fragments[0] === 'body') {
+
+    return [ 'body' ];
+
+  }
+
+  return [ ...$.config.fragments ];
+
+}
+
+/**
+ * Glue
+ *
+ * Joins an array list together
+ */
+export function glue (...input: string[]) {
+
+  return input.join(nil);
+}
+
+/**
+ * UUID
+ *
+ * Creates a UUID string used for snapshot record references.
  */
 export function uuid () {
-  return Math.random().toString(36).slice(2);
+
+  return Math.random().toString(36).slice(4);
+
 }
 
 /**
  * Array Chunk function
+ *
+ * Augments an array into smaller subsets (i.e: "chunks").
  */
-export function chunk (
-  size: number = 2
-): (acc: any[], value: string) => any[] {
+export function chunk (size: number = 2): (acc: any[], value: string) => any[] {
+
   return (acc, value) => {
+
     const length: number = acc.length;
-    const chunks =
-      length < 1 || acc[length - 1].length === size
-        ? acc.push([ value ])
-        : acc[length - 1].push(value);
+    const chunks = length < 1 || acc[length - 1].length === size
+      ? acc.push([ value ])
+      : acc[length - 1].push(value);
 
     return chunks && acc;
+
   };
 }
 
 export function size (bytes: number): string {
+
   const kb = 1024;
   const mb = 1048576;
   const gb = 1073741824;
@@ -126,6 +339,65 @@ export function size (bytes: number): string {
 }
 
 /**
+ * Lowercase First
+ *
+ * Converts the first letter to lowercase
+ */
+export function downcase (input: string) {
+
+  return input[0].toLowerCase() + input.slice(1);
+}
+
+/**
+ * Upcase
+ *
+ * Converts the first letter to Uppercase
+ */
+export function upcase (input: string) {
+
+  return input[0].toUpperCase() + input.slice(1);
+}
+
+/**
+ * Camel Case
+ *
+ * Converts a string from kebab-case or snake_case to camelCase.
+ */
+export function camelCase (input: string) {
+
+  return /[_-]/.test(input)
+    ? input.replace(/([_-]+).{1}/g, (x, k) => x[k.length].toUpperCase())
+    : input;
+}
+
+/**
+ * For Node
+ *
+ * Wrapper around `querySelectorAll` which will loop though nodes.
+ * Returning a boolean `false` will stop iteration.
+ */
+export function forNode <T extends HTMLElement> (
+  selector: string | NodeListOf<T>,
+  callback: (node: T, index?: number) => void | false
+) {
+
+  const nodes = typeof selector === 'string'
+    ? d().querySelectorAll<T>(selector)
+    : selector;
+
+  const count = nodes.length;
+
+  // Ensure we can iterate the list
+  if (count === 0) return;
+
+  // Loop over the items in the array
+  for (let i = 0; i < count; i++) if (callback(nodes[i], i) === false) break;
+
+}
+
+/**
+ * For Each
+ *
  * Synchronous forEach iterator wrapper. Provides curried support.
  * It's using the `for` iterator which is best for records under
  * 1000 (which is the standard for this library).
@@ -135,7 +407,7 @@ export function forEach<T> (
   array?: Array<T>
 ) {
   // curried expression
-  if (arguments.length === 1) { return (array: Array<T>) => forEach(callback, array); }
+  if (arguments.length === 1) return (array: Array<T>) => forEach(callback, array);
 
   const len = array.length;
 
@@ -147,9 +419,13 @@ export function forEach<T> (
 }
 
 /**
+ * Empty Object
+ *
  * Returns a list of link elements to be prefetched. Filters out
  * any links which exist in cache to prevent extrenous transit.
  */
 export function empty<T> (object: T) {
+
   for (const prop in object) delete object[prop];
+
 }

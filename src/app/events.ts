@@ -1,17 +1,10 @@
 /* eslint-disable no-unused-vars */
 
 import { EventNames, EmitterArguments } from 'types';
-import { forEach, hasProp } from '../shared/utils';
-import { object } from '../shared/native';
+import { forEach, hasProp, log } from '../shared/utils';
 import { parse } from '../shared/dom';
-
-/**
- * Events Model
- *
- * Holds an object reference for every event
- * emitted. Used by the event emitter operations
- */
-const events: { [name: string]: Array<() => void | boolean> } = object(null);
+import { $ } from './session';
+import { Errors } from '../shared/enums';
 
 /**
  * Emit Event
@@ -21,9 +14,9 @@ const events: { [name: string]: Array<() => void | boolean> } = object(null);
  */
 export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T>) {
 
-  const isCache = name === 'store';
+  const isCache = name === 'before:cache';
 
-  if (isCache) args.splice(-1, 1, parse(args[args.length - 1] as string) as any);
+  if (isCache) args[1] = parse(args[1] as any);
 
   let returns: boolean | string = true;
 
@@ -40,7 +33,7 @@ export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T
     } else {
       returns = returned !== false;
     }
-  }, events[name] || []);
+  }, $.events[name] || []);
 
   return returns;
 
@@ -53,9 +46,9 @@ export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T
  */
 export function on (name: EventNames, callback?: () => void, scope?: any) {
 
-  if (!hasProp(events, name)) events[name] = [];
+  if (!hasProp($.events, name)) $.events[name] = [];
 
-  events[name].push(scope ? callback.bind(scope) : callback);
+  return $.events[name].push(scope ? callback.bind(scope) : callback) - 1;
 
 }
 
@@ -64,19 +57,39 @@ export function on (name: EventNames, callback?: () => void, scope?: any) {
  *
  * Exposed as public method on `spx`
  */
-export function off (name: EventNames, callback: () => void) {
+export function off (name: EventNames, callback: (() => void) | number) {
 
-  const evts = events[name];
-  const live = [];
+  if (hasProp($.events, name)) {
 
-  if (evts && callback) {
-    let i = 0;
-    const len = evts.length;
-    for (; i < len; i++) if (evts[i] !== callback) live.push(evts[i]);
+    const events = $.events[name];
+
+    if (events && typeof callback === 'number') {
+
+      events.splice(callback, 1);
+      log(Errors.INFO, `Removed ${name} event listener (id: ${callback})`);
+      if (events.length === 0) delete $.events[name];
+
+    } else {
+
+      const live = [];
+
+      if (events && callback) {
+        for (let i = 0, s = events.length; i < s; i++) {
+          if (events[i] !== callback) {
+            live.push(events[i]);
+          } else {
+            log(Errors.INFO, `Removed ${name} event listener (id: ${i})`);
+          }
+        }
+      }
+
+      if (live.length) $.events[name] = live;
+      else delete $.events[name];
+    }
+
+  } else {
+    log(Errors.WARN, `There are no ${name} event listeners`);
   }
-
-  if (live.length) events[name] = live;
-  else delete events[name];
 
   return this;
 }

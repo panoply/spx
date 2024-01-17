@@ -1,8 +1,8 @@
 import { IHover, IPage } from 'types';
-import { pointer } from '../shared/native';
+import { XHR, pointer } from '../shared/native';
 import { forEach } from '../shared/utils';
 import { emit } from '../app/events';
-import { config, observers } from '../app/session';
+import { $ } from '../app/session';
 import * as store from '../app/store';
 import * as request from '../app/fetch';
 import { getKey, getRoute } from '../app/location';
@@ -18,26 +18,26 @@ import { EventType } from '../shared/enums';
  */
 function onEnter (event: MouseEvent): void {
 
-  const target = getLink(event.target, config.selectors.hover);
+  const target = getLink(event.target, $.qs.$hover);
 
   if (!target) return;
 
   const route = getRoute(target, EventType.HOVER);
 
   if (store.has(route.key)) return;
-  if (request.timers.has(route.key)) return;
+  if (XHR.timeout.has(route.key)) return;
 
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
   const state = store.create(route);
-  const delay = state.threshold || (config.hover as IHover).threshold;
+  const delay = state.threshold || ($.config.hover as IHover).threshold;
 
   request.throttle(route.key, function () {
 
     if (!emit('prefetch', target, route)) return;
 
-    request.fetch(state).then(function (page) {
-      request.timers.delete(route.key);
+    request.fetch(state).then(function () {
+      XHR.timeout.delete(route.key);
       removeListener(target);
     });
 
@@ -52,7 +52,7 @@ function onEnter (event: MouseEvent): void {
  */
 function onLeave (this: IPage, event: MouseEvent) {
 
-  const target = getLink(event.target, config.selectors.hover);
+  const target = getLink(event.target, $.qs.$hover);
 
   if (target) request.cleanup(getKey(target.href));
 
@@ -84,11 +84,11 @@ function removeListener (target: EventTarget): void {
  */
 export function connect (): void {
 
-  if (!config.hover || observers.hover) return;
+  if (!$.config.hover || $.observe.hover) return;
 
-  forEach(addListener, getTargets(config.selectors.hover));
+  forEach(addListener, getTargets($.qs.$hover));
 
-  observers.hover = true;
+  $.observe.hover = true;
 
 }
 
@@ -99,10 +99,10 @@ export function connect (): void {
  */
 export function disconnect (): boolean {
 
-  if (!observers.hover) return;
+  if (!$.observe.hover) return;
 
-  forEach(removeListener, getTargets(config.selectors.hover));
+  forEach(removeListener, getTargets($.qs.$hover));
 
-  observers.hover = false;
+  $.observe.hover = false;
 
 };

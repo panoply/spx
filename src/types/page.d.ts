@@ -1,3 +1,4 @@
+import { LiteralUnion } from 'type-fest';
 import type { EventType } from '../shared/enums';
 
 /**
@@ -73,7 +74,7 @@ export interface IResource {
  * Configuration from each page visit. For every page navigation
  * the configuration object is generated in a immutable manner.
  */
-export interface IPage {
+export interface IPage<T = any> {
   /**
    * UUID reference to the page snapshot HTML Document element
    */
@@ -99,13 +100,45 @@ export interface IPage {
   visits: number;
 
   /**
-   * The exit timestamp, ie: the last time page was viewed
+   * The fetched  timestamp in milliseconds since Unix [epoch](https://en.wikipedia.org/wiki/Unix_time).
+   * This is applied directly after a fetch concludes.
    *
    * @example
-   * 834916
+   * 1704339762665
    */
   ts: number;
-
+  /**
+   * Passed data from `spx-data:prop=""` attributes. Data can be passed via link elements using
+   * the following format:
+   *
+   * ```html
+   * <a
+   *   href="/url"
+   *   spx-data:foo="string"
+   *   spx-data:bar="100"
+   *   spx-data:baz="true"
+   *   spx-data:qux="{ prop: 'value' }">Link</a>
+   *
+   *
+   * ```
+   *
+   * The data will be converted into an object and passed to events:
+   *
+   * ```js
+   *
+   * import spx from 'spx';
+   *
+   * spx.on('load', function (state) {
+   *
+   *   state.data.foo;      // => 'string'
+   *   state.data.bar;      // => 100
+   *   state.data.baz;      // => true
+   *   state.data.qux.prop; // => 'value'
+   *
+   *});
+   *```
+   */
+  data: T;
   /**
    * The URL cache key and current url path
    *
@@ -136,15 +169,22 @@ export interface IPage {
   title: string;
 
   /**
-   * Scroll position of the next navigation, this field
+   * Scroll X position of the next navigation, this field
    * will be updated according to history, which means
    * navigating away from this page will update this record.
    *
-   * ---
    * - `x` - Equivalent to `scrollLeft` in pixels
+   */
+  scrollX: number;
+
+  /**
+   * Scroll Y position of the next navigation, this field
+   * will be updated according to history, which means
+   * navigating away from this page will update this record.
+   *
    * - `y` - Equivalent to `scrollTop` in pixels
    */
-  position: IPosition;
+  scrollY: number;
 
   /**
    * Location Records reference. This holds a parsed path
@@ -161,7 +201,7 @@ export interface IPage {
    *
    * @default true
    */
-  cache: boolean | 'reset' | 'clear' | 'restore';
+  cache: boolean | 'reset' | 'clear' | 'restore' | 'update';
 
   /**
    * List of additional fragment element selectors to target in the
@@ -194,7 +234,7 @@ export interface IPage {
    *
    * @default 'replace'
    */
-  render?: 'replace' | 'morph' | 'assign'
+  render?: LiteralUnion<'replace' | 'morph' | 'assign', string>
 
   /**
    * List of fragments to replace. When `hydrate` is used,
@@ -239,5 +279,12 @@ export interface IPage {
    * @default 75
    */
   proximity?: number;
+
+  /**
+   * Index references of components
+   *
+   * @default []
+   */
+  components?: string[];
 
 }
