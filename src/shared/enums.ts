@@ -10,6 +10,25 @@ export enum Attributes {
   NAMES = 'hydrate|append|prepend|target|progress|threshold|scroll|position|proximity|hover|cache',
 }
 
+export enum Refs {
+  /**
+   * An SPX Component, eg: `spx-component=""`
+   */
+  COMPONENT = 99,
+  /**
+   * An SPX Event Node, eg: `spx@click=""`
+   */
+  EVENT = 101,
+  /**
+   * An SPX Node, eg: `spx-node=""`
+   */
+  NODE = 110,
+    /**
+   * An SPX Binding, eg: `spx-bind=""`
+   */
+  BINDING = 98
+}
+
 export enum Nodes {
   /**
    * An elements node, eg: `<div>`

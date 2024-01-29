@@ -1,7 +1,7 @@
 import { Errors } from './enums';
 import { $ } from '../app/session';
 import { IPage } from '../types/page';
-import { assign, defineProp, d, nil } from './native';
+import { assign, defineProp, d, nil, isArray, s } from './native';
 import * as regex from './regexp';
 
 /**
@@ -15,6 +15,17 @@ export async function load () {
   console.log('loaded');
 
   return $.loaded || document.readyState === 'complete';
+
+}
+
+/**
+ * Get SPX Selector
+ *
+ * Returns an element selector for SPX Component node morphs
+ */
+export function getSelector (nodeName: string, uuid: string) {
+
+  return `${nodeName.toLowerCase()}[data-spx="${uuid}"]`;
 
 }
 
@@ -34,14 +45,29 @@ export function attrJSON (attr: string, string?: string) {
 
     return JSON.parse(json);
 
-  } catch (e) {
+  } catch (err) {
 
-    log(Errors.ERROR, `Invalid JSON expression in attribute value: ${(string || attr)}`, e);
+    log(
+      Errors.ERROR,
+      'Invalid JSON expression in attribute value:\n\n' +
+      JSON.stringify(attr || string, null, 2) +
+      '\n\n',
+      err
+    );
 
     return string;
 
   }
 
+}
+
+/**
+ * Last Index
+ *
+ * Returns the last entry of an array list
+ */
+export function last<T extends any[]> (input: T): T[number] {
+  return input[input.length - 1];
 }
 
 /**
@@ -56,7 +82,8 @@ export function attrValueInstanceOf (input: string) {
   return input
     .trim()
     .replace(/\s+/, ' ')
-    .split(/[|, ]/);
+    .split(/[|, ]/)
+    .map(camelCase);
 }
 
 /**
@@ -247,7 +274,7 @@ export function defineGetter <T> (object: T, name?: string, value?: any) {
 
       const get = () => value;
 
-      defineProp(object, name, options
+      return defineProp(object, name, options
         ? assign(options, { get })
         : <PropertyDescriptor>{ get });
     };
@@ -287,6 +314,19 @@ export function targets (page: IPage) {
 }
 
 /**
+ * is Empty
+ *
+ * Checks whether an `object` or `array` is empty.
+ */
+export function isEmpty (input: any) {
+
+  if (typeof input === 'object') return Object.keys(input).length > 0;
+  if (isArray(input)) return input.length > 0;
+
+  return false;
+}
+
+/**
  * Glue
  *
  * Joins an array list together
@@ -299,13 +339,24 @@ export function glue (...input: string[]) {
 /**
  * UUID
  *
- * Creates a UUID string used for snapshot record references.
+ * Creates a UUID string. Ensure unique generation be referencing Set cache
  */
-export function uuid () {
+export const uuid: {
+  (size?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10): string;
+  $cache: Set<string>;
+} = function uuid (length = 5) {
 
-  return Math.random().toString(36).slice(4);
+  const k = Math.random().toString(36).slice(-length);
 
-}
+  if (uuid.$cache.has(k)) return uuid(length);
+
+  uuid.$cache.add(k);
+
+  return k;
+
+};
+
+uuid.$cache = s();
 
 /**
  * Array Chunk function
@@ -378,7 +429,7 @@ export function camelCase (input: string) {
  */
 export function forNode <T extends HTMLElement> (
   selector: string | NodeListOf<T>,
-  callback: (node: T, index?: number) => void | false
+  callback: (node: T, index?: number) => any | false
 ) {
 
   const nodes = typeof selector === 'string'

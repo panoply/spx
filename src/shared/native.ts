@@ -1,4 +1,3 @@
-import { History } from 'types';
 import { supportsTouchEvents } from 'detect-it';
 
 /* -------------------------------------------- */
@@ -29,11 +28,6 @@ export const hasRange = document.createRange && 'createContextualFragment' in do
  * Re-export of pointer events
  */
 export const pointer = supportsTouchEvents ? 'pointer' : 'mouse';
-
-/**
- * History API `window.history`
- */
-export const history = window.history as History;
 
 /**
  * The location origin, eg: `https://brixtol.com`
@@ -113,6 +107,53 @@ export const m = <K, V> () => new Map<K, V>();
  * Small hack for `querySelector` wherein `querySelectorAll` is used for faster retreival.
  */
 export const q = <T extends HTMLElement>(selector: string) => d().querySelectorAll<T>(selector).item(0);
+
+/**
+ * Noop
+ *
+ * Empty function reference
+ */
+export const noop = () => {};
+
+/**
+ * Nodes
+ *
+ * Extends the native Array `[]` to support additional methods.
+ */
+export class Nodes extends Array<[uuid: string, HTMLElement ]> {
+
+  ref: { [id: string]: number } = o();
+
+  set = (uuid: string | number, value: HTMLElement) => {
+
+    const type = typeof uuid;
+
+    if (type === 'number') {
+      this[uuid][1] = value;
+      return this[uuid][1];
+    }
+
+    if (type === 'string' && uuid in this.ref) {
+      this[this.ref[uuid]][1] = value;
+      return this[this.ref[uuid]][1];
+    }
+
+    return this;
+
+  };
+
+  get = (uuid?: string | number) => {
+
+    const type = typeof uuid;
+
+    if (type === 'number') return this[uuid];
+    if (type === 'string' && uuid in this.ref) return this[this.ref[uuid]][1];
+
+    return this;
+
+  };
+
+}
 
 /**
  * Extends XMLHTTPRequest
