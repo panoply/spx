@@ -4,14 +4,14 @@ import * as intersect from '../observers/intersect';
 import * as request from './fetch';
 import * as history from '../observers/history';
 import * as proximity from '../observers/proximity';
-import * as components from '../components/initialize';
-import * as fragments from '../observers/fragments';
+import * as components from '../observers/components';
 import * as store from './store';
 import { EventType, Errors } from '../shared/enums';
 import { getRoute } from './location';
 import { log, onNextTick } from '../shared/utils';
 import { IPage } from 'types';
 import { $ } from './session';
+import { defineProps } from '../shared/native';
 
 // import * as timer from '../test/timer';
 
@@ -31,6 +31,19 @@ export function initialize (): Promise<IPage> {
   //
   const state = history.connect(store.create(route));
 
+  defineProps($, {
+    page: {
+      get () {
+        return $.pages[history.api.state.key];
+      }
+    },
+    snap: {
+      get () {
+        return $.snaps[$.page.uuid];
+      }
+    }
+  });
+
   // Record first page
   //
   $.index = state.key;
@@ -48,12 +61,10 @@ export function initialize (): Promise<IPage> {
     hrefs.connect();
 
     if ($.config.manual === false) {
-
       hover.connect();
       intersect.connect();
       proximity.connect();
       components.connect();
-      fragments.connect();
     }
 
     onNextTick(() => {
@@ -68,9 +79,7 @@ export function initialize (): Promise<IPage> {
   return new Promise(resolve => {
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-
       return resolve(DOMReady());
-
     }
 
     // FALLBACK
@@ -105,6 +114,10 @@ export function disconnect (): void {
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
+
+  if ($.components.registry.size > 0) {
+    $.components.registry.clear();
+  }
 
   // Purge Store
   store.clear();

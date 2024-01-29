@@ -1,5 +1,3 @@
-import { LiteralUnion } from 'type-fest';
-
 export type Key = '/' | `${'/' | '?'}${string}`
 
 export interface IHover {
@@ -300,33 +298,6 @@ export interface IOptions extends IObserverOptions {
    *
    */
   schema?: string;
-  /**
-   * **SPX Render Method**
-   *
-   * Controls the rendering method SPX should use when executing fragment swaps. By default,
-   * SPX applies DOM Morphs between page navigations. You may prefer SPX use another approach.
-   *
-   * SPX provides 3 renderer methods:
-   *
-   * > **`morph`** (default)
-   * >
-   * > Uses a refined variation of the [morphdom](https://github.com/patrick-steele-idem/morphdom) algorithm.
-   *
-   * > **`replace`**
-   * >
-   * > Applies fragment swaps using the `Node.replaceWith(node)` method.
-   *
-   * > **`assign`**
-   * >
-   * > Applies fragment swaps using `node.innerHTML = '...'` re-assignment
-   *
-   *
-   * ---
-   *
-   * @default 'morph'
-   *
-   */
-  method?: LiteralUnion<'morph' | 'replace' | 'assign', string>;
   /**
    * **SPX Global**
    *

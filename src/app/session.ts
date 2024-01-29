@@ -62,6 +62,23 @@ export interface Session {
   memory: IMemory;
 
   /**
+   * Page
+   *
+   * Returns the current page state model according to the `history.state.key`
+   * reference. This is a getter which will always reflect current page.
+   */
+  readonly page?: IPage;
+
+  /**
+   * Snapshot
+   *
+   * Returns the current snapshot according to the `page` UUID value which uses
+   * the `history.state.key` reference. This is a getter which will always reflect
+   * current page snapshot.
+   */
+  readonly snap?: string;
+
+  /**
    * Pages
    *
    * Per-page state models. Each page uses a reference
@@ -115,13 +132,17 @@ export interface Session {
 export const $: Session = o<Session>({
   loaded: false,
   index: '',
-  qs: o<ISelectors>(),
+  qs: o<ISelectors>({
+    component: o(),
+    script: o(),
+    tags: o(),
+    href: o()
+  }),
   config: o<IConfig>({
     fragments: [ 'body' ],
     timeout: 30000,
     globalThis: true,
     schema: 'spx-',
-    method: 'morph',
     manual: false,
     logLevel: 2,
     cache: true,
@@ -164,9 +185,10 @@ export const $: Session = o<Session>({
   pages: o(),
   snaps: o(),
   components: o<IComponent>({
-    registar: o(),
+    registry: o(),
+    connected: s(),
     instances: o(),
-    scopes: m()
+    refs: o()
   }),
   tracked: s(),
   resources: m<string, string>(),

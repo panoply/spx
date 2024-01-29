@@ -22,14 +22,14 @@ export function getAttributes (element: Element, page?: IPage): IPage {
 
   for (const { nodeName, nodeValue } of element.attributes) {
 
-    if (nodeName.startsWith($.qs.$data)) {
+    if (nodeName.startsWith($.qs.href.$data)) {
 
       // Create reference in page state if it does not exist
       if (!hasProp(state, 'data')) state.data = o();
 
       // Obtain the data key property value, e.g: spx-data:foo
       // will be used on the object, resulting in { data: { foo: <type> } }
-      const name = camelCase(nodeName.slice($.qs.$data.length));
+      const name = camelCase(nodeName.slice($.qs.href.$data.length));
       const value = nodeValue.trim();
 
       if (regex.isNumeric.test(value)) {
@@ -44,7 +44,7 @@ export function getAttributes (element: Element, page?: IPage): IPage {
 
     } else {
 
-      if (!$.qs.$attributes.test(nodeName)) continue;
+      if (!$.qs.$attrs.test(nodeName)) continue;
 
       // KEY REFERENCE
       if (nodeName === 'href') {

@@ -1,4 +1,3 @@
-import { LiteralUnion } from 'type-fest';
 import type { EventType } from '../shared/enums';
 
 /**
@@ -79,7 +78,6 @@ export interface IPage<T = any> {
    * UUID reference to the page snapshot HTML Document element
    */
   uuid: string;
-
   /**
    * The session identifier. This is used to determine the
    * connection digest. It is a random 4 digit number. When
@@ -90,7 +88,6 @@ export interface IPage<T = any> {
    * 1001
    */
   session: string;
-
   /**
    * The number of visits made to this page
    *
@@ -98,7 +95,6 @@ export interface IPage<T = any> {
    * 1
    */
   visits: number;
-
   /**
    * The fetched  timestamp in milliseconds since Unix [epoch](https://en.wikipedia.org/wiki/Unix_time).
    * This is applied directly after a fetch concludes.
@@ -155,19 +151,16 @@ export interface IPage<T = any> {
    * '/pathname' OR '/pathname?foo=bar'
    */
   rev: string;
-
   /**
    * A store type number reference which determines how the
    * record was saved. Used by events and internally
    */
   type: EventType;
-
   /**
    * The Document title. The value is written in the post-request
    * cycle before caching occurs.
    */
   title: string;
-
   /**
    * Scroll X position of the next navigation, this field
    * will be updated according to history, which means
@@ -176,7 +169,6 @@ export interface IPage<T = any> {
    * - `x` - Equivalent to `scrollLeft` in pixels
    */
   scrollX: number;
-
   /**
    * Scroll Y position of the next navigation, this field
    * will be updated according to history, which means
@@ -185,14 +177,12 @@ export interface IPage<T = any> {
    * - `y` - Equivalent to `scrollTop` in pixels
    */
   scrollY: number;
-
   /**
    * Location Records reference. This holds a parsed path
    * reference of the page.
    */
   location: ILocation;
-
- /**
+  /**
    * Controls the caching engine for the link navigation.
    * Option is enabled when `cache` preset config is `true`.
    * Each href link can set a different cache option. Cache control
@@ -202,7 +192,6 @@ export interface IPage<T = any> {
    * @default true
    */
   cache: boolean | 'reset' | 'clear' | 'restore' | 'update';
-
   /**
    * List of additional fragment element selectors to target in the
    * render cycle. Accepts any valid `querySelector()` string.
@@ -213,14 +202,12 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   target: string[];
-
   /**
    * Progress bar threshold delay.
    *
    * @default 350
    */
   progress?: boolean | number;
-
   /**
    * Threshold timeout to be applied to `proximity` or `hover`
    * prefetch operations.
@@ -228,14 +215,6 @@ export interface IPage<T = any> {
    * @default 100
    */
   threshold?: number;
-
-  /**
-   * The renderer method to apply on the next navigation.
-   *
-   * @default 'replace'
-   */
-  render?: LiteralUnion<'replace' | 'morph' | 'assign', string>
-
   /**
    * List of fragments to replace. When `hydrate` is used,
    * it will run precedence over `targets` and only execute
@@ -245,7 +224,6 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   hydrate?: string[];
-
   /**
    * List of fragments to preserve during morph. This is typically used
    * on `hydrate` and it will mimic `spx-morph="false"`
@@ -254,7 +232,6 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   preserve?: string[];
-
   /**
    * List of fragments to be appened from and to. Accepts multiple.
    *
@@ -262,7 +239,6 @@ export interface IPage<T = any> {
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
   append?: Array<[from: string, to: string]>;
-
   /**
    * List of fragments to be prepend from and to. Accepts multiple.
    *
@@ -270,7 +246,6 @@ export interface IPage<T = any> {
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
   prepend?: Array<[from: string, to: string]>;
-
   /**
    * Define proximity prefetch distance from which fetching should
    * begin. This value is relative to the cursor offset of defined
@@ -279,12 +254,16 @@ export interface IPage<T = any> {
    * @default 75
    */
   proximity?: number;
-
   /**
    * Index references of components
    *
    * @default []
    */
   components?: string[];
-
+  /**
+   * Event selectors
+   *
+   * @default ''
+   */
+  events?: string[];
 }

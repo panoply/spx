@@ -18,6 +18,10 @@ import { morph } from './morph/morph';
 import { Component } from './components/extends';
 import { register } from './components/register';
 
+export function Decorator () {
+
+}
+
 /**
  * Supported
  */
@@ -36,7 +40,6 @@ const spx = o({
   on,
   off,
   observe,
-  history,
   connect,
   capture,
   form,
@@ -51,7 +54,17 @@ const spx = o({
   visit,
   disconnect,
   register,
-  get config () { return $.config; }
+  history: o({
+    get state () { return history.api.state; },
+    api: history.api,
+    push: history.push,
+    replace: history.replace,
+    has: history.has,
+    reverse: history.reverse
+  }),
+  get config () {
+    return $.config;
+  }
 });
 
 /**
@@ -115,14 +128,14 @@ function session (key?: string, update?: object) {
       if (key === 'observe') return $.observe;
       if (key === 'components') return $.components;
       if (key === 'pages') return $.pages;
-      if (key === 'snapshots') return $.snaps;
+      if (key === 'snaps') return $.snaps;
       if (key === 'memory') return size($.memory.bytes);
     }
   }
 
   return {
     config: $.config,
-    snapshots: $.snaps,
+    snaps: $.snaps,
     pages: $.pages,
     observers: $.observe,
     components: $.components,
@@ -205,7 +218,7 @@ async function render (url: string, pushState: 'intersect' | 'replace' | 'push',
   dom: Document,
 ) => Document) {
 
-  const page = store.current();
+  const page = $.page;
   const route = getRoute(url);
 
   if (route.location.origin !== origin) log(Errors.ERROR, 'Cross origin fetches are not allowed');

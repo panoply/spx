@@ -3,164 +3,8 @@ import { IPage } from './page';
 import { IObserverOptions, IOptions } from './options';
 import { EventNames, LifecycleEvent } from './events';
 import { IConfig, IObservers, IMemory } from './config';
-import { LiteralUnion, Merge, PartialDeep } from 'type-fest';
-import { TypeConstructors } from './components';
-
-export namespace SPX {
-
-  export type This = { dom: HTMLElement}
-  export type Types = { [key: string]: TypeConstructors }
-  export type State<T = { [key: string]: any }> = PartialDeep<{
-    [K in keyof T as K extends string ? K : never]: T[K];
-  }>
-
-  export type ClassAttrs = {
-   [key: string]:
-   | TypeConstructors
-   | { typeof: BooleanConstructor; default: boolean; }
-   | { typeof: StringConstructor; default: string; }
-   | { typeof: NumberConstructor; default: number; }
-   | { typeof: ArrayConstructor; default: any[]; }
-   | { typeof: ObjectConstructor; default: { [key: string]: any }; }
-  }
-
-  export type Attrs<T extends SPX.ClassAttrs> = Merge<{
-    [K in keyof T]:
-     T[K] extends BooleanConstructor ? boolean :
-     T[K] extends StringConstructor ? string :
-     T[K] extends ArrayConstructor ? any[] :
-     T[K] extends NumberConstructor ? number :
-     T[K] extends ObjectConstructor ? { [key: string]: any } :
-     T[K] extends { typeof: BooleanConstructor; default: boolean; } ? boolean :
-     T[K] extends { typeof: StringConstructor; default: string; } ? string :
-     T[K] extends { typeof: NumberConstructor; default: number; } ? number :
-     T[K] extends { typeof: ArrayConstructor; default: any[]; } ? any[] :
-     T[K] extends { typeof: ObjectConstructor; default: { [key: string]: any }; } ? T[K]['default']
-     : never
-  }, {
-    [K in keyof T as K extends string ? `has${Capitalize<K>}` : never]: boolean;
-  }>
-
-  export type Params<S extends any, N extends string[] | { [node: string]: any }> = N extends string[]
-  ? {
-    [K in N as `${K[number]}Node`]: HTMLElement;
-  } & {
-    [K in N as `${K[number]}Nodes`]: HTMLElement[];
-  } & {
-    dom?: HTMLElement;
-    state?: SPX.State<S>;
-  }
-  : {
-    nodes: {
-      [K in keyof N as K extends string ? `${K}Node` : never]: N[K];
-    } & {
-      [K in keyof N as K extends string ? `${K}Nodes` : never]: N[K];
-    }
-  } & {
-    dom?: HTMLElement;
-    state?: SPX.State<S>;
-  }
-
-  export abstract class Class<T extends Element = HTMLElement> {
-
-    [node: string]: any;
-
-    /**
-     * **SPX Attrs**
-     *
-     * Attribute state references used to connect DOM states with component `state`.
-     * Accepts Constructor types or `typeof` and `default` object presets.
-     */
-    static attrs: {
-      [key: string]:
-      | TypeConstructors
-      | { typeof: BooleanConstructor; default: boolean; }
-      | { typeof: StringConstructor; default: string; }
-      | { typeof: NumberConstructor; default: number; }
-      | { typeof: ArrayConstructor; default: any[]; }
-      | { typeof: ObjectConstructor; default: { [key: string]: any }; }
-    };
-
-    /**
-     * **SPX Document Element**
-     *
-     * Holds a reference to the DOM Document element `<html>` node.
-     */
-    html?: T;
-
-    /**
-     * **SPX Dom**
-     *
-     * Holds a reference to the SPX Element annotated with `spx-component`.
-     */
-    dom?: T;
-
-    /**
-     * **SPX State**
-     *
-     * An auto-generated workable object of `attrs` and component attribute state references.
-     */
-    state?: any;
-    /**
-     * **SPX `onInit`**
-     *
-     * An SPX component lifecycle callback that will be triggered on component register.
-     */
-    onInit?(): void;
-    /**
-     * **SPX `onLoad`**
-     *
-     * An SPX component lifecycle triggered for every navigation. This is the equivalent of
-     * of using the SPX event emitters, e.g:
-     *
-     * ```js
-     * spx.on('load', function() {})
-     * ```
-     */
-    onLoad?(): void;
-    /**
-     * **SPX `onExit`**
-     *
-     * An SPX component lifecycle trigger that executes before a page replacement occurs. Use this
-     * to teardown any listeners.
-     *
-     */
-    onExit?(): void;
-    /**
-     * **SPX `onVisit`**
-     *
-     * An SPX component lifecycle trigger that executes right before a visit concludes and a page
-     * replacement. This is the equivalent of using the SPX event emitters, e.g:
-     *
-     * ```js
-     * spx.on('load', function() {})
-     * ```
-     */
-    onVisit?(): void;
-    /**
-     * **SPX `onFetch`**
-     *
-     * An SPX component lifecycle trigger that executes when new a fetch request is made.
-     *
-     * ```js
-     * spx.on('fetch', function() {})
-     * ```
-     */
-    onFetch?(): void;
-    /**
-     * **SPX `onFetch`**
-     *
-     * An SPX component lifecycle trigger that executes when new record and snapshot is applied to cache
-     *
-     * ```js
-     * spx.on('cache', function() {})
-     * ```
-     */
-    onCache?(): void;
-
-  }
-
-}
+import { LiteralUnion } from 'type-fest';
+import { IComponent, SPX } from './components';
 
 /**
  * **SPX Component**
@@ -170,14 +14,14 @@ export namespace SPX {
  * @example
  * import spx from 'spx';
  *
- * class Dropdown extends spx.Component {
+ * class Example extends spx.Component {
  *
  *   // SPX Component logic here
  *
  * }
  *
  */
-export class Component extends SPX.Class {}
+export class Component<T = typeof Component.connect> extends SPX.Class<T> {}
 
 /**
  * Supported
@@ -218,11 +62,12 @@ export function connect(options?: IOptions): ((callback: (state?: IPage) => void
  *
  */
 export function session(key?: string, merge?: object): {
-  pages: { [key: string]: IPage };
-  snapshots: Map<string, string>;
+  pages: { [key: string]: IPage; };
+  snaps: { [uuid: string]: string; };
   memory: IMemory & { size: string };
   config: IConfig;
-  observers: IObservers
+  observers: IObservers;
+  components: IComponent
 }
 
 /**

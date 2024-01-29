@@ -1,60 +1,16 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
 import { empty, uuid, hasProp, log, forEach, hasProps, targets, ts } from '../shared/utils';
-import { assign, o, isArray, history } from '../shared/native';
+import { assign, o, isArray } from '../shared/native';
 import { $ } from './session';
 import { Errors, EventType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
+import * as history from '../observers/history';
+import { morph } from '../morph/morph';
 
 /**
- * Clears all records from store excluding the passed `keys[]`.
- * or `key` Returns a list of snapshots that remain.
- */
-export function purge (key: string | string[] = []) {
-
-  const keys = isArray(key) ? key : [ key ];
-
-  for (const p in $.pages) {
-    const index = keys.indexOf(p);
-    if (index >= 0) {
-      delete $.snaps[$.pages[p].uuid];
-      delete $.pages[p];
-      keys.splice(index, 1);
-    }
-  }
-
-}
-
-/**
- * Removes pages and snapshots from the in-memory session
- * store. Optionally accepts a single `key` value or a `string[]`
- * list of `key` values and when provided will remove those
- * records passed.
- */
-export function clear (key?: string[] | string): void {
-
-  if (!key) {
-
-    empty($.pages);
-    empty($.snaps);
-
-  } else if (typeof key === 'string') {
-
-    delete $.snaps[$.pages[key].uuid];
-    delete $.pages[key];
-
-  } else if (isArray(key)) {
-
-    forEach(url => {
-
-      delete $.snaps[$.pages[url].uuid];
-      delete $.pages[url];
-
-    }, key);
-  }
-}
-
-/**
+ * Create Session Page
+ *
  * Generates a page state record which will be written to our `pages` store and history state.
  * This is called for all new SPX visits to locations that do not exist in the session.
  *
@@ -94,7 +50,6 @@ export function create (page: IPage): IPage {
     page.progress = $.config.progress.threshold;
   }
 
-  if (!has('render')) page.render = $.config.method;
   if (!has('visits')) page.visits = 0;
 
   $.pages[page.key] = page;
@@ -103,7 +58,13 @@ export function create (page: IPage): IPage {
 
 }
 
-export function patch <T extends keyof IPage> (prop: T, value: IPage[T], key = history.state.key) {
+/**
+ * Patch Session Page
+ *
+ * Updates a page record, applies an augmentation to the **current** page by default
+ * looking up the key with the `history.state` reference.
+ */
+export function patch <T extends keyof IPage> (prop: T, value: IPage[T], key = history.api.state.key) {
 
   if (prop === 'location') {
     $.pages[key][prop] = assign($.pages[key][prop], value);
@@ -116,11 +77,11 @@ export function patch <T extends keyof IPage> (prop: T, value: IPage[T], key = h
 }
 
 /**
- * Writes the page to memory. New visits are defined by an event
- * dispatched from a `href` link. Both a new page visit or
- * subsequent visit will pass through this function. This will
- * be called after an XHR fetch completes or when state is to be
- * added to the session memory.
+ * Set Session Page and Snapshot
+ *
+ * Writes the page to memory. New visits are defined by an event dispatched from a `href` link.
+ * Both a new page visit or subsequent visit will pass through this function. This will be called
+ * after an XHR fetch completes or when state is to be added to the session memory.
  */
 export function set (state: IPage, snapshot: string): IPage {
 
@@ -128,8 +89,7 @@ export function set (state: IPage, snapshot: string): IPage {
   const dom = typeof event === 'string' ? event : snapshot;
 
   // EventTypes above 5 are prefetch/trigger kinds.
-  // We need to augment the page store to align with
-  // the record we are handling.
+  // We need to augment the page store to align with the record we are handling.
   if (state.type > EventType.POPSTATE) {
 
     // EventTypes above 9 are prefetch kinds
@@ -138,21 +98,10 @@ export function set (state: IPage, snapshot: string): IPage {
 
       state.type = EventType.PREFETCH;
 
-    } else {
-
-      // EventTypes are 6 to 10 ~ these are trigger
-      // kinds, we need to update the current pages scroll position.
-      // if (hasProp($.pages, state.rev)) {
-
-      //   console.log('SCROLL IS UPDATING HERE');
-      //   $.pages[state.rev].scrollX = window.scrollX;
-      //   $.pages[state.rev].scrollY = window.scrollY;
-      // }
-
     }
   }
 
-  // Update to document title and timestamp reference
+  // Update to document title
   state.title = getTitle(snapshot);
 
   // If cache is disabled or the lifecycle event
@@ -171,19 +120,36 @@ export function set (state: IPage, snapshot: string): IPage {
 }
 
 /**
- * Update the page state and (optionally) its snapshot.
- * The passed in state value expects route values, ie:
- * the `page` must contain the following:
+ * Update Snapshot
+ *
+ * Updates DOM elements contained in snapshot cache.
+ */
+export function snapshot (key: string, selector: string, newNode: HTMLElement) {
+
+  const { page, dom } = get(key);
+  const oldNode = dom.body.querySelector<HTMLElement>(selector);
+
+  if (oldNode) {
+    morph(oldNode, newNode);
+    $.snaps[page.uuid] = dom.documentElement.outerHTML;
+  }
+
+}
+
+/**
+ * Update Session Page/Snapshot
+ *
+ * Update the page state and (optionally) its snapshot. The passed in state value expects
+ * **route** values, so the `page` parameter must contain the following references:
  *
  * - `key`
  * - `rev`
  * - `type`
  * - `location`
  *
- * Typicaly, this function augments the in-memory store
- * and as such an already generated record should be
- * provided and at the very least pass a generated `route`
- * that was created with `getRoute()`.
+ * Typicaly, this function is used to augment the in-memory store and as such an already
+ * generated record should be provided. At the absolute very least, we need to pass a generated `route`
+ * that was created via `getRoute()` location function.
  */
 export function update (page: IPage, snapshot?: string): IPage {
 
@@ -198,16 +164,6 @@ export function update (page: IPage, snapshot?: string): IPage {
   }
 
   return assign(state, page);
-
-}
-
-export function current () {
-
-  const key = history.state.key;
-
-  if (hasProp($.pages, key)) return $.pages[key];
-
-  log(Errors.ERROR, `No record exists: ${key}`);
 
 }
 
@@ -235,28 +191,29 @@ export function dom (page: IPage):{
 }
 
 /**
- * Returns the in-memory (session) page store and a
- * parsed document snapshot.
+ * Get Session
  *
- * Optionally accepts a url `key` reference to retrieve
- * a specific page. If `key` is undefined (not passed)
- * then the current page is returned according to the
- * history API state record.
- *
- * If no `key` exists an error is thrown.
+ * Returns the in-memory (session) page store and a parsed document snapshot.
+ * Optionally accepts a url `key` reference to retrieve a specific page. If `key` is
+ * `undefined` (i.e, not provided), the current page is returned according to the
+ * `history.state` reference. If no `key` exists an error is thrown.
  */
 export function get (key?: string): { page: IPage, dom: Document } {
 
   if (!key) {
-    if (history.state === null) return;
-    key = history.state.key;
+    if (history.api.state === null) {
+      log(Errors.WARN, 'Missing history state reference, page cannot be returned');
+      return;
+    }
+
+    key = history.api.state.key;
   }
 
   if (hasProp($.pages, key)) {
     const state = o();
     state.page = $.pages[key];
     state.dom = parse($.snaps[state.page.uuid]);
-    return o();
+    return state;
   }
 
   log(Errors.ERROR, `No record exists: ${key}`);
@@ -264,9 +221,10 @@ export function get (key?: string): { page: IPage, dom: Document } {
 }
 
 /**
- * Determines whether or not a `page` and `snapshot` exist for
- * the passed in `key` reference. This is used to inform SPX
- * on what operations need to be carried out.
+ * Has Session
+ *
+ * Determines whether or not a `page` and `snapshot` exist for the passed in `key` reference.
+ * This is used to inform SPX on what operations need to be carried out.
  */
 export function has (key: string): boolean {
 
@@ -277,4 +235,56 @@ export function has (key: string): boolean {
     typeof $.snaps[$.pages[key].uuid] === 'string'
   );
 
+}
+
+/**
+ * Purge Session
+ *
+ * Clears all records from store excluding the passed `keys[]`.
+ * or `key` Returns a list of snapshots that remain.
+ */
+export function purge (key: string | string[] = []) {
+
+  const keys = isArray(key) ? key : [ key ];
+
+  for (const p in $.pages) {
+    const index = keys.indexOf(p);
+    if (index >= 0) {
+      delete $.snaps[$.pages[p].uuid];
+      delete $.pages[p];
+      keys.splice(index, 1);
+    }
+  }
+
+}
+
+/**
+ * Clear Session
+ *
+ * Removes pages and snapshots from the in-memory session
+ * store. Optionally accepts a single `key` value or a `string[]`
+ * list of `key` values and when provided will remove those
+ * records passed.
+ */
+export function clear (key?: string[] | string): void {
+
+  if (!key) {
+
+    empty($.pages);
+    empty($.snaps);
+
+  } else if (typeof key === 'string') {
+
+    delete $.snaps[$.pages[key].uuid];
+    delete $.pages[key];
+
+  } else if (isArray(key)) {
+
+    forEach(url => {
+
+      delete $.snaps[$.pages[url].uuid];
+      delete $.pages[url];
+
+    }, key);
+  }
 }

@@ -1,7 +1,7 @@
 import { emit } from './events';
 import { evaljs } from '../observers/scripts';
 import { Errors, EventType } from '../shared/enums';
-import { d, toArray } from '../shared/native';
+import { d, o, toArray } from '../shared/native';
 import { log, onNextTick } from '../shared/utils';
 import { parse } from '../shared/dom';
 import { IPage } from '../types/page';
@@ -9,7 +9,7 @@ import { $ } from './session';
 import * as store from './store';
 import * as hover from '../observers/hover';
 import * as intersect from '../observers/intersect';
-import * as components from '../components/initialize';
+import * as components from '../observers/components';
 import { progress } from './progress';
 import * as proximity from '../observers/proximity';
 import { morph } from '../morph/morph';
@@ -31,10 +31,12 @@ function nodePosition (a: Element, b: Element) {
 async function scriptNodes (target: Document, type?: EventType) {
 
   const selector = type === EventType.HYDRATE
-    ? $.qs.$scriptsHydrate
-    : $.qs.$scripts;
+    ? $.qs.script.$hydrate
+    : $.qs.tags.$script;
 
   const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(selector));
+
+  // console.log(scripts, selector);
 
   await evaljs(scripts.sort(nodePosition));
 
@@ -103,7 +105,7 @@ function trackedNodes (target: HTMLElement): void {
 
   if (!target) return;
 
-  const tracking = target.querySelectorAll($.qs.$tracking);
+  const tracking = target.querySelectorAll($.qs.$track);
 
   if (tracking.length > 0) {
     for (const node of tracking) {
@@ -128,17 +130,10 @@ function trackedNodes (target: HTMLElement): void {
 function renderNodes (page: IPage, target: Document) {
 
   const nodes = page.target;
-  const method = page.render;
 
   if (nodes.length === 1 && nodes[0] === 'body') {
 
-    if (method === 'morph') {
-      morph(d(), target.body);
-    } else if (method === 'replace') {
-      d().replaceWith(target.body);
-    } else {
-      d().innerHTML = target.body.innerHTML;
-    }
+    morph(d(), target.body);
 
   } else {
 
@@ -177,22 +172,7 @@ function renderNodes (page: IPage, target: Document) {
           decends.push(oldNode);
         }
 
-        let renderKind = method;
-
-        if (oldNode.hasAttribute($.qs.$render)) {
-          const value = oldNode.getAttribute($.qs.$render) as any;
-          if (value !== renderKind) {
-            renderKind = value;
-          }
-        }
-
-        if (renderKind === 'morph') {
-          morph(oldNode, newNode);
-        } else if (page.render === 'replace') {
-          oldNode.replaceWith(newNode);
-        } else {
-          oldNode.innerHTML = newNode.innerHTML;
-        }
+        morph(oldNode, newNode);
 
         if (page.append || page.prepend) {
           const fragment = document.createElement('div');
@@ -205,6 +185,8 @@ function renderNodes (page: IPage, target: Document) {
         }
       }
     }
+
+    console.log(components);
 
     trackedNodes(target.body);
 

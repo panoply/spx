@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { HistoryAPI } from './config';
 import SPX from './methods';
 export * from './events';
 export * from './methods';
@@ -8,6 +9,8 @@ export * from './page';
 export * as default from './methods';
 
 declare global {
+
+  interface History extends HistoryAPI {}
 
   interface Window {
     /**

@@ -133,87 +133,190 @@ export interface ISelectors {
   /**
    * Tracked element selector
    */
-  $tracking?: string;
-  /**
-   * Render method DOM attribute, eg: `spx-render`
-   */
-  $render?: string;
-  /**
-   * Component attribute selector, eg: `spx-component`
-   */
-  $component?: string;
-  /**
-   * Component Attributes regular expression for matching attributes of interest
-   */
-  $componentAttrs?: RegExp;
-  /**
-   * Component Attributes regular expression for matching event bindind attrs
-   */
-  $componentBinds?: RegExp;
-  /**
-   * Component node attribute, eg: `spx-node`
-   */
-  $node?: string;
-  /**
-   * Data attribute provider for href nodes, which ends in colon, eg: `spx-data:`
-   */
-  $data?: string;
-  /**
-   * Morph Children DOM attribute, eg: `spx-morph`
-   */
-  $morph?: string;
-  /**
-   * Asset evaluation selector used for `<script>` type tags
-   */
-  $scripts?: string;
-  /**
-   * Hydration asset evaluation selector used for `<script>`
-   */
-  $scriptsHydrate?: string;
-  /**
-   * HTML `<style>` element selectors to evaluate
-   */
-  $styles?: string;
-  /**
-   * Any element annotated with `spx-eval="true"`
-   */
-  $evals?: string;
+  $track?: string;
   /**
    * The `spx-target` attribute annotation
    */
   $target?: string;
   /**
-   * The `<link>` elements selectors to evaluate
-   */
-  $links?: string;
-  /**
-   * The `<meta>` elements selectors to evaluate
-   */
-  $metas?: string;
-  /**
-   * The `href` elements to intercept. Excludes certain nodes from firing SPX visits
-   */
-  $hrefs?: string;
-  /**
    * Regular Expression used for matching attribute annotations
    */
-  $attributes?: RegExp;
+  $attrs?: RegExp;
   /**
-   * Href selctor for proximities that applies the correct schema.
+   * Render method DOM attribute, eg: `spx-render`
    */
-  $hover?: string;
+  $render?: string;
   /**
-   * Href selector for proximities that applies the correct schema.
+   * Morph Children DOM attribute, eg: `spx-morph`
    */
-  $proximity?: string;
-  /**
-   * Href selctor, which excludes node annotated with a `spx-intersect="false"` attribute.
-   */
-  $intersects?: string
+  $morph?: string;
   /**
    * Intersect Element which contains `href` nodes
    */
   $intersector?: string
+  /**
+   * Any element annotated with `spx-eval="true"`
+   */
+  $eval?: string;
+   /**
+   * Component attribute selector, eg: `spx-component`
+   */
+  component?: {
+    /**
+     * Component Attribute
+     *
+     * ```js
+     * 'spx-component'
+     * ```
+     */
+    $attr: string;
+    /**
+     * Component Nodes Attribute
+     *
+     * ```js
+     * 'spx-node'
+     * ```
+     */
+    $node: string;
+        /**
+     * Component Nodes Attribute
+     *
+     * ```js
+     * 'spx-node'
+     * ```
+     */
+    $bind: string;
+    /**
+     * Walked component markers
+     *
+     * ```js
+     * 'data-spx'
+     * ```
+     */
+    $ref: string;
+    /**
+     * Component attributes matcher - Used in elements walk.
+     *
+     * ```js
+     * /spx-(node|bind|component)|@[a-z]|[a-z]:[a-z]/i
+     * ```
+     */
+    $find: RegExp;
+    /**
+     * Component data attribute matcher - Used on events
+     *
+     * ```js
+     * /^spx-[a-z0-9-]+:/i
+     * ```
+     */
+    $param: RegExp;
+  }
+  /**
+   * `<script>` Query Selectors
+   */
+  script?: {
+    /**
+     * Script Hydrate Selector
+     *
+     * ```js
+     * 'script[spx-eval=hydrate]:not([spx-eval=false])'
+     * ```
+     */
+    $hydrate: string;
+  }
+  /**
+   * The `href` elements to intercept. Excludes certain nodes from firing SPX visits
+   */
+  href?: {
+    /**
+     * Data attribute `<a spx-data:key="value">` - Ends at colon, eg: `spx-data:` and used to match.
+     *
+     * ```js
+     * 'spx-data:'
+     * ```
+     */
+    $data?: string;
+    /**
+     * Hover Attribute `<a spx-hover="*">` - Differs depending on `hover` options
+     *
+     * ```js
+     * `a[spx-hover]
+     *  :not(a[spx-disable])
+     *  :not(a[href^="#"])
+     *  :not(a[spx-hover=false])
+     * `
+     * ```
+     */
+    $hover: string;
+    /**
+     * Proximity Attribute `<a spx-proximity="*">` - Differs depending on `proximity` options
+     *
+     * ```js
+     * `a[spx-proximity]
+     *  :not(a[spx-disable])
+     *  :not(a[href^="#"])
+     *  :not(a[spx-proximity=false])
+     *  :not(a[spx-hover])
+     * `
+     * ```
+     */
+    $proximity: string;
+    /**
+     * Intersect Attribute `<a spx-intersect="*">`  - Differs depending on `intersect` options
+     *
+     * ```js
+     * `a[spx-intersect]
+     *  :not(a[spx-disable])
+     *  :not(a[href^="#"])
+     *  :not(a[spx-intersect=false])
+     *  :not(a[spx-hover])
+     * `
+     * ```
+     */
+    $intersect: string
+  }
+  tags?: {
+    /**
+     * Href Select `<a>`
+     *
+     * ```js
+     * 'a[spx-link]:not([spx-disable]):not([href^="#"])'
+     * ```
+     */
+    $href: string;
+     /**
+     * Script Selector `<script>`
+     *
+     * ```js
+     * 'script:not([spx-eval=false]):not([spx-eval=hydrate])'
+     * ```
+     */
+    $script: string;
+    /**
+     * Style Selector `<style>`
+     *
+     * ```js
+     * 'style:not([spx-eval=false])'
+     * ```
+     */
+    $style: string;
+    /**
+     * Link Selector `<link>`
+     *
+     * ```js
+     * 'link[rel=stylesheet]:not([spx-eval=false]),link[rel~=preload]:not([spx-eval=false])'
+     * ```
+     */
+    $link: string;
+    /**
+     * The `<meta>` elements selectors to evaluate
+     *
+     * ```js
+     * 'meta:not([spx-eval=false])'
+     * ```
+     */
+    $meta: string;
+  }
 }
 
 /**
@@ -264,7 +367,7 @@ type HistoryState = Pick<IPage, (
  * An overwrite of the History API. Applied to
  * the native exports using `as` type.
  */
-export type History = {
+export type HistoryAPI = {
   readonly length: number;
   scrollRestoration: ScrollRestoration;
   state: HistoryState;

@@ -7,7 +7,7 @@ import { hasProp, log } from '../shared/utils';
 import { $ } from './session';
 import { progress } from './progress';
 import { LiteralUnion } from 'type-fest';
-import { registerOnConnect } from '../components/register';
+import { register } from '../components/register';
 
 export function observers (options: IOptions) {
 
@@ -38,7 +38,7 @@ export function observers (options: IOptions) {
 export function configure (options: IOptions = {}) {
 
   if (hasProp(options, 'components')) {
-    registerOnConnect(options.components);
+    register(options.components);
     delete options.components;
   }
 
@@ -66,24 +66,30 @@ export function configure (options: IOptions = {}) {
   $.qs.$target = `${attr}target`;
   $.qs.$morph = `${attr}morph`;
   $.qs.$render = `${attr}render`;
-  $.qs.$component = `${attr}component`;
-  $.qs.$node = `${attr}node`;
-  $.qs.$componentAttrs = new RegExp(`${attr}(?:node|component)|@[a-z]|[a-z]:[a-z]`);
-  $.qs.$componentBinds = new RegExp(`^${attr}[a-zA-Z0-9-]+:`);
-  $.qs.$data = `${attr}data:`;
-  $.qs.$hrefs = $.config.annotate ? `a[${attr}link]${href}` : `a${href}`;
-  $.qs.$tracking = `[${attr}track]:not([${attr}track=false])`;
-  $.qs.$scripts = evals('script');
-  $.qs.$scriptsHydrate = `script[${attr}eval=hydrate]:not([${attr}eval=false])`;
-  $.qs.$styles = evals('style');
-  $.qs.$links = evals('link');
-  $.qs.$metas = evals('meta');
-  $.qs.$evals = `[${attr}eval]:not([${attr}eval=false]):not(script)`;
-  $.qs.$attributes = new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i');
-  $.qs.$proximity = `a[${attr}proximity]${href}${not('proximity')}`;
+  $.qs.$eval = `[${attr}eval]:not([${attr}eval=false]):not(script)`;
+  $.qs.$attrs = new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i');
   $.qs.$intersector = `[${attr}intersect]${not('intersect')}`;
-  $.qs.$intersects = `a${href}${not('intersect')}`;
-  $.qs.$hover = $.config.hover !== false && $.config.hover.trigger === 'href'
+  $.qs.$track = `[${attr}track]:not([${attr}track=false])`;
+
+  $.qs.component.$attr = `${attr}component`;
+  $.qs.component.$node = `${attr}node`;
+  $.qs.component.$bind = `${attr}bind`;
+  $.qs.component.$find = new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i');
+  $.qs.component.$param = new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i');
+  $.qs.component.$ref = 'data-spx';
+
+  $.qs.tags.$href = $.config.annotate ? `a[${attr}link]${href}` : `a${href}`;
+  $.qs.tags.$script = evals('script');
+  $.qs.tags.$style = evals('style');
+  $.qs.tags.$link = evals('link');
+  $.qs.tags.$meta = evals('meta');
+
+  $.qs.script.$hydrate = `script[${attr}eval=hydrate]:not([${attr}eval=false])`;
+
+  $.qs.href.$data = `${attr}data:`;
+  $.qs.href.$proximity = `a[${attr}proximity]${href}${not('proximity')}`;
+  $.qs.href.$intersect = `a${href}${not('intersect')}`;
+  $.qs.href.$hover = $.config.hover !== false && $.config.hover.trigger === 'href'
     ? `a${href}${not('hover')}`
     : `a[${attr}hover]${href}${not('hover')}`;
 
@@ -105,7 +111,7 @@ export function configure (options: IOptions = {}) {
     const defaults = tag === 'link'
       ? `${tag}[rel=stylesheet]:${disable},${tag}[rel~=preload]:${disable}`
       : tag === 'script'
-        ? `${tag}[${attr}eval]:${disable}:not([${attr}eval=hydrate])`
+        ? `${tag}:${disable}:not([${attr}eval=hydrate])`
         : `${tag}:${disable}`;
 
     if ($.config.eval[tag] === false || $.config.eval[tag] === null) return defaults;
