@@ -18,7 +18,7 @@ import { EventType } from '../shared/enums';
  */
 function onEnter (event: MouseEvent): void {
 
-  const target = getLink(event.target, $.qs.$hover);
+  const target = getLink(event.target, $.qs.href.$hover);
 
   if (!target) return;
 
@@ -52,7 +52,7 @@ function onEnter (event: MouseEvent): void {
  */
 function onLeave (this: IPage, event: MouseEvent) {
 
-  const target = getLink(event.target, $.qs.$hover);
+  const target = getLink(event.target, $.qs.href.$hover);
 
   if (target) request.cleanup(getKey(target.href));
 
@@ -86,7 +86,7 @@ export function connect (): void {
 
   if (!$.config.hover || $.observe.hover) return;
 
-  forEach(addListener, getTargets($.qs.$hover));
+  forEach(addListener, getTargets($.qs.href.$hover));
 
   $.observe.hover = true;
 
@@ -101,7 +101,7 @@ export function disconnect (): boolean {
 
   if (!$.observe.hover) return;
 
-  forEach(removeListener, getTargets($.qs.$hover));
+  forEach(removeListener, getTargets($.qs.href.$hover));
 
   $.observe.hover = false;
 

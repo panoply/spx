@@ -29,7 +29,7 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
 function setBounds (target: HTMLLinkElement) {
 
   const rect = target.getBoundingClientRect();
-  const attr = target.getAttribute($.qs.$proximity);
+  const attr = target.getAttribute($.qs.href.$proximity);
   const distance = isNumber.test(attr) ? Number(attr) : ($.config.proximity as IProximity).distance;
 
   return {
@@ -110,7 +110,7 @@ export function connect (): void {
 
   if (!$.config.proximity || $.observe.proximity) return;
 
-  const targets = getTargets($.qs.$proximity).map(setBounds);
+  const targets = getTargets($.qs.href.$proximity).map(setBounds);
 
   if (targets.length > 0) {
 

@@ -109,7 +109,7 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
   if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, $.qs.$hrefs);
+  const target = getLink(event.target, $.qs.tags.$href);
 
   // Skip id target is not a valid href element
   if (!target) return;
@@ -147,6 +147,7 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
   hover.disconnect();
   proximity.disconnect();
   intersect.disconnect();
+  // components.disconnect();
 
   if (store.has(key)) { // Sub-sequent visit
 

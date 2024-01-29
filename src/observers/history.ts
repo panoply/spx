@@ -1,6 +1,6 @@
-import { HistoryState, IPage } from 'types';
+import { HistoryState, HistoryAPI, IPage } from 'types';
 import { $ } from '../app/session';
-import { assign, history, o } from '../shared/native';
+import { assign, o } from '../shared/native';
 import { hasProp, hasProps, log } from '../shared/utils';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
@@ -9,35 +9,37 @@ import { Errors, EventType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
 
 /**
- * History API - Re-export of the `window.history` native constant
+ * History API `window.history`
  */
-export { history as api } from '../shared/native';
+export const api = window.history as HistoryAPI;
 
 /**
- * Check if history state holds reverse
- * last path reference. Returns a boolean
+ * History Reverse
+ *
+ * Check if history state holds reverse last path reference. Returns a boolean
  */
 export function reverse (): boolean {
 
   return (
-    history.state !== null &&
-    hasProp(history.state, 'rev') &&
-    history.state.key !== history.state.rev
+    api.state !== null &&
+    hasProp(api.state, 'rev') &&
+    api.state.key !== api.state.rev
   );
 
 }
 
 /**
- * Check if an SPX hsitory state reference exists.
- * Accepts a `key` reference, when passed will apply an
- * additional check to ensure history record matches key.
+ * History Exists
+ *
+ * Check if an SPX hsitory state reference exists. Accepts a `key` reference,
+ * and when passed will apply an additional check to ensure history record matches key.
  */
-export function exists (key?: string): boolean {
+export function has (key?: string): boolean {
 
-  if (history.state == null) return false;
-  if (typeof history.state !== 'object') return false;
+  if (api.state == null) return false;
+  if (typeof api.state !== 'object') return false;
 
-  const match = hasProps(history.state)([
+  const match = hasProps(api.state)([
     'key',
     'rev',
     'scrollX',
@@ -46,19 +48,21 @@ export function exists (key?: string): boolean {
   ]);
 
   return typeof key === 'string'
-    ? match && history.state.key === key
+    ? match && api.state.key === key
     : match;
 
 }
 
 /**
- * Initialise history reference and align scroll position
+ * Initialise
+ *
+ * Assigns the `page` with last known `history.state` reference and aligns scroll position.
  */
 export function initialize (page: IPage) {
 
-  if (exists(page.key)) {
-    scrollTo(history.state.scrollX, history.state.scrollY);
-    return assign(page, history.state);
+  if (has(page.key)) {
+    scrollTo(api.state.scrollX, api.state.scrollY);
+    return assign(page, api.state);
   } else {
     replace(page);
   }
@@ -67,24 +71,34 @@ export function initialize (page: IPage) {
 
 }
 
-export function replace (page: HistoryState) {
+/**
+ * History ReplaceState
+ *
+ * Applied `history.replaceState` reference update.
+ */
+export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
 
-  const state: HistoryState = o();
+  const state: HistoryState = o<HistoryState>({
+    key,
+    rev,
+    title: title || document.title,
+    scrollX,
+    scrollY
+  });
 
-  state.key = page.key;
-  state.rev = page.rev;
-  state.title = page.title || document.title;
-  state.scrollX = page.scrollX;
-  state.scrollY = page.scrollY;
+  api.replaceState(state, state.title, state.key);
 
-  history.replaceState(state, state.title, state.key);
+  log(Errors.TRACE, `History replaceState: ${api.state.key}`);
 
-  log(Errors.TRACE, `History replaceState: ${history.state.key}`);
-
-  return history.state;
+  return api.state;
 
 }
 
+/**
+ * History PushState
+ *
+ * Applied `history.pushState` and passes SPX references.
+ */
 export function push ({ key, rev, title }: IPage) {
 
   const state: HistoryState = o<HistoryState>({
@@ -95,11 +109,11 @@ export function push ({ key, rev, title }: IPage) {
     scrollX: 0
   });
 
-  history.pushState(state, state.title, state.key);
+  api.pushState(state, state.title, state.key);
 
-  log(Errors.TRACE, `History pushState: ${history.state.key}`);
+  log(Errors.TRACE, `History pushState: ${api.state.key}`);
 
-  return history.state;
+  return api.state;
 
 }
 
@@ -124,7 +138,7 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
     $.pages[event.state.key].type = EventType.POPSTATE;
 
-    await render.update($.pages[event.state.key]);
+    render.update($.pages[event.state.key]);
 
   } else {
 
@@ -138,11 +152,11 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
     if (page.key === key) {
 
-      await render.update(page);
+      render.update(page);
 
     } else if (store.has(key)) {
 
-      await render.update($.pages[key]);
+      render.update($.pages[key]);
 
     } else {
 
@@ -150,7 +164,8 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
       await request.fetch(data);
 
-      history.pushState(data, document.title, key);
+      push(data);
+
     }
 
   }
@@ -169,7 +184,7 @@ export function connect (page?: IPage): IPage {
 
   // Scroll restoration is set to manual for Safari and iOS
   // when auto, content flashes are incurred, manual is a far better approach here.
-  if (history.scrollRestoration) history.scrollRestoration = 'manual';
+  if (api.scrollRestoration) api.scrollRestoration = 'manual';
 
   addEventListener('popstate', pop, false);
 
@@ -193,7 +208,7 @@ export function disconnect (): void {
   if (!$.observe.history) return;
 
   // Revert scroll restoration to defaults
-  if (history.scrollRestoration) history.scrollRestoration = 'auto';
+  if (api.scrollRestoration) api.scrollRestoration = 'auto';
 
   removeEventListener('popstate', pop, false);
 

@@ -46,7 +46,7 @@ export function connect (): void {
   if (!entries) entries = new IntersectionObserver(forEach(onIntersect), $.config.intersect);
 
   const observe = forEach<Element>(target => entries.observe(target));
-  const targets = getNodeTargets($.qs.$intersector, $.qs.$intersects);
+  const targets = getNodeTargets($.qs.$intersector, $.qs.href.$intersect);
 
   observe(targets);
 
