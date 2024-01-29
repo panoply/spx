@@ -19,7 +19,7 @@ export function setBooleanAttribute (oldElement: Element, newElement: Element, n
 
 }
 
-export function doAttributeMorph (oldNode: Element, newNode: Element) {
+export function morphAttributes (oldNode: Element, newNode: Element) {
 
   // document-fragments dont have attributes so lets not do anything
   //
@@ -30,7 +30,7 @@ export function doAttributeMorph (oldNode: Element, newNode: Element) {
   const newNodeAttrs = newNode.attributes;
 
   /** The Element Attribute */
-  let attr: Attr;
+  let attrNode: Attr;
 
   /** Attribute Name */
   let attrName: string;
@@ -47,21 +47,21 @@ export function doAttributeMorph (oldNode: Element, newNode: Element) {
   // update attributes on original DOM element
   for (let n = newNodeAttrs.length - 1; n >= 0; n--) {
 
-    attr = newNodeAttrs[n];
-    attrName = attr.name;
-    attrValue = attr.value;
-    attrNamespaceURI = attr.namespaceURI;
+    attrNode = newNodeAttrs[n];
+    attrName = attrNode.name;
+    attrValue = attrNode.value;
+    attrNamespaceURI = attrNode.namespaceURI;
 
     if (attrNamespaceURI) {
 
-      attrName = attr.localName || attrName;
+      attrName = attrNode.localName || attrName;
       fromValue = oldNode.getAttributeNS(attrNamespaceURI, attrName);
 
       if (fromValue !== attrValue) {
 
         // It's not allowed to set an attribute with the XMLNS namespace without
         // specifying the `xmlns` prefix
-        if (attr.prefix === 'xmlns') attrName = attr.name;
+        if (attrNode.prefix === 'xmlns') attrName = attrNode.name;
 
         oldNode.setAttributeNS(attrNamespaceURI, attrName, attrValue);
 
@@ -76,21 +76,20 @@ export function doAttributeMorph (oldNode: Element, newNode: Element) {
     }
   }
 
-  // Remove any extra attributes found on the original DOM element that
-  // weren't found on the target element.
+  // Remove any extra attributes found on the original DOM element that weren't found on the target element.
   const oldNodeAttrs = oldNode.attributes;
 
   for (let o = oldNodeAttrs.length - 1; o >= 0; o--) {
 
-    attr = oldNodeAttrs[o];
-    attrName = attr.name;
-    attrValue = attr.value;
+    attrNode = oldNodeAttrs[o];
+    attrName = attrNode.name;
+    attrValue = attrNode.value;
 
-    attrNamespaceURI = attr.namespaceURI;
+    attrNamespaceURI = attrNode.namespaceURI;
 
     if (attrNamespaceURI) {
 
-      attrName = attr.localName || attrName;
+      attrName = attrNode.localName || attrName;
 
       if (!newNode.hasAttributeNS(attrNamespaceURI, attrName)) {
         oldNode.removeAttributeNS(attrNamespaceURI, attrName);

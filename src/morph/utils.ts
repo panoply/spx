@@ -16,11 +16,6 @@ export function createElementNS (name: string, namespaceURI?: string): Element {
 }
 
 /**
- * Appends the parent to the child
- */
-// export function addChild (parent: Element, child: Element) { return parent.appendChild(child); };
-
-/**
  * Get default node key
  */
 export function getNodeKey (node: ChildNode) {
@@ -39,10 +34,10 @@ export function getNodeKey (node: ChildNode) {
  * We don't bother checking `namespaceURI` because you will never find
  * two HTML elements with the same nodeName and different namespace URIs.
  */
-export function compareNodeNames (oldElement: Element, newElement: Element): boolean {
+export function compareNodeNames (oldNode: ChildNode, newNode: ChildNode): boolean {
 
-  const oldNodeName = oldElement.nodeName;
-  const newNodeName = newElement.nodeName;
+  const oldNodeName = oldNode.nodeName;
+  const newNodeName = newNode.nodeName;
 
   if (oldNodeName === newNodeName) return true;
 
@@ -60,6 +55,8 @@ export function compareNodeNames (oldElement: Element, newElement: Element): boo
 }
 
 /**
+ * Move Children
+ *
  * Copies the children of one DOM element to another DOM element
  */
 export function moveChildren (oldElement: Element, newElement: Element) {
