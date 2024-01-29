@@ -1,40 +1,29 @@
-import { defineGetter, forEach, hasProp, hasProps, downcase } from '../shared/utils';
+import { defineGetter, hasProp, log } from '../shared/utils';
 import { $ } from '../app/session';
+import { Errors } from '../shared/enums';
+import { IComponentRegister } from '../types/components';
 
 /**
  * Register Components
  *
- * Component registar, exposed on the global level, assigns each
- * component caller.
+ * Component registar, exposed on the global level, assigns each component caller.
  */
-export function register (...components: any[]) {
-
-  const has = hasProps($.components.registar);
-  const define = defineGetter($.components.registar);
-
-  forEach((Instance) => {
-
-    if (!hasProp(Instance, 'id')) {
-      Instance.id = downcase(Instance.prototype.constructor.name);
-    }
-
-    if (!has(Instance.id)) {
-      define(Instance.id, Instance);
-    }
-
-  }, components);
-
-}
-
-export function registerOnConnect (components: { [identifier: string]: any }) {
-
-  const has = hasProps($.components.registar);
-  const define = defineGetter($.components.registar);
+export function register (components: { [component: string]: IComponentRegister }) {
 
   for (const id in components) {
-    const Instance = components[id];
-    if (!hasProp(Instance, 'id')) Instance.id = downcase(id);
-    if (!has(Instance.id)) define(Instance.id, Instance);
+
+    const instance = components[id];
+    const identifier = id.toLowerCase();
+
+    if (!hasProp(instance, 'connect')) instance.connect = { state: {}, nodes: [] };
+    if (!hasProp(instance.connect, 'state')) instance.connect.state = {};
+    if (!hasProp(instance.connect, 'nodes')) instance.connect.nodes = [];
+
+    if (!hasProp($.components.registry, identifier)) {
+      defineGetter($.components.registry, identifier, instance);
+      log(Errors.TRACE, `${id} component registered under: ${identifier}`);
+    }
+
   }
 
 }

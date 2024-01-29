@@ -2,133 +2,181 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-redeclare */
 
+import { ValueOf } from 'type-fest';
 import { $ } from '../app/session';
-import { Errors } from '../shared/enums';
-import { isArray } from '../shared/native';
-import { attrJSON, defineGetter, hasProp, hasProps, log, upcase } from '../shared/utils';
-import { IComponentExtends, TypeConstructors } from '../types/components';
+import { isArray, nil, o } from '../shared/native';
+import { attrJSON, defineGetter, hasProp, upcase } from '../shared/utils';
+import { IScope, SPX } from '../types/components';
 
 /**
  * Component Extends
  *
- * Extends base classes and assigns scopes to classes.
+ * Extends base classes and assigns scopes to custom defined components.
  */
 export class Component {
 
   /**
-   * Component Scope
-   *
-   * The scope of this specific instance according to the UUID
-   */
-
-  private get scope () { return $.components.scopes.get(this.key); }
-
-  /**
-   * Component UUID Key
-   *
-   * The unique identifier key for this instance. This is used to
-   * retrive scopes from the static `scopes` Map store.
-   */
-  private key: string;
-
-  /**
    * Component State
    *
-   * The digested static `attrs` references of components that have
+   * The digested static `state` references of components that have
    * extended this base class.
    */
   public state?: ProxyHandler<{
+    /**
+     * State Value Existence
+     *
+     * Returns a `boolean` informing on whether the state reference
+     * has been defined via the DOM component.
+     */
     readonly [key: `has${Capitalize<string>}`]: boolean;
+    /**
+     * State Value
+     *
+     * The parsed and type converted `state` value.
+     */
     [key: string]: any;
+
   }>;
 
-  public get dom () { return this.scope.domNode; }
+  /**
+   * DOM Node
+   *
+   * Returns the element of which is annotated with `spx-component`
+   */
+  public dom: HTMLElement;
+
+  /**
+   * Document Element
+   *
+   * Returns the `<html>` documentElement
+   */
   public get html () { return this.dom.closest('html'); }
-  public component <T extends IComponentExtends> (id: string): T {
 
-    if (hasProp($.components.instances, id)) {
-      return $.components.instances[id] as T;
-    } else {
-      log(Errors.WARN, `Unknown or undefined component identifier: id="${id}"`);
-      return null;
-    }
+  /**
+   * Constructor
+   *
+   * Creates the component instance
+   */
+  constructor ({ state, instanceOf }: IScope, domNode: HTMLElement, connect: SPX.Connect) {
 
-  }
+    this.dom = domNode;
 
-  constructor (key: string) {
+    if (connect.state !== null) {
 
-    this.key = key;
+      /**
+       * Schema Prefix for `state` value
+       */
+      const prefix = $.config.schema + instanceOf;
 
-    const { domNode, domState, instanceOf, nodes } = this.scope;
-    const prefix = $.config.schema + instanceOf;
+      /**
+       * State applied proxy
+       *
+       * Aligns the DOM attributes whenever a state change is applied.
+       */
+      this.state = new Proxy(o(), {
+        set: (target, key: string, value) => {
 
-    /**
-     * State applied proxy
-     *
-     * Aligns the DOM attributes whenever a state change is applied.
-     */
-    this.state = new Proxy(domState, {
-      set (target, key: string, newValue) {
+          const staticState = connect.state[key];
 
-        target[key] = newValue;
+          if (typeof staticState === 'object' && hasProp(staticState, 'persist') && staticState.persist) {
+            target[key] = state[key] = value;
+          } else {
+            target[key] = value;
+          }
 
-        domNode.setAttribute(`${prefix}:${key}`, typeof newValue === 'object' || isArray(newValue)
-          ? JSON.stringify(newValue, null, 0)
-          : newValue);
+          /**
+         * We need to stringify the attribute value if it is an array or object
+         * before making a reference on the DOM node.
+         */
+          const domValue = typeof value === 'object' || isArray(value)
+            ? JSON.stringify(value)
+            : value;
 
-        return true;
+          this.dom.setAttribute(`${prefix}:${key}`, domValue);
 
-      }
-    });
+          if (hasProp(this, `${key}StateNodes`)) {
+            for (const binding of this[`${key}StateNodes`]) {
+              binding.innerText = domValue;
+            }
+          }
 
-    const { attrs } = $.components.registar[instanceOf] as any;
+          return true;
+        }
+      });
 
-    if (attrs !== null) {
+      const hasRef = defineGetter(this.state);
 
-      const has = defineGetter(this.state);
-      const exists = hasProps(domState);
+      for (const prop in connect.state) {
 
-      for (const k in attrs) {
+        /**
+         * The `static` state value
+         */
+        const attr = connect.state[prop];
 
-        // if (!exists(k)) continue;
+        /**
+         * Whether or not the data key exists on DOM component
+         */
+        const isDefined = this.dom.hasAttribute(`${prefix}:${prop}`);
 
-        const isDefined = domNode.hasAttribute(`${prefix}:${k}`);
+        /**
+         * Applies a getter reference to the state context
+         */
+        hasRef(`has${upcase(prop)}`, isDefined);
 
-        has(`has${upcase(k)}`, isDefined);
+        /**
+         * The `static` state type contructor value
+         */
+        let type: ValueOf<typeof connect.state>;
 
+        /**
+         * The `static` state type converted value
+         */
         let value: any;
-        let type: TypeConstructors;
 
-        if (typeof attrs[k] === 'object') {
-          value = isDefined ? domState[k] : attrs[k]['default'];
-          type = attrs[k]['typeof'];
+        /**
+         * Whether or not connect value is object or array and assigned as default
+         */
+        let isDefaultJSON: boolean = false;
+
+        /**
+         * Lets quickly determine whether the components static `state` has
+         * a default value reference or just a constructor reference. We will
+         * override component defined defaults with DOM defined defaults if
+         * both exist, as DOM defined defaults are first class citizens.
+         */
+        if (typeof attr === 'object') {
+          value = isDefined ? state[prop] : attr['default'];
+          type = attr['typeof'];
+          isDefaultJSON = typeof value === 'object' || isArray(value);
         } else {
-          value = isDefined ? domState[k] : undefined;
-          type = attrs[k];
+          value = isDefined ? state[prop] : undefined;
+          type = attr;
         }
 
         if (typeof value === 'string' && value.startsWith('window.')) {
-          this.state[k] = domState[k] = window[value.slice(7)];
+          this.state[prop] = state[prop] = window[value.slice(7)];
         } else if (type === String) {
-          this.state[k] = domState[k] = value;
+          this.state[prop] = state[prop] = value || nil;
         } else if (type === Boolean) {
-          this.state[k] = domState[k] = value === 'true';
+          this.state[prop] = state[prop] = value === 'true';
         } else if (type === Number) {
-          this.state[k] = domState[k] = Number(value);
-        } else if (type === Array || type === Object) {
-          this.state[k] = domState[k] = attrJSON(k, value);
+          this.state[prop] = state[prop] = Number(value) || 0;
+        } else if (type === Array) {
+          this.state[prop] = state[prop] = value === undefined
+            ? []
+            : isDefaultJSON
+              ? value
+              : attrJSON(prop, value);
+        } else if (type === Object) {
+          this.state[prop] = state[prop] = value === undefined
+            ? {}
+            : isDefaultJSON
+              ? value
+              : attrJSON(prop, value);
         }
 
       }
     }
-
-    const define = defineGetter(this);
-
-    for (const [ k, n ] of nodes) {
-      define(`${k}Node`, n[0]);
-      define(`${k}Nodes`, n);
-    }
-
   }
 
 }
