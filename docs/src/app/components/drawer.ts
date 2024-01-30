@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import spx, { SPX } from 'spx';
 import qvp from 'qvp';
 
@@ -15,37 +16,39 @@ export class Drawer extends spx.Component {
   /**
    * Stimulus: values
    */
-  static attrs = {
-    outsideClick: Boolean,
-    height: String,
-    width: String,
-    offset: String,
-    direction: String,
-    shift: String,
-    redraw: String,
-    useParent: {
-      typeof: Boolean,
-      default: false
-    },
-    isOpen: {
-      typeof: Boolean,
-      default: false
-    },
-    bodyScroll: {
-      typeof: Boolean,
-      default: false
-    },
-    backdrop: {
-      typeof: Boolean,
-      default: true
-    },
-    mode: {
-      typeof: String,
-      default: 'overlay'
+  static connect = {
+    state: {
+      outsideClick: Boolean,
+      height: String,
+      width: String,
+      offset: String,
+      direction: String,
+      shift: String,
+      redraw: String,
+      useParent: {
+        typeof: Boolean,
+        default: false
+      },
+      isOpen: {
+        typeof: Boolean,
+        default: false
+      },
+      bodyScroll: {
+        typeof: Boolean,
+        default: false
+      },
+      backdrop: {
+        typeof: Boolean,
+        default: true
+      },
+      mode: {
+        typeof: String,
+        default: 'overlay'
+      }
     }
   };
 
-  public state: SPX.Attrs<typeof Drawer.attrs>
+  public state: SPX.State<typeof Drawer.connect>;
 
   /**
    * Returns the backdrop element
@@ -110,7 +113,6 @@ export class Drawer extends spx.Component {
 
     spx.on('load', this.onLoad, this);
 
-
     for (const button of this.buttons) {
       button.addEventListener('click', this.toggle);
     }
@@ -120,7 +122,7 @@ export class Drawer extends spx.Component {
     }
 
     if (this.state.hasWidth) {
-   //   this.target.style.setProperty('width', this.state.width);
+      //   this.target.style.setProperty('width', this.state.width);
     }
 
     if (this.state.hasHeight) {
@@ -140,9 +142,7 @@ export class Drawer extends spx.Component {
       this.html.classList.remove('drawer-open');
     }
 
-
   }
-
 
   /**
    * Stimulus: Disconnect
@@ -382,7 +382,5 @@ export class Drawer extends spx.Component {
    * the use parent is set to `true` - In such cases the parent element will used instead.
    */
   target: HTMLElement;
-
-
 
 }

@@ -8,7 +8,9 @@
     "src/**/*.ts",
     "types/*",
     "docs/src/app/**/*.ts",
-    ".vscode/closure.ts"
+    ".vscode/closure.ts",
+    ".vscode/idiomorph.ts",
+    ".vscode/morph.ts"
   ],
   "compilerOptions": {
     "target": "ES6",
@@ -20,6 +22,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outFile": "index.d.ts",
+    "experimentalDecorators": true,
     "module": "ES6",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

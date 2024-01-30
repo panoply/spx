@@ -1,17 +1,17 @@
+/* eslint-disable no-use-before-define */
+
 import spx, { SPX } from 'spx';
 
 export class Tabs extends spx.Component {
 
-  static targets: string[] = [
-    'tab',
-    'btn'
-  ];
+  public state: SPX.State<typeof Tabs.connect>;
 
-  public state: SPX.Attrs<typeof Tabs.attrs>;
-  static attrs = {
-    open: {
-      default: 0,
-      typeof: Number
+  static connect = {
+    state: {
+      open: {
+        default: 0,
+        typeof: Number
+      }
     }
   };
 

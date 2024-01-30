@@ -30,19 +30,16 @@
   "exports": {
     "import": "./index.js"
   },
-  "browserslist": [
-    "extends @brixtol/browserslist-config"
-  ],
-  "prettier": "@brixtol/prettier-config",
+  "prettier": "@sissel/prettier-config",
   "eslintConfig": {
-    "extends": "@brixtol/eslint-config",
+    "extends": "@sissel/eslint-config",
     "ignorePatterns": [
-      "index.js",
-      "docs/*"
+      "index.js"
     ],
     "rules": {
       "no-prototype-builtins": "off",
       "multiline-ternary": "off",
+      "no-use-before-define": "off",
       "no-labels": [
         "error",
         {
@@ -60,15 +57,14 @@
     ]
   },
   "devDependencies": {
-    "@brixtol/browserslist-config": "workspace:^",
-    "@brixtol/eslint-config": "workspace:^",
-    "@brixtol/prettier-config": "workspace:^",
+    "@sissel/eslint-config": "^1.2.1",
+    "@sissel/prettier-config": "^1.2.5",
     "ava": "^6.0.1",
     "browser-env": "^3.3.0",
     "detect-it": "^4.0.1",
     "esbuild": "^0.19.11",
     "gzip-size-cli": "^5.1.0",
-    "terser": "^5.26.0",
+    "terser": "^5.27.0",
     "tsup": "^8.0.1",
     "type-fest": "^4.9.0",
     "typescript": "^5.3.3"
@@ -81,6 +77,9 @@
   },
   "optionalDependencies": {
     "eslint": "^8.56.0",
-    "prettier": "^3.1.1"
+    "prettier": "^3.2.4"
+  },
+  "dependencies": {
+    "idiomorph": "^0.3.0"
   }
 }

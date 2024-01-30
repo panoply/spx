@@ -1,7 +1,7 @@
 ---
 layout: iframe.liquid
-permalink: '/iframe/basic/page-a'
-data: 'basic'
+permalink: '/iframe/using-defaults/page-a'
+data: 'using-defaults'
 ---
 
 # Page A

@@ -9,7 +9,7 @@ import * as pkg from '../package.json';
  *
  * Archive function to generate a `.zip` file export
  */
-async function zip(input: string, output: string) {
+async function zip (input: string, output: string) {
   const zip = new ZIP();
   await zip.addLocalFolderPromise(input, {});
   await zip.writeZipPromise(output);
@@ -20,7 +20,7 @@ async function zip(input: string, output: string) {
  *
  * Unarchive function used to extract the documentation version
  */
-function unzip(input: string, output: string) {
+function unzip (input: string, output: string) {
 
   return new ZIP(input).extractAllTo(output, true);
 
@@ -32,10 +32,10 @@ function unzip(input: string, output: string) {
  * The `onSuccess` function callback applied to tsup. When ENV is production
  * the version are generated and written to `public` directory.
  */
-async function versions() {
+async function versions () {
 
   const cwd = process.cwd();
-  const { version } = pkg
+  const { version } = pkg;
   const beta = /-beta\.\d$/.test(version);
   const name = beta ? version.replace(/\.\d-beta\.\d$/, 'x-beta') : version.replace(/\.\d$/, 'x');
   const dir = join(cwd, 'version', `${name}`);
@@ -54,12 +54,11 @@ async function versions() {
 
 };
 
-
 export default defineConfig(
   {
     entry: {
       'bundle.min': './src/app/index.ts',
-      'spx.min': './src/app/spx.ts',
+      'spx.min': './src/app/spx.ts'
     },
     outDir: './public',
     outExtension: () => ({

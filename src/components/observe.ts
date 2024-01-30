@@ -3,7 +3,7 @@ import { snapshot } from '../app/store';
 import { Nodes, Refs } from '../shared/enums';
 import { assign } from '../shared/native';
 import { getSelector, hasProp } from '../shared/utils';
-import { addEventAttrs } from './listeners';
+import { addEvent, removeEvent } from './listeners';
 
 export const observer = new MutationObserver(function (mutatation) {
 
@@ -62,15 +62,7 @@ export function removeComponent (node: HTMLElement) {
 
     } else if (ref === Refs.EVENT) {
 
-      const event = scope.events[uuid];
-
-      if (event.isWindow) {
-        removeEventListener(event.eventName, instance[event.method]);
-      } else {
-        instance[event.schema][event.index].removeEventListener(event.eventName, instance[event.method]);
-      }
-
-      event.attached = false;
+      scope.events[uuid].attached = removeEvent(instance, scope.events[uuid]);
 
     }
 
@@ -126,13 +118,7 @@ export function addComponent (node: HTMLElement) {
         instance[event.schema.slice(0, -1)] = node;
       }
 
-      if (event.isWindow) {
-        addEventListener(event.eventName, addEventAttrs(instance, event));
-      } else {
-        instance[event.schema][event.index].addEventListener(event.eventName, addEventAttrs(instance, event));
-      }
-
-      event.attached = true;
+      event.attached = addEvent(instance, event);
 
     } else if (ref === Refs.BINDING) {
 

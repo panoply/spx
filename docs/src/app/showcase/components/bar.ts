@@ -1,37 +1,38 @@
-import spx, { SPX } from 'spx'
+import spx from 'spx';
 
-export class Bar extends spx.Component {
+export class Bar extends spx.Component<typeof Bar.connect> {
 
-  static attrs = {
-    size: Number,
-    custom: Number
+  static connect = {
+    state: {
+      size: Number,
+      custom: Number,
+      foo: {
+        typeof: String,
+        persist: true,
+        default: 'hello'
+      }
+    }
+  };
+
+  onInit () {
+    console.log('Bar Controller:', this);
+    this.widthNode.innerText = `${this.state.size}px`;
   }
 
-  onInit() {
+  onLoad () {
     console.log('Bar Controller:', this.state);
-    this.widthNode.innerText = `${this.state.size}px`
+    this.widthNode.innerText = `${this.state.size}px`;
   }
 
-  onLoad() {
+  onExit () {
     console.log('Bar Controller:', this.state);
-    this.widthNode.innerText = `${this.state.size}px`
-  }
-
-  onExit() {
-    console.log('Bar Controller:', this.state);
-    this.widthNode.innerText = `${this.state.size}px`
+    this.widthNode.innerText = `${this.state.size}px`;
   }
 
   toggle ({ target }: { target: Window }) {
-    this.state.size = target.innerWidth
-    this.widthNode.innerText = `${ this.state.size}px`
+    this.state.size = target.innerWidth;
+    this.widthNode.innerText = `${this.state.size}px`;
   }
-
-  /* -------------------------------------------- */
-  /* TYPES                                        */
-  /* -------------------------------------------- */
-
-  public state: SPX.Attrs<typeof Bar.attrs>
 
   /* -------------------------------------------- */
   /* NODES                                        */

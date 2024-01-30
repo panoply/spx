@@ -38,6 +38,15 @@ SPX Components
 </div>
 ```
 
+### State Bindings
+
+<!--prettier-ignore-->
+```html
+<span spx-bind="name.xxx">
+
+</span>
+```
+
 ### Multiple Components
 
 <!--prettier-ignore-->
@@ -67,7 +76,7 @@ DOM Events can be annotated to elements. The directive uses a simple `spx@` pref
 </button>
 ```
 
-#### Event Attrs
+### Event Attrs
 
 In some cases you may want to pass data to event methods defined on components. Using the standard attrs (state) directive structure allows to to expose passed references in the event parameter.
 
@@ -79,4 +88,13 @@ In some cases you may want to pass data to event methods defined on components. 
   spx-foo:price="100">
 
 </button>
+```
+
+### Component Nodes
+
+<!--prettier-ignore-->
+```html
+<div spx-node="foo.name">
+
+</div>
 ```

@@ -1,0 +1,138 @@
+---
+title: 'SPX Examples | Components'
+layout: base.liquid
+permalink: '/examples/components/index.html'
+---
+
+<div class="row">
+  <div class="col-12">
+    <div
+      spx-component="demo"
+      spx-demo:name="foo"
+      spx-demo:clicks="0">
+
+      <div class="component">
+        <h6>This is the
+          <code>demo.js</code>
+          component</h6>
+
+        <!-- demo.js action -->
+        <button type="button" spx@click="demo.button">
+          Press me
+        </button>
+
+        <!-- demo.js node -->
+        <p>
+          Clicked:
+          <span spx-bind="demo.clicks">0</span>
+        </p>
+
+        <h1>Multiple Events</h1>
+        <ul>
+          <li>
+            <button type="button" spx@click="demo.button">
+              One
+            </button>
+          </li>
+          <li>
+            <button type="button" spx@click="demo.button">
+              two
+            </button>
+          </li>
+          <li>
+            <button type="button" spx@click="demo.button">
+              three
+            </button>
+          </li>
+        </ul>
+
+      </div>
+
+      <hr>
+
+      <div
+        spx-component="foo|bar"
+        spx-foo:active="false"
+        spx-foo:change="I am value of spx:change attribute"
+        spx-bar:size="window.innerWidth"
+        spx@window:resize="bar.toggle">
+
+        <div class="component">
+          <h6>This is the
+            <code>foo.js</code>
+            and
+            <code>bar.js</code>
+            component</h6>
+
+          <!-- foo.js action and nodes -->
+          <div class="foo" spx@click="foo.toggle">
+            <span spx-node="foo.text">
+              Click this div and the value of
+              <code>spx-bar:change</code>
+              will inserted
+            </span>
+            <p spx-node="foo.info">
+              This text content will change when you click the div
+            </p>
+          </div>
+
+          <div class="bar">
+            Resize Window to see value:
+            <!-- bar.js node -->
+            <code spx-node="bar.width">0</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="component">
+        <h6>This is the
+          <code>test.js</code>
+          component</h6>
+
+        <!-- test.js component -->
+        <div
+          spx-component="test"
+          spx-test:id="example"
+          spx-test:count="1">
+          <!-- text.js action and node -->
+          <div class="d-block p-5" spx@mouseover="test.increment">
+            Mouseover (hover) this pink box:
+            <code spx-node="test.count">0</code>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- demo.js component using increments -->
+    <div
+      spx-component="demo"
+      spx-demo:name="counter"
+      spx-demo:min="5"
+      spx-demo:qty="7"
+      spx-demo:max="10">
+
+      <div class="component">
+        <h6>This is the
+          <code>demo.js</code>
+          component as a counter</h6>
+
+        <!-- demo.js action -->
+        <button type="button" spx@click="demo.increment">
+          +
+        </button>
+
+        <p spx-node="demo.counter">7</p>
+
+        <button type="button" spx@click="demo.decrement">
+          -
+        </button>
+
+        <h4 spx-node="demo.feedback"></h4>
+      </div>
+    </div>
+
+  </div>
+</div>

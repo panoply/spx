@@ -236,7 +236,7 @@ export function hasProps<T extends object> (object: T) {
   >(property: P) => {
 
     if (!property) return false;
-    if (typeof property === 'string') return hasProp(object, property);
+    if (typeof property === 'string') return property in object;
 
     return (property as A).every(prop => prop in object);
 
@@ -280,7 +280,6 @@ export function defineGetter <T> (object: T, name?: string, value?: any) {
     };
 
   }
-
 }
 
 /**

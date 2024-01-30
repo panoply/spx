@@ -5,6 +5,7 @@ import { Drawer } from './components/drawer';
 import { Examples } from './components/examples';
 import { Dropdown } from './components/dropdown';
 import { IFrame } from './components/iframe';
+import { Sidebar } from './components/sidebar';
 import spx from 'spx';
 import relapse from 'relapse'
 // import papyrus from '@liquify/papyrus'
@@ -24,7 +25,7 @@ spx.connect(
     fragments: [
       '#content',
     ],
-    method: 'morph',
+    logLevel: 1,
     hover: {
       threshold: 100,
       trigger: 'href'
@@ -36,6 +37,7 @@ spx.connect(
       Demo,
       Dropdown,
       Foo,
+      Sidebar,
       Bar,
       Test,
       Session,
@@ -48,9 +50,6 @@ spx.connect(
 
   relapse()
 
-  const stimulus = Application.start();
-  //stimulus.register('session', Session);
-  stimulus.register('examples', Examples);
 
 });
 

@@ -1,6 +1,6 @@
 # SPX Documentation
 
-SPX (Single Page XHR) documentation website built using [11ty](https://www.11ty.dev/docs/) and served up on [Netlify](https://netlify.com). The documentation is leveraging SPX so feel free to reference as a strap in your next project.
+Documentation website for SPX (Single Page XHR). Built using [11ty](https://www.11ty.dev/docs/) and served up on [Netlify](https://netlify.com). The documentation is leveraging SPX so feel free to reference as a strap in your next project.
 
 Visit the docs: [spx.js.org](https://spx.js.org)
 

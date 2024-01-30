@@ -30,6 +30,9 @@
       src="{{'/bundle.min.js' | url }}"
       spx-eval="false"
       async></script>
+
+    {% include 'examples/script-evaluation' %}
+
   </head>
 
   <body>
@@ -67,21 +70,27 @@
 
             <div class="pr-5 pl-2">
               {{ content }}
+
+              {% liquid
+                if page.url == '/examples/script-evaluation/page-c/'
+                  echo '<div id="page-c"></div>'
+                endif
+              %}
+
               {% include 'layout/navigate' %}
             </div>
           </main>
 
-          {% unless page.url contains '/examples/' %}
-            <aside id="session" class="col-auto drawer-panel drawer-right session vh-100 bl d-none d-md-flex px-0">
-              {% include 'layout/session' %}
-            </aside>
-          {% endunless %}
+          <aside id="session" class="col-auto drawer-panel drawer-right session vh-100 bl d-none d-md-flex px-0">
+            {% include 'layout/session' %}
+          </aside>
+
         </div>
       </div>
 
     {% endif %}
 
-    {% svgsprite %}
+    {% sprite %}
 
   </body>
 </html>

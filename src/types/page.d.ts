@@ -257,13 +257,7 @@ export interface IPage<T = any> {
   /**
    * Index references of components
    *
-   * @default []
+   * @default { [] }
    */
-  components?: string[];
-  /**
-   * Event selectors
-   *
-   * @default ''
-   */
-  events?: string[];
+  components?: string[]
 }

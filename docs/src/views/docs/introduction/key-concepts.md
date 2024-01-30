@@ -12,27 +12,39 @@ next:
 
 # Key Concepts
 
-SPX assumes developers have an intermediate level of font-end knowledge. Before leveraging the module, it's important to familiarize yourself with a couple of its key concepts. When using SPX, all `href` occurrences are seamlessly executed over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) and [History](https://developer.mozilla.org/en-US/docs/Web/API/History/pushState) push-state, as such, your web application will not perform full-page reloads, but instead partial replacements.
+SPX assumes developers have an intermediate level of font-end knowledge. Before leveraging the module, it's important to familiarize yourself with a couple of its key concepts which are listed on this page. When using SPX, all `href` link clicks are intercepted and seamlessly executed over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) so your web application will never perform full-page reloads, but instead partial (morphed) replacements. The XHR (DOM String) responses are stored in browser state and an active cache is persisted until a hard-refresh is incurred or hostname changes.
 
-The XHR response from an intercepted navigations is cached and stored in browser state. The actual fetching operation happens preemptively and SPX offers varying sets of user defined configuration options to perform replacements of DOM elements when navigating between different urls, swapping out elements whose inner contents have changed.
+The actual fetching operation happens preemptively and SPX offers varying sets of user defined configuration options for performing DOM element replacements when navigating between different urls of the same hostname. SPX is designed to replicate native browser behavior but developers should be mindful in their implementation.
 
-{% include 'layout/iframe', url: '/iframe/basic/page-a' %}
+{% include 'layout/iframe', url: '/iframe/using-defaults/page-a' %}
 
 ---
 
 # Fragments
 
-Fragments in SPX refer to specific elements (defined by selector) within a web page that are expected to change as users navigate between different pages. By default, SPX assumes that all nodes contained within the `<body>` are different for each page. However, in reality, only a few elements usually change while others remain constant.
+Fragments in SPX refer to a collection of elements, identified by a selector, that coexist within web pages. By default, SPX assumes that descendant elements of `<body>` are dynamic and unique for each page in your web application. However, in reality, websites comprise both dynamic and static elements. It is not only encouraged but also considered good practice to explicitly define a set of fragments. This will help prevent SPX from performing extraneous DOM diffing operations every time a page visit occurs.
 
-To define fragments for SPX, you simply specify them upon connection (see [spx.connect](/api/connect)):
+You can define fragments in SPX either upon connection via the [`spx.connect()`](/api/connect)) method. SPX also supports directive overrides for defining fragments on a per-page level using attribute annotation. Link elements in the DOM which contain an [`spx-fragment`](/attributes/spx-fragment) attribute can be used to target a different set of elements between navigations.
 
+<br>
+
+<!-- prettier-ignore -->
 ```js
 import spx from 'spx';
 
 spx.connect({
-  fragments: ['nav', 'main'] // Targets HTML elements <nav> and <main>
+  fragments: [
+    'nav',      // Targets HTML element <nav>
+    'main'      // Targets HTML element <main>
+  ]
 });
 ```
+
+---
+
+# Morphing
+
+DOM morphing, at its core, is a rendering process employed by SPX to dynamically transform the DOM during page navigation. Unlike traditional page loading approaches.
 
 Here, the `fragments` option accepts a `string[]` list of query selector references, indicating which elements are expected to change. When this option is left undefined, SPX will default to swapping out changed nodes within the `<body>` during each navigation. Let's take a simple example of a basic DOM structure for SPX to work with:
 
@@ -56,6 +68,8 @@ In this case, the `<nav>`, `<main>`, and `<footer>` elements exist in the same s
 By specifying the `targets` option as `['nav', 'main']` upon `spx.connect()`, SPX will only perform necessary updates on the elements defined as targets. This means that when you click the "about" link, only the specified elements in the `<nav>` and `<main>` will be updated, while the rest of the page remains untouched. This approach drastically reduces the number of operations performed compared to traditional SSR (Server-Side Rendering) websites, resulting in better rendering and overall performance.
 
 Using targets is highly encouraged when working with SPX, as it not only improves the performance and rendering capabilities of the module but also promotes good practices when dealing with markup languages like HTML. So, leverage targets to unlock the full potential of SPX in your web application.
+
+---
 
 # Navigation
 
@@ -109,6 +123,8 @@ By default, SPX ensures that all link clicks follow its prescribed behavior base
 
 ```
 
+---
+
 # Prefetching
 
 At the core of SPX lies the concept of prefetching, which plays a crucial role in determining visit intent. Prefetching allows SPX to anticipate user actions and be proactive in fetching the required content in advance. This significantly enhances the navigation experience for users. SPX offers multiple ways for developers to implement prefetching, providing flexibility and control for varying use cases.
@@ -158,6 +174,8 @@ spx.connect({
 <!-- Exclude certain links from intersection prefetches -->
 <a spx-intersect="false"></a>
 ```
+
+---
 
 # Caching
 

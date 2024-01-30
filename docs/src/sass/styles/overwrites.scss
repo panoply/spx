@@ -4,7 +4,6 @@ h3,
 h4,
 h5,
 h6 {
-
   color: $body-color;
 
   // text-transform: uppercase;
@@ -49,7 +48,6 @@ h5 {
   font-weight: 400;
 }
 
-
 blockquote {
   margin-top: 40px;
   margin-bottom: 40px;
@@ -88,7 +86,7 @@ blockquote {
   > p {
     margin: 0;
     color: $body-color;
-    font-size: $font-size-sm;
+    font-size: $font-size-md;
     font-family: $font-family-base;
     font-weight: 200;
     -webkit-font-smoothing: subpixel-antialiased;
@@ -117,10 +115,8 @@ p {
   }
 }
 
-
 .breadcrumb {
-  font-size: .825rem;
-
+  font-size: 0.825rem;
 
   .icon-right,
   .icon-home {
@@ -141,14 +137,9 @@ p {
       display: inline-flex;
     }
   }
-
 }
 
-
-
 .navigators {
-
-
   a {
     font-family: $font-family-heading;
     color: $link-color;
@@ -176,14 +167,10 @@ p {
   }
 }
 
-
 .img-fluid {
   width: 100%;
   height: auto;
 }
-
-
-
 
 .drawer-toggle {
   background-image: url(icon-menu($white));
@@ -227,7 +214,6 @@ p {
   }
 }
 
-
 .versions > .dropdown {
   z-index: 9999999;
 
@@ -266,20 +252,21 @@ p {
   }
 }
 
-
 .options-accordion {
-
-  > details  {
-
-    &:first-of-type > summary { border-top: none }
-    &:last-of-type > summary { border-bottom: none; }
+  > details {
+    &:first-of-type > summary {
+      border-top: none;
+    }
+    &:last-of-type > summary {
+      border-bottom: none;
+    }
 
     > summary {
       display: flex;
       align-items: center;
       padding: 10px 0;
       border-bottom: $border-width solid $border-color;
-      font-size: .825rem;
+      font-size: 0.825rem;
       font-weight: $font-weight-bolder;
       font-family: $font-family-heading;
       color: $gray-400;
@@ -306,9 +293,5 @@ p {
       color: $white;
       background-image: url(icon-minus($white));
     }
-
-
   }
 }
-
-

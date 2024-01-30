@@ -3,11 +3,11 @@ import spx from 'spx';
 
 export class Examples extends Controller {
 
-   /**
+  /**
    * Stimulus: values
    */
-   static values = {
-    type: String,
+  static values = {
+    type: String
   };
 
   /**
@@ -15,34 +15,27 @@ export class Examples extends Controller {
    */
   static targets = [ 'tab' ];
 
-  connect(): void {
+  connect (): void {
 
-    const element = document.querySelector('#load-more')
-
-
-
+    const element = document.querySelector('#load-more');
 
     spx.on('intersect', ({ dom, node, observer, page }) => {
 
-      if(node) {
+      if (node) {
 
-        const load = dom.querySelector('#load') as HTMLElement
-        node.replaceWith(load)
-        const { children } = dom.querySelector('#load-more')
-        element.append(...children)
-        observer.observe(load)
+        const load = dom.querySelector('#load') as HTMLElement;
+        node.replaceWith(load);
+        const { children } = dom.querySelector('#load-more');
+        element.append(...children);
+        observer.observe(load);
 
-        return document
-
+        return document;
 
       }
 
+      return false;
 
-
-      return false
-
-    })
+    });
   }
-
 
 }

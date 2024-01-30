@@ -23,7 +23,7 @@
           "url": "/examples/components/todo-list/"
         },
         {
-          "title": "Tabs",
+          "title": "Simple Tabs",
           "url": "/examples/components/tabs/"
         },
         {
@@ -52,7 +52,8 @@
   ],
   "menu": [
     {
-      "group": "Introduction",
+      "title": "Introduction",
+      "group": "/introduction/",
       "links": [
         {
           "title": "What is SPX?",
@@ -63,17 +64,68 @@
           "url": "/introduction/key-concepts/"
         },
         {
-          "title": "Session",
+          "title": "Sessions",
           "url": "/introduction/session/"
         },
         {
-          "title": "Lifecycle",
+          "title": "Lifecycle Methods",
           "url": "/introduction/lifecycle/"
         }
       ]
     },
     {
-      "group": "Usage",
+      "title": "Examples",
+      "group": "/examples/",
+      "links": [
+        {
+          "title": "Components",
+          "url": "/examples/components/"
+        },
+        {
+          "title": "Hover Prefetch",
+          "url": "/examples/hover-prefetch/"
+        },
+        {
+          "title": "Proximity Prefetch",
+          "url": "/examples/proximity-prefetch/"
+        },
+        {
+          "title": "Intersect Prefetch",
+          "url": "/examples/intersect-prefetch/"
+        },
+        {
+          "title": "Hydration",
+          "url": "/examples/hydration"
+        },
+        {
+          "title": "Script Evaluation",
+          "url": "/examples/script-evaluation/"
+        },
+        {
+          "title": "Dropdown",
+          "url": "/examples/dropdown/"
+        },
+        {
+          "title": "Dialog",
+          "url": "/examples/dialog/"
+        },
+        {
+          "title": "Embla Carousel",
+          "url": "/examples/carousel/using-embla"
+        },
+        {
+          "title": "Infinite Scrolling",
+          "url": "/examples/infinite-scrolling/"
+        },
+        {
+          "title": "Forms",
+          "url": "/examples/forms/"
+        }
+      ]
+    },
+    {
+      "title": "Usage",
+      "group": "/usage/",
       "links": [
         {
           "title": "Installation",
@@ -92,17 +144,22 @@
           "url": "/usage/resource-evaluation/"
         },
         {
-          "title": "Best Practices",
-          "url": "/usage/best-practices/"
+          "title": "Using TypeScript",
+          "url": "/usage/using-typescript/"
+        },
+        {
+          "title": "VSCode Extension",
+          "url": "/usage/vscode-extension/"
         }
       ]
     },
     {
-      "group": "Components",
+      "title": "Components",
+      "group": "/components/",
       "links": [
         {
-          "title": "Overview",
-          "url": "/components/overview/"
+          "title": "Structure",
+          "url": "/components/structure/"
         },
         {
           "title": "Directives",
@@ -113,21 +170,18 @@
           "url": "/components/state/"
         },
         {
-          "title": "Events",
+          "title": "Event Listeners",
           "url": "/components/events/"
         },
         {
           "title": "Nodes",
           "url": "/components/nodes/"
-        },
-        {
-          "title": "TypeScript",
-          "url": "/components/typescript/"
         }
       ]
     },
     {
-      "group": "Attributes",
+      "title": "Attributes",
+      "group": "/attributes/",
       "links": [
         {
           "title": "spx-target",
@@ -152,6 +206,22 @@
         {
           "title": "spx-data",
           "url": "/attributes/spx-data/"
+        },
+        {
+          "title": "spx-component",
+          "url": "/attributes/spx-component/"
+        },
+        {
+          "title": "spx-node",
+          "url": "/attributes/spx-node/"
+        },
+        {
+          "title": "spx-bind",
+          "url": "/attributes/spx-bind/"
+        },
+        {
+          "title": "spx-watch",
+          "url": "/attributes/spx-watch/"
         },
         {
           "title": "spx-hydrate",
@@ -182,6 +252,10 @@
           "url": "/attributes/spx-position/"
         },
         {
+          "title": "spx-progress",
+          "url": "/attributes/spx-progress/"
+        },
+        {
           "title": "spx-scroll",
           "url": "/attributes/spx-scroll/"
         },
@@ -200,7 +274,8 @@
       ]
     },
     {
-      "group": "API",
+      "title": "API",
+      "group": "/api/",
       "links": [
         {
           "title": "spx.connect",
@@ -265,31 +340,6 @@
         {
           "title": "spx.disconnect",
           "url": "/api/disconnect/"
-        }
-      ]
-    },
-    {
-      "group": "Misc",
-      "links": [
-        {
-          "title": "VSCode Extension",
-          "url": "/misc/vscode-extension/"
-        },
-        {
-          "title": "Shopify Themes",
-          "url": "/misc/shopify-themes/"
-        },
-        {
-          "title": "Benchmarks",
-          "url": "/misc/benchmarks/"
-        },
-        {
-          "title": "Acknowledgements",
-          "url": "/misc/acknowledgements/"
-        },
-        {
-          "title": "Contributing",
-          "url": "/misc/contributing/"
         }
       ]
     }

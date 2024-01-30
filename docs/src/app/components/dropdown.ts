@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import relapse from 'relapse';
 import spx, { SPX } from 'spx';
 
@@ -8,24 +9,26 @@ import spx, { SPX } from 'spx';
  */
 export class Dropdown extends spx.Component {
 
-  public state: SPX.Attrs<typeof Dropdown.attrs>;
+  public state: SPX.State<typeof Dropdown.connect>;
 
-  static attrs = {
-    selected: String,
-    form: String,
-    accordion: String,
-    kind: String,
-    required: {
-      typeof: Boolean,
-      default: false
-    },
-    collapse: {
-      typeof: String,
-      default: 'closed'
-    },
-    type: {
-      typeof: String,
-      default: 'dropdown'
+  static connect = {
+    state: {
+      selected: String,
+      form: String,
+      accordion: String,
+      kind: String,
+      required: {
+        typeof: Boolean,
+        default: false
+      },
+      collapse: {
+        typeof: String,
+        default: 'closed'
+      },
+      type: {
+        typeof: String,
+        default: 'dropdown'
+      }
     }
   };
 

@@ -1,0 +1,26 @@
+{% if page.url == '/examples/script-evaluation/page-a/' %}
+
+  <script>
+    console.log('Page A')
+  </script>
+
+{% elsif page.url == '/examples/script-evaluation/page-b/' %}
+
+  <script>
+    console.log('Page B')
+  </script>
+
+{% elsif page.url == '/examples/script-evaluation/page-c/' %}
+
+  <script src="https://unpkg.com/mithril/mithril.js" defer></script>
+  <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+      m.render(document.querySelector('#page-c'), m('h1', 'Dymamic Render'))
+
+    })
+
+// your code goes here!
+  </script>
+
+{% endif %}

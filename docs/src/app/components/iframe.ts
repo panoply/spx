@@ -1,12 +1,11 @@
-import spx from 'spx'
+import spx from 'spx';
 
 export class IFrame extends spx.Component {
 
-
-  resize() {
+  resize () {
     this.frameNode.style.height = this.frameNode.contentWindow.document.documentElement.scrollHeight + 'px';
   }
 
-  frameNode: HTMLIFrameElement
+  frameNode: HTMLIFrameElement;
 
 }

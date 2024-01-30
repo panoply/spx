@@ -1,7 +1,7 @@
 import { IPage } from '../types/page';
 import { emit } from './events';
 import { empty, uuid, hasProp, log, forEach, hasProps, targets, ts } from '../shared/utils';
-import { assign, o, isArray } from '../shared/native';
+import { assign, o, isArray, defineProps } from '../shared/native';
 import { $ } from './session';
 import { Errors, EventType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
@@ -38,7 +38,9 @@ export function create (page: IPage): IPage {
   if (!has('scrollX')) page.scrollX = 0;
 
   if ($.config.hover !== false && page.type === EventType.HOVER) {
-    if (!has('threshold')) page.threshold = $.config.hover.threshold;
+    if (!has('threshold')) {
+      page.threshold = $.config.hover.threshold;
+    }
   }
 
   if ($.config.proximity !== false && page.type === EventType.PROXIMITY) {
@@ -172,21 +174,17 @@ export function update (page: IPage, snapshot?: string): IPage {
  * in-memory dom. An option `targets` parameter will return specific
  * nodes.
  */
-export function dom (page: IPage):{
+export function dom (page: IPage): {
   get dom(): Document;
   get page(): IPage
 } {
 
   const snapshot = parse($.snaps[page.uuid]);
 
-  return {
-    get page () {
-      return page;
-    },
-    get dom () {
-      return snapshot;
-    }
-  };
+  return defineProps(o(), {
+    page: { get: () => page },
+    dom: { get: () => snapshot }
+  });
 
 }
 
@@ -209,12 +207,7 @@ export function get (key?: string): { page: IPage, dom: Document } {
     key = history.api.state.key;
   }
 
-  if (hasProp($.pages, key)) {
-    const state = o();
-    state.page = $.pages[key];
-    state.dom = parse($.snaps[state.page.uuid]);
-    return state;
-  }
+  if (hasProp($.pages, key)) return dom($.pages[key]);
 
   log(Errors.ERROR, `No record exists: ${key}`);
 

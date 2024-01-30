@@ -1,43 +1,94 @@
-{% liquid
-  if page.url contains '/examples/'
-    assign links = navigation.examples
-  else
-    assign links = navigation.menu
-  endif
-%}
+<nav
+  class="sidebar-menu mt-0 mb-2 br-0 bt-0"
+  spx-component="sidebar"
+  spx-sidebar:multiple="false">
 
-<nav class="accordion mt-0 mb-2 br-0 bt-0" data-relapse="sidebar">
-  {% for nav in links %}
+  {% for item in navigation.menu %}
 
-    {% assign group = nav.group
+    {% assign group = item.title
       | slugify
       | prepend: '/'
       | append: '/' %}
 
-    <details
-      {% if page.url contains group %}
-        open
-      {% endif %}>
-      <summary>
-        {{ nav.group }}
-      </summary>
-      <section>
-        <ul class="list mb-0 py-2">
-          {% for item in nav.links %}
-            <li class="pb-1 pl-2">
+    {% if item.url %}
+      <a
+        spx-scroll="0"
+        spx-target="true"
+        class="menu-link"
+        href="{{ item.url | url }}"
+        {% if page.url contains item.url %}
+          aria-expanded="true"
+          class="menu-link active"
+        {% else %}
+          class="menu-link"
+        {% endif %}>
+        {{ item.title }}
+      </a>
+    {% else %}
+      <button
+        type="button"
+        {% if page.url contains group %}
+          aria-expanded="true"
+          class="menu-link active"
+        {% else %}
+          class="menu-link"
+        {% endif %}>
+        {{ item.title }}
+      </button>
+    {% endif %}
+
+    <section class="rel">
+      <ul
+        class="list"
+        {% unless page.url contains group %}
+          hidden="true"
+        {% endunless %}>
+        {% for link in item.links %}
+          <li>
+            {% if link.links %}
+              <div data-relapse>
+                <button
+                  type="button"
+                  class="menu-link"
+                  {% if page.url contains link.group %}
+                    open="true"
+                  {% endif %}>
+                  {{ link.title }}
+                </button>
+                <section>
+                  <ul class="child-list pl-2">
+                    {% for child in link.links %}
+                      <li class="pl-1">
+                        <a
+                          spx-scroll="0"
+                          spx-target="true"
+                          href="{{ child.url | url }}"
+                          {% if page.url contains child.url %}
+                            class="active"
+                          {% endif %}>
+                          {{ child.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </section>
+              </div>
+            {% else %}
               <a
-                href="{{ item.url }}"
                 spx-scroll="0"
                 spx-target="true"
-                {% if page.url == item.url %}
-                  class="fc-blue active"
+                href="{{ link.url | url }}"
+                aria-disabled="true"
+                {% if page.url contains link.url %}
+                  class="active"
                 {% endif %}>
-                {{ item.title }}
+                {{ link.title }}
               </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </section>
-    </details>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
   {% endfor %}
+
 </nav>

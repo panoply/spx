@@ -266,6 +266,18 @@ export interface IComponentEvent {
    * Whether or not the event target is `window`
    */
   isWindow: boolean;
+  /**
+   * Event Listener Options
+   */
+  options: {
+    /**
+     * Whether or not listener is passive.
+     *
+     * @example 'spx@click="ref.method { passive, once }"'
+     */
+    passive: boolean;
+    once: boolean;
+  }
 }
 
 /**

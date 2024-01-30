@@ -3,8 +3,7 @@ import { $ } from '../app/session';
 import { Errors } from '../shared/enums';
 import { d, defineProps, m, o } from '../shared/native';
 import * as u from '../shared/utils';
-import { patch } from '../app/store';
-import { addEventAttrs } from './listeners';
+import { addEvent } from './listeners';
 
 /**
  * DOM Elements
@@ -143,6 +142,56 @@ export function getValues (
       callback(u.last(scopes.get(instanceOf)), method.trim(), value);
 
     }
+  }
+
+}
+
+export function getEventValue (
+  scopes: Map<string, IScope[]>,
+  attrValue: string,
+  callback: (scope: IScope, method: string, options: {
+    passive: boolean;
+    once: boolean;
+  }) => void
+) {
+
+  const options: {
+    passive: boolean;
+    once: boolean;
+  } = o({
+    once: false,
+    passive: false
+  });
+
+  const opts = attrValue.indexOf('{');
+
+  if (opts > -1) {
+
+    const eventOpts = attrValue
+      .slice(opts, attrValue.lastIndexOf('}', opts))
+      .match(/(passive|once)/g);
+
+    if (eventOpts !== null) {
+      options.once = eventOpts.includes('once');
+      options.passive = eventOpts.includes('passive');
+    }
+
+    attrValue = attrValue.slice(0, opts);
+
+  }
+
+  const attrValues = u.attrValueNotation(attrValue);
+  const [ instanceOf, method ] = attrValues[0].split('.');
+
+  if (attrValues.length > 1) {
+    u.log(Errors.WARN, `More than 1 event binding defined: ${attrValue}`);
+  }
+
+  if (!scopes.has(instanceOf)) {
+    scopes.set(instanceOf, [ setScope(instanceOf) ]);
+    callback(scopes.get(instanceOf)[0], method.trim(), options);
+  } else {
+    callback(u.last(scopes.get(instanceOf)), method.trim(), options);
   }
 
 }
@@ -336,7 +385,7 @@ export function getComponentScope (
         const eventName = name.slice(attrEvent + 1);
         const isWindow = eventName.startsWith('window:');
 
-        getValues(scopes, value, ({ events, key }, method) => {
+        getEventValue(scopes, value, ({ events, key }, method, options) => {
           const uuid = `e.${u.uuid()}`;
           events[uuid] = o();
           events[uuid].element = setAttrRef(node, uuid, key);
@@ -346,6 +395,7 @@ export function getComponentScope (
           events[uuid].params = null;
           events[uuid].method = method;
           events[uuid].schema = `${method}EventNodes`;
+          events[uuid].options = options;
         });
 
         connect = true;
@@ -437,13 +487,7 @@ export function setEvent (instance: IComponentInstance, scope: IScope) {
       event.index = instance[event.schema].push(node) - 1;
     }
 
-    if (event.isWindow) {
-      addEventListener(event.eventName, addEventAttrs(instance, event));
-    } else {
-      node.addEventListener(event.eventName, addEventAttrs(instance, event));
-    }
-
-    event.attached = true;
+    event.attached = addEvent(instance, event);
 
     /* CLEANUP ------------------------------------ */
 
@@ -508,7 +552,6 @@ export function setBinds (instance: IComponentInstance, scope: IScope, state: an
 export function getComponents () {
 
   const scopes: Map<string, IScope[]> = m();
-  const components: string[] = [];
   const unscoped: IScope[] = [];
 
   walkElements(d(), node => getComponentScope(node, scopes));
@@ -523,7 +566,6 @@ export function getComponents () {
     const { connect } = Component;
 
     for (const scope of scoped) {
-
       if (scope.dom !== null) {
 
         const element = elements.get(scope.dom);
@@ -534,12 +576,8 @@ export function getComponents () {
         setBinds(instance, scope, connect.state);
 
         $.components.instances[scope.key] = defineProps(o(), {
-          scope: {
-            get () { return scope; }
-          },
-          instance: {
-            get () { return instance; }
-          }
+          scope: { get: () => scope },
+          instance: { get: () => instance }
         });
 
         if (u.hasProp(instance, 'onInit')) {
@@ -550,7 +588,7 @@ export function getComponents () {
           $.components.connected.add(element);
         }
 
-        components.push(scope.key);
+        $.page.components.push(scope.key);
         elements.delete(scope.dom);
 
       } else {
@@ -559,9 +597,5 @@ export function getComponents () {
 
       }
     }
-
   }
-
-  patch('components', components);
-
 }

@@ -12,7 +12,9 @@ next:
 
 # Components
 
-SPX provides a component extendability feature which is loosely based on the [stimulus.js](https://stimulus.hotwired.dev/) approach. Components serve as DOM enhancements and have been designed to integrate with the SPX rendering, morph and caching methodology.
+SPX components provide a robust solution for connection and interaction with the DOM. Positioned at the core of the module, SPX components integrate into the SPX rendering, morphing, and caching algorithm. They furnish you with a straight-forward DOM enhancement API, and provide a well-structured for creating interactive logic within web applications.
+
+> SPX Components are loosely based on [stimulus.js](https://stimulus.hotwired.dev/) approach. Using Components allows you to harness the full potential of SPX without sacrificing performance overheads.
 
 <!--prettier-ignore-->
 ```html
@@ -51,10 +53,19 @@ import spx from 'spx';
 
 export class Tabs extends spx.Component {
 
-  static attrs = {
-    persist: Boolean,
-    easing: String,
-    opened: Number
+  static connect = {
+    state: {
+      boolean: Boolean,
+      string: String,
+      number: Number,
+      array: Array,
+      object: Object,
+      initial: {
+        typeof: String,
+        default: 'Hello World',
+        persist: true
+      }
+    }
   };
 
   toggle({ attrs }) {
@@ -80,3 +91,7 @@ export class Tabs extends spx.Component {
 }
 
 ```
+
+---
+
+# Morphs

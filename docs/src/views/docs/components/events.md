@@ -1,7 +1,7 @@
 ---
-title: 'Components - Listeners'
+title: 'Components - Events'
 layout: base.liquid
-permalink: '/components/listeners/index.html'
+permalink: '/components/events/index.html'
 prev:
   label: 'Session'
   uri: '/introduction/session/'
