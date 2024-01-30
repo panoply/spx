@@ -38,10 +38,6 @@ spx.connect({
 });
 ```
 
-# Home Page
-
-Below we have a very basic Home Page with SPX wired up. All `<a>` elements will be intercepted and cached as per the default configuration. SSR web applications (in most cases) will only ever have a couple of fragments that change between navigation, as per the comments in the snippet below:
-
 <!-- prettier-ignore -->
 ```html
 <!doctype html>
