@@ -2,7 +2,13 @@ import { JSONTree, Tree } from '../modules/json-tree';
 import spx from 'spx';
 import relapse, { Relapse } from 'relapse';
 
-export class Session extends spx.Component {
+export class Session extends spx.Component<typeof Session.connect> {
+
+  static connect = {
+    state: {
+      action: String
+    }
+  };
 
   relapse: Relapse;
   pages: Tree;
@@ -24,28 +30,26 @@ export class Session extends spx.Component {
   memoryNode: HTMLElement;
   snapshotsNode: HTMLElement;
 
-  onInit (): void {
+  oninit (): void {
+
+    console.log('INVOKEs', this.relapseNode);
 
     this.relapse = relapse(this.relapseNode);
-
-    if (this.historyNode) {
-      this.history = JSONTree.create({}, this.historyNode);
-      this.pages = JSONTree.create({}, this.pagesNode);
-      this.snapshots = JSONTree.create({}, this.snapshotsNode);
-      this.components = JSONTree.create({}, this.componentsNode);
-    }
+    this.history = JSONTree.create({}, this.historyNode);
+    this.pages = JSONTree.create({}, this.pagesNode);
+    this.snapshots = JSONTree.create({}, this.snapshotsNode);
+    this.components = JSONTree.create({}, this.componentsNode);
 
     this.update();
 
     this.pagesHeight = this.pagesNode.parentElement.parentElement;
 
     this.prefetchEvent = spx.on('prefetch', () => {
-      this.actionNode.innerHTML = 'Prefetch Triggered';
-    });
 
-    this.cacheEvent = spx.on('after:cache', state => {
-      this.actionNode.innerHTML = 'Rendered Fragments';
-      this.update();
+      setTimeout(() => {
+        this.state.action = 'Prefetch Performed';
+      }, 300);
+
     });
 
     document.addEventListener('tree:toggle', this.height.bind(this));
@@ -61,28 +65,46 @@ export class Session extends spx.Component {
 
   }
 
-  onExit (): void {
+  onexit () {
 
+    setTimeout(() => {
+      this.state.action = 'Exiting Page';
+    }, 300);
+
+    this.relapse.destroy();
+    this.relapse = null;
     // this.update();
 
   }
 
-  onVisit (): void {
+  onvisit () {
 
-    // this.update();
+    this.state.action = 'Clicked Link';
+    this.update();
+
+  }
+
+  oncache () {
+
+    this.state.action = 'Cached Page';
+    this.update();
 
   }
 
   /**
    * Stimulus Initialize
    */
-  onLoad (): void {
+  onload () {
 
-    this.actionNode.innerHTML = 'Visit Triggered';
+    if (!this.relapse) this.relapse = relapse(this.relapseNode);
+
+    // console.log(this.actionNode);
+
+    setTimeout(() => {
+      this.state.action = 'Page Loaded';
+    }, 300);
+
     this.update();
-    // this.update()
-
-  //  this.update();
   }
 
   height () {
@@ -93,29 +115,32 @@ export class Session extends spx.Component {
 
   update () {
 
-    const session = spx.session();
+    const session = spx.$;
+
+    console.log(session);
 
     const pages = Object.fromEntries(Object.entries(session.pages).sort((a, b) => a[1].ts < b[1].ts ? 1 : -1));
     const sort = <{ [k: string]: spx.IPage }>{};
 
     for (const page of Object.keys(pages)) {
+      if (page === 'components') continue;
       sort[page] = <spx.IPage>{};
       for (const key of Object.keys(pages[page]).sort()) {
+        if (page === 'components') continue;
         sort[page][key] = pages[page][key];
       }
     }
 
-    this.memoryNode.innerText = session.memory.size;
-    this.visitsNode.innerText = String(session.memory.visits);
+    // this.memoryNode.innerHTML = session.memory.size;
+    // this.visitsNode.innerHTML = String(session.memory.visits);
 
     this.pages.loadData(sort);
     this.snapshots.loadData(Object.keys(session.snaps));
 
     // const components = {};
 
-    // for (const [ k, v ] of session.components.scopes) {
-    //   if (!Array.isArray(components[v.instanceOf])) components[v.instanceOf] = {};
-    //   components[v.instanceOf][v.key] = {
+    // for (const k in this.scope) {
+    //   components[this.scope.instanceOf][v.key] = {
     //     key: v.key,
     //     state: v.domState,
     //     nodes: v.nodes,
@@ -124,7 +149,7 @@ export class Session extends spx.Component {
     // }
 
     // this.components.loadData(components);
-    this.history.loadData(window.history.state);
+    // this.history.loadData(window.history.state);
 
   }
 

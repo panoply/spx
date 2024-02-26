@@ -72,6 +72,10 @@ export default defineConfig(
     clean: false,
     treeshake: false,
     splitting: false,
+    minify: false,
+    minifyIdentifiers: false,
+    minifyWhitespace: false,
+    minifySyntax: false,
     platform: 'browser',
     format: [
       'iife'

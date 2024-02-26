@@ -16,64 +16,6 @@
   },
   "examples": [
     {
-      "group": "Components",
-      "links": [
-        {
-          "title": "Todo List",
-          "url": "/examples/components/todo-list/"
-        },
-        {
-          "title": "Simple Tabs",
-          "url": "/examples/components/tabs/"
-        },
-        {
-          "title": "Infinite Scrolling",
-          "url": "/examples/components/infinate-scrolling/"
-        }
-      ]
-    },
-    {
-      "group": "Prefetching",
-      "links": [
-        {
-          "title": "Hover",
-          "url": "/examples/prefetching/hover/"
-        },
-        {
-          "title": "Proximity",
-          "url": "/examples/prefetching/proximity/"
-        },
-        {
-          "title": "Intersect",
-          "url": "/examples/prefetching/intersect/"
-        }
-      ]
-    }
-  ],
-  "menu": [
-    {
-      "title": "Introduction",
-      "group": "/introduction/",
-      "links": [
-        {
-          "title": "What is SPX?",
-          "url": "/introduction/what-is-spx/"
-        },
-        {
-          "title": "Key Concepts",
-          "url": "/introduction/key-concepts/"
-        },
-        {
-          "title": "Sessions",
-          "url": "/introduction/session/"
-        },
-        {
-          "title": "Lifecycle Methods",
-          "url": "/introduction/lifecycle/"
-        }
-      ]
-    },
-    {
       "title": "Examples",
       "group": "/examples/",
       "links": [
@@ -120,6 +62,51 @@
         {
           "title": "Forms",
           "url": "/examples/forms/"
+        }
+      ]
+    },
+    {
+      "group": "Prefetching",
+      "links": [
+        {
+          "title": "Hover",
+          "url": "/examples/prefetching/hover/"
+        },
+        {
+          "title": "Proximity",
+          "url": "/examples/prefetching/proximity/"
+        },
+        {
+          "title": "Intersect",
+          "url": "/examples/prefetching/intersect/"
+        }
+      ]
+    }
+  ],
+  "menu": [
+    {
+      "title": "Introduction",
+      "group": "/introduction/",
+      "links": [
+        {
+          "title": "What is SPX?",
+          "url": "/introduction/what-is-spx/"
+        },
+        {
+          "title": "Key Concepts",
+          "url": "/introduction/key-concepts/"
+        },
+        {
+          "title": "Lexicon",
+          "url": "/introduction/lexicon/"
+        },
+        {
+          "title": "Sessions",
+          "url": "/introduction/session/"
+        },
+        {
+          "title": "Lifecycle Methods",
+          "url": "/introduction/lifecycle/"
         }
       ]
     },

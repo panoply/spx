@@ -1,0 +1,28 @@
+@include media-breakpoint-up(md) {
+  .content-offset {
+    margin-left: $sidebar-width;
+  }
+}
+
+@include media-breakpoint-up(xxl) {
+  .content-offset {
+    margin-left: $sidebar-width;
+    margin-right: $session-width;
+  }
+}
+
+.comparison {
+  background: $blue;
+  height: 4px;
+  margin: 0;
+  transform-origin: 0;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(100%);
+  }
+}

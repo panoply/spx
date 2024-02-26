@@ -14,22 +14,19 @@ export class Example extends spx.Component<typeof Example.connect> {
     ]
   };
 
-  onInit () {
+  onInit () {}
 
-    this.state.hasColor; // exists
-    this.state.color; // value
+  onLoad () {
+    console.log(this);
+  } // Lifecycle method
 
-    this.listNode; // element
-    this.sizeNodes; // element[]
-
-  }
-
-  onLoad () {} // Lifecycle method
   onExit () {} // Lifecycle method
   onCache () {} // Lifecycle method
 
   toggle (event: Event) {
     this.listNode.classList.toggle('open');
   }
+
+  public listNode: HTMLElement;
 
 }

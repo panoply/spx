@@ -1,7 +1,38 @@
+{% comment %}
+  HEADER
+{% endcomment %}
+<div class="sidebar-header">
+  <div class="row jc-between ai-center w-100">
+    <a
+      href="/"
+      class="col-auto tc-sm"
+      spx-target="body">
+      {% svg 'logo', 'icon-logo' %}
+    </a>
+
+    {% comment %}
+      <div class="col-auto pt-sm-2 d-none">
+      {% include 'version' %}
+      </div>
+    {% endcomment %}
+
+    <a
+      class="col-auto tr pr-0"
+      href="{{ navigation.github.url }}"
+      data-tooltip="right"
+      aria-label="Github"
+      target="_blank">
+      {% svg 'github', 'icon-github' %}
+    </a>
+  </div>
+</div>
+
+{% comment %}
+  MENU
+{% endcomment %}
 <nav
   class="sidebar-menu mt-0 mb-2 br-0 bt-0"
-  spx-component="sidebar"
-  spx-sidebar:multiple="false">
+  spx-component="sidebar">
 
   {% for item in navigation.menu %}
 
@@ -90,5 +121,15 @@
       </ul>
     </section>
   {% endfor %}
-
 </nav>
+
+{% comment %}
+  VERSION
+{% endcomment %}
+<div class="sidebar-footer w-100">
+  <div class="row">
+    <div class="col tc">
+      version {% version %}
+    </div>
+  </div>
+</div>

@@ -1,13 +1,12 @@
 /* eslint-disable no-use-before-define */
-import relapse from 'relapse';
-import spx, { SPX } from 'spx';
+import relapse, { Relapse } from 'relapse';
+import spx from 'spx';
 
-export class Sidebar extends spx.Component {
-
-  public state: SPX.State<typeof Sidebar.connect>;
+export class Sidebar extends spx.Component<typeof Sidebar.connect> {
 
   static connect = {
     state: {
+      multiple: Boolean,
       open: {
         default: 0,
         typeof: Number
@@ -15,10 +14,34 @@ export class Sidebar extends spx.Component {
     }
   };
 
-  onInit () {
+  oninit () {
+    this.relapse = relapse(this.dom);
+    console.log('onInit');
+  }
 
-    relapse(this.dom);
+  onstate () {
+
+    //
 
   }
+
+  onload ({ data, type }) {
+
+    console.log('onLoad');
+
+    if (data) {
+      this.relapse.collapse(this.relapse.active);
+      this.relapse.expand(data.group);
+    }
+
+  }
+
+  onexit () {
+
+    console.log('onLeave');
+
+  }
+
+  public relapse: Relapse;
 
 }

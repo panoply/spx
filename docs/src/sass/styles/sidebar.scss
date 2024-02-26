@@ -26,9 +26,9 @@
     }
   }
 
-  @include media-breakpoint-up(sm) {
+  @include media-breakpoint-up(md) {
     top: 60px;
-    width: 250px !important;
+    width: 250px;
     border-top-right-radius: 10px;
     transform: translateX(0);
     visibility: visible;
@@ -51,6 +51,7 @@
 
   &-menu {
     padding: 15px 5px 0px 0;
+    width: 100%;
 
     .menu-link {
       display: flex;

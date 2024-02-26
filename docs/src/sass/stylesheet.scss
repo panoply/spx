@@ -30,14 +30,14 @@
 /* COMPONENTS                                   */
 /* -------------------------------------------- */
 
-@import "styles/svg";
-@import "styles/overwrites";
-@import "styles/code";
-@import "styles/navbar";
-@import "styles/sidebar";
-@import "styles/json-tree";
-@import "styles/landing";
-@import "styles/session";
-@import "styles/tabs";
-@import "styles/iframe";
-
+@import 'styles/layout';
+@import 'styles/svg';
+@import 'styles/overwrites';
+@import 'styles/code';
+@import 'styles/navbar';
+@import 'styles/sidebar';
+@import 'styles/json-tree';
+@import 'styles/landing';
+@import 'styles/session';
+@import 'styles/tabs';
+@import 'styles/iframe';

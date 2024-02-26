@@ -4,8 +4,7 @@
     "public"
   ],
   "include": [
-    "src/app/**/*.ts",
-    "../.vscode/closure.ts"
+    "src/app/**/*.ts"
   ],
   "compilerOptions": {
     "incremental": false,

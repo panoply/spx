@@ -102,8 +102,8 @@ $grid-breakpoints: (
   sm: 576px,
   md: 768px,
   lg: 992px,
-  xl: 1200px,
-  xxl: 1400px
+  xl: 1140px,
+  xxl: 1260px
 );
 
 /* -------------------------------------------- */
@@ -119,9 +119,15 @@ $container-max-widths: (
 );
 
 /* -------------------------------------------- */
-/* BODY                                         */
+/* LAYOUT                                       */
 /* -------------------------------------------- */
 
+$sidebar-width: 250px;
+$session-width: 400px;
+
+/* -------------------------------------------- */
+/* BODY                                         */
+/* -------------------------------------------- */
 
 $body-bg: #16181c; // $black; //#282a36; // $gray-100;
 $body-color: $white; //$gray-900;
@@ -145,14 +151,14 @@ $font-weight-bolder: bolder;
 $border-width: 0.01rem;
 $border-color: #2d333a; // $gray-600; //$gray-400;
 
-$accordion-border-width:            $border-width;
-$accordion-border-color:            $border-color;
-$accordion-btn-opened:              $white;
-$accordion-padding:                 50px;
-$accordion-transition-height:       225ms;
-$accordion-transition-opacity:      200ms;
-$accordion-transition-easing:       ease-in-out;
-$accordion-icon-padding-x:          1.8rem;
+$accordion-border-width: $border-width;
+$accordion-border-color: $border-color;
+$accordion-btn-opened: $white;
+$accordion-padding: 50px;
+$accordion-transition-height: 225ms;
+$accordion-transition-opacity: 200ms;
+$accordion-transition-easing: ease-in-out;
+$accordion-icon-padding-x: 1.8rem;
 
 /* -------------------------------------------- */
 /* FONT FAMILY                                  */
@@ -160,15 +166,27 @@ $accordion-icon-padding-x:          1.8rem;
 
 // stylelint-disable
 
-$font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
-  Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, 'Segoe UI',
-  Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+$font-family-base:
+  system-ui,
+  -apple-system,
+  Segoe UI,
+  Roboto,
+  Ubuntu,
+  Cantarell,
+  Noto Sans,
+  sans-serif,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Helvetica,
+  Arial,
+  sans-serif,
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
   'Segoe UI Symbol';
 
 $font-family-other: 'JetBrains Mono', monospace;
 $font-family-heading: $font-family-other;
-$font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono',
-  monospace;
+$font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 
 // stylelint-enable
 
@@ -228,7 +246,7 @@ $input-border-color: $gray-400;
 $tooltip-bg: #111;
 $tooltip-font-family: $font-family-base;
 $tooltip-font-style: normal;
-$tooltip-font-size: .695rem;
+$tooltip-font-size: 0.695rem;
 $tooltip-font-color: $white;
 $tooltip-padding-y: 0.9rem;
 $tooltip-padding-x: 0.9rem;
@@ -242,9 +260,37 @@ $tooltip-use-outline: false;
 /* PAPYRUS                                      */
 /* -------------------------------------------- */
 
-
 $papyrus-code-bg: #1c2028;
 $papyrus-font-size: 0.9em;
 $papyrus-code-border-radius: 0.4em;
 $papyrus-code-padding-y: 1em;
 $papyrus-code-padding-x: 1em;
+$papyrus-ts-literal-property: #22c0cb;
+
+.language-ts {
+  .token {
+    &.constant {
+      color: #81d4fa;
+    }
+
+    &.this {
+      color: #ffab40;
+    }
+
+    &.keyword + .property {
+      color: #87abb3;
+    }
+
+    &.keyword.module + .keyword {
+      color: #81d4fa;
+
+      + .class-name {
+        color: #fafafa !important;
+      }
+    }
+
+    &.class-name {
+      color: #81d4fa !important;
+    }
+  }
+}

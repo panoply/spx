@@ -1,15 +1,13 @@
 /* eslint-disable no-use-before-define */
 import relapse from 'relapse';
-import spx, { SPX } from 'spx';
+import spx from 'spx';
 
 /**
  * Dropdown
  *
  * Facilitates Dropdown/Collapsible functionality.
  */
-export class Dropdown extends spx.Component {
-
-  public state: SPX.State<typeof Dropdown.connect>;
+export class Dropdown extends spx.Component<typeof Dropdown.connect> {
 
   static connect = {
     state: {
@@ -40,7 +38,7 @@ export class Dropdown extends spx.Component {
     const rect = this.collapseNode.getBoundingClientRect();
 
     for (const { element, folds } of relapse.get()) {
-      if (element.id === this.accordionValue) {
+      if (element.id === this.state.accordion) {
 
         if (!(
           rect.top >= 0 &&
@@ -70,7 +68,7 @@ export class Dropdown extends spx.Component {
     this.dom.classList.add('is-open');
     this.buttonNode.classList.remove('selected');
 
-    if (this.hasAccordionValue) this.inViewport();
+    if (this.hasAccordionNode) this.inViewport();
 
     // listen for outside clicks
     addEventListener('click', this.outsideClick.bind(this));
@@ -153,17 +151,17 @@ export class Dropdown extends spx.Component {
         // console.log(event.currentTarget);
       }
 
-      if (this.hasRequiredValue) {
+      if (this.state.hasRequired) {
 
         if (this.buttonNode.classList.contains('is-invalid')) {
           this.buttonNode.classList.remove('is-invalid');
         }
 
-        this.requiredValue = false;
+        this.state.required = false;
         this.buttonNode.classList.add('selected');
       }
 
-      if (this.kindValue === 'preset') {
+      if (this.state.kind === 'preset') {
 
         this.state.selected = `Preset (${event.target.textContent.trim()})`;
         this.buttonNode.innerHTML = `Preset (${event.target.textContent.trim()})<span class="icon"></span>`;

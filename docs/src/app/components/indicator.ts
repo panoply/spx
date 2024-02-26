@@ -10,16 +10,15 @@ export class Indicator extends spx.Component {
     }
   }) {
 
-    console.log(this.markerNodes)
+    console.log(this.markerNodes);
 
     this.markerNode.style.setProperty(
       'transform',
       `translateY(${this.dom.offsetTop}px)`
-    )
+    );
 
   }
 
-  markerNode: HTMLElement
+  markerNode: HTMLElement;
 
 }
-

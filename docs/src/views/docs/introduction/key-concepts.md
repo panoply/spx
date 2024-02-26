@@ -16,7 +16,7 @@ SPX assumes developers have an intermediate level of font-end knowledge. Before 
 
 The actual fetching operation happens preemptively and SPX offers varying sets of user defined configuration options for performing DOM element replacements when navigating between different urls of the same hostname. SPX is designed to replicate native browser behavior but developers should be mindful in their implementation.
 
-{% include 'layout/iframe', url: '/iframe/using-defaults/page-a' %}
+{% include 'iframe', url: '/iframe/using-defaults/page-a' %}
 
 ---
 

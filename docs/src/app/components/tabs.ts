@@ -2,9 +2,7 @@
 
 import spx, { SPX } from 'spx';
 
-export class Tabs extends spx.Component {
-
-  public state: SPX.State<typeof Tabs.connect>;
+export class Tabs extends spx.Component<typeof Tabs.connect> {
 
   static connect = {
     state: {
@@ -15,7 +13,7 @@ export class Tabs extends spx.Component {
     }
   };
 
-  toggle ({ target }: { target: HTMLElement }) {
+  toggle ({ target }: SPX.Event<{}, HTMLElement>) {
 
     this.state.open = +target.getAttribute('data-index');
 

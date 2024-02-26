@@ -12,15 +12,17 @@ next:
 
 # What is SPX?
 
-SPX is a lightweight (12kb gzip) JavaScript library for static, SaaS and server-side powered web applications that pre-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module executes navigation in an idle state, maintains an in-memory cache of fetched pages that prevents subsequent requests from occurring and carries out morphed renders between visits.
+SPX is a lightweight (12kb gzip) JavaScript library for static, SaaS and server-side powered web applications that pre-fetches HTML over the wire and uses the response to perform targeted fragment replacements. The module executes navigation in an idle state, maintains an in-memory cache of fetched pages that prevents subsequent requests from occurring and carries out morphed renders between visits and supports component integration.
 
-> The effectiveness of SPX's approach has been tried and tested. Modules like [Turbo](https://turbo.hotwired.dev/), [HTMX](https://htmx.org/), [Livewire](https://github.com/livewire/livewire) and [Barba](https://barba.js.org/) also employ an **over the wire** (OTW/Pjax) fetch/replace technique. It's is a proven and widely adopted method in modern web development.
+{% include 'comparison'%}
 
 The name "SPX" is an acronym for **Single Page XHR** and derived from terminologies used to describe JavaScript paradigms such as **SPA** (Single Page Application) and **MPA** (Multiple Page Application). The concept SPX utilizes is also known as **PJAX** (Push state Ajax) which intercepts clicks made on link elements and fetched pages over the wire instead of executing full-page reloads between visits.
 
+> The effectiveness of SPX's approach has been tried and tested. Modules like [Turbo](https://turbo.hotwired.dev/), [HTMX](https://htmx.org/), [Livewire](https://github.com/livewire/livewire) and [Barba](https://barba.js.org/) also employ an **over the wire** (OTW/Pjax) fetch/replace technique. It's is a proven and widely adopted method in modern web development.
+
 # Why use SPX?
 
-SPX offers a unique and tailored proposition that sets it apart from similar alternatives. It introduces innovative techniques to the OTW (over the wire) paradigm and combines them with strategies standardized in similar projects. At the core of the SPX model is the user's intent-to-visit. Over the wire page requests (fetches) are treated as background operations that typically execute and conclude before a navigation even begins.
+SPX offers a unique and tailored proposition that sets it apart from similar alternatives. It introduces innovative techniques to the OTW (over the wire) paradigm and combines them with strategies standardized in similar projects. At the core of the SPX model is the user's intent-to-visit. Over the wire page requests (fetches) are treated as background operations that typically execute and conclude before a navigation even begins. The main objective with SPX is to provide a solution that is inexpensive but powerful, though there is a tax incurred, the project attempts to eliminate technical debt.
 
 # Who uses SPX?
 

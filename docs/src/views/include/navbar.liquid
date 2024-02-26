@@ -1,5 +1,8 @@
-<header id="navbar" class="container-fluid navbar d-unset d-sm-none">
-  <div class="row jc-between ai-center">
+<header
+  id="navbar"
+  class="container-fluid navbar d-unset d-sm-none">
+
+  <div class="row jc-between ai-center px-2">
 
     <input
       type="button"
@@ -9,16 +12,18 @@
     <a
       href="/"
       class="col-auto tc-sm"
-      spx-target="['body']">
+      title="Home Page"
+      spx-target="body">
       {% svg 'logo', 'logo' %}
     </a>
 
     <div class="d-none d-sm-flex col-auto pt-sm-2">
-      {% include 'layout/version' %}
+      {% include 'version' %}
     </div>
     <a
       class="col-auto d-none"
       href="{{ navigation.github.url }}"
+      title="SPX Github"
       target="_blank">
       {% svg 'github', 'icon-github' %}
     </a>

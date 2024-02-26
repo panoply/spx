@@ -46,3 +46,23 @@ SPX components provide a robust solution for connection and interaction with the
 
 </section>
 ```
+
+---
+
+#### Component Aliases
+
+When components have an `id` attribute, they can be used as the target reference by events, nodes and bindings. This is helpful when you have multiple components and need to target certain instances in the DOM.
+
+<!--prettier-ignore-->
+```html
+<section id="newsletter" spx-component="modal"></section>
+<section id="size-chart" spx-component="modal"></section>
+
+<button type="button" spx@click="newsletter.open">
+  Newsletter
+</button>
+
+<button type="button" spx@click="sizeChart.open">
+  Size Chart
+</button>
+```

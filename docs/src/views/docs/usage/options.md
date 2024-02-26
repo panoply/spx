@@ -26,7 +26,7 @@ spx.connect({
   globalThis: true,          // Allow global scope, i.e: window.spx
   cache: true,               // Use caching engine
   maxCache: 100,             // Cache limitation in bytes
-  method: 'morph',           // The rendering tactic to use
+  components: {},            // Component classes which are added to register
   annotate: false,           // When true, <a> elements require spx- attributes
   preload: {},               // Key > Value list of paths to preload
   eval: {},                  // Resource evaluation control
@@ -62,20 +62,6 @@ import spx from 'spx';
 
 spx.connect({
   globalThis: true // Access SPX using window.spx
-});
-```
-
----
-
-## method
-
-The fragment render method that SPX should use. SPX supports 3 different render methods and defaults to using `morph`. For most cases, the default `morph` method works fine, but if integrating with third-party solutions, you may need to use `replace`. The `assign` method is typically discourages but by be necessary in some situations.
-
-```js
-import spx from 'spx';
-
-spx.connect({
-  method: 'replace' // Set the render method of SPX
 });
 ```
 
@@ -147,6 +133,28 @@ import spx from 'spx';
 
 spx.connect({
   maxCache: 100 // Use smaller limit if your HTML pages are large
+});
+```
+
+---
+
+## components
+
+Components registry. Expects an `object` type of class components. Components must be passed in raw, SPX will initialize components and establish instances in accordance with template views.
+
+<!-- prettier-ignore -->
+```js
+import spx from 'spx';
+import { Foo } from './components/foo';
+import { Example } from './components/example';
+import { BazQux } from './components/baz-qux';
+
+spx.connect({
+  components: {
+    Foo,        // => Reference as spx-component="foo"
+    Example,    // => Reference as spx-component="example"
+    BazQux,     // => Reference as spx-component="bazQux"
+  }
 });
 ```
 

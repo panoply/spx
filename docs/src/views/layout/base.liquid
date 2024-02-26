@@ -13,19 +13,30 @@
     </title>
 
     <meta charset="UTF-8">
-    <meta name="description" content="{{ description }}">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <meta
+      name="description"
+      content="{{ description }}">
+    <meta
+      http-equiv="X-UA-Compatible"
+      content="IE=edge">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
+    <link
+      href="https://fonts.googleapis.com"
+      rel="preconnect">
     <link
       href="https://fonts.gstatic.com"
       crossorigin
       rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
+      rel="stylesheet"
+      spx-eval="false">
     <link
       href="{{'/style.css' | url }}"
-      spx-eval="false"
-      rel="stylesheet">
+      rel="stylesheet"
+      spx-eval="false">
     <script
       src="{{'/bundle.min.js' | url }}"
       spx-eval="false"
@@ -43,49 +54,31 @@
 
     {% else %}
 
-      {% include 'layout/navbar' %}
+      {% include 'navbar' %}
 
-      <div class="container-fluid pt-1 pt-sm-0">
-        <div class="row">
-          <aside
-            id="sidebar"
-            class="col-auto px-0 vh-100 bt br d-none d-sm-block sidebar drawer-left drawer-panel"
-            spx-component="drawer"
-            spx-drawer:direction="left"
-            spx-drawer:width="250px"
-            spx-drawer:shift="#navbar,#content,#session"
-            spx-drawer:mode="push">
-
-            {% include 'sidebar/header' %}
-            {% include 'sidebar/menu' %}
-            {% include 'sidebar/footer' %}
-
-          </aside>
-
-          <main id="content" class="col-12 col-sm-7 offset-sm-2 px-sm-5 pb-4">
-
-            <div class="d-block">
-              {% include 'layout/breadcrumb' %}
-            </div>
-
-            <div class="pr-5 pl-2">
-              {{ content }}
-
-              {% liquid
-                if page.url == '/examples/script-evaluation/page-c/'
-                  echo '<div id="page-c"></div>'
-                endif
-              %}
-
-              {% include 'layout/navigate' %}
-            </div>
+      <div class="container-fluid container-wrapper">
+        <aside
+          id="sidenav"
+          class="px-0 vh-100 bt br d-none d-sm-block sidebar drawer-left drawer-panel"
+          spx-component="drawer"
+          spx-drawer:direction="left"
+          spx-drawer:width="250px">
+          {% include 'sidebar' %}
+        </aside>
+        <div class="row jc-center content-offset px-xxl-4">
+          <main
+            id="content"
+            class="col-11 col-md-12 px-xl-5 pb-4">
+            {% include 'breadcrumb' %}
+            {{ content }}
+            {% include 'navigate' %}
           </main>
-
-          <aside id="session" class="col-auto drawer-panel drawer-right session vh-100 bl d-none d-md-flex px-0">
-            {% include 'layout/session' %}
-          </aside>
-
         </div>
+        <aside
+          id="session"
+          class="session vh-100 bl d-none d-xxl-flex">
+          {% include 'session' %}
+        </aside>
       </div>
 
     {% endif %}

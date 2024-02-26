@@ -13,6 +13,7 @@ export class Demo extends spx.Component<typeof Demo.connect> {
       min: Number,
       max: Number,
       qty: Number,
+      name: String,
       foo: {
         typeof: Object,
         default: {
@@ -29,10 +30,13 @@ export class Demo extends spx.Component<typeof Demo.connect> {
 
   onLoad () {
     console.log('onLoad - Demo Controller:', this.state);
+
   }
 
-  button () {
-    console.log('CLICKED', this);
+  button (event) {
+
+    console.log('Native Event Params', event);
+
     this.state.clicks = this.state.clicks + 1;
     // this.feedbackNode.innerHTML = `Clicked: ${this.state.clicks}`;
   }
@@ -64,8 +68,8 @@ export class Demo extends spx.Component<typeof Demo.connect> {
   /* NODES                                        */
   /* -------------------------------------------- */
 
-  // public feedbackNode: HTMLElement;
-  // public outputNode: HTMLElement;
-  // public counterNode: HTMLElement;
+  public feedbackNode: HTMLElement;
+  public outputNode: HTMLElement;
+  public counterNode: HTMLElement;
 
 }

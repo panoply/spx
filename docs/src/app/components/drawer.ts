@@ -1,17 +1,12 @@
 /* eslint-disable no-use-before-define */
-import spx, { SPX } from 'spx';
+import spx from 'spx';
 import qvp from 'qvp';
 
 /* -------------------------------------------- */
 /* CLASS                                        */
 /* -------------------------------------------- */
 
-export class Drawer extends spx.Component {
-
-  /**
-   * The backdrop element
-   */
-  static backdrop: HTMLDivElement;
+export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   /**
    * Stimulus: values
@@ -25,10 +20,6 @@ export class Drawer extends spx.Component {
       direction: String,
       shift: String,
       redraw: String,
-      useParent: {
-        typeof: Boolean,
-        default: false
-      },
       isOpen: {
         typeof: Boolean,
         default: false
@@ -45,17 +36,14 @@ export class Drawer extends spx.Component {
         typeof: String,
         default: 'overlay'
       }
-    }
+    },
+    nodes: [
+      'button',
+      'shift'
+    ] as const
   };
 
-  public state: SPX.State<typeof Drawer.connect>;
-
-  /**
-   * Returns the backdrop element
-   */
-  get backdrop () {
-    return Drawer.backdrop;
-  }
+  backdrop: HTMLElement;
 
   /**
    * Returns the drawer direction class name
@@ -72,70 +60,43 @@ export class Drawer extends spx.Component {
   }
 
   /**
-   * Returns the shifts transition class name
-   */
-  get shifts () {
-    return this.html.querySelectorAll<HTMLElement>(this.state.shift);
-  }
-
-  /**
-   * Returns all button toggles in the dom
-   */
-  get buttons () {
-    return this.html.querySelectorAll(`[data-drawer="${this.target.id}"]`);
-  }
-
-  /**
    * Stimulus: Initialize
    */
-  onInit () {
+  oninit () {
 
-    if (!Drawer.backdrop) {
-      Drawer.backdrop = document.createElement('div');
-      Drawer.backdrop.className = 'drawer-backdrop';
-      Drawer.backdrop.setAttribute('spx-morph', 'false');
+    if (!this.backdrop) {
+      this.backdrop = document.createElement('div');
+      this.backdrop.className = 'drawer-backdrop';
+      this.backdrop.setAttribute('spx-morph', 'false');
     }
 
-    if (this.state.useParent) {
-      this.target = this.dom.parentElement;
-      this.target.ariaHidden = 'true';
-    } else {
-      this.target = this.dom;
+    if (this.dom.classList.contains('d-none')) {
+      this.dom.classList.remove('d-none');
     }
 
-    if (this.target.classList.contains('d-none')) {
-      this.target.classList.remove('d-none');
+    if (this.state.mode !== 'overlay' && this.hasShiftNode === false) {
+      console.error('Missing "data-drawer-shift-value" defintions on:', this.dom);
     }
 
-    if (this.state.mode !== 'overlay' && this.state.hasShift === false) {
-      console.error('Missing "data-drawer-shift-value" defintions on:', this.target);
-    }
-
-    spx.on('load', this.onLoad, this);
-
-    for (const button of this.buttons) {
-      button.addEventListener('click', this.toggle);
-    }
-
-    if (this.html.contains(Drawer.backdrop) === false) {
-      this.html.appendChild(Drawer.backdrop);
+    if (document.body.contains(this.backdrop) === false) {
+      document.body.appendChild(this.backdrop);
     }
 
     if (this.state.hasWidth) {
-      //   this.target.style.setProperty('width', this.state.width);
+      this.dom.style.setProperty('width', this.state.width);
     }
 
     if (this.state.hasHeight) {
-      this.target.style.setProperty('height', this.state.height);
+      this.dom.style.setProperty('height', this.state.height);
     }
 
-    if (this.state.hasDirection && this.target.classList.contains('backdrop') === false) {
-      this.target.classList.add('backdrop');
+    if (this.state.hasDirection && this.dom.classList.contains('backdrop') === false) {
+      this.dom.classList.add('backdrop');
     }
 
     if (this.state.mode === 'pull') {
-      this.target.style.setProperty('transform', 'translateX(0)');
-      this.target.style.setProperty('z-index', '0');
+      this.dom.style.setProperty('transform', 'translateX(0)');
+      this.dom.style.setProperty('z-index', '0');
     }
 
     if (this.html.classList.contains('drawer-open')) {
@@ -144,22 +105,13 @@ export class Drawer extends spx.Component {
 
   }
 
-  /**
-   * Stimulus: Disconnect
-   */
-  disconnect () {
-
-    //  this.buttons.forEach(button => button.removeEventListener('click', this.toggle, false));
-
-  }
-
-  onLoad () {
+  onload () {
 
     if (this.state.isOpen) {
       if (qvp.test([ 'lg', 'xl', 'xxl' ])) {
         this.close();
       } else {
-        setTimeout(this.close.bind(this), 250);
+        setTimeout(this.close.bind(this), 50);
       }
     }
   }
@@ -169,8 +121,8 @@ export class Drawer extends spx.Component {
    */
   open () {
 
-    if (!this.target.classList.contains('drawer-active')) {
-      this.target.classList.add('drawer-active');
+    if (!this.dom.classList.contains('drawer-active')) {
+      this.dom.classList.add('drawer-active');
     }
 
     if (!this.backdrop.classList.contains('backdrop')) {
@@ -181,8 +133,8 @@ export class Drawer extends spx.Component {
       this.html.style.setProperty('overflow', 'hidden');
     }
 
-    if (this.state.hasShift) {
-      this.shiftNodes();
+    if (this.hasShiftNode) {
+      this.shiftElements();
     }
 
     if (this.state.width) {
@@ -195,8 +147,7 @@ export class Drawer extends spx.Component {
 
     this.html.classList.add('drawer-open');
     this.backdrop.addEventListener('click', this.toggle, { once: true });
-    this.target.addEventListener('touchstart', this.touchStart, { passive: true });
-    this.target.ariaHidden = 'false';
+    this.dom.ariaHidden = 'false';
   }
 
   close () {
@@ -213,17 +164,16 @@ export class Drawer extends spx.Component {
       this.html.style.removeProperty('overflow');
     }
 
-    if (this.state.hasShift) {
-      this.shiftNodes();
+    if (this.hasShiftNode) {
+      this.shiftElements();
     } else {
-      this.target.addEventListener('transitionend', this.transition);
+      this.dom.addEventListener('transitionend', this.transition);
     }
 
     this.html.classList.remove('drawer-open');
-    this.target.removeEventListener('touchstart', this.touchStart);
     this.backdrop.removeEventListener('click', this.toggle);
-    this.target.classList.remove('drawer-active');
-    this.target.ariaHidden = 'true';
+    this.dom.classList.remove('drawer-active');
+    this.dom.ariaHidden = 'true';
 
   };
 
@@ -231,8 +181,8 @@ export class Drawer extends spx.Component {
 
     if (event.propertyName !== 'transform') return;
 
-    if (this.state.hasShift) {
-      for (const shift of this.shifts) {
+    if (this.hasShiftNode) {
+      for (const shift of this.shiftNodes) {
         if (shift.classList.contains(this.shiftClass)) {
           shift.classList.remove(this.shiftClass);
           shift.style.removeProperty('transform');
@@ -245,9 +195,9 @@ export class Drawer extends spx.Component {
     }
 
     if (this.state.mode === 'pull') {
-      this.shifts.item(0).removeEventListener(event.type, this.transition);
+      this.shiftNode.removeEventListener(event.type, this.transition);
     } else {
-      this.target.removeEventListener(event.type, this.transition);
+      this.dom.removeEventListener(event.type, this.transition);
     }
 
   };
@@ -255,64 +205,45 @@ export class Drawer extends spx.Component {
   /**
    * Set attribute requirements for the elements which apply transform shifting
    */
-  shiftNodes () {
+  shiftElements () {
 
     if (this.state.mode === 'pull') {
 
-      this.target.style.setProperty('transform', 'translateX(0)');
-      this.target.style.setProperty('z-index', '0');
+      this.dom.style.setProperty('transform', 'translateX(0)');
+      this.dom.style.setProperty('z-index', '0');
 
       if (this.state.isOpen === false) {
-        this.shifts.item(0).addEventListener('transitionend', this.transition);
+        this.shiftNode.addEventListener('transitionend', this.transition);
       }
 
     } else {
 
       if (this.state.isOpen === false) {
-        this.target.addEventListener('transitionend', this.transition);
+        this.dom.addEventListener('transitionend', this.transition);
       }
     }
 
-    for (const shift of this.shifts) {
-
+    for (const shift of this.shiftNodes) {
       if (this.state.isOpen) {
 
         if (!shift.classList.contains(this.shiftClass)) {
           shift.classList.add(this.shiftClass);
+          console.log(shift);
         }
 
-        if (this.state.width && (this.state.direction === 'left' || this.state.direction === 'right')) {
+        if (this.state.hasWidth && (this.state.direction === 'left' || this.state.direction === 'right')) {
           shift.style.setProperty('transform', `translateX(${this.state.width})`);
         } else if (this.state.hasHeight && (this.state.direction === 'top' || this.state.direction === 'bottom')) {
           shift.style.setProperty('transform', `translateY(${this.state.height})`);
         }
 
       } else {
-        if (this.state.width && (this.state.direction === 'left' || this.state.direction === 'right')) {
+
+        if (this.state.hasWidth && (this.state.direction === 'left' || this.state.direction === 'right')) {
           shift.style.setProperty('transform', 'translateX(0)');
         } else if (this.state.hasHeight && (this.state.direction === 'top' || this.state.direction === 'bottom')) {
-
           shift.style.setProperty('transform', 'translateY(0)');
-
         }
-      }
-    }
-  }
-
-  /**
-   * Touch Start scroll position
-   */
-  touchStart ({ target }: TouchEvent) {
-
-    if (target instanceof HTMLElement) {
-
-      const { scrollTop, offsetHeight } = target;
-      const position = scrollTop + offsetHeight;
-
-      if (scrollTop === 0) {
-        target.scrollTop = 1;
-      } else if (position === scrollTop) {
-        target.scrollTop = scrollTop - 1;
       }
     }
   }
@@ -322,7 +253,7 @@ export class Drawer extends spx.Component {
    */
   outsideClick = (event: Event) => {
 
-    if (event.target !== this.target) {
+    if (event.target !== this.dom) {
       this.close();
       this.html.removeEventListener('click', this.outsideClick, false);
     }
@@ -344,7 +275,7 @@ export class Drawer extends spx.Component {
       this.close();
     }
 
-    return this.state.isOpen ? this.open() : this.close();
+    return false;
 
   };
 
@@ -354,7 +285,7 @@ export class Drawer extends spx.Component {
   touchMove = (event: TouchEvent) => {
 
     if (this.state.isOpen) {
-      if (this.target.scrollHeight <= this.target.clientHeight) {
+      if (this.dom.scrollHeight <= this.dom.clientHeight) {
         event.preventDefault();
       }
     }
@@ -377,10 +308,9 @@ export class Drawer extends spx.Component {
   /* TYPES                                        */
   /* -------------------------------------------- */
 
-  /**
-   * The drawer target. This defaults to use `this.element` depending on whether or not
-   * the use parent is set to `true` - In such cases the parent element will used instead.
-   */
-  target: HTMLElement;
+  shiftNode: HTMLElement;
+  shiftNodes: HTMLElement[];
+  buttonNode: HTMLElement;
+  buttonNodes: HTMLElement[];
 
 }

@@ -2,20 +2,20 @@
   position: fixed;
   z-index: 300;
   display: flex;
-  background-color: rgba($color: $body-bg, $alpha: .9) ;
-  z-index: 9999;
+  background-color: rgba($color: $body-bg, $alpha: 0.9);
+  z-index: 999999;
   right: 0;
   height: 50px;
   font-size: 1.075rem;
   width: 100%;
   left: 0px;
-  z-index: 100;
+  z-index: 200;
 
   @include media-breakpoint-down(sm) {
     backdrop-filter: blur(5px);
+
     border-bottom: $border-color $border-width solid;
   }
-
 
   @include media-breakpoint-up(sm) {
     background-color: transparent;
@@ -26,6 +26,7 @@
     border: none;
     width: 30px;
     height: 30px;
+    overflow: hidden;
 
     .icon-menu {
       width: 30px;
@@ -50,7 +51,6 @@
   .off {
     color: $white;
   }
-
 
   .dropdown {
     z-index: 9999999;
@@ -92,7 +92,7 @@
 
   a {
     font-weight: 400;
-    font-size: .945rem;
+    font-size: 0.945rem;
     text-transform: uppercase;
 
     &.active {
@@ -106,15 +106,14 @@
     .icon-github {
       width: 17px;
       height: 17px;
-      fill:$white;
+      fill: $white;
     }
 
-
     .logo {
-      width: 50px;
+      width: 52px;
       height: 50px;
-      color:$white; // #343644;
-      opacity: .9;
+      color: #484f5b; // $white; // #343644;
+      opacity: 1;
     }
   }
 }
@@ -122,10 +121,10 @@
 .home {
   width: 18px;
   height: 18px;
-  fill:#343644;
+  fill: #343644;
 }
 .logo {
   width: 65px;
   height: 45px;
-  color:$white // #343644;
+  color: $white; // #343644;
 }

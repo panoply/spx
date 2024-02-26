@@ -1,7 +1,8 @@
-<div spx-component="session" class="w-100">
-
-  <div spx-component="tabs" class="tabs">
-
+<div
+  spx-component="session|tabs"
+  spx-session:action="initialize"
+  class="w-100">
+  <div class="tabs">
     <nav
       spx-node="tabs.panel"
       role="tablist"
@@ -33,19 +34,33 @@
       <div class="memory bd-bottom px-3 py-4">
         <div class="row">
           <div class="col-2 fs-sm upper">
+            Action
+          </div>
+          <div
+            class="col fs-sm fc-pink"
+            spx-bind="session.action"></div>
+        </div>
+        <div class="row">
+          <div class="col-2 fs-sm upper">
             Cache
           </div>
-          <div class="col fs-sm fc-pink" spx-node="session.memory"></div>
+          <div
+            class="col fs-sm fc-pink"
+            spx-node="session.memory"></div>
         </div>
         <div class="row">
           <div class="col-2 fs-sm upper">
             Visits
           </div>
-          <div class="col fs-sm fc-pink" spx-node="session.visits"></div>
+          <div
+            class="col fs-sm fc-pink"
+            spx-node="session.visits"></div>
         </div>
       </div>
 
-      <div class="session-accordion" spx-node="session.relapse">
+      <div
+        class="session-accordion"
+        spx-node="session.relapse">
 
         {% assign tabs = 'pages,snapshots,components,history' | split: ',' %}
 
@@ -83,7 +98,9 @@
 
       {% for item in logs %}
 
-        <div class="d-flex {{ item }} bd-bottom" spx-node="session.{{- item -}}">
+        <div
+          class="d-flex {{ item }} bd-bottom"
+          spx-node="session.{{- item -}}">
           {{ item }}
         </div>
 

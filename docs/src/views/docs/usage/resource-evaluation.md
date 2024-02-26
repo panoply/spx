@@ -12,9 +12,58 @@ next:
 
 # Resource Evaluation
 
-External resources linked within `<script>`, `<link>` tags, or references that dictate the browser's treatment of third-party elements fall under the category of **Resources** in SPX. Typically situated in the `<head>` element of documents, these resources may also be found in the `<body>` element. SPX governs rendering operations, it is imperative to deliberate on how it should manage such occurrences. While SPX is configured by default to handle a limited subset of resource elements without additional configuration, developers are strongly encouraged to fine-tune and expand support to align with their application's specific requirements.
+External resources linked within `<script>`, `<link>` or those which that dictate the browser's treatment of external references fall under the category of **Resources** in SPX. SPX governs rendering operations, so it is imperative to deliberate on how it should manage such assets and files which demand evaluation. While SPX is configured by default to handle a limited subset of resource elements without additional configuration, developers are strongly encouraged to fine-tune and expand support to align with their application's specific requirements.
 
-> Exercise caution when dealing with external resources, such as scripts and styles, to avoid imposing exhaustive operations and repeated resource analyses on SPX during navigations.
+> For optimal performance it is recommended that you limit resource evaluation to the absolute minimum and if possible trigger your projects execution at runtime.
+
+---
+
+# Configuration
+
+Resources control is made available upon connection via the `eval` configuration option. The `eval` option accepts either a `boolean` or an `object` type. When passing an `object`, each key represents a resource tag. You can provide [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) and have SPX apply evaluation in accordance.
+
+<br>
+
+#### Default Options
+
+<!-- prettier-ignore -->
+```js
+import spx from 'spx';
+
+spx.connect({
+  eval: {
+    script: ['script:not(script[src])'],    // Evaluates all inline <script> tags
+    style: ['style'],                       // Evaluates all inline <style> tags
+    link: ['link[rel=stylesheet]'],         // Evaluates stylesheet <link> tags
+    meta: false,                            // No evaluation of <meta> tags
+  }
+});
+```
+
+<br>
+
+#### Attribute Directives
+
+Connection settings are treated as defaults, and developers can override `eval` options by annotating resource elements with the `spx-eval` attribute directive. The `spx-eval` attribute accepts a `boolean` value of `true` or `false`.
+
+<!-- prettier-ignore -->
+<!-- prettier-ignore -->
+```html
+<head>
+  <script spx-eval="false"></script>          <!-- Prevent evaluation from occurring -->
+  <script spx-eval="true"></script>           <!-- Ensures evaluation will apply always -->
+</head>
+```
+
+---
+
+#### Script Evaluation
+
+Script occurrences in the DOM are evaluated and initialized asynchronously. By default, re-evaluation applies to all inline scripts whereas linked scripts (i.e `<script src="">`) will only be evaluated once and never again after that. Modules that initialize using an IIFE execution pattern will require decoupling if re-evaluation is required. When navigating between pages that depend upon linked resources being analyzed and re-executed, it is recommended to call inline.
+
+> In cases where the default behavior is problematic, you can configure SPX to perform re-evaluation on a per-resource basis control using the spx-eval attribute or eval configuration option.
+
+Scripts that exist in the `<body>`` or within defined fragments should be avoided. There is little necessity for `<body>` script occurrences and developers can easily replicate such logic using component design architecture.
 
 # Recommendations
 

@@ -6,6 +6,61 @@ permalink: '/examples/components/index.html'
 
 <div class="row">
   <div class="col-12">
+
+    <!-- demo.js action -->
+    <button
+      type="button"
+      spx@click="xxx.button"
+      spx-xxx:foo="100"
+      spx-xxx:bar="string"
+      spx-xxx:bool="true">
+      Press me XXX
+    </button>
+    <div
+      id="xxx"
+      spx-component="demo"
+      spx-demo:name="qux"
+      spx-demo:clicks="0">
+      <div class="component">
+        <h6>
+          This is the demo component using alias
+          <code>xxx</code>
+        </h6>
+      </div>
+    </div>
+    <p>
+      Clicked XXX:
+      <span spx-bind="xxx.clicks">0</span>
+    </p>
+
+    <!-- demo.js action -->
+    <button
+      type="button"
+      spx@click="yyy.button"
+      spx-yyy:foo="100"
+      spx-yyy:bar="string"
+      spx-yyy:bool="true">
+      Press me YYY
+    </button>
+    <div
+      id="yyy"
+      spx-component="demo"
+      spx-demo:name="qux"
+      spx-demo:clicks="0">
+      <div class="component">
+        <h6>
+          This is the demo component using alias
+          <code>xxx</code>
+        </h6>
+      </div>
+    </div>
+    <p>
+      Clicked YYY:
+      <span spx-bind="yyy.clicks">0</span>
+    </p>
+
+    <hr>
+
     <div
       spx-component="demo"
       spx-demo:name="foo"
@@ -17,7 +72,12 @@ permalink: '/examples/components/index.html'
           component</h6>
 
         <!-- demo.js action -->
-        <button type="button" spx@click="demo.button">
+        <button
+          type="button"
+          spx@click="demo.button"
+          spx-demo:foo="100"
+          spx-demo:bar="string"
+          spx-demo:bool="true">
           Press me
         </button>
 
@@ -30,17 +90,23 @@ permalink: '/examples/components/index.html'
         <h1>Multiple Events</h1>
         <ul>
           <li>
-            <button type="button" spx@click="demo.button">
+            <button
+              type="button"
+              spx@click="demo.button">
               One
             </button>
           </li>
           <li>
-            <button type="button" spx@click="demo.button">
+            <button
+              type="button"
+              spx@click="demo.button">
               two
             </button>
           </li>
           <li>
-            <button type="button" spx@click="demo.button">
+            <button
+              type="button"
+              spx@click="demo.button">
               three
             </button>
           </li>
@@ -65,7 +131,9 @@ permalink: '/examples/components/index.html'
             component</h6>
 
           <!-- foo.js action and nodes -->
-          <div class="foo" spx@click="foo.toggle">
+          <div
+            class="foo"
+            spx@click="foo.toggle">
             <span spx-node="foo.text">
               Click this div and the value of
               <code>spx-bar:change</code>
@@ -95,7 +163,9 @@ permalink: '/examples/components/index.html'
           spx-test:id="example"
           spx-test:count="1">
           <!-- text.js action and node -->
-          <div class="d-block p-5" spx@mouseover="test.increment">
+          <div
+            class="d-block p-5"
+            spx@mouseover="test.increment">
             Mouseover (hover) this pink box:
             <code spx-node="test.count">0</code>
           </div>
@@ -120,13 +190,17 @@ permalink: '/examples/components/index.html'
           component as a counter</h6>
 
         <!-- demo.js action -->
-        <button type="button" spx@click="demo.increment">
+        <button
+          type="button"
+          spx@click="demo.increment">
           +
         </button>
 
         <p spx-node="demo.counter">7</p>
 
-        <button type="button" spx@click="demo.decrement">
+        <button
+          type="button"
+          spx@click="demo.decrement">
           -
         </button>
 

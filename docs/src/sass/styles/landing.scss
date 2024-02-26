@@ -1,24 +1,21 @@
-
-
-.hero {
-
-
-  h5 {
-  @include media-breakpoint-down(md) {
-    font-size: $font-size-md;
-  }
+.hidden {
+  overflow: hidden;
 }
 
+.hero {
+  h5 {
+    @include media-breakpoint-down(md) {
+      font-size: $font-size-md;
+    }
+  }
 
   @keyframes move {
     0% {
       opacity: 0;
       left: -200%;
     }
-
     10% {
       opacity: 1;
-
     }
 
     70% {
@@ -37,7 +34,6 @@
 
     10% {
       opacity: 1;
-
     }
 
     50% {
@@ -48,19 +44,26 @@
     }
   }
 
-
-
   &-github {
     a {
       position: absolute;
       top: 30px;
       right: 30px;
 
+      @include media-breakpoint-down(md) {
+        top: 20px;
+        right: 20px;
+      }
 
       > .icon {
         width: 30px;
         height: 30px;
         fill: $white;
+
+        @include media-breakpoint-down(md) {
+          width: 20px;
+          height: 20px;
+        }
 
         &:hover {
           fill: $blue;
@@ -75,72 +78,50 @@
     background-color: transparent;
     position: relative;
 
-    // &::before {
-    //   position: absolute;
-    //   top: 29px;
-    //   right: -40%;
-    //   transform: translatey(50);
-    //   content: "";
-    //   width: 30%;
-    //   height: 100%;
-    //   background: linear-gradient(
-    //     to left,
-    //     rgba($white, 0) 0%,
-    //     $cyan 80%,
-    //     $cyan 100%
+    @include media-breakpoint-down(md) {
+      height: 1px;
+    }
 
-    //   );
-    //   opacity: 1;
-    //   animation: move-right 3s infinite;
-    //   animation-fill-mode: forwards;
-    //   animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-    // }
+    &::before,
+    &::after {
+      position: absolute;
+      overflow: hidden;
+      top: 31px;
+      left: -100%;
+      transform: translatey(-50%);
+      content: '';
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, rgba($white, 0) 0%, $blue 60%, $blue 100%);
+      opacity: 1;
+      z-index: 100;
+      animation-fill-mode: forwards;
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 
-
-     &::before,
-     &::after {
-       position: absolute;
-       top: 29px;
-       left: -100%;
-       transform: translatey(-50);
-       content: "";
-       width: 50%;
-       height: 100%;
-       background: linear-gradient(
-         to right,
-         rgba($white, 0) 0%,
-         $blue 60%,
-         $blue 100%
-       );
-       opacity: 1;
-       z-index: 100;
-       animation-fill-mode: forwards;
-       animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
-
-       @include media-breakpoint-down(md) {
-        top: 14px;
+      @include media-breakpoint-down(md) {
+        top: 18px;
+        width: 80%;
+        transform: translatey(-80%);
       }
+    }
 
-     }
-
-     &::before {
+    &::before {
       animation: move 3s;
-     }
+    }
 
-     &:nth-child(1)::before {
+    &:nth-child(1)::after,
+    &:nth-child(1)::before {
       opacity: 0;
     }
 
-     &::after {
+    &::after {
       animation: move 3s infinite;
-     }
-
+    }
 
     &:nth-child(1)::after {
       opacity: 0;
       animation-delay: 3s;
     }
-
   }
 
   &-logo {
@@ -166,8 +147,8 @@
       height: 80px;
 
       @include media-breakpoint-down(md) {
-        width: 150px;
-        height: 40px;
+        width: 175px;
+        height: 50px;
       }
 
       &:hover {
@@ -176,12 +157,14 @@
     }
   }
 
-  &__caption {
-    position: absolute;
-    bottom: 50px;
-    color: #fff;
+  &-caption {
     font-size: 15px;
     text-transform: uppercase;
+
+    @include media-breakpoint-down(md) {
+      font-size: 15px;
+      font-weight: $font-weight-normal;
+    }
   }
 }
 
@@ -192,8 +175,23 @@
   padding-right: 3px;
   font-size: 11px;
   text-align: center;
+}
 
+.goto-link {
+  font-family: $font-family-heading;
+  font-size: 0.745rem;
+  text-transform: uppercase;
+  color: $link-color;
+  border: $border-width $border-color solid;
+  border-radius: 5px;
+  padding: 10px 0;
+  text-align: center;
+  background-color: $code-bg;
 
+  &:hover {
+    color: $white;
+    background-color: $code-bg;
+  }
 }
 
 .find {
@@ -227,4 +225,3 @@
     border-width: 0.24em;
   }
 }
-

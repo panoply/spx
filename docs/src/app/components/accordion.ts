@@ -1,5 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
-import relapse,{ Relapse } from 'relapse';
+import relapse, { Relapse } from 'relapse';
 import spx from 'spx';
 
 /* -------------------------------------------- */
@@ -26,22 +26,19 @@ export class Accordion extends Controller<HTMLElement> {
   /**
    * Stimulus Initialize
    */
-  connect(): void {
+  connect (): void {
 
     this.accordion = relapse(this.element, {
       multiple: this.multipleValue,
       persist: this.persistValue
     });
 
-
-
-
   }
 
   /**
    * Stimulus Disconnect
    */
-  disconnect() {
+  disconnect () {
 
     this.accordion.destroy();
 
@@ -52,8 +49,7 @@ export class Accordion extends Controller<HTMLElement> {
    *
    * Executes a programmatic visit
    */
-  goto({ target }: { target: HTMLLinkElement }) {
-
+  goto ({ target }: { target: HTMLLinkElement }) {
 
     spx.visit(target.id);
 
@@ -64,7 +60,7 @@ export class Accordion extends Controller<HTMLElement> {
    *
    * Event target should be the the fold index to open
    */
-  open({ target: { dataset: { index } } }) {
+  open ({ target: { dataset: { index } } }) {
 
     return this.accordion.folds[parseInt(index)].open();
 
@@ -75,7 +71,7 @@ export class Accordion extends Controller<HTMLElement> {
    *
    * Event target should be the the fold index to close
    */
-  close({ target: { dataset: { index } } }) {
+  close ({ target: { dataset: { index } } }) {
 
     return this.accordion.folds[parseInt(index)].close();
 

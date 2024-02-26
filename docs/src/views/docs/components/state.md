@@ -12,7 +12,7 @@ next:
 
 # State
 
-Component state is stored in the DOM and bindings are established so state changes reflect in template views. If you've used [stimulus.js](https://stimulusjs.org/), component state is similar to stimulus **values**. State references require you define an interface model via the static `connect.state` object in components, the static `connect.state` model accepts a couple of different definition structures and depending on your requirements.
+Component state is stored in the DOM and bindings are established so state changes reflect in mounted components. If you've used [stimulus.js](https://stimulusjs.org/), component state is similar to stimulus **values**. State references require you define an interface model via the static `connect.state` object in components, the static `connect.state` model accepts a couple of different definition structures and depending on your requirements.
 
 ---
 
@@ -45,7 +45,7 @@ export class Example extends spx.Component {
 Let's now expand on the above definitions and provide some default values to state interfaces, again this approach is similar to Stimulus, with differences being naming convention. In this example, we will instead provide a pre-defined set of `disableTabs` in the interface.
 
 <!-- prettier-ignore -->
-```js
+```ts
 import spx from 'spx';
 
 export class Example extends spx.Component {
@@ -72,7 +72,7 @@ export class Example extends spx.Component {
 In addition to the above approaches, you may require persisted state values. Persist states will instruct SPX to preserve the state values between page navigations, skipping state resets whenever a component disconnects.
 
 <!-- prettier-ignore -->
-```js
+```ts
 import spx from 'spx';
 
 export class Example extends spx.Component {
