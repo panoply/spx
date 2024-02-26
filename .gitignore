@@ -1,6 +1,6 @@
 # DIRECTORIES
 node_modules
-docs/public
+public
 docs/.netlify
 
 # FILES
