@@ -1,5 +1,6 @@
-import { Errors, EventType } from '../shared/enums';
-import { log, ts } from '../shared/utils';
+import { Errors, VisitType } from '../shared/enums';
+import { ts } from '../shared/utils';
+import { log } from '../shared/logs';
 import { deviceType } from 'detect-it';
 import { XHR, pointer } from '../shared/native';
 import { emit } from '../app/events';
@@ -8,13 +9,14 @@ import { IPage } from '../types/page';
 import { getAttributes, getKey, getRoute } from '../app/location';
 import { progress } from '../app/progress';
 import { $ } from '../app/session';
-import * as hover from '../observers/hover';
-import * as proximity from '../observers/proximity';
-import * as intersect from '../observers/intersect';
+import * as hover from './hovers';
+import * as proximity from './proximity';
+import * as intersect from './intersect';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
-import * as store from '../app/store';
 import * as history from './history';
+import * as q from '../app/queries';
+import { hook } from './components';
 
 /**
  * Handles a clicked link, prevents special click types.
@@ -26,7 +28,7 @@ function linkEvent (event: MouseEvent): boolean {
       // @ts-ignore
       (event.target && event.target.isContentEditable) ||
       event.defaultPrevented ||
-      event.which > 1 ||
+      event.button > 1 ||
       event.altKey ||
       event.ctrlKey ||
       event.metaKey ||
@@ -35,41 +37,6 @@ function linkEvent (event: MouseEvent): boolean {
   );
 
 }
-
-// const preload: Set<string> = new Set();
-
-// function linkPreload (url: string) {
-
-//   if (preload.has(url)) return;
-
-//   const linkElement = document.createElement('link');
-//   linkElement.rel = 'prefetch';
-//   linkElement.href = url;
-//   linkElement.fetchPriority = 'high';
-//   // By default, a prefetch is loaded with a low priority.
-//   // When there’s a fair chance that this prefetch is going to be used in the
-//   // near term (= after a touch/mouse event), giving it a high priority helps
-//   // make the page load faster in case there are other resources loading.
-//   // Prioritizing it implicitly means deprioritizing every other resource
-//   // that’s loading on the page. Due to HTML documents usually being much
-//   // smaller than other resources (notably images and JavaScript), and
-//   // prefetches happening once the initial page is sufficiently loaded,
-//   // this theft of bandwidth should rarely be detrimental.
-
-//   linkElement.as = 'document';
-//   // as=document is Chromium-only and allows cross-origin prefetches to be
-//   // usable for navigation. They call it “restrictive prefetch” and intend
-//   // to remove it: https://crbug.com/1352371
-//   //
-//   // This document from the Chrome team dated 2022-08-10
-//   // https://docs.google.com/document/d/1x232KJUIwIf-k08vpNfV85sVCRHkAxldfuIA5KOqi6M
-//   // claims (I haven’t tested) that data- and battery-saver modes as well as
-//   // the setting to disable preloading do not disable restrictive prefetch,
-//   // unlike regular prefetch. That’s good for prefetching on a touch/mouse
-//   // event, but might be bad when prefetching every link in the viewport.
-
-//   document.head.appendChild(linkElement);
-// }
 
 /**
  * Triggers a page fetch
@@ -105,11 +72,11 @@ function linkEvent (event: MouseEvent): boolean {
  * that attachments are only ever added a single time.
  *
  */
-const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (event: MouseEvent): void {
+const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: MouseEvent): void {
 
   if (!linkEvent(event)) return;
 
-  const target = getLink(event.target, $.qs.tags.$href);
+  const target = getLink(event.target, $.qs.$href);
 
   // Skip id target is not a valid href element
   if (!target) return;
@@ -119,52 +86,74 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
   // Skip id href value is not a valid key
   if (key === null) return;
 
-  // Capture drag occurances on links, we will cancel
-  // visits when this occurs to prevent history push~state
-  // from not behaving correctly.
-  //
-  // Credit to the babe mansedan for catching this.
-  //
-  const handleMove = () => {
-    handleTrigger.drag = true;
-    log(Errors.WARN, `Drag occurance, visit was cancelled to link: ${key}`);
-    target.removeEventListener(`${pointer}move`, handleMove);
+  // TODO: Handle same URL clicks on link elements
+
+  /**
+   * Pointer Move/Drag
+   *
+   * Capture drag occurances on links, we will cancel
+   * visits when this occurs to prevent history push~state
+   * from not behaving correctly.
+   *
+   * Credit to the brother mansedan for catching this.
+   */
+  const move = () => {
+    log(Errors.WARN, `Drag occurance deteced, cancelled visit: ${key}`);
+    handle.drag = true;
+    target.removeEventListener(`${pointer}move`, move);
   };
 
-  target.addEventListener(`${pointer}move`, handleMove, { once: true });
+  target.addEventListener(`${pointer}move`, move, { once: true });
 
-  if (handleTrigger.drag === true) {
-    handleTrigger.drag = false;
-    return handleTrigger(event);
+  if (handle.drag === true) {
+    handle.drag = false;
+    return handle(event);
   }
 
-  target.removeEventListener(`${pointer}move`, handleMove);
+  target.removeEventListener(`${pointer}move`, move);
 
   // Event lifecycle, cancel if returned false
   if (!emit('visit', event)) return;
+
+  /**
+   * Handle the click event on links. This function will update
+   * page state and history state. The subsequent parameter is
+   * used to determine whether we a visting an fetched page or not
+   */
+  const click = (state: IPage, subsequent = true) => {
+
+    $.pages[state.key].ts = ts();
+    $.pages[state.rev].scrollX = window.scrollX;
+    $.pages[state.rev].scrollY = window.scrollY;
+
+    hook('onvisit', state);
+
+    history.replace($.pages[state.rev]);
+
+    if (subsequent) {
+      history.push(state);
+      render.update(state);
+    } else {
+      visit(state);
+    }
+  };
 
   // Prevent any observers from triggering
   hover.disconnect();
   proximity.disconnect();
   intersect.disconnect();
-  // components.disconnect();
 
-  if (store.has(key)) { // Sub-sequent visit
+  if (q.has(key)) { // Sub-sequent visit
 
     const attrs = getAttributes(target, $.pages[key]);
-    const page = store.update(attrs);
+    const page = q.update(attrs);
 
     target.onclick = (event: MouseEvent) => {
       event.preventDefault();
-      $.pages[page.key].ts = ts();
-      $.pages[page.rev].scrollX = window.scrollX;
-      $.pages[page.rev].scrollY = window.scrollY;
-      history.replace($.pages[page.rev]);
-      history.push(page);
-      render.update(page);
+      click(page);
     };
 
-  } else if (XHR.transit.has(key)) { // In-Transit visit
+  } else if (XHR.$transit.has(key)) { // In-Transit visit
 
     // linkPreload(page.location.hostname + page.key);
 
@@ -178,11 +167,7 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
     target.onclick = (event: MouseEvent) => {
       event.preventDefault();
-      $.pages[page.key].ts = ts();
-      $.pages[page.rev].scrollX = window.scrollX;
-      $.pages[page.rev].scrollY = window.scrollY;
-      history.replace($.pages[page.rev]);
-      visit(page);
+      click(page, false);
     };
 
   } else { // New Visit
@@ -196,7 +181,7 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
     // We need to (re)parse the element and acquire
     // any attribute annotations
-    const page = store.create(getRoute(target, EventType.VISIT));
+    const page = q.create(getRoute(target, VisitType.VISIT));
 
     // Lets trigger a fetch, we will await its
     // completion after click has concluded, so we
@@ -205,11 +190,7 @@ const handleTrigger: { (event: MouseEvent): void; drag?: boolean; } = function (
 
     target.onclick = (event: MouseEvent) => {
       event.preventDefault();
-      $.pages[page.key].ts = ts();
-      $.pages[page.rev].scrollX = window.scrollX;
-      $.pages[page.rev].scrollY = window.scrollY;
-      history.replace($.pages[page.rev]);
-      visit(page);
+      click(page, false);
     };
 
   }
@@ -249,7 +230,7 @@ export async function navigate (key: string, state?: IPage): Promise<void> {
 
   if (state) {
 
-    if (typeof state.cache === 'string') state.cache === 'clear' ? store.clear() : store.clear(state.key);
+    if (typeof state.cache === 'string') state.cache === 'clear' ? q.clear() : q.clear(state.key);
 
     // Trigger progress bar loading
     if (state.progress) progress.start(state.progress as number);
@@ -278,15 +259,15 @@ export function connect (): void {
 
   if ($.observe.hrefs) return;
 
-  handleTrigger.drag = false;
+  handle.drag = false;
 
   if (deviceType === 'mouseOnly') {
-    addEventListener(`${pointer}down`, handleTrigger, false);
+    addEventListener(`${pointer}down`, handle, false);
   } else if (deviceType === 'touchOnly') {
-    addEventListener('touchstart', handleTrigger, false);
+    addEventListener('touchstart', handle, false);
   } else {
-    addEventListener(`${pointer}down`, handleTrigger, false);
-    addEventListener('touchstart', handleTrigger, false);
+    addEventListener(`${pointer}down`, handle, false);
+    addEventListener('touchstart', handle, false);
   }
 
   $.observe.hrefs = true;
@@ -301,12 +282,12 @@ export function disconnect (): void {
   if (!$.observe.hrefs) return;
 
   if (deviceType === 'mouseOnly') {
-    removeEventListener(`${pointer}down`, handleTrigger, false);
+    removeEventListener(`${pointer}down`, handle, false);
   } else if (deviceType === 'touchOnly') {
-    removeEventListener('touchstart', handleTrigger, false);
+    removeEventListener('touchstart', handle, false);
   } else {
-    removeEventListener(`${pointer}down`, handleTrigger, false);
-    removeEventListener('touchstart', handleTrigger, false);
+    removeEventListener(`${pointer}down`, handle, false);
+    removeEventListener('touchstart', handle, false);
   }
 
   $.observe.hrefs = false;

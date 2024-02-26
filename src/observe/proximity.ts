@@ -1,12 +1,12 @@
 import { $ } from '../app/session';
 import { getTargets } from '../shared/links';
 import { isNumber } from '../shared/regexp';
-import { log } from '../shared/utils';
+import { log } from '../shared/logs';
 import { getRoute } from '../app/location';
 import { emit } from '../app/events';
-import * as store from '../app/store';
+import * as q from '../app/queries';
 import * as request from '../app/fetch';
-import { EventType, Errors } from '../shared/enums';
+import { VisitType, Errors } from '../shared/enums';
 import { IProximity } from 'types';
 import { pointer } from '../shared/native';
 
@@ -29,7 +29,7 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
 function setBounds (target: HTMLLinkElement) {
 
   const rect = target.getBoundingClientRect();
-  const attr = target.getAttribute($.qs.href.$proximity);
+  const attr = target.getAttribute($.qs.$proximity);
   const distance = isNumber.test(attr) ? Number(attr) : ($.config.proximity as IProximity).distance;
 
   return {
@@ -73,7 +73,7 @@ function observer (targets?: {
     } else {
 
       const { target } = targets[node];
-      const page = store.create(getRoute(target, EventType.PROXIMITY));
+      const page = q.create(getRoute(target, VisitType.PROXIMITY));
       const delay = page.threshold || ($.config.proximity as IProximity).threshold;
 
       request.throttle(page.key, async () => {
@@ -110,7 +110,7 @@ export function connect (): void {
 
   if (!$.config.proximity || $.observe.proximity) return;
 
-  const targets = getTargets($.qs.href.$proximity).map(setBounds);
+  const targets = getTargets($.qs.$proximity).map(setBounds);
 
   if (targets.length > 0) {
 

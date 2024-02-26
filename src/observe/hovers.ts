@@ -3,11 +3,11 @@ import { XHR, pointer } from '../shared/native';
 import { forEach } from '../shared/utils';
 import { emit } from '../app/events';
 import { $ } from '../app/session';
-import * as store from '../app/store';
+import * as q from '../app/queries';
 import * as request from '../app/fetch';
 import { getKey, getRoute } from '../app/location';
 import { getLink, getTargets } from '../shared/links';
-import { EventType } from '../shared/enums';
+import { VisitType } from '../shared/enums';
 
 /**
  * Attempts to visit location, Handles bubbled mouseovers and
@@ -18,18 +18,18 @@ import { EventType } from '../shared/enums';
  */
 function onEnter (event: MouseEvent): void {
 
-  const target = getLink(event.target, $.qs.href.$hover);
+  const target = getLink(event.target, $.qs.$hover);
 
   if (!target) return;
 
-  const route = getRoute(target, EventType.HOVER);
+  const route = getRoute(target, VisitType.HOVER);
 
-  if (store.has(route.key)) return;
-  if (XHR.timeout.has(route.key)) return;
+  if (q.has(route.key)) return;
+  if (route.key in XHR.$timeout) return;
 
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
-  const state = store.create(route);
+  const state = q.create(route);
   const delay = state.threshold || ($.config.hover as IHover).threshold;
 
   request.throttle(route.key, function () {
@@ -37,7 +37,7 @@ function onEnter (event: MouseEvent): void {
     if (!emit('prefetch', target, route)) return;
 
     request.fetch(state).then(function () {
-      XHR.timeout.delete(route.key);
+      delete XHR.$timeout[route.key];
       removeListener(target);
     });
 
@@ -52,10 +52,11 @@ function onEnter (event: MouseEvent): void {
  */
 function onLeave (this: IPage, event: MouseEvent) {
 
-  const target = getLink(event.target, $.qs.href.$hover);
+  const target = getLink(event.target, $.qs.$hover);
 
-  if (target) request.cleanup(getKey(target.href));
-
+  if (target) {
+    request.cleanup(getKey(target.href));
+  }
 };
 
 /**
@@ -86,7 +87,7 @@ export function connect (): void {
 
   if (!$.config.hover || $.observe.hover) return;
 
-  forEach(addListener, getTargets($.qs.href.$hover));
+  forEach(addListener, getTargets($.qs.$hover));
 
   $.observe.hover = true;
 
@@ -101,7 +102,7 @@ export function disconnect (): boolean {
 
   if (!$.observe.hover) return;
 
-  forEach(removeListener, getTargets($.qs.href.$hover));
+  forEach(removeListener, getTargets($.qs.$hover));
 
   $.observe.hover = false;
 

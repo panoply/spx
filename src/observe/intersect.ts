@@ -1,11 +1,12 @@
-import { forEach, log } from '../shared/utils';
+import { forEach } from '../shared/utils';
+import { log } from '../shared/logs';
+import { Errors, VisitType } from '../shared/enums';
 import { getNodeTargets } from '../shared/links';
 import { $ } from '../app/session';
 import { emit } from '../app/events';
 import { getRoute } from '../app/location';
 import * as request from '../app/fetch';
-import * as store from '../app/store';
-import { Errors, EventType } from '../shared/enums';
+import * as q from '../app/queries';
 
 /**
  * @type IntersectionObserver
@@ -19,11 +20,11 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
 
   if (entry.isIntersecting) {
 
-    const route = getRoute(entry.target, EventType.INTERSECT);
+    const route = getRoute(entry.target, VisitType.INTERSECT);
 
     if (!emit('prefetch', entry.target, route)) return entries.unobserve(entry.target);
 
-    const response = await request.fetch(store.create(route));
+    const response = await request.fetch(q.create(route));
 
     if (response) {
 
@@ -46,7 +47,7 @@ export function connect (): void {
   if (!entries) entries = new IntersectionObserver(forEach(onIntersect), $.config.intersect);
 
   const observe = forEach<Element>(target => entries.observe(target));
-  const targets = getNodeTargets($.qs.$intersector, $.qs.href.$intersect);
+  const targets = getNodeTargets($.qs.$intersector, $.qs.$intersect);
 
   observe(targets);
 
