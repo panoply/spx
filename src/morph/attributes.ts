@@ -1,33 +1,45 @@
 import { Nodes } from '../shared/enums';
 import { nil } from '../shared/native';
+import * as observe from '../components/observe';
+import { $ } from '../app/session';
+import { isDirective } from '../components/context';
 
 /**
  * Set or Remove boolean attribute annotations, specifically used for Form elements
  */
-export function setBooleanAttribute (oldElement: Element, newElement: Element, name: string) {
+export function setBooleanAttribute (curElement: Element, newElement: Element, name: string) {
 
-  if (oldElement[name] !== newElement[name]) {
+  if (curElement[name] !== newElement[name]) {
 
-    oldElement[name] = newElement[name];
+    curElement[name] = newElement[name];
 
-    if (oldElement[name]) {
-      oldElement.setAttribute(name, nil);
+    if (curElement[name]) {
+      curElement.setAttribute(name, nil);
     } else {
-      oldElement.removeAttribute(name);
+      curElement.removeAttribute(name);
     }
   }
-
 }
 
-export function morphAttributes (oldNode: Element, newNode: Element) {
+export function morphAttributes (curNode: HTMLElement, newNode: HTMLElement) {
 
   // document-fragments dont have attributes so lets not do anything
   //
   // DOCUMENT_FRAGMENT_NODE
   //
-  if (newNode.nodeType === Nodes.FRAGMENT_NODE || oldNode.nodeType === Nodes.FRAGMENT_NODE) return;
+  if (newNode.nodeType === Nodes.FRAGMENT_NODE || curNode.nodeType === Nodes.FRAGMENT_NODE) return;
 
+  /** New node attributes */
   const newNodeAttrs = newNode.attributes;
+
+  /** Component directives contained on current page */
+  const cRef: string = curNode.getAttribute($.qs.$ref);
+
+  /** Component directives contained on new page */
+  const nRef: string = newNode.getAttribute($.qs.$ref);
+
+  /** Component directives existing when nRef do not */
+  let attrDirective: boolean = false;
 
   /** The Element Attribute */
   let attrNode: Attr;
@@ -55,7 +67,7 @@ export function morphAttributes (oldNode: Element, newNode: Element) {
     if (attrNamespaceURI) {
 
       attrName = attrNode.localName || attrName;
-      fromValue = oldNode.getAttributeNS(attrNamespaceURI, attrName);
+      fromValue = curNode.getAttributeNS(attrNamespaceURI, attrName);
 
       if (fromValue !== attrValue) {
 
@@ -63,28 +75,34 @@ export function morphAttributes (oldNode: Element, newNode: Element) {
         // specifying the `xmlns` prefix
         if (attrNode.prefix === 'xmlns') attrName = attrNode.name;
 
-        oldNode.setAttributeNS(attrNamespaceURI, attrName, attrValue);
+        curNode.setAttributeNS(attrNamespaceURI, attrName, attrValue);
 
       }
 
     } else {
 
-      fromValue = oldNode.getAttribute(attrName);
+      fromValue = curNode.getAttribute(attrName);
 
-      if (fromValue !== attrValue) oldNode.setAttribute(attrName, attrValue);
+      if (fromValue !== attrValue) {
 
+        curNode.setAttribute(attrName, attrValue);
+
+        if (!cRef && !nRef && !attrDirective) {
+          attrDirective = isDirective(attrName);
+        }
+
+      }
     }
   }
 
   // Remove any extra attributes found on the original DOM element that weren't found on the target element.
-  const oldNodeAttrs = oldNode.attributes;
+  const curNodeAttrs = curNode.attributes;
 
-  for (let o = oldNodeAttrs.length - 1; o >= 0; o--) {
+  for (let o = curNodeAttrs.length - 1; o >= 0; o--) {
 
-    attrNode = oldNodeAttrs[o];
+    attrNode = curNodeAttrs[o];
     attrName = attrNode.name;
     attrValue = attrNode.value;
-
     attrNamespaceURI = attrNode.namespaceURI;
 
     if (attrNamespaceURI) {
@@ -92,13 +110,27 @@ export function morphAttributes (oldNode: Element, newNode: Element) {
       attrName = attrNode.localName || attrName;
 
       if (!newNode.hasAttributeNS(attrNamespaceURI, attrName)) {
-        oldNode.removeAttributeNS(attrNamespaceURI, attrName);
+        curNode.removeAttributeNS(attrNamespaceURI, attrName);
       }
 
     } else {
 
-      if (!newNode.hasAttribute(attrName)) oldNode.removeAttribute(attrName);
+      if (!newNode.hasAttribute(attrName)) {
+        curNode.removeAttribute(attrName);
+      }
 
     }
   }
+
+  if (cRef || nRef || attrDirective) {
+
+    observe.updateNode(
+      curNode,
+      newNode,
+      cRef,
+      nRef
+    );
+
+  }
+
 }
