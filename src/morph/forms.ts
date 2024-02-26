@@ -3,9 +3,9 @@ import { setBooleanAttribute } from './attributes';
 /**
  * Handling of `<option>` element morphs
  */
-export function onOptionElement (oldElement: Element, newElement: HTMLOptionElement) {
+export function option (curElement: Element, newElement: HTMLOptionElement) {
 
-  let parentNode = oldElement.parentNode;
+  let parentNode = curElement.parentNode;
 
   if (parentNode) {
 
@@ -18,14 +18,14 @@ export function onOptionElement (oldElement: Element, newElement: HTMLOptionElem
 
     if (parentName === 'SELECT' && !(parentNode as Element).hasAttribute('multiple')) {
 
-      if (oldElement.hasAttribute('selected') && !newElement.selected) {
+      if (curElement.hasAttribute('selected') && !newElement.selected) {
 
         // Workaround for MS Edge bug where the 'selected' attribute can only be
         // removed if set to a non-empty value:
         // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/12087679/
-
-        oldElement.setAttribute('selected', 'selected');
-        oldElement.removeAttribute('selected');
+        //
+        curElement.setAttribute('selected', 'selected');
+        curElement.removeAttribute('selected');
 
       }
 
@@ -37,7 +37,7 @@ export function onOptionElement (oldElement: Element, newElement: HTMLOptionElem
     }
   }
 
-  setBooleanAttribute(oldElement, newElement, 'selected');
+  setBooleanAttribute(curElement, newElement, 'selected');
 
 }
 
@@ -48,26 +48,26 @@ export function onOptionElement (oldElement: Element, newElement: HTMLOptionElem
  *
  * Similar for the "checked" attribute, and "disabled".
  */
-export function onInputElement (oldElement: HTMLInputElement, newElement: HTMLInputElement) {
+export function input (curElement: HTMLInputElement, newElement: HTMLInputElement) {
 
-  setBooleanAttribute(oldElement, newElement, 'checked');
-  setBooleanAttribute(oldElement, newElement, 'disabled');
+  setBooleanAttribute(curElement, newElement, 'checked');
+  setBooleanAttribute(curElement, newElement, 'disabled');
 
-  if (oldElement.value !== newElement.value) oldElement.value = newElement.value;
-  if (!newElement.hasAttribute('value')) oldElement.removeAttribute('value');
+  if (curElement.value !== newElement.value) curElement.value = newElement.value;
+  if (!newElement.hasAttribute('value')) curElement.removeAttribute('value');
 
 }
 
 /**
  * Handling of `<textarea>` element morphs
  */
-export function onTextareaElement (oldElement: HTMLTextAreaElement, newElement: HTMLTextAreaElement) {
+export function textarea (curElement: HTMLTextAreaElement, newElement: HTMLTextAreaElement) {
 
   const { value } = newElement;
 
-  if (oldElement.value !== value) oldElement.value = value;
+  if (curElement.value !== value) curElement.value = value;
 
-  const { firstChild } = oldElement;
+  const { firstChild } = curElement;
 
   if (firstChild) {
 
@@ -75,7 +75,7 @@ export function onTextareaElement (oldElement: HTMLTextAreaElement, newElement: 
     // node value and vise versa. This ignores an empty update.
     const { nodeValue } = firstChild;
 
-    if (nodeValue === value || (!value && nodeValue === oldElement.placeholder)) return;
+    if (nodeValue === value || (!value && nodeValue === curElement.placeholder)) return;
 
     firstChild.nodeValue = value;
 
@@ -83,19 +83,19 @@ export function onTextareaElement (oldElement: HTMLTextAreaElement, newElement: 
 }
 
 /**
- * We have to loop through children of oldElement, not newElement since nodes can be moved
- * from newElement to oldElement directly when morphing.
+ * We have to loop through children of curElement, not newElement since nodes can be moved
+ * from newElement to curElement directly when morphing.
  *
  * At the time this special handler is invoked, all children have already been morphed
- * and appended to / removed from oldElement, so using oldElement here is safe and correct.
+ * and appended to / removed from curElement, so using curElement here is safe and correct.
  */
-export function onSelectElement (oldElement: HTMLElement, newElement: HTMLElement) {
+export function select (curElement: HTMLElement, newElement: HTMLElement) {
 
   if (!newElement.hasAttribute('multiple')) {
 
     let i: number = 0;
     let selectedIndex: number = -1;
-    let curChild = oldElement.firstElementChild;
+    let curChild = curElement.firstElementChild;
     let optgroup: HTMLOptGroupElement;
     let nodeName: string;
 
@@ -130,6 +130,7 @@ export function onSelectElement (oldElement: HTMLElement, newElement: HTMLElemen
       }
     }
 
-    (oldElement as HTMLSelectElement).selectedIndex = selectedIndex;
+    (curElement as HTMLSelectElement).selectedIndex = selectedIndex;
+
   }
 }
