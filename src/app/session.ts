@@ -1,10 +1,15 @@
-import { IConfig, IPage, IObservers, IMemory, ISelectors, IProgress, IIntersect, IProximity, IHover } from 'types';
-import { m, o, s } from '../shared/native';
+import type { Merge } from 'type-fest';
+import type { IConfig, IPage, IObservers, IMemory, ISelectors, IProgress, IIntersect, IProximity, IHover } from 'types';
+import { m, o, p, s } from '../shared/native';
 import { IComponent } from '../types/components';
 
 export interface Session {
   /**
-   * Whether the page has fully loaded
+   * Getter value which reflects `document.readyState` and matches against `complete`
+   */
+  readonly ready?: boolean;
+  /**
+   * Whether or not page has loaded, used in history operations
    */
   loaded: boolean;
 
@@ -14,11 +19,20 @@ export interface Session {
   index: string;
 
   /**
+   * Whether or not we have patched native methods for morph related handling
+   */
+  patched: boolean;
+
+  /**
+   * Resource Evalution
+   */
+  eval: boolean;
+  /**
    * Selectors
    *
    * String key > value references to DOM attributes selectors used in the SPX instance.
    */
-  qs: ISelectors;
+  readonly qs: ISelectors;
 
   /**
    * Configuration
@@ -28,7 +42,7 @@ export interface Session {
    * pjax instance should run. The options defined here are
    * the defaults applied at runtime.
    */
-  config:IConfig;
+  readonly config: Merge<IConfig, { components: any }>;
 
   /**
    * Events Model
@@ -36,7 +50,7 @@ export interface Session {
    * Holds an o reference for every event
    * emitted. Used by the event emitter operations
    */
-  events: { [name: string]: Array<() => void | boolean> };
+  readonly events: { [name: string]: Array<() => void | boolean> };
 
   /**
    * Observers
@@ -50,8 +64,9 @@ export interface Session {
    * - Intersect
    * - Scroll
    * - Proximity
+   * - Resources
    */
-  observe: IObservers;
+  readonly observe: IObservers;
 
   /**
    * Memory
@@ -59,7 +74,116 @@ export interface Session {
    * This o reference which holds the storage memory
    * record throughout the pjax session.
    */
-  memory: IMemory;
+  readonly memory: IMemory;
+
+  /**
+   * Event type IDs. Event types are categorizes
+   * into different _kinds_ which inform upon the
+   * action which has takes place.
+   *
+   * Reference ()
+   *
+   * A `reference` event type refers to an action which has taken place.
+   *
+   * Trigger
+   *
+   * A `trigger` event type refers to a visit operation of intent, like a link click.
+   *
+   * Prefetch
+   *
+   * A `prefetch` event type refers to an fetch operation which an occured from an observer.
+   *
+   * Fetch
+   *
+   * A `fetch` event type refers to a request operation of some kind, like a programmatic fetch.
+   */
+  readonly types?: {
+    /**
+     * Store was created on initial run
+     *
+     * @kind `reference`
+     */
+    readonly INITIAL: 0,
+    /**
+     * Request is programmatic prefetch
+     *
+     * @kind `reference`
+     */
+    readonly PREFETCH: 1,
+    /**
+     * Programmatic fetch triggered
+     *
+     * @kind `reference`
+     */
+    readonly FETCH: 2,
+    /**
+     * Request is a pre-emptive preload
+     *
+     * @kind `fetch`
+     */
+    readonly PRELOAD: 3,
+    /**
+     * Request is a reverse last-path fetch
+     *
+     * @kind `fetch`
+     */
+    readonly REVERSE: 4,
+    /**
+     * Request is a popstate fetch
+     *
+     * @kind `fetch`
+     */
+    readonly POPSTATE: 5,
+    /**
+     * Store was created from trigger visit.
+     *
+     * @kind `trigger`
+     */
+    readonly VISIT: 6,
+    /**
+     * Store was created from a hydration
+     *
+     * @kind `trigger`
+     */
+    readonly HYDRATE: 7,
+    /**
+     * Snapshot is recaptured
+     *
+     * @kind `trigger`
+     */
+    readonly CAPTURE: 8,
+    /**
+     * Request is reload fetch
+     *
+     * @kind `trigger`
+     */
+    readonly RELOAD: 9,
+    /**
+     * Request is a prefetch hover
+     *
+     * @kind `prefetch`
+     */
+    readonly HOVER: 10,
+    /**
+     * Request is a prefetch intersection
+     *
+     * @kind `prefetch`
+     */
+    readonly INTERSECT: 11,
+    /**
+     * Request is a prefetch proximity
+     *
+     * @kind `prefetch`
+     */
+    readonly PROXIMITY: 12
+  };
+
+  /**
+   * Previous Page
+   *
+   * Returns the last known page state model or null if none exists
+   */
+  readonly prev?: IPage;
 
   /**
    * Page
@@ -72,11 +196,11 @@ export interface Session {
   /**
    * Snapshot
    *
-   * Returns the current snapshot according to the `page` UUID value which uses
+   * Returns the current snapshot DOM according to the `page` UUID value which uses
    * the `history.state.key` reference. This is a getter which will always reflect
-   * current page snapshot.
+   * current page snapshot as a document.
    */
-  readonly snap?: string;
+  readonly snapDom?: Document;
 
   /**
    * Pages
@@ -85,7 +209,7 @@ export interface Session {
    * configuration model. The os in this store are
    * also available to the history API.
    */
-  pages: { [url: string]: IPage };
+  readonly pages: { [url: string]: IPage };
 
   /**
    * Snapshots
@@ -94,50 +218,38 @@ export interface Session {
    * Each document is stored in string type. The key values
    * are unique ids and exist on each page model.
    */
-  snaps: { [uuid: string]: string; };
+  readonly snaps: { [uuid: string]: string; };
+
+  /**
+   * Fragments
+   *
+   * Holds a Set reference to fragments that will change between
+   * page navigation. The Set is update after each page render.
+   */
+  readonly fragments: Set<HTMLElement>
 
   /**
    * Components
    *
    * Maintains component models.
    */
-  components: IComponent;
-
-  /**
-   * Tracked Elements
-   *
-   * Keeps a reference of tracked nodes between renders
-   * and navigations to prevent extra appends from occuring.
-   */
-  tracked: Set<string>;
+  readonly components: IComponent;
 
   /**
    * Resources
    *
-   * This o holds resources which have rendered or loaded
-   * on a per-page basis. The key values are unique ids which exist
-   * on each page model.
+   * This object hold resource elements added to the document
+   * dynamically. It's populated via the mutation observer.
    */
-  resources: Map<string, string>;
-
-  /**
-   * Stylesheets
-   *
-   * Keeps a reference of rendered stylesheets applied
-   * within the DOM.
-   */
-  styles: Set<string>;
+  readonly resources: Set<Node>
 }
 
 export const $: Session = o<Session>({
-  loaded: false,
   index: '',
-  qs: o<ISelectors>({
-    component: o(),
-    script: o(),
-    tags: o(),
-    href: o()
-  }),
+  eval: true,
+  patched: false,
+  loaded: false,
+  qs: o<ISelectors>(),
   config: o<IConfig>({
     fragments: [ 'body' ],
     timeout: 30000,
@@ -147,6 +259,7 @@ export const $: Session = o<Session>({
     logLevel: 2,
     cache: true,
     maxCache: 100,
+    reverse: true,
     preload: null,
     annotate: false,
     eval: o({
@@ -179,18 +292,18 @@ export const $: Session = o<Session>({
       trickleSpeed: 200
     })
   }),
+  fragments: s(),
+  components: o<IComponent>({
+    registry: m(),
+    instances: m(),
+    connected: s(),
+    elements: m(),
+    reference: p({ get: (target, key: string) => $.components.instances.get(target[key]) })
+  }),
   events: o(),
   observe: o(),
   memory: o(),
   pages: o(),
   snaps: o(),
-  components: o<IComponent>({
-    registry: o(),
-    connected: s(),
-    instances: o(),
-    refs: o()
-  }),
-  tracked: s(),
-  resources: m<string, string>(),
-  styles: s<string>()
+  resources: s()
 });
