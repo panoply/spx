@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 
-import { EventNames, EmitterArguments } from 'types';
-import { forEach, hasProp, log } from '../shared/utils';
+import type { EventNames, EmitterArguments } from '../types';
+import { forEach } from '../shared/utils';
+import { log } from '../shared/logs';
 import { parse } from '../shared/dom';
-import { $ } from './session';
 import { Errors } from '../shared/enums';
+import { $ } from './session';
 
 /**
  * Emit Event
@@ -46,7 +47,7 @@ export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T
  */
 export function on (name: EventNames, callback?: () => void, scope?: any) {
 
-  if (!hasProp($.events, name)) $.events[name] = [];
+  if (!(name in $.events)) $.events[name] = [];
 
   return $.events[name].push(scope ? callback.bind(scope) : callback) - 1;
 
@@ -59,7 +60,7 @@ export function on (name: EventNames, callback?: () => void, scope?: any) {
  */
 export function off (name: EventNames, callback: (() => void) | number) {
 
-  if (hasProp($.events, name)) {
+  if (name in $.events) {
 
     const events = $.events[name];
 
