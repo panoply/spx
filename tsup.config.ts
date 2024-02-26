@@ -8,23 +8,26 @@ export default defineConfig({
   format: [ 'esm' ],
   clean: false,
   outDir: './',
-  minify: process.env.production ? 'terser' : false,
+  minify: !!process.env.production,
   minifyIdentifiers: true,
   minifySyntax: true,
+  minifyWhitespace: true,
+  platform: 'browser',
+  keepNames: false,
+  splitting: false,
+  target: 'es2018',
+  globalName: 'spx',
   treeshake: 'smallest',
   esbuildOptions (options) {
     options.mangleProps = /^\$[a-z]/;
   },
-  terserOptions: {
-    ecma: 2016,
-    keep_classnames: false,
-    compress: {
-      passes: 50
-    }
-  },
   async onSuccess () {
-    const time = new Date();
-    await utimes('./docs/src/app/index.ts', time, time);
-    return undefined;
+    if (!process.env.production) {
+      const time = new Date();
+      await utimes('./docs/src/app/index.ts', time, time);
+      await utimes('./test/assets/bundle.ts', time, time);
+      await utimes('./test/pages/index.liquid', time, time);
+      return undefined;
+    }
   }
 });
