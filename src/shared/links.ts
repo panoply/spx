@@ -1,5 +1,5 @@
 import { getKey, validKey } from '../app/location';
-import { has } from '../app/store';
+import { has } from '../app/queries';
 import { forNode } from './utils';
 
 /**
@@ -57,7 +57,9 @@ export function getNodeTargets (selector: string, hrefs: string): HTMLLinkElemen
     } else {
       if (targetNode.hasAttribute('href')) {
         const { href } = targetNode;
-        if (validKey(href) && has(getKey(href))) targets.push(targetNode);
+        if (validKey(href) && has(getKey(href))) {
+          targets.push(targetNode);
+        }
       }
     }
   });
