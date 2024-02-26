@@ -1,14 +1,21 @@
 /* eslint-disable no-unused-vars */
 
-import { IConfig, IEval, IObserverOptions, IOptions } from 'types';
+import type { LiteralUnion } from 'type-fest';
+import type { IConfig, IEval, IObserverOptions, IOptions, ISelectors } from '../types';
+import { patchSetAttribute } from '../shared/patch';
 import { Attributes, Errors } from '../shared/enums';
-import { assign, isArray, nil } from '../shared/native';
-import { hasProp, log } from '../shared/utils';
-import { $ } from './session';
+import { assign, defineProps, isArray, nil, o } from '../shared/native';
+import { log } from '../shared/logs';
+import { hasProp } from '../shared/utils';
 import { progress } from './progress';
-import { LiteralUnion } from 'type-fest';
-import { register } from '../components/register';
+import { registerComponents } from '../components/register';
+import { $ } from './session';
 
+/**
+ * Observe Options
+ *
+ * Merges observer configuration with defaults.
+ */
 export function observers (options: IOptions) {
 
   for (const key of <Array<keyof IObserverOptions>>[
@@ -19,9 +26,15 @@ export function observers (options: IOptions) {
   ]) {
 
     if (hasProp(options, key)) {
-      if (options[key] === false) $.config[key] = false;
-      else if (typeof options[key] === 'object') assign($.config[key], options[key]);
+
+      if (options[key] === false) {
+        $.config[key] = false;
+      } else if (typeof options[key] === 'object') {
+        assign($.config[key], options[key]);
+      }
+
       delete options[key];
+
     }
   }
 
@@ -30,119 +43,168 @@ export function observers (options: IOptions) {
 }
 
 /**
+ * Selector Exclusion
+ *
+ * Omits observer qs from the query and applies a `false` to element qs.
+ */
+function not (attr: string, name: 'hover' | 'intersect' | 'proximity') {
+
+  const s = `:not([${attr}${name}=false]):not([${attr}link])`;
+
+  switch (name.charCodeAt(0)) {
+    case 104: return `${s}:not([${attr}proximity]):not([${attr}intersect])`;
+    case 105: return `${s}:not([${attr}hover]):not([${attr}proximity])`;
+    case 112: return `${s}:not([${attr}intersect]):not([${attr}hover])`;
+  }
+
+};
+
+/**
+ * Evaluators
+ *
+ * Constructs the query selectors used in resource evaluation. This
+ * is a curried caller, first call merges `eval` options, second assigns qs.
+ */
+function evaluators (options: IOptions, attr: string, disable: string) {
+
+  if ('eval' in options) {
+    if (options.eval) {
+      if (typeof options.eval === 'object') {
+        const e = assign<IEval, IEval>($.config.eval as IEval, options.eval);
+        $.eval = !(!e.link && !e.meta && !e.script && !e.style);
+      }
+    } else {
+      $.eval = false;
+    }
+  }
+
+  return (tag: LiteralUnion<'style' | 'script' | 'link' | 'meta', string>) => {
+
+    if ($.eval === false || $.config.eval[tag] === false) {
+      return `${tag}[${attr}eval]:${disable}`;
+    }
+
+    if ($.config.eval[tag] === true) {
+      return `${tag}:${disable}`;
+    }
+
+    const defaults = tag === 'link'
+      ? `${tag}[rel=stylesheet]:${disable}`
+      : tag === 'script'
+        ? `${tag}:${disable}:not([${attr}eval=hydrate])`
+        : `${tag}:${disable}`;
+
+    if ($.config.eval[tag] === null) return defaults;
+    if (isArray($.config.eval[tag] as string[])) {
+      if ($.config.eval[tag].length > 0) {
+        return $.config.eval[tag].map<string>((s: string) => `${s}:${disable}`).join(',');
+      } else {
+        log(Errors.WARN, `Missing eval ${tag} value, SPX will use defaults`);
+        return defaults;
+      }
+    }
+
+    log(Errors.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
+
+  };
+}
+/**
  * Initialize
  *
  * Connects store and intialized the workable state management model. Connect MUST be called
  * upon SPX initialization. This function acts as a class `constructor` establishing an instance.
  */
-export function configure (options: IOptions = {}) {
+export function configure (options: IOptions = o()) {
 
-  if (hasProp(options, 'components')) {
-    register(options.components);
+  patchSetAttribute();
+
+  defineProps($, {
+    ready: {
+      get () {
+        return document.readyState === 'complete';
+      }
+    },
+    types: {
+      get () {
+        return o({
+          INITIAL: 0,
+          PREFETCH: 1,
+          FETCH: 2,
+          PRELOAD: 3,
+          REVERSE: 4,
+          POPSTATE: 5,
+          VISIT: 6,
+          HYDRATE: 7,
+          CAPTURE: 8,
+          RELOAD: 9,
+          HOVER: 10,
+          INTERSECT: 11,
+          PROXIMITY: 12
+        });
+      }
+    }
+  });
+
+  if ('components' in options) {
+
+    registerComponents(options.components);
+
+    // We can dispose of the components passed on options
+    // as we assign them to the registry.
     delete options.components;
+
+    $.config.components = true;
+
+  } else {
+    $.config.components = false;
   }
 
   assign<IConfig, IOptions>($.config, observers(options));
 
-  if (hasProp(options, 'eval')) {
-    assign<IEval, IEval>($.config.eval, options.eval);
-  }
-
-  $.config.index = null;
-
   const schema = $.config.schema;
-  const attr = $.config.schema = schema === 'spx'
-    ? 'spx'
-    : schema.endsWith('-')
-      ? schema
-      : schema === null ? nil : `${schema}-`;
-
-  const href = `:not([${attr}disable]):not([href^="#"])`;
+  const attr = schema === 'spx' ? 'spx' : schema.endsWith('-') ? schema : schema === null ? nil : `${schema}-`;
+  const href = `:not([${attr}disable]):not([href^=\\#])`;
   const disable = `not([${attr}eval=false])`;
+  const evals = evaluators(options, attr, disable);
 
-  // qs
-  // Registers all the attribute a selector entries SPX will use
-
-  $.qs.$target = `${attr}target`;
-  $.qs.$morph = `${attr}morph`;
-  $.qs.$render = `${attr}render`;
-  $.qs.$eval = `[${attr}eval]:not([${attr}eval=false]):not(script)`;
-  $.qs.$attrs = new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i');
-  $.qs.$intersector = `[${attr}intersect]${not('intersect')}`;
-  $.qs.$track = `[${attr}track]:not([${attr}track=false])`;
-
-  $.qs.component.$attr = `${attr}component`;
-  $.qs.component.$node = `${attr}node`;
-  $.qs.component.$bind = `${attr}bind`;
-  $.qs.component.$find = new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i');
-  $.qs.component.$param = new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i');
-  $.qs.component.$ref = 'data-spx';
-
-  $.qs.tags.$href = $.config.annotate ? `a[${attr}link]${href}` : `a${href}`;
-  $.qs.tags.$script = evals('script');
-  $.qs.tags.$style = evals('style');
-  $.qs.tags.$link = evals('link');
-  $.qs.tags.$meta = evals('meta');
-
-  $.qs.script.$hydrate = `script[${attr}eval=hydrate]:not([${attr}eval=false])`;
-
-  $.qs.href.$data = `${attr}data:`;
-  $.qs.href.$proximity = `a[${attr}proximity]${href}${not('proximity')}`;
-  $.qs.href.$intersect = `a${href}${not('intersect')}`;
-  $.qs.href.$hover = $.config.hover !== false && $.config.hover.trigger === 'href'
-    ? `a${href}${not('hover')}`
-    : `a[${attr}hover]${href}${not('hover')}`;
-
-  // MEMORY
+  $.config.schema = attr;
+  $.config.index = null;
   $.memory.bytes = 0;
   $.memory.visits = 0;
   $.memory.limit = $.config.maxCache;
 
+  // qs
+  // Registers all the attribute a selector entries SPX will use
+  assign<ISelectors, ISelectors>($.qs, {
+    $attrs: new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i'),
+    $find: new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i'),
+    $param: new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i'),
+    $target: `${attr}target`,
+    $targets: `[${attr}target]:not([${attr}target=false])`,
+    $morph: `${attr}morph`,
+    $eval: `${attr}eval`,
+    $intersector: `[${attr}intersect]${not(attr, 'intersect')}`,
+    $track: `[${attr}track]:not([${attr}track=false])`,
+    $component: `${attr}component`,
+    $node: `${attr}node`,
+    $bind: `${attr}bind`,
+    $ref: 'data-spx',
+    $href: $.config.annotate ? `a[${attr}link]${href}` : `a${href}`,
+    $script: evals('script'),
+    $style: evals('style'),
+    $link: evals('link'),
+    $meta: evals('meta'),
+    $hydrate: `script[${attr}eval=hydrate]:${disable}`,
+    $resource: `link[rel=stylesheet][href*=\\.css]:${disable},script[src*=\\.js]:${disable}`,
+    $data: `${attr}data:`,
+    $proximity: `a[${attr}proximity]${href}${not(attr, 'proximity')}`,
+    $intersect: `a${href}${not(attr, 'intersect')}`,
+    $hover: $.config.hover !== false && $.config.hover.trigger === 'href'
+      ? `a${href}${not(attr, 'hover')}`
+      : `a[${attr}hover]${href}${not(attr, 'hover')}`
+  });
+
   // PROGRESS BAR
   progress.style($.config.progress);
 
-  /**
-   * Evaluators
-   *
-   * Constructs the qs for evaluation
-   */
-  function evals (tag: LiteralUnion<'style' | 'script' | 'link' | 'meta', string>) {
-
-    const defaults = tag === 'link'
-      ? `${tag}[rel=stylesheet]:${disable},${tag}[rel~=preload]:${disable}`
-      : tag === 'script'
-        ? `${tag}:${disable}:not([${attr}eval=hydrate])`
-        : `${tag}:${disable}`;
-
-    if ($.config.eval[tag] === false || $.config.eval[tag] === null) return defaults;
-    if ($.config.eval[tag] === true) return `${tag}[${attr}eval]:${disable}`;
-    if (isArray($.config.eval[tag] as string[])) {
-      if ($.config.eval[tag].length > 0) {
-        return $.config.eval[tag].map<string>((s: string) => `${s}:${disable}`).join(',');
-      } else {
-        log(Errors.WARN, `Missing eval ${tag} option, SPX will use defaults`);
-        return defaults;
-      }
-    }
-
-    log(Errors.TYPE, `Invalid eval ${tag} option, expected boolean or array`);
-
-  }
-
-  /**
-   * Selector Exclusion
-   *
-   * Omits observer qs from the query and
-   * applies a `false` to element qs.
-   */
-  function not (name: 'hover' | 'intersect' | 'proximity') {
-
-    const s = `:not([${attr}${name}=false]):not([${attr}link])`;
-
-    switch (name.charCodeAt(0)) {
-      case 104: return `${s}:not([${attr}proximity]):not([${attr}intersect])`;
-      case 105: return `${s}:not([${attr}hover]):not([${attr}proximity])`;
-      case 112: return `${s}:not([${attr}intersect]):not([${attr}hover])`;
-    }
-  };
 };
