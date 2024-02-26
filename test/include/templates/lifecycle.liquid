@@ -1,0 +1,76 @@
+<div
+  class="row mx-1"
+  spx-component="lifecycle"
+  spx-lifecycle:init="0"
+  spx-lifecycle:load="0"
+  spx-lifecycle:leave="0">
+  <div class="col-7 pr-1">
+    <div
+      class="row mt-b"
+      id="lifecycle">
+
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Foo Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.foo"></span>
+      </div>
+
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Bar Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.bar"></span>
+      </div>
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Bax Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.baz"></span>
+      </div>
+      <div class="col tc py-3 bd rd mr-0">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Qux Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.qux"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-7 pr-1">
+    <div class="row jc-center bt mt-4 py-3">
+      <div class="col-auto">
+        onInit Count:
+      </div>
+      <div class="col-auto">
+        <code
+          class="fs-md"
+          spx-bind="lifecycle.init"></code>
+      </div>
+      <div class="col-auto">
+        onLoad Count:
+      </div>
+      <div class="col-auto">
+        <code
+          class="fs-md"
+          spx-bind="lifecycle.load"></code>
+      </div>
+      <div class="col-auto">
+        onLeave Count:
+      </div>
+      <div class="col-auto">
+        <code
+          class="fs-md"
+          spx-bind="lifecycle.leave"></code>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+---
+title: 'Morphs - Page C'
+layout: index.liquid
+permalink: '/components/morphs/page-c/index.html'
+base: /components/morphs/
+---
+
+{% include 'header', title: 'Morphs - Page C' %}
+{% include 'pages', type: 'morphs', target: 'section' %}
+
+{% include 'templates/morphs' %}
+
+<section class="row bt mt-4 ml-1 py-3">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="update.reset">
+    Reset Counter
+  </button>
+
+  <input
+    type="text"
+    class="col-auto ml-3"
+    spx@input="update.labelInput">
+
+</section>

@@ -1,0 +1,34 @@
+---
+title: 'Alias'
+layout: index.liquid
+permalink: '/components/alias/index.html'
+---
+
+<div
+  id="example"
+  spx-component="basic"
+  spx-example:clicks="0">
+
+  <h4 class="fw-bold pb-3 mb-4 bb">
+    Alias Tests
+  </h4>
+
+  <p>
+    Click component which uses an alias identifier. It is the same component but uses the id reference as identifier.
+  </p>
+
+  <div class="row ai-center jc-start mb-5">
+    <button
+      class="col-auto fs-sm upper fw-bold ml-3"
+      type="button"
+      spx@click="example.button"
+      spx-example:foo="100"
+      spx-example:bar="string"
+      spx-example:bool="true">
+      Increment
+    </button>
+    <code
+      class="col-auto fs-lg"
+      spx-bind="example.clicks">0</code>
+  </div>
+</div>

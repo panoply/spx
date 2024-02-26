@@ -1,0 +1,42 @@
+<div class="row ai-center ml-1">
+  <div class="col-7 py-3 bg-ivory rd my-4 bd">
+    <ul class="list-pipe jc-center">
+      <li>
+        <a
+          href="/components/{{ type }}/"
+          {% if target %}
+            spx-target="{{ target }}"
+          {% endif %}
+          {% if page.url == "/components/{{ type }}/" %}
+            class="fw-bold"
+          {% endif %}>
+          Page A
+        </a>
+      </li>
+      <li>
+        <a
+          href="/components/{{ type }}/page-b/"
+          {% if target %}
+            spx-target="{{ target }}"
+          {% endif %}
+          {% if page.url == "/components/{{ type }}/page-b/" %}
+            class="fw-bold"
+          {% endif %}>
+          Page B
+        </a>
+      </li>
+      <li>
+        <a
+          href="/components/{{ type }}/page-c/"
+          {% if target %}
+            spx-target="{{ target }}"
+          {% endif %}
+          {% if page.url == "/components/{{ type }}/page-c/" %}
+            class="fw-bold"
+          {% endif %}>
+          Page C
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

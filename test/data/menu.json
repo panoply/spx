@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Components",
+    "links": [
+      {
+        "title": "Basic",
+        "url": "/components/basic/"
+      },
+      {
+        "title": "Alias",
+        "url": "/components/alias/"
+      },
+      {
+        "title": "Lifecycle",
+        "url": "/components/lifecycle/"
+      },
+      {
+        "title": "Morphs",
+        "url": "/components/morphs/"
+      }
+    ]
+  }
+]

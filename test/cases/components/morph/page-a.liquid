@@ -1,0 +1,21 @@
+---
+title: 'Morphs - Page A'
+layout: index.liquid
+permalink: '/components/morphs/page-a/index.html'
+base: /components/morphs/
+---
+
+{% include 'header', title: 'Morphs - Page A' %}
+{% include 'pages', type: 'morphs', target: 'section' %}
+{% include 'templates/morphs' %}
+
+<section class="row bt mt-4 ml-1 py-3">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="update.increment">
+    Increment Counter
+  </button>
+
+</section>

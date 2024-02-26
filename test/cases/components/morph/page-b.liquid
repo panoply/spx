@@ -1,0 +1,29 @@
+---
+title: 'Morphs - Page B'
+layout: index.liquid
+permalink: '/components/morphs/page-b/index.html'
+base: /components/morphs/
+---
+
+{% include 'header', title: 'Morphs - Page B' %}
+{% include 'pages', type: 'morphs', target: 'section' %}
+{% include 'templates/morphs' %}
+
+<section class="row bt mt-4 ml-1 py-3">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="update.decrement">
+    Decrement
+  </button>
+
+  <button
+    type="button"
+    class="col-auto ml-3"
+    spx@click="update.labelValue"
+    spx-update:text="Example Value!">
+    Update Label
+  </button>
+
+</section>
