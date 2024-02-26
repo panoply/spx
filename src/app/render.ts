@@ -1,122 +1,121 @@
+import type { IPage } from '../types/page';
 import { emit } from './events';
-import { evaljs } from '../observers/scripts';
-import { Errors, EventType } from '../shared/enums';
-import { d, o, toArray } from '../shared/native';
-import { log, onNextTick } from '../shared/utils';
-import { parse } from '../shared/dom';
-import { IPage } from '../types/page';
-import { $ } from './session';
-import * as store from './store';
-import * as hover from '../observers/hover';
-import * as intersect from '../observers/intersect';
-import * as components from '../observers/components';
+import { Errors, VisitType } from '../shared/enums';
+import { d, h, s } from '../shared/native';
+import { hasProp, onNextTick } from '../shared/utils';
+import { log } from '../shared/logs';
 import { progress } from './progress';
-import * as proximity from '../observers/proximity';
 import { morph } from '../morph/morph';
-
-/**
- * Node Positions
- */
-function nodePosition (a: Element, b: Element) {
-
-  return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING || -1;
-}
-
-/**
- * Script Nodes
- *
- * Executes `<script>` node javascript
- * evaluations and loading.
- */
-async function scriptNodes (target: Document, type?: EventType) {
-
-  const selector = type === EventType.HYDRATE
-    ? $.qs.script.$hydrate
-    : $.qs.tags.$script;
-
-  const scripts: HTMLScriptElement[] = toArray(target.querySelectorAll(selector));
-
-  // console.log(scripts, selector);
-
-  await evaljs(scripts.sort(nodePosition));
-
-}
-
-/**
- * Evaluator Nodes
- *
- * Injects and/or replaced all nodes contained in the `<head>`
- * element with an annotation of `spx-eval`
- */
-function evalNodes (target: Document) {
-
-  document.head.querySelectorAll($.qs.$evals).forEach(node => {
-    if (!target.head.contains(node)) node.remove();
-  });
-
-  document.head.append(...target.querySelectorAll($.qs.$evals));
-
-  // if ($.config.eval.style !== false) {
-  //   document.querySelectorAll($.qs.styles).forEach(node => {
-  //     if (!target.contains(node)) {
-  //       node.remove();
-  //     } else {
-  //       target.removeChild(node);
-  //     }
-  //   });
-
-  //   target.querySelectorAll($.qs.styles).forEach(node => {
-  //     document.head.appendChild(node);
-  //   });
-  // }
-
-  // if ($.config.eval.link !== false || $.config.eval.meta !== false) {
-
-  //   if ($.config.eval.meta !== false) {
-
-  //     document.head.querySelectorAll($.qs.metas).forEach(node => {
-  //       if (!target.head.contains(node)) node.remove();
-  //     });
-
-  //     document.head.append(...target.querySelectorAll($.qs.metas));
-
-  //   }
-
-  //   if ($.config.eval.link !== false) {
-
-  //     document.head.querySelectorAll($.qs.links).forEach(node => {
-  //       if (!target.head.contains(node)) node.remove();
-  //     });
-
-  //     document.head.append(...target.querySelectorAll($.qs.links));
-
-  //   }
-
-  // }
-
-}
-
+import { $ } from './session';
+import * as q from './queries';
+import * as hover from '../observe/hovers';
+import * as intersect from '../observe/intersect';
+import * as components from '../observe/components';
+import * as mutations from '../observe/mutations';
+import * as proximity from '../observe/proximity';
+import * as fragment from '../observe/fragment';
 /**
  * Tracked Nodes
  *
  * '[spx-track]:not([spx-track="hydrate"])'
  */
-function trackedNodes (target: HTMLElement): void {
+// function trackedNodes (target: HTMLElement): void {
 
-  if (!target) return;
+//   if (!target) return;
 
-  const tracking = target.querySelectorAll($.qs.$track);
+//   const tracking = target.querySelectorAll($.qs.$track);
 
-  if (tracking.length > 0) {
-    for (const node of tracking) {
-      if (!node.hasAttribute('id')) {
-        log(Errors.WARN, `Tracked node <${node.tagName.toLowerCase()}> must contain an id attribute`);
-      } else if (!$.tracked.has(node.id)) {
-        d().appendChild(node);
-        $.tracked.add(node.id);
+//   if (tracking.length > 0) {
+//     for (const node of tracking) {
+//       if (!node.hasAttribute('id')) {
+//         log(Errors.WARN, `Tracked node <${node.tagName.toLowerCase()}> must have id attribute`);
+//       } else if (!$.tracked.has(node.id)) {
+//         d().appendChild(node);
+//         $.tracked.add(node.id);
+//       }
+//     }
+//   }
+
+// }
+
+async function morphHead (head: HTMLHeadElement, target: HTMLCollection): Promise<PromiseSettledResult<void>[]> {
+
+  if (!$.eval || !head || !target) return;
+
+  const remove: Element[] = [];
+  const nodes = s<string>();
+  const { children } = head;
+
+  for (let i = 0, s = target.length; i < s; i++) {
+    nodes.add(target[i].outerHTML);
+  }
+
+  for (let i = 0, s = children.length; i < s; i++) {
+
+    const childNode = children[i];
+    const { nodeName, outerHTML } = childNode;
+
+    let evaluate: boolean = true;
+
+    if (nodeName === 'SCRIPT') {
+      evaluate = childNode.matches($.qs.$script);
+    } else if (nodeName === 'STYLE') {
+      evaluate = childNode.matches($.qs.$style);
+    } else if (nodeName === 'META') {
+      evaluate = childNode.matches($.qs.$meta);
+    } else if (nodeName === 'LINK') {
+      evaluate = childNode.matches($.qs.$link);
+    } else {
+      evaluate = head.getAttribute($.qs.$eval) !== 'false';
+    }
+
+    if (nodes.has(outerHTML)) {
+      if (evaluate) {
+        remove.push(childNode);
+      } else {
+        nodes.delete(outerHTML);
       }
+    } else {
+      remove.push(childNode);
     }
   }
+
+  const promises: Promise<void>[] = [];
+  const range = document.createRange();
+
+  for (const outerHTML of nodes) {
+
+    const node = range.createContextualFragment(outerHTML).firstChild;
+    const link: boolean = hasProp(node, 'href');
+
+    if (link || hasProp(node, 'src')) {
+
+      const promise = new Promise<void>(function (resolve) {
+
+        node.addEventListener('error', (e) => {
+          log(Errors.WARN, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
+          resolve();
+        });
+
+        node.addEventListener('load', () => resolve());
+
+      });
+
+      promises.push(promise);
+
+    }
+
+    head.appendChild(node);
+    nodes.delete(outerHTML);
+
+  }
+
+  for (let i = 0, s = remove.length; i < s; i++) {
+    head.removeChild(remove[i]);
+  }
+
+  await Promise.all<void>(promises);
+
 }
 
 /**
@@ -127,69 +126,49 @@ function trackedNodes (target: HTMLElement): void {
  * This function is also responsible for handling append,
  * prepend and tracked replacements of element in the dom.
  */
-function renderNodes (page: IPage, target: Document) {
+function morphNodes (page: IPage, target: Document) {
 
-  const nodes = page.target;
+  const pageDom = d();
+  const snapDom = target.body;
 
-  if (nodes.length === 1 && nodes[0] === 'body') {
+  if (page.selector === 'body') {
 
-    morph(d(), target.body);
+    morph(pageDom, snapDom);
 
   } else {
 
-    const selectors = `${nodes.join(',')},[${$.qs.$target}]`;
-    const newNodes = target.body.querySelectorAll<HTMLElement>(selectors);
+    const newNodes = snapDom.querySelectorAll<HTMLElement>(page.selector);
 
     if (newNodes.length === 0) {
 
-      log(Errors.WARN, `Unmatched targets, applied <body> replacement on: ${page.key}`);
-      d().replaceWith(target.body);
+      log(Errors.WARN, `Unmatched targets on ${page.key}, applied <body> morph fallback.`, page.target);
+      morph(pageDom, snapDom);
 
     } else {
 
-      const oldNodes = d().querySelectorAll<HTMLElement>(selectors);
-      const decends: Array<HTMLElement> = [];
+      const domNodes = pageDom.querySelectorAll<HTMLElement>(page.selector);
 
-      if (oldNodes.length !== newNodes.length) {
-        log(Errors.WARN, `Target mismatch, fallback visit applies: ${page.key}`);
-        return location.assign(page.key);
-      }
+      if (domNodes.length !== newNodes.length) {
 
-      for (let i = 0, s = oldNodes.length; i < s; i++) {
+        log(Errors.WARN, 'Targets mismatch, applied <body> morph ~ ensure fragments match between visits!');
+        morph(pageDom, snapDom);
 
-        const oldNode = oldNodes[i];
-        const newNode = newNodes[i];
+      } else {
 
-        if (!newNode) continue;
-        if (oldNode.isEqualNode(newNode)) continue;
-        if (!emit('render', oldNode, newNode)) continue;
+        for (let i = 0, s = domNodes.length; i < s; i++) {
 
-        const attrTarget = newNode.getAttribute($.qs.$target);
+          const oldNode = domNodes[i];
+          const newNode = newNodes[i];
 
-        if (attrTarget === '' || attrTarget === 'true') {
-          if (decends.some(node => node.contains(oldNode))) continue;
-        } else {
-          decends.push(oldNode);
-        }
+          if (!newNode) continue;
+          if (!emit('render', oldNode, newNode)) continue;
+          if (oldNode.isEqualNode(newNode)) continue;
 
-        morph(oldNode, newNode);
+          morph(oldNode, newNode);
 
-        if (page.append || page.prepend) {
-          const fragment = document.createElement('div');
-          for (const childNode of target.childNodes) fragment.appendChild(childNode);
-          if (page.append) {
-            oldNode.appendChild(fragment);
-          } else {
-            oldNode.insertBefore(fragment, oldNode.firstChild);
-          }
         }
       }
     }
-
-    console.log(components);
-
-    trackedNodes(target.body);
-
   }
 
 }
@@ -203,7 +182,7 @@ function renderNodes (page: IPage, target: Document) {
  * will be swapped out via `innerHTML` to prevent missing replacements
  * for occuring.
  */
-function hydrateNodes (state: IPage, target: Document): void {
+function morphHydrate (state: IPage, target: Document): void {
 
   const nodes = state.hydrate;
 
@@ -213,7 +192,7 @@ function hydrateNodes (state: IPage, target: Document): void {
   }
 
   const selector = nodes.join(',');
-  const oldNodes = d().querySelectorAll<HTMLElement>(selector);
+  const domNodes = d().querySelectorAll<HTMLElement>(selector);
   const preserve = state.preserve && state.preserve.length > 0 ? state.preserve.join(',') : null;
   const skipped: HTMLElement[] = [];
 
@@ -223,19 +202,19 @@ function hydrateNodes (state: IPage, target: Document): void {
 
     for (let i = 0, s = skipNodes.length; i < s; i++) {
       const skipNode = skipNodes[i];
-      skipNode.setAttribute('spx-morph', 'false');
+      skipNode.setAttribute($.qs.$morph, 'false');
       skipped.push(skipNode);
     }
 
   }
 
-  if (oldNodes.length > 0) {
+  if (domNodes.length > 0) {
 
     const newNodes = target.body.querySelectorAll<HTMLElement>(selector);
 
-    for (let i = 0, s = oldNodes.length; i < s; i++) {
+    for (let i = 0, s = domNodes.length; i < s; i++) {
 
-      const oldNode = oldNodes[i];
+      const oldNode = domNodes[i];
       const newNode = newNodes[i];
 
       if (newNodes[i] instanceof HTMLElement) {
@@ -252,33 +231,17 @@ function hydrateNodes (state: IPage, target: Document): void {
     }
   }
 
-  scriptNodes(target, EventType.HYDRATE);
+  // scriptNodes(target, VisitType.HYDRATE);
 
   state.hydrate = undefined;
   state.preserve = undefined;
-  state.type = EventType.VISIT;
+  state.type = VisitType.VISIT;
 
-  store.update(state);
+  q.update(state);
 
-  // store.purge(state.key);
+  // q.purge(state.key);
 
 }
-
-// function updateSnapshot (state: IPage) {
-
-//   const { page, dom } = store.dom(state);
-
-//   if (page.target.length === 1 && page.target[0] === 'body') {
-//     dom.body.replaceChildren(d());
-//   } else {
-//     const selector = page.target.join(',');
-//     const current = d().querySelectorAll<HTMLElement>(selector);
-//     dom.querySelectorAll<HTMLElement>(selector).forEach((node, i) => morph(node, current[i]));
-//   }
-
-//   $.snaps[page.uuid] = dom.documentElement.innerHTML;
-
-// }
 
 /**
  * Update the DOM and execute page adjustments
@@ -289,28 +252,30 @@ export function update (page: IPage): IPage {
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
+  mutations.disconnect();
   components.disconnect();
 
-  document.title = page.title;
+  if (!$.eval) document.title = page.title;
 
-  const target = parse($.snaps[page.uuid]);
+  const snapDom = q.getSnapDom(page.snap);
 
-  if (page.type === EventType.HYDRATE) {
-    hydrateNodes(page, target);
+  if (page.type === VisitType.HYDRATE) {
+    morphHydrate(page, snapDom);
   } else {
-    evalNodes(target);
-    renderNodes(page, target);
-    scriptNodes(target, page.type);
+    morphHead(h(), snapDom.head.children);
+    morphNodes(page, snapDom);
     scrollTo(page.scrollX, page.scrollY);
   }
 
   progress.done();
 
   onNextTick(() => {
+    fragment.connect();
     hover.connect();
     intersect.connect();
     proximity.connect();
     components.connect();
+    mutations.connect();
   });
 
   emit('load', page);
