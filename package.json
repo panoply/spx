@@ -50,23 +50,19 @@
   },
   "ava": {
     "files": [
-      "./test/route.test.js"
-    ],
-    "require": [
-      "./test/__browser.js"
+      "./test/dom/connect.test.mjs"
     ]
   },
   "devDependencies": {
     "@sissel/eslint-config": "^1.2.1",
     "@sissel/prettier-config": "^1.2.5",
-    "ava": "^6.0.1",
+    "ava": "^6.1.1",
     "browser-env": "^3.3.0",
     "detect-it": "^4.0.1",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.20.0",
     "gzip-size-cli": "^5.1.0",
-    "terser": "^5.27.0",
     "tsup": "^8.0.1",
-    "type-fest": "^4.9.0",
+    "type-fest": "^4.10.2",
     "typescript": "^5.3.3"
   },
   "scripts": {
@@ -77,7 +73,7 @@
   },
   "optionalDependencies": {
     "eslint": "^8.56.0",
-    "prettier": "^3.2.4"
+    "prettier": "^3.2.5"
   },
   "dependencies": {
     "idiomorph": "^0.3.0"
