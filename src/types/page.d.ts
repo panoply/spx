@@ -1,4 +1,6 @@
-import type { EventType } from '../shared/enums';
+// eslint-disable-next-line no-unused-vars
+import type { IComponent } from './components';
+import type { VisitType } from '../shared/enums';
 
 /**
  * Cache Size
@@ -74,20 +76,25 @@ export interface IResource {
  * the configuration object is generated in a immutable manner.
  */
 export interface IPage<T = any> {
+
   /**
    * UUID reference to the page snapshot HTML Document element
    */
-  uuid: string;
+  snap: string;
+
   /**
-   * The session identifier. This is used to determine the
-   * connection digest. It is a random 4 digit number. When
-   * using a `persisted` session this is the id used by the
-   * session storage and other internal logic.
+   * Controls the history pushstate for the navigation. Accepts a boolean
+   * `true`, `false` or `replace` or `push` value and wil default to using `true`
+   * which instructs SPX to perform a normal visit.
    *
-   * @example
-   * 1001
+   * - Passing in `false` will prevent the navigation from being added to history.
+   * - Passing in `replace` will apply `history.replaceState`
+   * - Passing in `push` will apply `history.pushState` but this is the default.
+   *
+   * @default true
    */
-  session: string;
+  history: boolean | 'replace' | 'push';
+
   /**
    * The number of visits made to this page
    *
@@ -95,6 +102,7 @@ export interface IPage<T = any> {
    * 1
    */
   visits: number;
+
   /**
    * The fetched  timestamp in milliseconds since Unix [epoch](https://en.wikipedia.org/wiki/Unix_time).
    * This is applied directly after a fetch concludes.
@@ -103,6 +111,7 @@ export interface IPage<T = any> {
    * 1704339762665
    */
   ts: number;
+
   /**
    * Passed data from `spx-data:prop=""` attributes. Data can be passed via link elements using
    * the following format:
@@ -133,6 +142,10 @@ export interface IPage<T = any> {
    *
    *});
    *```
+   *
+   * ---
+   *
+   * @default undefined
    */
   data: T;
   /**
@@ -151,16 +164,19 @@ export interface IPage<T = any> {
    * '/pathname' OR '/pathname?foo=bar'
    */
   rev: string;
+
   /**
    * A store type number reference which determines how the
    * record was saved. Used by events and internally
    */
-  type: EventType;
+  type: VisitType;
+
   /**
    * The Document title. The value is written in the post-request
    * cycle before caching occurs.
    */
   title: string;
+
   /**
    * Scroll X position of the next navigation, this field
    * will be updated according to history, which means
@@ -169,6 +185,7 @@ export interface IPage<T = any> {
    * - `x` - Equivalent to `scrollLeft` in pixels
    */
   scrollX: number;
+
   /**
    * Scroll Y position of the next navigation, this field
    * will be updated according to history, which means
@@ -177,11 +194,13 @@ export interface IPage<T = any> {
    * - `y` - Equivalent to `scrollTop` in pixels
    */
   scrollY: number;
+
   /**
    * Location Records reference. This holds a parsed path
    * reference of the page.
    */
   location: ILocation;
+
   /**
    * Controls the caching engine for the link navigation.
    * Option is enabled when `cache` preset config is `true`.
@@ -192,6 +211,7 @@ export interface IPage<T = any> {
    * @default true
    */
   cache: boolean | 'reset' | 'clear' | 'restore' | 'update';
+
   /**
    * List of additional fragment element selectors to target in the
    * render cycle. Accepts any valid `querySelector()` string.
@@ -202,19 +222,28 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   target: string[];
+
+  /**
+   * The element selector to use when targeting fragments between page visits.
+   * This value will apply a `join(',')` of `page.target[]` entries. When no
+   * `spx-target="[]"` is defined, then `fragments[]` are applied.
+   */
+  selector: string;
+
   /**
    * Progress bar threshold delay.
    *
    * @default 350
    */
   progress?: boolean | number;
+
   /**
-   * Threshold timeout to be applied to `proximity` or `hover`
-   * prefetch operations.
+   * Threshold timeout to be applied to `proximity` or `hover` prefetch operations.
    *
    * @default 100
    */
   threshold?: number;
+
   /**
    * List of fragments to replace. When `hydrate` is used,
    * it will run precedence over `targets` and only execute
@@ -224,6 +253,7 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   hydrate?: string[];
+
   /**
    * List of fragments to preserve during morph. This is typically used
    * on `hydrate` and it will mimic `spx-morph="false"`
@@ -232,6 +262,7 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   preserve?: string[];
+
   /**
    * List of fragments to be appened from and to. Accepts multiple.
    *
@@ -239,6 +270,7 @@ export interface IPage<T = any> {
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
   append?: Array<[from: string, to: string]>;
+
   /**
    * List of fragments to be prepend from and to. Accepts multiple.
    *
@@ -246,6 +278,7 @@ export interface IPage<T = any> {
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
   prepend?: Array<[from: string, to: string]>;
+
   /**
    * Define proximity prefetch distance from which fetching should
    * begin. This value is relative to the cursor offset of defined
@@ -254,10 +287,9 @@ export interface IPage<T = any> {
    * @default 75
    */
   proximity?: number;
+
   /**
-   * Index references of components
-   *
-   * @default { [] }
+   * Component instances which belong to this page.
    */
-  components?: string[]
+  components?: string[];
 }

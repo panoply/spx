@@ -96,7 +96,7 @@ export interface IProgress {
    *
    * @default 3px
    */
-  barHeight?: `${string}px`;
+  barHeight?: `${number}px`;
   /**
    * Changes the minimum percentage used upon starting.
    *
@@ -140,24 +140,40 @@ export interface IProgress {
 
 export interface IEval {
   /**
-   * Whether or not `<script>` and/or `<script src="*">` tags should evaluate
-   * between page visits.
+   * #### Script Evalution
    *
-   * This option accepts either a boolean or list of selectors. By default, SPX
-   * will evaluate all inline `<script>` tags but will not evaluate `<script src="">`
-   * tags. Setting this to `true` is discouraged and you should instead leverage
-   * attribute annotations for external scripts.
+   * Control how `<script>` and `<script src="*">` tag evaluation should be handled.
+   * This option accepts either a `boolean` or a list of selectors. By default, SPX will
+   * evaluate all inline `<script>` tags on a per-page basis, but will only evalute linked
+   * `<script src=".">` tags once. Refer to [Resource Evaluation](https://spx.js.org/introduction/resource-evalution)
+   * documentation for a more detailed overview of how SPX handles scripts.
    *
-   * > **NOTE**
+   * The following values are accepted:
+   *
+   * > **`string[]`** (default)
    * >
-   * > Passing a `string[]` list will overwrite defaults
+   * > Evaluates scripts with attributes that match the provided selectors. The `spx-eval` directive can
+   * > still be used to override and perform evaluation. Please note, that passing `string[]` selectors
+   * > will override the defaults.
+   *
+   * > **`true`**
+   * >
+   * > In cases where you require re-evalution of all `<script>` tag occurances, use `true`.
+   * > The `spx-eval` directive can still be used as an override.
+   *
+   * > **`false`**
+   * >
+   * > Prevents script evalution from occurring between visits. The `spx-eval` directive can
+   * > still be used to override and perform evaluation.
    *
    * ---
+   *
    * @default ['script:not(script[src])']
    */
   script?: string[] | boolean;
-
   /**
+   * #### Style Evalution
+   *
    * Whether or not `<style>` and/or `<link rel="stylesheet">` tags should
    * evaluate between page visits.
    *
@@ -175,23 +191,24 @@ export interface IEval {
    * @default ['style']
    */
   style?: string[] | boolean;
-
   /**
-   * Whether or not `<meta>` tags should evaluate between page visits.
+   * #### Meta Evalution
    *
-   * This option accepts either a boolean or list of selectors. By default, SPX
-   * ignores `<meta>` tag evaluation. Setting this to `true` is discouraged.
+   * Whether or not `<meta>` tags should evaluate between page visits. This option accepts
+   * either a boolean or list of selectors. By default, SPX ignores `<meta>` tag evaluation.
+   * Setting this to `true` is discouraged, given that meta type tags are typically not of
+   * importance.
    *
    * ---
    * @default false
    */
   meta?: string[] | boolean;
-
   /**
-   * Whether or not `<link>` tags should evaluate between page visits.
+   * #### Link Evalution
    *
-   * This option accepts either a boolean or list of selectors. By default, SPX
-   * evaluates `<link rel="preload">` and `<link rel="stylesheet"` elements only.
+   * Whether or not `<link>` tags should evaluate between page visits. This option accepts
+   * either a boolean or list of selectors. By default, SPX evaluates `<link rel="preload">`
+   * and `<link rel="stylesheet">` occurances, which are typically of
    *
    * > **NOTE**
    * >
@@ -199,6 +216,7 @@ export interface IEval {
    * > passing a `string[]` list will overwrite defaults.
    *
    * ---
+   *
    * @default ['link[rel=stylesheet]', 'link[rel~=preload]']
    */
   link?: string[] | boolean;
@@ -208,7 +226,7 @@ export interface IEval {
 export interface IObserverOptions {
 
   /**
-   * **SPX Hover**
+   * #### SPX Hover
    *
    * Mouseover prefetching. You can disable mouseover (hover) prefetching by setting this
    * to `false` otherwise you can customize the fetching behaviour. To use the default behaviour,
@@ -225,7 +243,7 @@ export interface IObserverOptions {
   hover?: boolean | IHover;
 
   /**
-   * **SPX Intersect**
+   * #### SPX Intersect
    *
    * Intersection pre-fetching. Intersect prefetching leverages the
    * [Intersection Observer](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
@@ -246,7 +264,7 @@ export interface IObserverOptions {
    */
   intersect?: boolean | IIntersect;
   /**
-   * **SPX Proximity**
+   * #### SPX Proximity
    *
    * Proximity pre-fetching allow for requests to be dispatched when the cursor is within
    * a proximity range of a href link element. Coupling proximity with mouseover prefetches
@@ -268,7 +286,7 @@ export interface IObserverOptions {
 
 export interface IOptions extends IObserverOptions {
   /**
-   * **SPX Schema**
+   * #### SPX Schema
    *
    * Controls the data attribute selector schema. By default, attributes and directives use a
    * a `spx-` prefix annotation identifier. Setting this to a value of `null` will instruct
@@ -276,7 +294,7 @@ export interface IOptions extends IObserverOptions {
    *
    * ---
    *
-   * **Examples**
+   * #### Examples
    *
    * ```js
    * // Default usage, value set to "spx"
@@ -298,8 +316,9 @@ export interface IOptions extends IObserverOptions {
    *
    */
   schema?: string;
+
   /**
-   * **SPX Global**
+   * #### SPX Global
    *
    * Whether or not the SPX connection should be made available in globalThis (e.g: `window.spx`) scope.
    *
@@ -309,12 +328,22 @@ export interface IOptions extends IObserverOptions {
    *
    * ---
    *
+   * **Example**
+   *
+   * ```js
+   *
+   * window.spx // => Returns API methods
+   *
+   * ```
+   *
+   * ---
+   *
    * @default true
    *
    */
   globalThis?: boolean;
   /**
-   * **SPX Log Level**
+   * #### SPX Log Level
    *
    * Controls information printed to `console`. By default, SPX will print info, warnings and errors
    * to the browser console (i.e: `2`) but you may require additional context in development mode and
@@ -344,7 +373,7 @@ export interface IOptions extends IObserverOptions {
    */
   logLevel?: 1 | 2 | 3 | 4;
   /**
-   * **SPX Manual**
+   * #### SPX Manual
    *
    * Whether or not you want to manually invoke observers. This defaults
    * to `false` resulting in all pre-fetch and related interception observers
@@ -359,18 +388,15 @@ export interface IOptions extends IObserverOptions {
    */
   manual?: boolean;
   /**
-   * **SPX Manual**
+   * #### SPX Resource Evaluations
    *
    * Control evaluation of specific tags which either refer to resources or
    * control DOM behaviour. These are _typically_ tags located in the `<head>`
    * region of documents.
-   *
-   * This option behaves similar to `spx-eval` with the difference
-   * being that it can be used instead of attributes annotations.
    */
-  eval?: IEval;
+  eval?: boolean | IEval;
   /**
-   * **SPX Fragments**
+   * #### SPX Fragments
    *
    * Define a set of page fragments (nodes) that are expected to change between navigations.
    * By default, SPX will swap the entire `<body>` fragment, but it is **highly recommended**
@@ -382,7 +408,7 @@ export interface IOptions extends IObserverOptions {
    */
   fragments?: string[];
   /**
-   * **SPX Timeout**
+   * #### SPX Timeout
    *
    * The timeout limit that **OTW** (over the wire) XHR requests. When the timeout limit is
    * exceeded a normal page visit will be carried out.
@@ -393,7 +419,7 @@ export interface IOptions extends IObserverOptions {
    */
   timeout?: number;
   /**
-   * **SPX Annotate**
+   * #### SPX Annotate
    *
    * When `true` SPX visits will only trigger on `<a>` href elements annotated with an `spx`
    * attribute. When set to `false`, SPX will trigger on all `<a>` link elements, excluding
@@ -405,7 +431,7 @@ export interface IOptions extends IObserverOptions {
    */
   annotate?: boolean;
   /**
-   * **SPX Cache**
+   * #### SPX Cache
    *
    * Enable or Disable snapshot caching. Each page visit request is cached and used in
    * subsequent visits to the same location. When **cache** is disabled (i.e: `false`),
@@ -422,7 +448,7 @@ export interface IOptions extends IObserverOptions {
    */
   cache?: boolean;
   /**
-   * **SPX Max Cache**
+   * #### SPX Max Cache
    *
    * Maximum cache (snapshot) size limit. SPX limits cache to `100mb` and when size
    * is exceeded, the snapshot records will be removed starting from the earliest point
@@ -434,7 +460,7 @@ export interface IOptions extends IObserverOptions {
    */
   maxCache?: number;
   /**
-   * **SPX Preload**
+   * #### SPX Preload
    *
    * Anticipatory pre-loading (pre-fetches). Entries defined here will be fetched
    * pre-emptively and saved to cache either upon SPX Connection (i.e: `DOMContentLoaded`)
@@ -446,12 +472,41 @@ export interface IOptions extends IObserverOptions {
    *
    * ---
    *
+   * #### Example
+   *
+   * ```js
+   * // OPTION 1 - Preloading a list of routes
+   * spx.connect({
+   *  preload: [ '/path/foo', '/path/bar', '/path/baz']
+   * })
+   *
+   * // OPTION 2 - Preloading routes when page has been visited
+   * spx.connect({
+   *  preload: {
+   *    '/path/foo': ['/path/to/bar', '/path/to/baz'],
+   *    '/path/qux': ['/path/to/xxx']
+   *  }
+   * })
+   * ```
+   * ---
+   *
    * @default null
    *
    */
-  preload?: Key[] | { [key: Key]: Key[] }
+  preload?: Key[] | { [key: Key]: Key[] };
   /**
-   * **SPX Progress**
+   * #### SPX Reverse Fetch
+   *
+   * Whether or not SPX should apply reverse fetching upon connection. If history state holds an SPX reference
+   * then a reverse fetch is carried out on the last known (backward) location.
+   *
+   * ---
+   *
+   * @default true
+   */
+  reverse?: boolean;
+  /**
+   * #### SPX Progress
    *
    * Progress Bar configuration options. The SPX progress bar is dynamically rendered to the DOM.
    * This option allows you to customize its CSS style and the rendering rules to be applied. Setting
@@ -463,11 +518,37 @@ export interface IOptions extends IObserverOptions {
    * @default true
    */
   progress?: boolean | IProgress;
-
   /**
-   * **SPX Components**
+   * #### SPX Components
    *
-   * Pass SPX Component classes
+   * SPX Components to be registered. This option is an `object` and expects raw classes to
+   * be provided. Refer to [components](https://spx.js.org/components/structure) documentation.
+   *
+   * ---
+   *
+   * #### Example
+   *
+   * ```js
+   * import { Foo } from './components/foo';
+   * import { Bar } from './components/bar';
+   *
+   * spx.connect({
+   *
+   *  // Both Foo and Bar are class exports, for example:
+   *  //
+   *  // 1. export class Foo extends spx.Component {}
+   *  // 2. export class Bar extends spx.Component {}
+   *  //
+   *  // Do not intialize or pass instances, raw classes
+   *  // will be added to the components registry.
+   *  //
+   *  //
+   *  components: { Foo, Bar }
+   * })
+   * ```
+   * ---
+   *
+   * @default null
    */
   components?: { [identifier: string]: any }
 

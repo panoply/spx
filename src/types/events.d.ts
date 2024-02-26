@@ -13,6 +13,8 @@ export type EventNames = (
  | 'fetch'
  | 'before:cache'
  | 'after:cache'
+ | 'before:resource'
+ | 'after:resource'
  | 'hydrate'
  | 'render'
  | 'load'
@@ -30,8 +32,7 @@ export type EmitterArguments<T extends EventNames> = (
   ] :
   T extends 'popstate' ? [
     {
-      get dom(): Document;
-      get page(): IPage
+      state: IPage
     }
   ] :
   T extends 'prefetch' ? [
@@ -57,6 +58,9 @@ export type EmitterArguments<T extends EventNames> = (
   T extends 'render' ? [
     element: Element,
     newElement: Element
+  ] :
+  T extends 'before:resource' ? [
+    node: Element
   ] :
   T extends 'load' ? [
     state: IPage
@@ -86,14 +90,11 @@ export type LifecycleEvent<T extends EventNames> = (
   ) => void | false :
   T extends 'popstate' ? (
     /**
-     * The document reference
+     * Page state reference
      */
-    params?: {
-      get dom(): Document;
-      get page(): IPage
-    }
+    state?: IPage
 
-  ) => HTMLElement | Document | void :
+  ) => string[] | void:
 
   T extends 'prefetch' ? (
     /**

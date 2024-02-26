@@ -10,6 +10,20 @@ export * as default from './methods';
 
 declare global {
 
+  interface Element {
+    /**
+     * Morph Related (Virtual DOM)
+     */
+    actualize?:(element: Node) => Element
+  }
+
+  interface HTMLElement {
+    /**
+     * SPX Specific Element
+     */
+    spx?: Set<string>
+  }
+
   interface History extends HistoryAPI {}
 
   interface Window {
