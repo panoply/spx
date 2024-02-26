@@ -1,42 +1,29 @@
-import { LiteralUnion } from 'type-fest';
-import { IConfig, IPage } from 'types';
-import { defineGetter, forNode, hasProp, log, size } from './shared/utils';
+import type { LiteralUnion } from 'type-fest';
+import type { IConfig, IPage } from 'types';
+import { log } from './shared/logs';
+import { defineGetter, forNode, hasProp, size } from './shared/utils';
 import { $ } from './app/session';
 import { configure } from './app/config';
-import { getRoute, getKey } from './app/location';
-import { Errors, EventType } from './shared/enums';
-import { assign, d, isArray, isBrowser, o, origin } from './shared/native';
+import { getRoute } from './app/location';
+import { Errors, VisitType } from './shared/enums';
+import { assign, d, defineProps, isArray, isBrowser, o, origin } from './shared/native';
 import { initialize, disconnect, observe } from './app/controller';
-import { clear } from './app/store';
-import * as store from './app/store';
-import * as hrefs from './observers/hrefs';
-import * as request from './app/fetch';
-import * as renderer from './app/render';
-import * as history from './observers/history';
+import { clear } from './app/queries';
 import { on, off } from './app/events';
 import { morph } from './morph/morph';
 import { Component } from './components/extends';
-import { register } from './components/register';
-
-export function Decorator () {
-
-}
-
-/**
- * Supported
- */
-const supported = !!(
-  isBrowser &&
-  window.history.pushState &&
-  window.requestAnimationFrame &&
-  window.addEventListener &&
-  window.DOMParser &&
-  window.Proxy
-);
+import { registerComponents, getComponentIdentifier } from './components/register';
+import { takeSnapshot } from './shared/dom';
+import * as q from './app/queries';
+import * as hrefs from './observe/hrefs';
+import * as request from './app/fetch';
+import * as renderer from './app/render';
+import * as history from './observe/history';
+import * as components from './observe/components';
 
 const spx = o({
+  $,
   Component,
-  supported,
   on,
   off,
   observe,
@@ -45,7 +32,6 @@ const spx = o({
   form,
   render,
   session,
-  state,
   reload,
   fetch,
   clear,
@@ -54,6 +40,14 @@ const spx = o({
   visit,
   disconnect,
   register,
+  get config () { return $.config; },
+  supported: !!(
+    isBrowser &&
+    window.history.pushState &&
+    window.requestAnimationFrame &&
+    window.DOMParser &&
+    window.Proxy
+  ),
   history: o({
     get state () { return history.api.state; },
     api: history.api,
@@ -61,22 +55,19 @@ const spx = o({
     replace: history.replace,
     has: history.has,
     reverse: history.reverse
-  }),
-  get config () {
-    return $.config;
-  }
+  })
 });
 
 /**
  * Connect SPX
  */
-function connect (options: IConfig = {}, ...components: any[]) {
+function connect (options: IConfig = {}) {
 
   if (isBrowser === false) {
     return log(Errors.ERROR, 'Invalid runtime environment: window is undefined.');
   }
 
-  if (!supported) {
+  if (!spx.supported) {
     return log(Errors.ERROR, 'Browser does not support SPX');
   }
 
@@ -106,73 +97,80 @@ function connect (options: IConfig = {}, ...components: any[]) {
       callback(state);
     }
 
-    log(Errors.INFO, 'Connection Established ⚡');
+    log(Errors.INFO, 'Connection Established');
 
   };
 
 };
+
+function register (...classes: any[]) {
+
+  if (typeof classes[0] === 'string') {
+
+    if (classes.length > 2) {
+      log(Errors.ERROR, [
+        `Named component registration expects 2 parameters, recieved ${classes.length}.`,
+        'Registry should follow this structure: spx.register("identifer", YourComponent)'
+      ], classes);
+    }
+
+    registerComponents({ [components[0]]: classes[1] });
+
+  } else {
+
+    for (const component of classes) {
+      if (isArray(component)) {
+        for (const item of component) {
+          if (typeof item[0] === 'string') {
+            registerComponents({ [item[0]]: item[1] });
+          } else if (typeof item === 'function') {
+            registerComponents({ [getComponentIdentifier(item)]: item });
+          }
+        }
+      } else {
+        const type = typeof component;
+        if (type === 'function') {
+          registerComponents({ [getComponentIdentifier(component)]: component });
+        } else if (type === 'object') {
+          registerComponents(component);
+        }
+      }
+    }
+  }
+
+  if ($.ready) {
+    if (!$.config.components) {
+      components.connect();
+      $.config.components = true;
+    }
+  }
+
+}
 
 /**
  * Session
  *
  * Returns the current SPX session
  */
-function session (key?: string, update?: object) {
+function session () {
 
-  if (key) {
-    if (update) {
-      if (key === 'config') configure(update);
-      if (key === 'observe') assign($.observe, update);
-    } else {
-      if (key === 'config') return $.config;
-      if (key === 'observe') return $.observe;
-      if (key === 'components') return $.components;
-      if (key === 'pages') return $.pages;
-      if (key === 'snaps') return $.snaps;
-      if (key === 'memory') return size($.memory.bytes);
+  return defineProps(o(), {
+    config: { get () { return $.config; } },
+    snaps: { get () { return $.snaps; } },
+    pages: { get () { return $.pages; } },
+    observers: { get () { return $.observe; } },
+    components: { get () { return $.components; } },
+    fragments: { get () { return $.fragments; } },
+    memory: {
+      get () {
+        const memory = $.memory;
+        memory.size = size(memory.bytes);
+        return memory;
+      }
     }
-  }
-
-  return {
-    config: $.config,
-    snaps: $.snaps,
-    pages: $.pages,
-    observers: $.observe,
-    components: $.components,
-    get memory () {
-      const memory = $.memory;
-      memory.size = size(memory.bytes);
-      return memory;
-    }
-  };
+  });
 
 }
-
-/**
- * State Record
- *
- * Returns page state
- */
-function state (key?: string | object, update?: object) {
-
-  if (key === undefined) return store.get();
-
-  if (typeof key === 'string') {
-
-    const k = getKey(key);
-
-    if (!store.has(k)) log(Errors.ERROR, `No store exists at: ${k}`);
-
-    const record = store.get(k);
-
-    return update !== undefined
-      ? store.update(assign(record.page, update))
-      : record;
-  }
-
-  if (typeof key === 'object') return store.update(key as IPage);
-
-};
 
 /**
  * Reload
@@ -182,7 +180,7 @@ function state (key?: string | object, update?: object) {
 async function reload () {
 
   const state = $.pages[history.api.state.key];
-  state.type = EventType.RELOAD;
+  state.type = VisitType.RELOAD;
   const page = await request.fetch(state);
 
   if (page) {
@@ -201,7 +199,7 @@ async function reload () {
  */
 async function fetch (url: string) {
 
-  const link = getRoute(url, EventType.FETCH);
+  const link = getRoute(url, VisitType.FETCH);
 
   if (link.location.origin !== origin) {
     log(Errors.ERROR, 'Cross origin fetches are not allowed');
@@ -232,7 +230,7 @@ async function render (url: string, pushState: 'intersect' | 'replace' | 'push',
   if (pushState === 'replace') {
 
     page.title = dom.title;
-    const state = store.update(assign(page, route), dom.documentElement.outerHTML);
+    const state = q.update(assign(page, route), takeSnapshot(dom));
 
     history.replace(state);
 
@@ -240,7 +238,7 @@ async function render (url: string, pushState: 'intersect' | 'replace' | 'push',
 
   } else {
 
-    return renderer.update(store.set(route, dom.documentElement.outerHTML));
+    return renderer.update(q.set(route, takeSnapshot(dom)));
 
   }
 
@@ -248,29 +246,28 @@ async function render (url: string, pushState: 'intersect' | 'replace' | 'push',
 
 function capture (targets?: string[]) {
 
-  const state = store.get();
+  const page = q.getPage();
 
-  if (!state) return;
+  if (!page) return;
 
-  const { page, dom } = state;
+  const dom = q.getSnapDom();
 
   targets = isArray(targets) ? targets : page.target;
 
   if (targets.length === 1 && targets[0] === 'body') {
-    dom.body.replaceChildren(document.body);
-    store.update(page, dom.documentElement.innerHTML);
+    morph(dom.body, d());
+    q.update(page, takeSnapshot(dom));
     return;
   }
 
   const selector = targets.join(',');
   const current = d().querySelectorAll<HTMLElement>(selector);
-  const nodes = dom.body.querySelectorAll<HTMLElement>(selector);
 
-  forNode(nodes, (node, i) => {
+  forNode(dom.body.querySelectorAll<HTMLElement>(selector), (node, i) => {
     morph(node, current[i]);
   });
 
-  store.update(page, dom.documentElement.innerHTML);
+  q.update(page, takeSnapshot(dom));
 
 }
 
@@ -279,14 +276,14 @@ function capture (targets?: string[]) {
  */
 async function prefetch (link: string): Promise<void|IPage> {
 
-  const path = getRoute(link, EventType.PREFETCH);
+  const path = getRoute(link, VisitType.PREFETCH);
 
-  if (store.has(path.key)) {
+  if (q.has(path.key)) {
     log(Errors.WARN, `Cache already exists for ${path.key}, prefetch skipped`);
     return;
   }
 
-  const prefetch = await request.fetch(store.create(path));
+  const prefetch = await request.fetch(q.create(path));
   if (prefetch) return prefetch;
 
   log(Errors.ERROR, `Prefetch failed for ${path.key}`);
@@ -319,7 +316,7 @@ async function form (action: string, options: {
  */
 async function hydrate (link: string, nodes?: string[]): Promise<Document> {
 
-  const route = getRoute(link, EventType.HYDRATE);
+  const route = getRoute(link, VisitType.HYDRATE);
 
   request.fetch(route);
 
@@ -337,7 +334,9 @@ async function hydrate (link: string, nodes?: string[]): Promise<Document> {
     }
 
   } else {
+
     route.hydrate = $.config.fragments;
+
   }
 
   const page = await request.wait(route);
@@ -350,14 +349,21 @@ async function hydrate (link: string, nodes?: string[]): Promise<Document> {
     renderer.update(page);
 
     if (route.key !== key) {
+
       if ($.index === key) $.index = route.key;
-      for (const p in $.pages) if ($.pages[p].rev === key) $.pages[p].rev = route.key;
-      store.clear(key);
+
+      for (const p in $.pages) {
+        if ($.pages[p].rev === key) {
+          $.pages[p].rev = route.key;
+        }
+      }
+
+      q.clear(key);
     }
 
   }
 
-  return store.get(page.key).dom;
+  return q.getSnapDom(page.key);
 
 };
 
@@ -369,9 +375,9 @@ async function visit (link: string, options?: IPage): Promise<void|IPage> {
   const route = getRoute(link);
   const merge = typeof options === 'object' ? assign(route, options) : route;
 
-  return store.has(route.key)
-    ? hrefs.navigate(route.key, store.update(merge))
-    : hrefs.navigate(route.key, store.create(merge));
+  return q.has(route.key)
+    ? hrefs.navigate(route.key, q.update(merge))
+    : hrefs.navigate(route.key, q.create(merge));
 
 };
 
