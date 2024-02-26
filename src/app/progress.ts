@@ -23,7 +23,7 @@ function Progress () {
   /**
    * Progress Status
    */
-  let timeout: NodeJS.Timeout;
+  let timeout: number;
 
   /**
    * Progress Element
@@ -42,7 +42,8 @@ function Progress () {
       `background-color:${bgColor};`,
       `height:${barHeight};`,
       'position:fixed;',
-      'z-index:9999999;',
+      'display:block;',
+      'z-index:2147483647;',
       'top:0;',
       'left:0;',
       'width:100%;',
@@ -118,9 +119,8 @@ function Progress () {
 
     const update = pending.shift();
 
-    if (update) {
-      update(dequeue);
-    }
+    if (update) update(dequeue);
+
   };
 
   /**
