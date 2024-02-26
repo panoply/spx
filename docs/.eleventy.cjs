@@ -106,6 +106,11 @@ function tabs(md, tokens, idx) {
 
 }
 
+
+function navigate () {
+
+}
+
 /**
  * Eleventy Build
  *
@@ -125,8 +130,7 @@ module.exports = eleventy(function (config) {
   .use(container, 'tabs', { render: (tokens, idx) => tabs(markdown, tokens, idx) })
   .disable("code");
 
-  config.addPassthroughCopy('./src/assets/img/**')
-  config.addPlugin(versions, { version: require('../package.json').version })
+  config.addPlugin(versions, { version: require('../package.json').version });
   config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
   config.addPlugin(terser)
 
