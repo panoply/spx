@@ -1,14 +1,19 @@
-import * as regex from '../shared/regexp';
-import { IPage, ILocation } from 'types';
+import type { IPage, ILocation } from 'types';
 import { nil, o, origin } from '../shared/native';
-import { chunk, log, hasProp, attrJSON, camelCase } from '../shared/utils';
-import { Errors, EventType } from '../shared/enums';
+import { log } from '../shared/logs';
+import { chunk, hasProp, attrJSON, camelCase, splitAttrArrayValue, selector } from '../shared/utils';
+import { Errors, VisitType } from '../shared/enums';
 import { $ } from './session';
+import * as regex from '../shared/regexp';
+import { newPage } from './queries';
 
 /**
  * Location hostname eg: brixtol.com
+ *
+ * @see
+ * https://regex101.com/r/fCK0sH/1
  */
-export const hostname = origin.replace(regex.Protocol, nil);
+export const hostname = origin.replace(/(?:https?:)?(?:\/\/(?:www\.)?|(?:www\.))/, nil);
 
 /**
  * Get Attributes
@@ -18,19 +23,22 @@ export const hostname = origin.replace(regex.Protocol, nil);
  */
 export function getAttributes (element: Element, page?: IPage): IPage {
 
-  const state: IPage = page || o();
+  const state: IPage = page ? newPage(page) : o();
+  const attrs: string[] = element.getAttributeNames();
 
-  for (const { nodeName, nodeValue } of element.attributes) {
+  for (let i = 0, s = attrs.length; i < s; i++) {
 
-    if (nodeName.startsWith($.qs.href.$data)) {
+    const nodeName = attrs[i];
+
+    if (nodeName.startsWith($.qs.$data)) {
 
       // Create reference in page state if it does not exist
       if (!hasProp(state, 'data')) state.data = o();
 
       // Obtain the data key property value, e.g: spx-data:foo
       // will be used on the object, resulting in { data: { foo: <type> } }
-      const name = camelCase(nodeName.slice($.qs.href.$data.length));
-      const value = nodeValue.trim();
+      const name = camelCase(nodeName.slice($.qs.$data.length));
+      const value = element.getAttribute(nodeName).trim();
 
       if (regex.isNumeric.test(value)) {
         state.data[name] = value === 'NaN' ? NaN : +value;
@@ -45,6 +53,8 @@ export function getAttributes (element: Element, page?: IPage): IPage {
     } else {
 
       if (!$.qs.$attrs.test(nodeName)) continue;
+
+      const nodeValue = element.getAttribute(nodeName).trim();
 
       // KEY REFERENCE
       if (nodeName === 'href') {
@@ -61,11 +71,18 @@ export function getAttributes (element: Element, page?: IPage): IPage {
         const name = nodeName.slice(nodeName.lastIndexOf('-') + 1);
         const value = nodeValue.replace(regex.Whitespace, nil).trim();
 
-        if (regex.isArray.test(value)) {
+        if (name === 'target') {
 
-          state[name] = regex.isPender.test(name)
-            ? value.match(regex.ActionParams).reduce(chunk(2), [])
-            : value.match(regex.ActionParams);
+          // edge cases wherein href element is annotated with "spx-target"
+          // but has empty attribute value, which means user wants to morph/replace
+          state[name] = value === 'true' ? [] : value !== nil ? splitAttrArrayValue(value) : [];
+          state.selector = selector(state[name]);
+
+        } else if (regex.isArray.test(value)) {
+
+          // Attribute Parameter Value - Matches class event caller target attributes
+          const match = value.match(/\[?[^,'"[\]()\s]+\]?/g);
+          state[name] = regex.isPender.test(name) ? match.reduce(chunk(2), []) : match;
 
         } else if (name === 'position') {
 
@@ -74,12 +91,17 @@ export function getAttributes (element: Element, page?: IPage): IPage {
             const XY = value.match(regex.inPosition);
 
             state[`scroll${XY[0].toUpperCase()}`] = +XY[1];
+
             if (XY.length === 4) {
               state[`scroll${XY[2].toUpperCase()}`] = +XY[3];
             }
 
           } else {
-            log(Errors.WARN, `Invalid attribute value on ${nodeName}, expects: y:number or x:number`);
+            log(
+              Errors.WARN,
+              `Invalid attribute value on <${nodeName}>, expected: y:number or x:number`,
+              element
+            );
           }
 
         } else if (name === 'scroll') {
@@ -87,28 +109,32 @@ export function getAttributes (element: Element, page?: IPage): IPage {
           if (regex.isNumber.test(value)) {
             state.scrollY = +value;
           } else {
-            log(Errors.WARN, `Invalid attribute value on ${nodeName}, expects: number`);
+            log(
+              Errors.WARN,
+              `Invalid attribute value on <${nodeName}>, expected: number`,
+              element
+            );
           }
 
-        } else if (name === 'target') {
+        } else if (regex.isBoolean.test(value) && !regex.isPrefetch.test(nodeName)) {
 
-          // edge cases wherein href element is annotated with "spx-target"
-          // but has empty attribute value, which means user wants to morph/replace
-          if (value === 'true') {
-            state[name] = [];
-          } else {
-            state[name] = value !== nil ? value.split(',') : [];
-          }
-
-        } else if (regex.isBoolean.test(value)) {
-
-          if (!regex.isPrefetch.test(nodeName)) state[name] = value === 'true';
+          state[name] = value === 'true';
 
         } else if (regex.isNumeric.test(value)) {
 
           state[name] = +value;
 
         } else {
+
+          if (name === 'history') {
+            if (value !== 'push' && value !== 'replace') {
+              log(
+                Errors.ERROR,
+                `Invalid attribute value on <${nodeName}>, expected: false, push or replace`,
+                element
+              );
+            }
+          }
 
           state[name] = value;
 
@@ -369,34 +395,46 @@ export function getLocation (path: string): ILocation {
  * This function is triggered for every visit request
  * or action which infers navigations, ie: mouseover.
  */
-export function getRoute (link: Element | string | EventType, type: EventType = EventType.VISIT): IPage {
+export function getRoute <
+  T extends VisitType | Element | string,
+  Link extends T extends VisitType.HYDRATE ? string : T extends VisitType.INITIAL ? T : Element
+> (
+  link: Link,
+  type: VisitType = VisitType.VISIT
+): IPage {
 
   // PASSED IN ELEMENT
   // Route state will be generated using node attributes
   if (link instanceof Element) {
     const state = getAttributes(link);
-    state.type = type || EventType.VISIT;
+    state.type = type || VisitType.VISIT;
     return state;
   }
 
   const state: IPage = o();
 
-  if (link === EventType.INITIAL) {
+  if (link === VisitType.INITIAL) {
+
     state.location = fallback();
-    state.key = getKey(state.location);
-    state.rev = state.key;
+    state.key = state.rev = getKey(state.location);
     state.type = link;
     state.visits = 1;
-  } else if (type === EventType.HYDRATE) {
-    state.location = getLocation(link as string);
-    state.key = getKey(state.location);
-    state.rev = state.key;
+
+    $.index = state.key;
+
+  } else if (type === VisitType.HYDRATE) {
+
+    state.location = getLocation(link);
+    state.key = state.rev = getKey(state.location);
     state.type = type;
+
   } else {
+
     state.rev = location.pathname + location.search;
     state.location = getLocation(typeof link === 'string' ? link : state.rev);
     state.key = getKey(state.location);
     state.type = type;
+
   }
 
   return state;
