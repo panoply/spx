@@ -13,14 +13,6 @@ export const HTTP = /^(?:https?:)?\/\//;
 export const CacheValue: RegExp = /^(reset|clear|update)$/i;
 
 /**
- * URL Protocol
- *
- * @see
- * https://regex101.com/r/fCK0sH/1
- */
-export const Protocol: RegExp = /(?:https?:)?(?:\/\/(?:www\.)?|(?:www\.))/;
-
-/**
  * URL Pathname
  *
  * Used to match first pathname from a URL.
@@ -42,13 +34,6 @@ export const Pathname: RegExp = /(?:https?:)?\/\/(?:www\.)?([^/]*?)?([/?][^;]*?)
  * Used to match Form Input elements
  */
 export const FormInputs: RegExp = /^(input|textarea|select|datalist|button|output)$/i;
-
-/**
- * JavaScript Mime Type
- *
- * Captures `<script>` tag mime types
- */
-export const MimeType: RegExp = /^(?:application|text)\/(?:x-)?(?:ecma|java)script|text\/javascript$/;
 
 /**
  * Ready State
@@ -149,14 +134,14 @@ export const isNumberOrBoolean: RegExp = /\b(?:progress|proximity)/;
  *
  * Used to match a class event caller target attributes
  */
-export const ActionParams: RegExp = /\[?[^,'"[\]()\s]+\]?/g;
+export const ArrayParams: RegExp = /\[(['"]?.*['"]?,?)\]/g;
 
 /**
- * Attribute Parameter Value
+ * Resource Tag Name
  *
- * Used to match a class event caller target attributes
+ * Used to match resources in mutations
  */
-export const ArrayParams: RegExp = /\[(['"]?.*['"]?,?)\]/g;
+export const isResourceTag: RegExp = /\b(?:SCRIPT|STYLE|LINK)\b/;
 
 /**
  * Array Value
