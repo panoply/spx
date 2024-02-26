@@ -35,9 +35,9 @@ export const pointer = supportsTouchEvents ? 'pointer' : 'mouse';
 export const origin = window.location.origin;
 
 /**
- * Cached `Object.assign`
+ * Cached `Object.assign` and `Object.keys`
  */
-export const assign = Object.assign;
+export const { assign, keys, entries } = Object;
 
 /**
  * Cached `Object.defineProperty`
@@ -50,14 +50,19 @@ export const defineProp = Object.defineProperty;
 export const defineProps = Object.defineProperties;
 
 /**
-  * Cached `Object.create`
-  */
+ * Cached `Object.create`
+ */
 export const object = Object.create;
+
+/**
+ * Cached `Object.values`
+ */
+export const values = Object.values;
 
 /**
  * Cached `Array.isArray`
  */
-export const isArray = Array.isArray;
+export const { isArray } = Array;
 
 /**
  * Cached `Array.from`
@@ -69,30 +74,49 @@ export const toArray = Array.from;
  */
 export const nil = '';
 
+/**
+ * Cached console method
+ */
+export const { warn, info, error } = console;
+
 /* -------------------------------------------- */
 /* EXTENDS                                      */
 /* -------------------------------------------- */
 
 /**
- * Document Body
+ * Document <body>
  *
  * Returns `document.body`
  */
 export const d = () => document.body;
 
 /**
+ * Document <head>
+ *
+ * Returns `document.head`
+ */
+export const h = () => document.head;
+
+/**
  * Object Create
  *
  * Creates a null prototype object
  */
-export const o = <T> (value?: T, o = object(null)) => value ? assign(o, value) : o;
+export const o = <T> (value?: T) => value ? assign(object(null), value) : object(null);
 
 /**
  * Set Create
  *
  * Creates a new `Set` instance
  */
-export const s = <K> () => new Set<K>();
+export const s = <K> (value?: K[]) => new Set<K>(value);
+
+/**
+ * Proxy Handler
+ *
+ * Creates a new `Proxy` instance
+ */
+export const p = <P extends object> (handler: ProxyHandler<P>) => new Proxy<P>(o(), handler);
 
 /**
  * Map Create
@@ -102,58 +126,11 @@ export const s = <K> () => new Set<K>();
 export const m = <K, V> () => new Map<K, V>();
 
 /**
- * Query Selector
- *
- * Small hack for `querySelector` wherein `querySelectorAll` is used for faster retreival.
- */
-export const q = <T extends HTMLElement>(selector: string) => d().querySelectorAll<T>(selector).item(0);
-
-/**
  * Noop
  *
  * Empty function reference
  */
 export const noop = () => {};
-
-/**
- * Nodes
- *
- * Extends the native Array `[]` to support additional methods.
- */
-export class Nodes extends Array<[uuid: string, HTMLElement ]> {
-
-  ref: { [id: string]: number } = o();
-
-  set = (uuid: string | number, value: HTMLElement) => {
-
-    const type = typeof uuid;
-
-    if (type === 'number') {
-      this[uuid][1] = value;
-      return this[uuid][1];
-    }
-
-    if (type === 'string' && uuid in this.ref) {
-      this[this.ref[uuid]][1] = value;
-      return this[this.ref[uuid]][1];
-    }
-
-    return this;
-
-  };
-
-  get = (uuid?: string | number) => {
-
-    const type = typeof uuid;
-
-    if (type === 'number') return this[uuid];
-    if (type === 'string' && uuid in this.ref) return this[this.ref[uuid]][1];
-
-    return this;
-
-  };
-
-}
 
 /**
  * Extends XMLHTTPRequest
@@ -164,22 +141,28 @@ export class Nodes extends Array<[uuid: string, HTMLElement ]> {
 export class XHR extends XMLHttpRequest {
 
   /**
+   * Request Key
+   *
+   * The request URL key reference.
+   */
+  public key: string = null;
+
+  /**
    * XHR Request Queue
    *
    * The promise-like queue reference which holds the
    * XHR requests for each fetch dispatched. This allows
    * for aborting in-transit requests.
    */
-  static request: Map<string, XMLHttpRequest> = m();
+  static $request: Map<string, XMLHttpRequest> = m();
 
   /**
    * Request Transits
    *
-   * This object holds the XHR requests in transit. The object
-   * properties represent the the request URL and the
-   * value is the XML Request instance.
+   * This object holds the XHR requests in transit. The map
+   * keys represent the the request URL and values hold the XML Request instance.
    */
-  static transit: Map<string, Promise<string>> = m();
+  static $transit: Map<string, Promise<string>> = m();
 
   /**
    * Request Timeouts
@@ -188,13 +171,6 @@ export class XHR extends XMLHttpRequest {
    * and trigger operations like hover or proximity
    * prefetching.
    */
-  static timeout: Map<string, NodeJS.Timeout> = m();
-
-  /**
-   * Request Key
-   *
-   * The request URL key reference.
-   */
-  public key: string = null;
+  static $timeout: { [key: string]: number } = o();
 
 }
