@@ -1,134 +1,176 @@
 import { $ } from '../app/session';
-import { snapshot } from '../app/store';
-import { Nodes, Refs } from '../shared/enums';
-import { assign } from '../shared/native';
-import { getSelector, hasProp } from '../shared/utils';
+import { Errors, Nodes, Refs } from '../shared/enums';
+import { Context, getContext, walkNode, isDirective, setRefs } from './context';
 import { addEvent, removeEvent } from './listeners';
+import { log } from '../shared/logs';
+import { onNextTick } from '../shared/utils';
+import { SPX } from '../types/components';
 
-export const observer = new MutationObserver(function (mutatation) {
+export let context: Context;
 
-  console.log(mutatation);
+export function resetContext () {
 
-});
+  onNextTick(() => { context = undefined; });
 
-export function observeNode (node: HTMLElement) {
+}
 
-  observer.observe(node, { attributes: true, childList: true, subtree: true });
+function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
 
-  return node;
+  const { reference, connected, elements } = $.components;
+
+  for (const id of refs) {
+
+    const instance: SPX.Class = reference[id];
+
+    if (!instance) continue;
+
+    const ref = id.charCodeAt(0);
+
+    if (ref === Refs.COMPONENT) {
+
+      instance.scope.mounted = false;
+      connected.delete(instance.scope.key);
+      elements.delete(instance.scope.el);
+
+      for (const key in instance.scope.nodes) {
+        elements.delete(instance.scope.nodes[key].el);
+      }
+
+      for (const key in instance.scope.binds) {
+        elements.delete(instance.scope.binds[key].el);
+      }
+
+      for (const key in instance.scope.events) {
+        removeEvent(instance, instance.scope.events[key]);
+      }
+
+      log(Errors.TRACE, `Unmounted component ${instance.static.id} (${instance.scope.key})`, '#8f5150');
+
+    } else if (ref === Refs.EVENT) {
+
+      removeEvent(instance, instance.scope.events[id]);
+
+    } else if (ref === Refs.NODE || ref === Refs.BINDING) {
+
+      const node = instance.scope[ref === Refs.BINDING ? 'binds' : 'nodes'][id];
+
+      if (newNode && curNode.isEqualNode(newNode)) {
+
+        setRefs(curNode, instance.scope.key, id);
+
+        elements.set(node.el, curNode);
+
+        context.$nodes.push(node.el);
+
+      } else {
+
+        elements.delete(node.el);
+
+      }
+
+    }
+  }
+
+}
+
+function connect (node: HTMLElement, refs: string[]) {
+
+  const { reference, connected, elements } = $.components;
+
+  for (const id of refs) {
+
+    const instance = reference[id];
+
+    if (!instance) continue;
+
+    const ref = id.charCodeAt(0);
+
+    if (ref === Refs.COMPONENT) {
+
+      connected.add(instance.scope.key);
+      elements.set(instance.scope.el, node);
+      instance.scope.mounted = true;
+
+      log(Errors.TRACE, `Mounted component ${instance.static.id} (${instance.scope.key})`, '#6dd093');
+
+    } else if (ref === Refs.EVENT) {
+
+      addEvent(instance, node, instance.scope.events[id]);
+
+    } else if (ref === Refs.NODE) {
+
+      elements.set(instance.scope.nodes[id].el, node);
+
+    } else if (ref === Refs.BINDING) {
+
+      elements.set(instance.scope.binds[id].el, node);
+
+    }
+  }
 
 }
 
 export function removeNode (node: HTMLElement) {
 
-  observer.disconnect();
+  if (node.nodeType !== Nodes.ELEMENT_NODE && node.nodeType !== Nodes.FRAGMENT_NODE) return;
+
+  if (node.hasAttribute($.qs.$ref)) {
+    disconnect(
+      node,
+      node.getAttribute($.qs.$ref).split(',')
+    );
+  }
 
 }
 
-/**
- * Removes Component
- *
- * Morph hook for disconnecting a component from the DOM.
- * Removed listeners and invokes the `onExit()` callback.
- */
-export function removeComponent (node: HTMLElement) {
+export function addedNode (node: HTMLElement) {
 
-  if (node.nodeType !== Nodes.ELEMENT_NODE) return;
-  if (!node.dataset.spx) return;
-  if ($.components.connected.has(node)) $.components.connected.delete(node);
+  if (node.hasAttribute($.qs.$ref)) {
 
-  const refs = node.dataset.spx.split(',');
+    connect(node, node.getAttribute($.qs.$ref).split(','));
 
-  for (let i = 0, s = refs.length; i < s; i++) {
+  } else {
 
-    const uuid = refs[i];
+    if (isDirective(node.attributes)) {
 
-    if (
-      !hasProp($.components.refs, uuid) ||
-      !hasProp($.components.instances, $.components.refs[uuid])) {
-      continue;
+      if (!context) {
+        context = getContext(node);
+      } else {
+        context.$morph = node;
+      }
+
+      walkNode(node, context);
     }
-
-    const ref = uuid.charCodeAt(0);
-    const { instance, scope } = $.components.instances[$.components.refs[uuid]];
-
-    if (ref === Refs.COMPONENT) {
-
-      if (hasProp(instance, 'onExit')) instance.onExit();
-
-    } else if (ref === Refs.BINDING && scope.binds[uuid].persist) {
-
-      snapshot($.page.rev, getSelector(node.nodeName, node.dataset.spx), node);
-
-    } else if (ref === Refs.EVENT) {
-
-      scope.events[uuid].attached = removeEvent(instance, scope.events[uuid]);
-
-    }
-
   }
 }
 
-/**
- * Add Component
- *
- * Morph hook for connecting a component in the DOM. Components
- * matched here already have an instance applied.
- */
-export function addComponent (node: HTMLElement) {
+export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: any, nRef: any) {
 
-  if (!node.dataset.spx) return;
+  if (cRef) cRef = cRef.split(',');
+  if (nRef) nRef = nRef.split(',');
 
-  const refs = node.dataset.spx.split(',');
+  if (cRef && nRef) {
 
-  for (let i = 0, s = refs.length; i < s; i++) {
+    disconnect(curNode, cRef);
+    connect(curNode, nRef);
 
-    const uuid = refs[i];
+  } else if (!cRef && nRef) {
 
-    if (
-      !hasProp($.components.refs, uuid) ||
-      !hasProp($.components.instances, $.components.refs[uuid])) {
-      continue;
+    connect(curNode, nRef);
+
+  } else {
+
+    if (!context) {
+      context = getContext(newNode);
+    } else {
+      context.$morph = newNode;
     }
 
-    const { instance, scope } = $.components.instances[$.components.refs[uuid]];
-    const ref = uuid.charCodeAt(0);
-
-    if (ref === Refs.COMPONENT) {
-
-      instance.dom = node;
-
-      assign(instance.state, scope.state);
-
-    } else if (ref === Refs.NODE) {
-
-      instance[scope.nodes[uuid].schema][scope.nodes[uuid].index] = node;
-
-      if (scope.nodes[uuid].index === 0) {
-        instance[scope.nodes[uuid].schema.slice(0, -1)] = node;
-      }
-
-    } else if (ref === Refs.EVENT) {
-
-      const event = scope.events[uuid];
-
-      instance[event.schema][event.index] = node;
-
-      if (event.index === 0) {
-        instance[event.schema.slice(0, -1)] = node;
-      }
-
-      event.attached = addEvent(instance, event);
-
-    } else if (ref === Refs.BINDING) {
-
-      instance[scope.binds[uuid].schema][scope.binds[uuid].index] = node;
-
-      if (scope.binds[uuid].index === 0) {
-        instance[scope.binds[uuid].schema.slice(0, -1)] = node;
-      }
-
+    if (cRef && !nRef) {
+      disconnect(curNode, cRef, newNode);
+      if (curNode.hasAttribute($.qs.$ref)) return;
     }
+
+    walkNode(curNode, context);
   }
-
 }
