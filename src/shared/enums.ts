@@ -7,7 +7,26 @@ export enum Attributes {
   /**
    * Regex Capture Attribute List
    */
-  NAMES = 'hydrate|append|prepend|target|progress|threshold|scroll|position|proximity|hover|cache',
+  NAMES = 'hydrate|append|prepend|target|progress|threshold|scroll|position|proximity|hover|cache|history',
+}
+
+export enum ElementType {
+  /**
+   * Element is a component, annotated with `spx-component=""`
+   */
+  COMPONENT = 1,
+  /**
+   * Element is a node, annotated with `spx-node=""`
+   */
+  NODE,
+  /**
+   * Element is a binding, annotated with `spx-bind=""`
+   */
+  BINDING,
+  /**
+   * Element is an event, annotated with `spx@event=""`
+   */
+  EVENT
 }
 
 export enum Refs {
@@ -97,7 +116,7 @@ export enum Errors {
  *
  * A `fetch` event type refers to a request operation of some kind, like a programmatic fetch.
  */
-export enum EventType {
+export enum VisitType {
   /**
    * Store was created on initial run
    *
@@ -123,7 +142,7 @@ export enum EventType {
    */
   PRELOAD,
   /**
-   * Request is a reverse lastpath fetch
+   * Request is a reverse last-path fetch
    *
    * @kind `fetch`
    */
