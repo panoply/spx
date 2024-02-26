@@ -1,21 +1,20 @@
+import type { IPage } from '../types/page';
 import { Errors } from './enums';
-import { $ } from '../app/session';
-import { IPage } from '../types/page';
 import { assign, defineProp, d, nil, isArray, s } from './native';
+import { $ } from '../app/session';
 import * as regex from './regexp';
+import { log } from '../shared/logs';
 
 /**
- * Whether DOM has loaded
+ * Get Fragment Selector
+ *
+ * Returns the query selector reference
  */
-export async function load () {
+export function qsTarget (targets: string[]) {
 
-  await onNextResolveTick();
-
-  $.loaded = true;
-  console.log('loaded');
-
-  return $.loaded || document.readyState === 'complete';
-
+  return targets.length === 0
+    ? `${$.config.fragments.join(',')},[${$.qs.$target}]`
+    : `${targets.join(',')},[${$.qs.$target}]`;
 }
 
 /**
@@ -23,9 +22,50 @@ export async function load () {
  *
  * Returns an element selector for SPX Component node morphs
  */
-export function getSelector (nodeName: string, uuid: string) {
+export function qsNode (node: HTMLElement, key: string, value: string) {
 
-  return `${nodeName.toLowerCase()}[data-spx="${uuid}"]`;
+  return `${node.nodeName.toLowerCase()}[${key}*=${escSelector(value)}]`;
+
+}
+
+/**
+ * Split Attribute Array Value
+ *
+ * Some SPX attribute value accept array pattern structures. This function
+ * will remove characters the following characters if detected:
+ *
+ * - `[`
+ * - `]`
+ * - `'`
+ * - `"`
+ *
+ * From here, the refined string will be split and return an array list of
+ * strings that can be understood.
+ */
+export function splitAttrArrayValue (input: string) {
+
+  let value: string = input
+    .replace(/\s+,/g, ',')
+    .replace(/,\s+/g, ',')
+    .replace(/['"]/g, nil);
+
+  if (value.charCodeAt(0) === 91) {
+
+    // Value might be an attribute selector within an array
+    // let's quickly determine, pattern would be: spx-target="[[data-foo]]"
+    //
+    // If the pattern does not match, we will look for a comma separator
+    // contained within the value, if one is found, it infers that the
+    // value is an data attribute selector.
+    //
+    if (/^\[\s*\[/.test(value) || (/,/.test(value) && /\]$/.test(value))) {
+      value = value
+        .replace(/^\[/, nil)
+        .replace(/\]$/, nil);
+    }
+  }
+
+  return value.split(/,|\|/);
 
 }
 
@@ -49,9 +89,7 @@ export function attrJSON (attr: string, string?: string) {
 
     log(
       Errors.ERROR,
-      'Invalid JSON expression in attribute value:\n\n' +
-      JSON.stringify(attr || string, null, 2) +
-      '\n\n',
+      'Invalid JSON expression in attribute value: ' + JSON.stringify(attr || string, null, 2),
       err
     );
 
@@ -71,19 +109,30 @@ export function last<T extends any[]> (input: T): T[number] {
 }
 
 /**
- * Attribute Value InstanceOf
+ * Equalizes Whitespace in a string
  *
- * Normalizes the `spx-component` attribute value and corrects possible malformed
- * identifiers. This `spx-component` attribute can accept multiple component references,
- * this function ensure we can read each entry.
+ * Strips out extraneous whitespaces and newlines from a string, and returns
+ * an single whitespace seprated result. Used to ensure structures adhere to
+ * a common pattern.
  */
-export function attrValueInstanceOf (input: string) {
+export function equalizeWS (input: string) {
+
+  return input.replace(/\s+/g, ' ').trim();
+
+}
+
+/**
+ * Get SPX Selector
+ *
+ * Returns an element selector for SPX Component node morphs
+ */
+export function escSelector (input: string) {
 
   return input
-    .trim()
-    .replace(/\s+/, ' ')
-    .split(/[|, ]/)
-    .map(camelCase);
+    .replace(/\./g, '\\.')
+    .replace(/@/g, '\\@')
+    .replace(/:/g, '\\:');
+
 }
 
 /**
@@ -94,27 +143,29 @@ export function attrValueInstanceOf (input: string) {
  */
 export function attrValueNotation (input: string) {
 
-  return input
-    .replace(/[\s .]+/g, '.')
+  return equalizeWS(input.replace(/[\s .]+/g, '.'))
     .replace(/\s+/g, ' ')
     .trim()
     .split(/[ ,]/);
 
 }
 
+/**
+ * Attribute Value from Type
+ *
+ * Converts attribute value strings into relative types.
+ */
 export function attrValueFromType (input: string) {
 
   if (regex.isNumeric.test(input)) return input === 'NaN' ? NaN : +input;
   if (regex.isBoolean.test(input)) return input === 'true';
-  if (input.charCodeAt(0) === 123 || input.charCodeAt(0) === 91) return attrJSON(input); // { or [
+
+  const code = input.charCodeAt(0);
+
+  if (code === 123 || code === 91) return attrJSON(input); // { or [
 
   return input; // string value
 
-}
-
-export function onNextAnimationFrame () {
-
-  return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
 /**
@@ -124,7 +175,7 @@ export function onNextAnimationFrame () {
  */
 export function onNextTickResolve () {
 
-  return new Promise<void>((resolve) => setTimeout(() => resolve(), 0));
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), 1));
 
 }
 
@@ -140,6 +191,18 @@ export function onNextTick (callback: () => void) {
 }
 
 /**
+ * Promise Resolver
+ *
+ * Returns `Promise.resolve()` and used to ensure async actions conclude
+ * before next operation begins.
+ */
+export function promiseResolve () {
+
+  return Promise.resolve();
+
+}
+
+/**
  * Delay
  *
  * Resolves a Promise after the provided `timeout` has finished.
@@ -147,12 +210,6 @@ export function onNextTick (callback: () => void) {
 export function delay (timeout: number) {
 
   return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
-
-}
-
-export function onNextResolveTick () {
-
-  return Promise.resolve();
 
 }
 
@@ -179,46 +236,7 @@ export function decodeEntities (string: string) {
 export function ts () {
 
   return new Date().getTime();
-}
 
-/**
- * Type Error
- *
- * Error handler for console logging operations. The function allows for
- * throws, warnings and other SPX related logs.
- */
-export function log (error: Errors, message: string, context?: any) {
-
-  const { logLevel } = $.config;
-
-  if ((
-    error === Errors.TRACE && logLevel === 1
-  ) || (
-    error === Errors.INFO && (logLevel === 1 || logLevel === 2)
-  )) {
-
-    console.info('SPX: ' + message);
-
-  } else if (error === Errors.WARN && logLevel < 4) {
-
-    console.warn('SPX: ' + message);
-
-  } else if (error === Errors.ERROR || error === Errors.TYPE) {
-
-    if (context) {
-      console.error('SPX: ' + message, context);
-    } else {
-      console.error('SPX: ' + message);
-    }
-
-    try {
-      if (error === Errors.TYPE) {
-        throw new TypeError(message);
-      } else {
-        throw new Error(message);
-      }
-    } catch (e) {}
-  }
 }
 
 /**
@@ -264,7 +282,7 @@ export function defineGetter <T> (object: T, name?: string, value?: any) {
 
   if (arguments.length > 1) {
 
-    defineProp(object, name, { get: () => value });
+    defineProp(object, name, { get () { return value; } });
 
   } else {
 
@@ -272,7 +290,7 @@ export function defineGetter <T> (object: T, name?: string, value?: any) {
 
       if (hasProp<any>(object, name)) return;
 
-      const get = () => value;
+      function get () { return value; };
 
       return defineProp(object, name, options
         ? assign(options, { get })
@@ -296,7 +314,7 @@ export function targets (page: IPage) {
 
     if (page.target.length === 1 && page.target[0] === 'body') return page.target;
 
-    return [].concat($.config.fragments, page.target).filter((v, i, a) => (
+    return page.target.filter((v, i, a) => (
       v !== 'body' &&
       v !== nil &&
       v.indexOf(',') === -1 ? a.indexOf(v) === i : false
@@ -312,15 +330,41 @@ export function targets (page: IPage) {
 
 }
 
+export function selector (target: string[]) {
+
+  // assign the selector reference if it is undefined
+
+  if (target.length === 1 && target[0] === 'body') return 'body';
+
+  //  `${(target.length === 0 ? $.config.fragments : target).join(',')},${$.qs.$targets}`;
+
+  return `${(target.length === 0 ? $.config.fragments : target).join(',')}`;
+
+}
+
 /**
  * is Empty
  *
- * Checks whether an `object` or `array` is empty.
+ * Checks whether an `object`, `string` or `array` is empty.
  */
 export function isEmpty (input: any) {
 
-  if (typeof input === 'object') return Object.keys(input).length > 0;
-  if (isArray(input)) return input.length > 0;
+  const T = typeof input;
+
+  if (T === 'object') {
+
+    // eslint-disable-next-line no-unreachable-loop
+    for (const _ in input) return false; return true;
+
+  } else if (T === 'string') {
+
+    return input[0] === undefined;
+
+  } else if (isArray(input)) {
+
+    return input.length > 0;
+
+  }
 
   return false;
 }
@@ -333,6 +377,7 @@ export function isEmpty (input: any) {
 export function glue (...input: string[]) {
 
   return input.join(nil);
+
 }
 
 /**
@@ -358,6 +403,23 @@ export const uuid: {
 uuid.$cache = s();
 
 /**
+ * Hash
+ *
+ * Creates a hash from string.
+ */
+export function hash (key: string) {
+
+  let h = 0;
+
+  for (let i = 0, s = key.length; i < s; i++) {
+    h = ((h << 3) - h + key.charCodeAt(i)) | 0;
+  }
+
+  return (h >>> 0).toString(36);
+
+}
+
+/**
  * Array Chunk function
  *
  * Augments an array into smaller subsets (i.e: "chunks").
@@ -376,6 +438,11 @@ export function chunk (size: number = 2): (acc: any[], value: string) => any[] {
   };
 }
 
+/**
+ * Memory Size
+ *
+ * Converts bytes to `B`, `KB`, `MB` or `GB` readable strings.
+ */
 export function size (bytes: number): string {
 
   const kb = 1024;
@@ -415,7 +482,7 @@ export function upcase (input: string) {
  */
 export function camelCase (input: string) {
 
-  return /[_-]/.test(input)
+  return /[_-]/.test(downcase(input))
     ? input.replace(/([_-]+).{1}/g, (x, k) => x[k.length].toUpperCase())
     : input;
 }
