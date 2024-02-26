@@ -217,6 +217,14 @@
         }
       ]
     },
+    "\\b(oninit|onload|onexit|onstate|oncache|onvisit)\\b(?=\\s*\\()": {
+      "decorations": [
+        {
+          "color": "#58e093",
+          "fontStyle": "bold"
+        }
+      ]
+    },
     "(?<=spx-[a-z]+:[a-z-]+\\=\")(false|true)": {
       "decorations": [
         {
@@ -260,7 +268,9 @@
     "**/.hg": true,
     "**/CVS": true,
     "**/.DS_Store": true,
-    "**/node_modules": true
+    "**/node_modules": true,
+    "**/test/public": true,
+    "**/test/unit": true
   },
   "cSpell.words": [
     "Alexey",
