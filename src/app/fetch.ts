@@ -1,13 +1,13 @@
 /* eslint-disable n/no-callback-literal */
-import { Key } from 'types';
-import { IPage } from '../types/page';
+import type { IPage, Key } from '../types';
 import { emit } from './events';
-import { log, hasProp, onNextTickResolve } from '../shared/utils';
+import { log } from '../shared/logs';
+import { hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
-import { $ } from './session';
 import { XHR, isArray } from '../shared/native';
-import { Errors, EventType } from '../shared/enums';
-import * as store from './store';
+import { Errors, VisitType } from '../shared/enums';
+import { $ } from './session';
+import * as q from './queries';
 
 interface RequestParams {
   /**
@@ -62,11 +62,13 @@ export function request <T> (key: string, {
     }
 
     xhr.onloadstart = function (this: XHR) {
-      XHR.request.set(this.key, xhr);
+      XHR.$request.set(this.key, xhr);
     };
 
     xhr.onload = function (this: XHR) {
+
       resolve(this.response);
+
     };
 
     xhr.onerror = function (this: XHR) {
@@ -74,13 +76,13 @@ export function request <T> (key: string, {
     };
 
     xhr.onabort = function (this: XHR) {
-      XHR.timeout.delete(this.key);
-      XHR.transit.delete(this.key);
-      XHR.request.delete(this.key);
+      delete XHR.$timeout[this.key];
+      XHR.$transit.delete(this.key);
+      XHR.$request.delete(this.key);
     };
 
     xhr.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
-      XHR.request.delete(this.key);
+      XHR.$request.delete(this.key);
       $.memory.bytes = $.memory.bytes + event.loaded;
       $.memory.visits = $.memory.visits + 1;
     };
@@ -96,11 +98,11 @@ export function request <T> (key: string, {
  */
 export function cleanup (key: string) {
 
-  if (!XHR.timeout.has(key)) return true;
+  if (!(key in XHR.$timeout)) return true;
 
-  clearTimeout(XHR.timeout.get(key));
+  clearTimeout(XHR.$timeout[key]);
 
-  return XHR.timeout.delete(key);
+  return delete XHR.$timeout[key];
 
 }
 
@@ -109,8 +111,11 @@ export function cleanup (key: string) {
  */
 export function throttle (key: string, callback: (cancel?: boolean) => void, delay: number): void {
 
-  if (XHR.timeout.has(key)) return;
-  if (!store.has(key)) XHR.timeout.set(key, setTimeout(callback, delay));
+  if (key in XHR.$timeout) return;
+
+  if (!q.has(key)) {
+    XHR.$timeout[key] = setTimeout(callback, delay);
+  }
 
 };
 
@@ -121,8 +126,8 @@ export function throttle (key: string, callback: (cancel?: boolean) => void, del
  */
 export function abort (key: string): void {
 
-  if (XHR.request.has(key)) {
-    XHR.request.get(key).abort();
+  if (XHR.$request.has(key)) {
+    XHR.$request.get(key).abort();
     log(Errors.WARN, `Cancelled request: ${key}`);
   }
 
@@ -137,7 +142,7 @@ export function abort (key: string): void {
  */
 export function cancel (key?: string): void {
 
-  for (const [ url, xhr ] of XHR.request) {
+  for (const [ url, xhr ] of XHR.$request) {
     if (key !== url) {
       xhr.abort();
       log(Errors.WARN, `Pending request aborted: ${url}`);
@@ -160,9 +165,9 @@ export function preload (state: IPage) {
     if (isArray($.config.preload)) {
 
       const promises = $.config.preload.filter(path => {
-        const route = getRoute(path, EventType.PRELOAD);
+        const route = getRoute(path, VisitType.PRELOAD);
         return route.key !== path
-          ? fetch(store.create(route))
+          ? fetch(q.create(route))
           : false;
       });
 
@@ -174,10 +179,10 @@ export function preload (state: IPage) {
 
         const promises = $.config.preload[state.key].map((path: Key) => (
           fetch(
-            store.create(
+            q.create(
               getRoute(
                 path,
-                EventType.PRELOAD
+                VisitType.PRELOAD
               )
             )
           )
@@ -197,36 +202,35 @@ export function preload (state: IPage) {
  * dispatched at different points, like (for example) in
  * popstate operations or at initial load.
  */
-export async function reverse (key: string): Promise<void> {
+export async function reverse (state: IPage): Promise<void> {
 
-  const page = store.create(getRoute(key, EventType.REVERSE));
+  if (state.rev === state.key) return;
+
+  const page = q.create(getRoute(state.rev, VisitType.REVERSE));
 
   await onNextTickResolve();
 
   fetch(page).then(page => {
-
     if (page) {
-      log(Errors.INFO, `Reverse fetch completed: ${page.key}`);
+      log(Errors.INFO, `Reverse fetch completed: ${page.rev}`);
     } else {
-      log(Errors.WARN, `Reverse fetch failed: ${key}`);
+      log(Errors.WARN, `Reverse fetch failed: ${state.rev}`);
     }
-
   });
 
 }
 
 export async function wait (state: IPage): Promise<IPage> {
 
-  if (!XHR.transit.has(state.key)) return state;
+  if (!XHR.$transit.has(state.key)) return state;
 
-  // await onNextTickResolve();
+  const snapshot = await XHR.$transit.get(state.key);
 
-  const snapshot = await XHR.transit.get(state.key);
+  XHR.$transit.delete(state.key);
 
-  XHR.transit.delete(state.key);
-  XHR.timeout.delete(state.key);
+  delete XHR.$timeout[state.key];
 
-  return store.set(state, snapshot);
+  return q.set(state, snapshot);
 
 }
 
@@ -239,11 +243,11 @@ export async function wait (state: IPage): Promise<IPage> {
  */
 export async function fetch (state: IPage): Promise<false|IPage> {
 
-  if (XHR.request.has(state.key)) {
-    if (state.type !== EventType.HYDRATE) {
+  if (XHR.$request.has(state.key)) {
+    if (state.type !== VisitType.HYDRATE) {
 
-      if (state.type === EventType.REVERSE && XHR.request.has(state.rev)) {
-        XHR.request.get(state.rev).abort();
+      if (state.type === VisitType.REVERSE && XHR.$request.has(state.rev)) {
+        XHR.$request.get(state.rev).abort();
         log(Errors.WARN, `Request aborted: ${state.rev}`);
       } else {
         log(Errors.WARN, `Request in transit: ${state.key}`);
@@ -259,7 +263,7 @@ export async function fetch (state: IPage): Promise<false|IPage> {
   }
 
   // create a transit queue reference of the dispatched request in transit.
-  XHR.transit.set(state.key, request<string>(state.key));
+  XHR.$transit.set(state.key, request<string>(state.key));
 
   return wait(state);
 
