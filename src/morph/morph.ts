@@ -1,28 +1,176 @@
 import { Nodes } from '../shared/enums';
-import { compareNodeNames, moveChildren, createElementNS, getNodeKey } from './utils';
-import { onInputElement, onOptionElement, onSelectElement, onTextareaElement } from './forms';
 import { morphAttributes } from './attributes';
 import { $ } from '../app/session';
-import { m, o } from '../shared/native';
-import { addComponent, removeComponent } from '../components/observe';
+import { m, o, s } from '../shared/native';
+import { onNextTick } from '../shared/utils';
+import { morphSnap } from './snapshot';
+import * as forms from './forms';
+import * as observe from '../components/observe';
+
+/*
+  SPX MORPH ALGORITHM
+
+  The morphing algorithm of SPX is a hard-forked version of morph-dom. While the majority of the
+  algo remains intact, various improvements and changes have been made for its implementation
+  into SPX. If you are seeking to re-implement this code, you're going to have a bad time. Some
+  of the main changes applied help improve the morphing process with minor performance gains.
+
+  The storage models differ from morph-dom. Lifecycles are omitted and handling of the the tree,
+  ensures that snapshots are updated. The main modifications are designed for usage with SPX
+  components.
+
+  WHAT PERF GAINS?
+
+  Tradeoff gains mostly. For one, SPX requires additional analysis for components, so the gains made
+  are leveled during incremental analysis for components. One of the main differences in this hard-fork
+  is that SPX uses `isEqualNode` opposed to `isSameNode` and carries out fragment specific morphs when means
+  there are less steps required. Additional operations pertaining to snapshot manipulation is done outside
+  the event loop.
+
+  WHY NOT IDIOMORPH?
+
+  Idiomorph is great, but it is noticably slower and cannot perform complex analysis with certainty. The
+  morph-dom algorithm is how I wouldn've gone about writting out a diffing implementation if it didn't exist.
+  Above all else, this algo is VERY VERY fast and can be more easily reasoned about with.
+
+*/
 
 export interface MorphContext {
   /**
-   * Component `onLoad` callbacks to be invoked after morph completes
-   */
-  onLoad: Set<(()=> void)>;
-  /**
-   * Component IDs to invoke onExit
-   */
-  onExit: string[];
-  /**
    * Lookup Nodes
    */
-  lookup: Map<string, any>;
+  $lookup: Map<string, Element | ChildNode>;
   /**
    * Keyed Node removals
    */
-  remove: string[]
+  $remove: Set<string>;
+}
+
+/**
+ * Create an element, optionally with a known namespace URI.
+ *
+ * @param {string} nodeName
+ * The element name, e.g. 'div' or 'svg'
+ *
+ * @param {string} [namespaceURI]
+ * The element's namespace URI, i.e. the value of its `xmlns` attribute or
+ * its inferred namespace.
+ */
+function createElementNS (nodeName: string, namespaceURI?: string): Element {
+
+  return !namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml'
+    ? document.createElement(nodeName)
+    : document.createElementNS(namespaceURI, nodeName);
+}
+
+/**
+ * Returns true if two node's names are the same.
+ *
+ * **NOTE**
+ *
+ * We don't bother checking `namespaceURI` because you will never find
+ * two HTML elements with the same nodeName and different namespace URIs.
+ */
+function matchName (curNodeName: string, newNodeName: string): boolean {
+
+  if (curNodeName === newNodeName) return true;
+
+  const curCodeStart = curNodeName.charCodeAt(0);
+  const newCodeStart = newNodeName.charCodeAt(0);
+
+  // If the target element is a virtual DOM node or SVG node then we may
+  // need to normalize the tag name before comparing. Normal HTML elements that are
+  // in the "http://www.w3.org/1999/xhtml" are converted to upper case
+  return curCodeStart <= 90 && newCodeStart >= 97
+    ? curNodeName === newNodeName.toUpperCase()
+    : newCodeStart <= 90 && curCodeStart >= 97 ? newNodeName === curNodeName.toUpperCase() : false;
+
+}
+
+/**
+ * Form element handling
+ */
+function formNodes (curElement: Element, newElement: Element) {
+
+  switch (curElement.nodeName) {
+    case 'INPUT':
+      forms.input(
+        curElement as HTMLInputElement,
+        newElement as HTMLInputElement
+      );
+      break;
+    case 'OPTION':
+      forms.option(
+        curElement as HTMLInputElement,
+        newElement as HTMLOptionElement
+      );
+      break;
+    case 'SELECT':
+      forms.select(
+        curElement as HTMLElement,
+        newElement as HTMLElement
+      );
+      break;
+    case 'TEXTAREA':
+      forms.textarea(
+        curElement as HTMLTextAreaElement,
+        newElement as HTMLTextAreaElement
+      );
+      break;
+  }
+
+}
+
+/**
+ * Get default node key
+ */
+function getKey (node: Element | ChildNode) {
+
+  return node ? 'getAttribute' in node ? node.getAttribute('id') : undefined : undefined;
+
+}
+
+/**
+ * Move Children
+ *
+ * Copies the children of one DOM element to another DOM element
+ */
+function moveChildren (curElement: Element, newElement: Element) {
+
+  let firstChild: ChildNode = curElement.firstChild;
+  let nextChild: ChildNode;
+
+  while (firstChild) {
+    nextChild = firstChild.nextSibling;
+    newElement.appendChild(firstChild);
+    firstChild = nextChild;
+  }
+
+  return newElement;
+
+}
+
+/**
+ * Remove Node
+ *
+ * Discard a node from the DOM.
+ */
+function removeNode (curNode: any, parentNode: Node, context: MorphContext, skipKeys = true): void {
+
+  // if (onBeforeNodeDiscarded(node) === false) return;
+
+  observe.removeNode(curNode);
+
+  if (parentNode) {
+    parentNode.removeChild(curNode);
+  }
+
+  walkNodes(
+    curNode,
+    skipKeys,
+    context
+  );
+
 }
 
 /**
@@ -30,60 +178,63 @@ export interface MorphContext {
  *
  * Traversed and applies morphs to child nodes.
  */
-function morphChildren (oldElement: Element, newElement: Element, context: MorphContext) {
+function morphChildren (curElement: Element, newElement: Element, context: MorphContext) {
 
   let newNode = newElement.firstChild;
-  let newNodeKey: string;
+  let newKey: string;
   let newNextSibling: ChildNode;
-  let oldNode = oldElement.firstChild;
-  let oldNodeKey: string;
-  let oldNodeType: number;
-  let oldNextSibling: ChildNode;
-  let oldNodeMatch: Element;
+  let curNode = curElement.firstChild;
+  let curKey: string;
+  let curNodeType: number;
+  let curNextSibling: ChildNode;
+  let curMatch: Element;
 
-  // walk the children
+  // walk the newNode children
   outer: while (newNode) {
 
+    newKey = getKey(newNode);
     newNextSibling = newNode.nextSibling;
-    newNodeKey = getNodeKey(newNode);
 
-    // walk the fromNode children all the way through
-    while (oldNode) {
+    // walk the curNode children all the way through
+    while (curNode) {
 
-      oldNextSibling = oldNode.nextSibling;
+      curNextSibling = curNode.nextSibling;
 
-      if (newNode.isSameNode && newNode.isSameNode(oldNode)) {
+      if (newNode.isEqualNode(curNode)) {
         newNode = newNextSibling;
-        oldNode = oldNextSibling;
+        curNode = curNextSibling;
         continue outer;
       }
 
-      oldNodeKey = getNodeKey(oldNode);
-      oldNodeType = oldNode.nodeType;
+      curKey = getKey(curNode);
+      curNodeType = curNode.nodeType;
 
-      // this means if the oldNode doesnt have a match with the newNode
+      // this means if the curNode doesnt have a match with the newNode
       let isCompatible: boolean;
 
-      if (oldNodeType === newNode.nodeType) {
-        if (oldNodeType === Nodes.ELEMENT_NODE) {
+      if (curNodeType === newNode.nodeType) {
+        if (curNodeType === Nodes.ELEMENT_NODE) {
 
-          // Both nodes being compared are Element nodes
-          if (newNodeKey) {
+          if (newKey) {
 
-            // The target node has a key so we want to match it up with the correct element in the original DOM tree
-            if (newNodeKey !== oldNodeKey) {
+            // The target node has a key so we want to match it up with the correct
+            // element in the original DOM tree.
+            //
+            if (newKey !== curKey) {
 
               // The current element in the original DOM tree does not have a matching key so
               // let's check our lookup to see if there is a matching element in the original DOM tree
-              if ((oldNodeMatch = context.lookup.get(newNodeKey))) {
+              //
+              if ((curMatch = context.$lookup.get(newKey) as Element)) {
 
-                if (oldNextSibling === oldNodeMatch) {
+                if (curNextSibling.isEqualNode(curMatch)) {
 
                   // Special case for single element removals. To avoid removing the original
                   // DOM node out of the tree (since that can break CSS transitions, etc.),
                   // we will instead discard the current node and wait until the next
                   // iteration to properly match up the keyed target element with its matching
                   // element in the original tree
+                  //
                   isCompatible = false;
 
                 } else {
@@ -96,15 +247,19 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
                   // We use insertBefore instead of replaceChild because we want to go
                   // through the `removeNode()` function for the node that is being
                   // discarded so that all lifecycle hooks are correctly invoked
-                  oldElement.insertBefore(oldNodeMatch, oldNode);
+                  //
+                  curElement.insertBefore(
+                    curMatch,
+                    curNode
+                  );
 
-                  // oldNextSibling = oldNode.nextSibling;
+                  // curNextSibling = curNode.nextSibling;
 
-                  if (oldNodeKey) {
+                  if (curKey) {
 
                     // Since the node is keyed it might be matched up later
                     // so we defer the actual removal to later
-                    context.remove.push(oldNodeKey);
+                    context.$remove.add(curKey);
 
                   } else {
 
@@ -112,12 +267,16 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
                     //
                     // we skip nested keyed nodes from being removed since
                     // there is still a chance they will be matched up later
-                    removeNode(oldNode as Element, oldElement, true, context);
+                    removeNode(
+                      curNode,
+                      curElement,
+                      context
+                    );
 
                   }
 
-                  oldNode = oldNodeMatch;
-                  oldNodeKey = getNodeKey(oldNode);
+                  curNode = curMatch;
+                  curKey = getKey(curNode);
 
                 }
               } else {
@@ -129,46 +288,41 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
               }
             }
 
-          } else if (oldNodeKey) {
+          } else if (curKey) {
 
-            // The original has a key
+            // The original node has a key
             isCompatible = false;
 
           }
 
-          if (isCompatible !== false) isCompatible = compareNodeNames(oldNode, newNode);
-
-          // SPX PATCH
-          //
-          // ChildNodes morph preservation of attributes. When child dom nodes
-          // contain a `spx-morph="children"` annotation then attributes will be
-          // preserved on the parent node. This helps preserve dom state in stimulus
-          // controllers and alike.
-          if (
-            isCompatible === false &&
-            context.lookup.has(oldNodeKey) &&
-            context.lookup.get(oldNodeKey).getAttribute($.qs.$morph) === 'children') {
-
-            isCompatible = true;
-
-          }
+          isCompatible = isCompatible !== false && matchName(
+            curNode.nodeName,
+            newNode.nodeName
+          );
 
           if (isCompatible) {
 
             // We found compatible DOM elements so transform
-            // the current "from" node to match the current
-            // target DOM node. MORPH
-            morphElements(oldNode as Element, newNode as Element, context);
+            // the current "from" node to match the current target DOM node.
+            morphElement(
+              curNode as Element,
+              newNode as Element,
+              context
+            );
 
           }
 
-        } else if (oldNodeType === Nodes.TEXT_NODE || oldNodeType === Nodes.COMMENT_NODE) {
+        } else if (curNodeType === Nodes.TEXT_NODE || curNodeType === Nodes.COMMENT_NODE) {
 
           // Both nodes being compared are Text or Comment nodes
+          //
           isCompatible = true;
 
           // Simply update nodeValue on the original node to change the text value
-          if (oldNode.nodeValue !== newNode.nodeValue) oldNode.nodeValue = newNode.nodeValue;
+          //
+          if (curNode.nodeValue !== newNode.nodeValue) {
+            curNode.nodeValue = newNode.nodeValue;
+          }
 
         }
       }
@@ -178,7 +332,7 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
         // Advance both the "to" child and the "from" child since we found a match
         // Nothing else to do as we already recursively called morphChildren above
         newNode = newNextSibling;
-        oldNode = oldNextSibling;
+        curNode = curNextSibling;
 
         continue outer;
 
@@ -190,37 +344,43 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
       // target tree and we don't want to discard it just yet since it still might find a
       // home in the final DOM tree. After everything is done we will remove any keyed nodes
       // that didn't find a home
-      if (oldNodeKey) {
+      if (curKey) {
 
         // Since the node is keyed it might be matched up later so we defer
         // the actual removal to later
-        context.remove.push(oldNodeKey);
+        context.$remove.add(curKey);
 
       } else {
+
         // NOTE: we skip nested keyed nodes from being removed since there is
         // still a chance they will be matched up later
-        removeNode(oldNode as Element, oldElement, true, context);
+        removeNode(
+          curNode,
+          curElement,
+          context
+        );
+
       }
 
-      oldNode = oldNextSibling;
+      curNode = curNextSibling;
 
-    } // END: while(oldNode) {}
+    } // END: while(curNode) {}
 
     // If we got this far then we did not find a candidate match for
     // our "to node" and we exhausted all of the children "from"
     // nodes. Therefore, we will just append the current "to" node to the end
+    //
     if (
-      newNodeKey &&
-      (oldNodeMatch = context.lookup.get(newNodeKey)) &&
-      compareNodeNames(oldNodeMatch, newNode as Element)
-    ) {
+      newKey &&
+      (curMatch = context.$lookup.get(newKey) as Element) && matchName(curMatch.nodeName, newNode.nodeName)) {
 
-      // MORPH
-      //
-      // Original: addChild(oldElement, oldNodeMatch);
-      //
-      oldElement.appendChild(oldNodeMatch);
-      morphElements(oldNodeMatch, newNode as Element, context);
+      curElement.appendChild(curMatch);
+
+      morphElement(
+        curMatch,
+        newNode as Element,
+        context
+      );
 
     } else {
 
@@ -229,50 +389,38 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
       // if (onBeforeNodeAddedResult) newNode = onBeforeNodeAddedResult;
 
       // @ts-ignore
-      if (newNode.actualize) newNode = newNode.actualize(oldElement.ownerDocument || document);
+      if (newNode.actualize) newNode = newNode.actualize(curElement.ownerDocument || document);
+
+      // APPEND CHILD
+      //
+      curElement.appendChild(newNode);
 
       // MORPH
       //
-      // Original: addChild(oldElement, newNode as Element);
+      // Original: addedNode(element, newNode as Element);
       //
-      oldElement.appendChild(newNode);
-      addedNode(newNode as Element, context);
+      addedNode(
+        newNode,
+        context
+      );
 
     }
 
     newNode = newNextSibling;
-    oldNode = oldNextSibling;
+    curNode = curNextSibling;
   }
 
-  cleanNode(oldElement, oldNode, oldNodeKey, context);
+  cleanNode(
+    curElement,
+    curNode,
+    curKey,
+    context
+  );
 
-  switch (oldElement.nodeName) {
-    case 'INPUT':
-      onInputElement(
-        oldElement as HTMLInputElement,
-        newElement as HTMLInputElement
-      );
-      break;
-    case 'OPTION':
-      onOptionElement(
-        oldElement as HTMLInputElement,
-        newElement as HTMLOptionElement
-      );
-      break;
-    case 'SELECT':
-      onSelectElement(
-        oldElement as HTMLElement,
-        newElement as HTMLElement
-      );
-      break;
-    case 'TEXTAREA':
-      onTextareaElement(
-        oldElement as HTMLTextAreaElement,
-        newElement as HTMLTextAreaElement
-      );
-      break;
-  }
-
+  formNodes(
+    curElement,
+    newElement
+  );
 }
 
 /**
@@ -280,28 +428,49 @@ function morphChildren (oldElement: Element, newElement: Element, context: Morph
  *
  * Applies morph to elements. Comparison is done via `isEqualNode` to determain changes.
  */
-function morphElements (oldNode: Element, newNode: Element, context: MorphContext) {
+function morphElement (curElement: any, newElement: Element, context: MorphContext) {
 
-  const newNodeKey = getNodeKey(newNode);
+  const newKey = getKey(newElement);
 
   // If an element with an ID is being morphed then it will be in the final
   // DOM so clear it out of the saved elements collection
-  if (newNodeKey) context.lookup.delete(newNodeKey);
+  //
+  if (newKey) {
+    context.$lookup.delete(newKey);
+  }
 
-  if (oldNode.isEqualNode(newNode)) return; // spec - https://dom.spec.whatwg.org/#concept-node-equals
+  if (curElement.isEqualNode(newElement)) return; // spec - https://dom.spec.whatwg.org/#concept-node-equals
 
-  const morphAttr = oldNode.getAttribute($.qs.$morph);
+  const morphAttr = curElement.getAttribute($.qs.$morph);
 
+  // SPX Morph attribute handling
+  //
   if (morphAttr === 'false') return;
-  if (morphAttr !== 'children') morphAttributes(oldNode, newNode);
+  if (morphAttr !== 'children') {
+    morphAttributes(
+      curElement as HTMLElement,
+      newElement as HTMLElement
+    );
+  }
 
-  // onElUpdated(oldNode); // optional
-  // if (onBeforeElChildrenUpdated(oldNode, newNode) === false) return;
+  // onElUpdated(curElement); // optional
+  // if (onBeforeElChildrenUpdated(curElement, newElement) === false) return;
 
-  if (oldNode.nodeName !== 'TEXTAREA') {
-    morphChildren(oldNode, newNode, context);
+  if (curElement.nodeName !== 'TEXTAREA') {
+
+    morphChildren(
+      curElement,
+      newElement,
+      context
+    );
+
   } else {
-    onTextareaElement(oldNode as HTMLTextAreaElement, newNode as HTMLTextAreaElement);
+
+    forms.textarea(
+      curElement as HTMLTextAreaElement,
+      newElement as HTMLTextAreaElement
+    );
+
   }
 
 }
@@ -309,37 +478,44 @@ function morphElements (oldNode: Element, newNode: Element, context: MorphContex
 /**
  * Walk Nodes
  *
- * Recusively traverse through the node node list. We will check for component
- * existences in this cycle.
+ * Recusively traverse through the node node list.
  */
-function walkNodes (node: ChildNode, skipKeyedNodes: boolean, context: MorphContext) {
+function walkNodes (curNode: ChildNode, skipKeys: boolean, context: MorphContext) {
 
-  if (node.nodeType !== Nodes.ELEMENT_NODE) return;
+  if (curNode.nodeType !== Nodes.ELEMENT_NODE) return;
 
-  let curChild = node.firstChild;
+  let curChild = curNode.firstChild as Element;
 
   while (curChild) {
 
     let key: string;
 
-    if (skipKeyedNodes && (key = getNodeKey(curChild))) {
+    if (skipKeys && (key = getKey(curChild))) {
 
       // If we are skipping keyed nodes then we add the key
       // to a list so that it can be handled at the very end.
-      context.remove.push(key);
+      context.$remove.add(key);
 
     } else {
 
       // Only report the node as discarded if it is not keyed. We do this because
       // at the end we loop through all keyed elements that were unmatched
       // and then discard them in one final pass.
-      removeComponent(curChild as HTMLElement); // onNodeDiscarded(curChild);
+      observe.removeNode(curChild as HTMLElement); // onNodeDiscarded(curChild);
 
-      if (curChild.firstChild) walkNodes(curChild as Element, skipKeyedNodes, context);
+      if (curChild.firstChild) {
+
+        walkNodes(
+          curChild,
+          skipKeys,
+          context
+        );
+
+      }
 
     }
 
-    curChild = curChild.nextSibling;
+    curChild = curChild.nextSibling as Element;
 
   }
 
@@ -350,53 +526,64 @@ function walkNodes (node: ChildNode, skipKeyedNodes: boolean, context: MorphCont
  *
  * A new node has been added to the DOM
  */
-function addedNode (el: Element, context: MorphContext) {
+function addedNode (curElement: Node, context: MorphContext) {
 
   // Lets check our component observer to determine whether or
   // not this node is component related.
-  if (el.nodeType === Nodes.ELEMENT_NODE) addComponent(el as HTMLElement); // onNodeAdded(el);
+  if (curElement.nodeType === Nodes.ELEMENT_NODE || curElement.nodeType === Nodes.FRAGMENT_NODE) {
 
-  let curChild = el.firstChild as Element;
+    observe.addedNode(curElement as HTMLElement);
+
+  }
+
+  let curChild = curElement.firstChild as Element;
 
   while (curChild) {
 
     const nextSibling = curChild.nextSibling;
-    const key = getNodeKey(curChild);
+    const curKey = getKey(curChild);
 
-    if (key) {
+    if (curKey) {
 
-      const unmatchedFromEl = context.lookup.get(key);
+      const unmatchElement = context.$lookup.get(curKey);
 
-      // If we find a duplicate #id node in cache, replace `el` with cache  value and morph it to the child node.
-      if (unmatchedFromEl && compareNodeNames(curChild, unmatchedFromEl)) {
-        curChild.parentNode.replaceChild(unmatchedFromEl, curChild);
-        morphElements(unmatchedFromEl, curChild, context);
+      // If we find a duplicate #id node in cache, replace `el` with cache value and morph it to the child node.
+      if (unmatchElement && matchName(curChild.nodeName, unmatchElement.nodeName)) {
+
+        curChild.parentNode.replaceChild(
+          unmatchElement,
+          curChild
+        );
+
+        morphElement(
+          unmatchElement,
+          curChild,
+          context
+        );
+
       } else {
-        addedNode(curChild, context);
+
+        addedNode(
+          curChild,
+          context
+        );
+
       }
 
     } else {
-      // Recursively call for curChild and it's children to see if we find something in fromNodesLookup
-      addedNode(curChild, context);
+
+      // Recursively call for curChild and it's children to see if we find something
+      //
+      addedNode(
+        curChild,
+        context
+      );
+
     }
 
-    curChild = nextSibling as Element;
+    curChild = <Element>nextSibling;
 
   }
-}
-
-/**
- * Remove Node
- *
- * Discard a node from the DOM.
- */
-function removeNode (node: Element, parentNode: Element, skipKeyedNodes: boolean, context: MorphContext): void {
-
-  // if (onBeforeNodeDiscarded(node) === false) return;
-  if (parentNode) parentNode.removeChild(node);
-  removeComponent(node as HTMLElement);
-  walkNodes(node, skipKeyedNodes, context);
-
 }
 
 /**
@@ -405,139 +592,219 @@ function removeNode (node: Element, parentNode: Element, skipKeyedNodes: boolean
  * We have processed all of the "to nodes". If `curFromNodeChild` is non-null
  * then we still have some from nodes left over that need to be removed.
  */
-function cleanNode (oldNode: Element, curFromNodeChild: ChildNode, oldNodeKey: string, context: MorphContext) {
+function cleanNode (curElement: Element, curNode: ChildNode, curKey: string, context: MorphContext) {
 
-  // We have processed all of the "to nodes". If curFromNodeChild is
+  // We have processed all of the "to nodes". If curNode is
   // non-null then we still have some from nodes left over that need to be removed
-  while (curFromNodeChild) {
+  while (curNode) {
 
-    const oldNextSibling = curFromNodeChild.nextSibling;
+    const curNextSibling = curNode.nextSibling;
 
-    if ((oldNodeKey = getNodeKey(curFromNodeChild))) {
+    if ((curKey = getKey(curNode))) {
 
       // Since the node is keyed it might be matched up later so we defer the actual removal to later
-      context.remove.push(oldNodeKey);
+      context.$remove.add(curKey);
 
     } else {
 
       // NOTE: We skip nested keyed nodes from being removed since there is
       // still a chance they will be matched up later
-      removeNode(curFromNodeChild as Element, oldNode, true, context);
+      removeNode(
+        curNode,
+        curElement,
+        context
+      );
 
     }
 
-    curFromNodeChild = oldNextSibling;
-    oldNodeKey = getNodeKey(curFromNodeChild);
+    curNode = curNextSibling;
+
   }
 }
 
-function indexNode (node: Element, context: MorphContext) {
+function indexNode (fromNode: Element | ChildNode, context: MorphContext) {
 
-  if (node.nodeType === Nodes.ELEMENT_NODE || node.nodeType === Nodes.FRAGMENT_NODE) {
+  if (fromNode.nodeType === Nodes.ELEMENT_NODE || fromNode.nodeType === Nodes.FRAGMENT_NODE) {
 
-    let curChild = node.firstChild;
+    let childNode: Element | ChildNode = fromNode.firstChild;
 
-    while (curChild) {
+    while (childNode) {
 
-      const key = getNodeKey(curChild);
+      const key = getKey(childNode);
 
-      if (key) context.lookup.set(key, curChild);
+      if (key) {
+        context.$lookup.set(
+          key,
+          childNode
+        );
+      }
 
       // Walk recursively
       //
-      indexNode(curChild as Element, context);
+      indexNode(
+        childNode,
+        context
+      );
 
-      curChild = curChild.nextSibling;
+      childNode = childNode.nextSibling;
 
     }
-  }
 
+  }
 }
 
-export function morph (oldNode: HTMLElement, newNode: HTMLElement) {
-
-  if (newNode.nodeType === Nodes.FRAGMENT_NODE) newNode = newNode.firstElementChild as HTMLElement;
-
-  const context: MorphContext = o({
-    remove: [],
-    lookup: m()
-  });
-
-  indexNode(oldNode, context);
+export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
 
   /**
-   * Old Node references the last known `oldNode`
+   * New Node
+   *
+   * Clone the snapshot node, we will traverse a copy and update
+   * the cache reference in final cycle
    */
-  let morphedNode: Element = oldNode;
+  let newNode: HTMLElement = <HTMLElement>snapNode.cloneNode(true);
+
+  /**
+   * Morph Context
+   *
+   * Models used for the id (keyed) operations in post-cycle.
+   */
+  const context: MorphContext = o({
+    $remove: s(),
+    $lookup: m()
+  });
+
+  if (newNode.nodeType === Nodes.FRAGMENT_NODE) {
+    newNode = newNode.firstElementChild as HTMLElement;
+  }
+
+  indexNode(
+    curNode,
+    context
+  );
+
+  /**
+   * Old Node references the last known `curNode`
+   */
+  let morphedNode: Element = curNode;
 
   /**
    * Old Node `NodeType` reference
    */
-  const oldNodeType = morphedNode.nodeType;
+  const curNodeType = morphedNode.nodeType;
 
   /**
    * New Node `NodeType` Reference
    */
   const newNodeType = newNode.nodeType;
 
-  if (oldNodeType === Nodes.ELEMENT_NODE) {
+  if (curNodeType === Nodes.ELEMENT_NODE) {
     if (newNodeType === Nodes.ELEMENT_NODE) {
-      if (!compareNodeNames(oldNode, newNode)) {
-        removeComponent(oldNode);
-        morphedNode = moveChildren(oldNode, createElementNS(newNode.nodeName, newNode.namespaceURI));
+
+      if (!matchName(curNode.nodeName, newNode.nodeName)) {
+
+        observe.removeNode(curNode); // onNodeDiscarded(curNode);
+
+        morphedNode = moveChildren(
+          curNode,
+          createElementNS(
+            newNode.nodeName,
+            newNode.namespaceURI
+          )
+        );
+
       }
+
     } else {
       morphedNode = newNode;
     }
-  } else if (oldNodeType === Nodes.TEXT_NODE || oldNodeType === Nodes.COMMENT_NODE) {
-    if (newNodeType === oldNodeType) {
-      if (morphedNode.nodeValue !== newNode.nodeValue) morphedNode.nodeValue = newNode.nodeValue;
+
+  } else if (curNodeType === Nodes.TEXT_NODE || curNodeType === Nodes.COMMENT_NODE) {
+
+    if (newNodeType === curNodeType) {
+
+      if (morphedNode.nodeValue !== newNode.nodeValue) {
+        morphedNode.nodeValue = newNode.nodeValue;
+      }
+
       return morphedNode;
+
     } else {
+
       morphedNode = newNode; // Text node to something else
+
     }
   }
 
-  if (morphedNode === newNode) {
+  if (morphedNode.isEqualNode(newNode)) {
 
     // The "to node" was not compatible with the "from node" so we had to
     // toss out the "from node" and use the "to node"
-    removeComponent(oldNode); // onNodeDiscarded(oldNode);
+    observe.removeNode(curNode); // onNodeDiscarded(curNode);
 
   } else {
 
-    if (newNode.isSameNode && newNode.isSameNode(morphedNode)) return;
+    // We use isEqualNode instead of isSameNode because
+    // no fucks are given in SPX about "this" scopes
+    //
+    if (newNode.isEqualNode(morphedNode)) return morphedNode;
 
-    morphElements(morphedNode, newNode, context);
+    morphElement(
+      morphedNode,
+      newNode,
+      context
+    );
 
     // We now need to loop over any keyed nodes that might need to be
     // removed. We only do the removal if we know that the keyed node
     // never found a match. When a keyed node is matched up we remove
-    // it out of fromNodesLookup and we use fromNodesLookup to determine
+    // it out of curNodesLookup and we use curNodesLookup to determine
     // if a keyed node has been matched up or not
-    if (context.remove) {
-      for (const key of context.remove) {
-        const elRemove = context.lookup.get(key);
-        if (elRemove) removeNode(elRemove, elRemove.parentNode, false, context);
+    if (context.$remove.size > 0) {
+
+      for (const key of context.$remove) {
+
+        if (context.$lookup.has(key)) {
+
+          const node = context.$lookup.get(key);
+
+          removeNode(
+            node,
+            node.parentNode,
+            context,
+            false
+          );
+
+        }
       }
     }
   }
 
-  if (morphedNode !== oldNode && oldNode.parentNode) {
+  if (morphedNode !== curNode && curNode.parentNode) {
 
-    // @ts-ignore
-    if (morphedNode.actualize) morphedNode = morphedNode.actualize(oldNode.ownerDocument || document);
+    if (morphedNode.actualize) morphedNode = morphedNode.actualize(curNode.ownerDocument || document);
 
     // If we had to swap out the from node with a new node because the old
     // node was not compatible with the target node then we need to
     // replace the old DOM node in the original DOM tree. This is only
     // possible if the original DOM node was part of a DOM tree which
     // we know is the case if it has a parent node.
-    oldNode.parentNode.replaceChild(morphedNode, oldNode);
+    curNode.parentNode.replaceChild(
+      morphedNode,
+      curNode
+    );
 
   }
 
-  //  context.lookup.clear();
+  context.$lookup.clear();
+  context.$remove.clear();
+
+  // Final process involves manipulating the snapshot reference
+  // This is done outside the event loop, so will be carried out
+  // in the post -render cycle after the DOM has already rendered.
+  //
+  if (observe.context && observe.context.$nodes.length > 0) {
+    onNextTick(() => morphSnap(snapNode, observe.context.$nodes));
+  }
 
   return morphedNode;
 }
