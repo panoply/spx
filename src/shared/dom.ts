@@ -13,6 +13,16 @@ export function parse (HTMLString: string): Document {
 }
 
 /**
+ * Returns a snapshot of the current document, including `<!DOCTYPE html>`
+ * reference. Optionally accepts a `dom` Document, if none provided uses `document`
+ */
+export function takeSnapshot (dom?: Document) {
+
+  return (dom || document).documentElement.outerHTML;
+
+}
+
+/**
  * Extract the document title text from the
  * `<title>` tag of a dom string.
  */
