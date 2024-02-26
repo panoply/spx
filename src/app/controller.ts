@@ -1,17 +1,21 @@
-import * as hrefs from '../observers/hrefs';
-import * as hover from '../observers/hover';
-import * as intersect from '../observers/intersect';
-import * as request from './fetch';
-import * as history from '../observers/history';
-import * as proximity from '../observers/proximity';
-import * as components from '../observers/components';
-import * as store from './store';
-import { EventType, Errors } from '../shared/enums';
+import type { IPage } from 'types';
+import { VisitType, Errors } from '../shared/enums';
 import { getRoute } from './location';
-import { log, onNextTick } from '../shared/utils';
-import { IPage } from 'types';
-import { $ } from './session';
+import { log } from '../shared/logs';
+import { onNextTick } from '../shared/utils';
 import { defineProps } from '../shared/native';
+import { parse, takeSnapshot } from '../shared/dom';
+import { $ } from './session';
+import * as q from './queries';
+import * as hrefs from '../observe/hrefs';
+import * as hover from '../observe/hovers';
+import * as intersect from '../observe/intersect';
+import * as request from './fetch';
+import * as history from '../observe/history';
+import * as proximity from '../observe/proximity';
+import * as components from '../observe/components';
+import * as mutations from '../observe/mutations';
+import * as fragment from '../observe/fragment';
 
 // import * as timer from '../test/timer';
 
@@ -23,30 +27,25 @@ import { defineProps } from '../shared/native';
  */
 export function initialize (): Promise<IPage> {
 
-  const route = getRoute(EventType.INITIAL);
+  const route = getRoute(VisitType.INITIAL);
 
   // Connect HistoryAPI push~state observers
   // This MUST be called after we've obtained the initial
   // state reference (above) as history.state will be assigned
   //
-  const state = history.connect(store.create(route));
+  const state = history.connect(q.create(route));
 
   defineProps($, {
-    page: {
-      get () {
-        return $.pages[history.api.state.key];
-      }
+    prev: {
+      get () { return $.pages[history.api.state.rev]; }
     },
-    snap: {
-      get () {
-        return $.snaps[$.page.uuid];
-      }
+    page: {
+      get () { return $.pages[history.api.state.key]; }
+    },
+    snapDom: {
+      get () { return parse($.snaps[$.page.snap]); }
     }
   });
-
-  // Record first page
-  //
-  $.index = state.key;
 
   /**
    * DOM Ready
@@ -56,19 +55,22 @@ export function initialize (): Promise<IPage> {
    */
   const DOMReady = () => {
 
-    const page = store.set(state, document.documentElement.outerHTML);
+    const page = q.set(state, takeSnapshot());
 
     hrefs.connect();
+    fragment.connect();
 
     if ($.config.manual === false) {
       hover.connect();
       intersect.connect();
       proximity.connect();
       components.connect();
+      mutations.connect();
     }
 
     onNextTick(() => {
-      if (page.rev !== page.key) request.reverse(page.rev);
+      q.patch('type', VisitType.VISIT);
+      request.reverse(page);
       request.preload(page);
     });
 
@@ -78,14 +80,16 @@ export function initialize (): Promise<IPage> {
 
   return new Promise(resolve => {
 
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    const { readyState } = document;
+
+    if (readyState === 'interactive' || readyState === 'complete') {
       return resolve(DOMReady());
     }
 
     // FALLBACK
-    // Invoked if readyState is matched, likely obsolete
+    // Invoked if readyState is not matched, likely obsolete
     //
-    addEventListener('DOMContentLoaded', () => resolve(DOMReady()), { once: true });
+    addEventListener('DOMContentLoaded', () => resolve(DOMReady()));
 
   });
 
@@ -102,6 +106,12 @@ export function observe () {
   proximity.disconnect();
   proximity.connect();
 
+  components.disconnect();
+  components.connect();
+
+  mutations.disconnect();
+  mutations.connect();
+
 }
 
 /**
@@ -111,16 +121,19 @@ export function disconnect (): void {
 
   history.disconnect();
   hrefs.disconnect();
+  mutations.disconnect();
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
 
-  if ($.components.registry.size > 0) {
+  if ($.config.components) {
+    components.disconnect();
+    components.teardown();
     $.components.registry.clear();
   }
 
-  // Purge Store
-  store.clear();
+  // Purge q
+  q.clear();
 
   if ($.config.globalThis) delete window.spx;
 
