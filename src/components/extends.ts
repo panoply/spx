@@ -2,18 +2,29 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-redeclare */
 
-import { ValueOf } from 'type-fest';
-import { $ } from '../app/session';
-import { isArray, nil, o } from '../shared/native';
-import { attrJSON, defineGetter, hasProp, upcase } from '../shared/utils';
+import { Merge, ValueOf } from 'type-fest';
+import { o, nil, isArray, defineProps, defineProp } from '../shared/native';
+import { attrJSON, hasProp, upcase } from '../shared/utils';
 import { IScope, SPX } from '../types/components';
+import { Errors } from '../shared/enums';
+import { log } from '../shared/logs';
+// import { morphBinds } from '../morph/snapshot';
+import { $ } from '../app/session';
 
 /**
  * Component Extends
  *
  * Extends base classes and assigns scopes to custom defined components.
  */
-export class Component {
+export const Component = class {
+
+  /**
+   * Component Scope
+   *
+   * Holds scope reference information about the instance, elements which pertain to the instance
+   * and event reference handling.
+   */
+  readonly scope: IScope;
 
   /**
    * Component State
@@ -36,14 +47,21 @@ export class Component {
      */
     [key: string]: any;
 
-  }>;
+  }> = o();
+
+  /**
+   * State Interface
+   *
+   * Returns the element of which is annotated with `spx-component`
+   */
+  readonly static: Merge<SPX.Connect, { id: string; }>;
 
   /**
    * DOM Node
    *
    * Returns the element of which is annotated with `spx-component`
    */
-  public dom: HTMLElement;
+  public get dom () { return $.components.elements.get(this.scope.el); };
 
   /**
    * Document Element
@@ -57,126 +75,130 @@ export class Component {
    *
    * Creates the component instance
    */
-  constructor ({ state, instanceOf }: IScope, domNode: HTMLElement, connect: SPX.Connect) {
+  constructor (scope: IScope, connect: SPX.Connect) {
 
-    this.dom = domNode;
+    defineProps(this, {
+      scope: {
+        get () { return scope; }
+      },
+      static: {
+        get () { return connect; }
+      }
+    });
 
-    if (connect.state !== null) {
+    const prefix = `${$.config.schema}${this.scope.instanceOf}`;
 
-      /**
-       * Schema Prefix for `state` value
-       */
-      const prefix = $.config.schema + instanceOf;
+    /**
+     * State applied proxy
+     *
+     * Aligns the DOM attributes whenever a state change is applied.
+     */
+    this.state = new Proxy(o(), {
+      set: (target, key: string, value) => {
 
-      /**
-       * State applied proxy
-       *
-       * Aligns the DOM attributes whenever a state change is applied.
-       */
-      this.state = new Proxy(o(), {
-        set: (target, key: string, value) => {
+        const preset = this.static.state[key];
+        const domValue = typeof value === 'object' || isArray(value)
+          ? JSON.stringify(value)
+          : `${value}`;
 
-          const staticState = connect.state[key];
-
-          if (typeof staticState === 'object' && hasProp(staticState, 'persist') && staticState.persist) {
-            target[key] = state[key] = value;
-          } else {
-            target[key] = value;
-          }
-
-          /**
-         * We need to stringify the attribute value if it is an array or object
-         * before making a reference on the DOM node.
-         */
-          const domValue = typeof value === 'object' || isArray(value)
-            ? JSON.stringify(value)
-            : value;
-
-          this.dom.setAttribute(`${prefix}:${key}`, domValue);
-
-          if (hasProp(this, `${key}StateNodes`)) {
-            for (const binding of this[`${key}StateNodes`]) {
-              binding.innerText = domValue;
-            }
-          }
-
-          return true;
-        }
-      });
-
-      const hasRef = defineGetter(this.state);
-
-      for (const prop in connect.state) {
-
-        /**
-         * The `static` state value
-         */
-        const attr = connect.state[prop];
-
-        /**
-         * Whether or not the data key exists on DOM component
-         */
-        const isDefined = this.dom.hasAttribute(`${prefix}:${prop}`);
-
-        /**
-         * Applies a getter reference to the state context
-         */
-        hasRef(`has${upcase(prop)}`, isDefined);
-
-        /**
-         * The `static` state type contructor value
-         */
-        let type: ValueOf<typeof connect.state>;
-
-        /**
-         * The `static` state type converted value
-         */
-        let value: any;
-
-        /**
-         * Whether or not connect value is object or array and assigned as default
-         */
-        let isDefaultJSON: boolean = false;
-
-        /**
-         * Lets quickly determine whether the components static `state` has
-         * a default value reference or just a constructor reference. We will
-         * override component defined defaults with DOM defined defaults if
-         * both exist, as DOM defined defaults are first class citizens.
-         */
-        if (typeof attr === 'object') {
-          value = isDefined ? state[prop] : attr['default'];
-          type = attr['typeof'];
-          isDefaultJSON = typeof value === 'object' || isArray(value);
+        if (typeof preset === 'object' && hasProp(preset, 'persist') && preset.persist) {
+          target[key] = this.scope.state[key] = value;
         } else {
-          value = isDefined ? state[prop] : undefined;
-          type = attr;
+          target[key] = value;
         }
 
-        if (typeof value === 'string' && value.startsWith('window.')) {
-          this.state[prop] = state[prop] = window[value.slice(7)];
-        } else if (type === String) {
-          this.state[prop] = state[prop] = value || nil;
-        } else if (type === Boolean) {
-          this.state[prop] = state[prop] = value === 'true';
-        } else if (type === Number) {
-          this.state[prop] = state[prop] = Number(value) || 0;
-        } else if (type === Array) {
-          this.state[prop] = state[prop] = value === undefined
-            ? []
-            : isDefaultJSON
-              ? value
-              : attrJSON(prop, value);
-        } else if (type === Object) {
-          this.state[prop] = state[prop] = value === undefined
-            ? {}
-            : isDefaultJSON
-              ? value
-              : attrJSON(prop, value);
+        if (this.dom && domValue !== this.dom.getAttribute(`${prefix}:${key}`)) {
+          this.dom.setAttribute(
+            `${prefix}:${key}`,
+            domValue
+          );
         }
+
+        if (key in this.scope.context.binds) {
+          for (const ref of this.scope.context.binds[key]) {
+
+            const bind = this.scope.binds[ref];
+
+            $.components.elements.get(bind.el).innerText = domValue;
+
+            // onNextTick(() => morphBinds(
+            //   this.scope.ref,
+            //   bind,
+            //   domValue
+            // ));
+          }
+
+        }
+
+        return true;
 
       }
+    });
+
+    for (const prop in this.scope.state) {
+
+      if (!hasProp(connect.state, prop)) {
+        log(Errors.WARN, `Undefined state reference passed: ${prefix}:${prop}`, this.dom);
+        continue;
+      }
+
+      /**
+       * The `static` state value
+       */
+      const attr = this.static.state[prop];
+
+      /**
+       * The `static` state type contructor value
+       */
+      let type: ValueOf<typeof connect.state>;
+
+      /**
+       * The `static` state type converted value
+       */
+      let value: string = this.dom.getAttribute(`${prefix}:${prop}`);
+
+      /**
+       * The JSON value defintion
+       */
+      let json: boolean;
+
+      /**
+       * Whether or not dom state reference exists
+       */
+      const defined = value !== null && value !== nil;
+
+      if (typeof attr === 'object') {
+        type = attr.typeof;
+        json = defined;
+        if (!defined) value = attr.default;
+      } else {
+        type = attr;
+      }
+
+      if (!(`has${upcase(prop)}` in this.state)) {
+        defineProp(this.state, `has${upcase(prop)}`, {
+          get () { return defined; }
+        });
+      }
+
+      if (typeof value === 'string' && value.startsWith('window.')) {
+        this.state[prop] = window[value.slice(7)];
+      } else if (type === String) {
+        this.state[prop] = value || nil;
+      } else if (type === Boolean) {
+        this.state[prop] = value || false;
+      } else if (type === Number) {
+        this.state[prop] = value ? +value : 0;
+      } else if (type === Array) {
+        this.state[prop] = defined ? attrJSON(value) : json ? value : [];
+      } else if (type === Object) {
+        this.state[prop] = defined ? attrJSON(value) : json ? value : {};
+      }
+
+      this.scope.state[prop] = this.state[prop];
+
     }
+
   }
 
-}
+};
