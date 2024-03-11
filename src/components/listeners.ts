@@ -1,8 +1,8 @@
 import type { Merge } from 'type-fest';
-import type { IComponentEvent, SPX } from '../types/components';
+import type { ComponentEvent, SPX } from '../types/components';
 import { assign, o } from '../shared/native';
 import { defineGetter, hasProp } from '../shared/utils';
-import { Errors } from '../shared/enums';
+import { LogType } from '../shared/enums';
 import { getEventParams } from './context';
 import { log } from '../shared/logs';
 import { $ } from '../app/session';
@@ -17,7 +17,7 @@ export function isValidEvent (eventName: string, node: Element | Window) {
 
   if (`on${eventName}` in node) return true;
 
-  log(Errors.ERROR, [
+  log(LogType.ERROR, [
     `Invalid event name "${eventName}" provided. No such event exists in the DOM API.`,
     'Only known event listeners can be attached.'
   ], node);
@@ -32,7 +32,7 @@ export function isValidEvent (eventName: string, node: Element | Window) {
  * Assigns the `event.attrs` key to event method callbacks when DOM elements
  * contains attrs-state on containing element.
  */
-export function eventAttrs (instance: SPX.Class, event: IComponentEvent, node?: HTMLElement) {
+export function eventAttrs (instance: SPX.Class, event: ComponentEvent, node?: HTMLElement) {
 
   /**
    * The component event method
@@ -57,7 +57,7 @@ export function eventAttrs (instance: SPX.Class, event: IComponentEvent, node?: 
  * Removes an existing listener from a component instance method and updates the
  * the `$.components.elements` Map, removing the element attached.
  */
-export function removeEvent (instance: SPX.Class, event: IComponentEvent) {
+export function removeEvent (instance: SPX.Class, event: ComponentEvent) {
 
   if (!event.attached) return;
 
@@ -66,11 +66,11 @@ export function removeEvent (instance: SPX.Class, event: IComponentEvent) {
   event.options.signal = event.listener.signal;
   event.attached = false;
 
-  $.components.elements.delete(event.el);
+  $.components.$elements.delete(event.dom);
 
-  log(Errors.TRACE, [
-    `Detached ${event.key} ${event.eventName} event from the ${event.method} method on`,
-    `${instance.static.id} component (${instance.scope.key})`
+  log(LogType.VERBOSE, [
+    `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
+    `${instance.scope.static.id}: ${instance.scope.key}`
   ]);
 
 }
@@ -81,12 +81,12 @@ export function removeEvent (instance: SPX.Class, event: IComponentEvent) {
  * Adds a listener to the instance method and binds any `attrs` the event _might_
  * have passed on the element.
  */
-export function addEvent (instance: SPX.Class, node: HTMLElement, event: IComponentEvent) {
+export function addEvent (instance: SPX.Class, node: HTMLElement, event: ComponentEvent) {
 
   if (event.attached) return;
 
   if (!(event.method in instance)) {
-    log(Errors.WARN, `Undefined callback method: ${instance.static.id}.${event.method}()`);
+    log(LogType.WARN, `Undefined callback method: ${instance.scope.static.id}.${event.method}()`);
     return;
   }
 
@@ -100,14 +100,14 @@ export function addEvent (instance: SPX.Class, node: HTMLElement, event: ICompon
 
     if (isValidEvent(event.eventName, node)) {
       node.addEventListener(event.eventName, eventAttrs(instance, event), event.options);
-      $.components.elements.set(event.el, node);
+      $.components.$elements.set(event.dom, node);
     }
 
   }
 
-  log(Errors.TRACE, [
-    `Attached ${event.key} ${event.eventName} event to the ${event.method} method on`,
-    `${instance.static.id} component (${instance.scope.key})`
+  log(LogType.VERBOSE, [
+    `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
+    `${instance.scope.static.id}: ${instance.scope.key}`
   ]);
 
   event.attached = true;
