@@ -1,8 +1,8 @@
-import type { IPage, ILocation } from 'types';
+import type { Page, Location } from 'types';
 import { nil, o, origin } from '../shared/native';
 import { log } from '../shared/logs';
 import { chunk, hasProp, attrJSON, camelCase, splitAttrArrayValue, selector } from '../shared/utils';
-import { Errors, VisitType } from '../shared/enums';
+import { CharCode, LogType, Origins, VisitType } from '../shared/enums';
 import { $ } from './session';
 import * as regex from '../shared/regexp';
 import { newPage } from './queries';
@@ -21,9 +21,9 @@ export const hostname = origin.replace(/(?:https?:)?(?:\/\/(?:www\.)?|(?:www\.))
  * Parses `href` or `form` attributes and assigns them to  configuration options.
  * This function contructs the initial page state model.
  */
-export function getAttributes (element: Element, page?: IPage): IPage {
+export function getAttributes (element: Element, page?: Page): Page {
 
-  const state: IPage = page ? newPage(page) : o();
+  const state: Page = page ? newPage(page) : o();
   const attrs: string[] = element.getAttributeNames();
 
   for (let i = 0, s = attrs.length; i < s; i++) {
@@ -59,11 +59,11 @@ export function getAttributes (element: Element, page?: IPage): IPage {
       // KEY REFERENCE
       if (nodeName === 'href') {
 
-        state.rev = location.pathname + location.search;
+        state.rev = fixSlash(location.pathname) + location.search;
 
         if (!page) {
           state.location = getLocation(nodeValue);
-          state.key = state.location.pathname + state.location.search;
+          state.key = fixSlash(state.location.pathname) + state.location.search;
         }
 
       } else {
@@ -98,7 +98,7 @@ export function getAttributes (element: Element, page?: IPage): IPage {
 
           } else {
             log(
-              Errors.WARN,
+              LogType.WARN,
               `Invalid attribute value on <${nodeName}>, expected: y:number or x:number`,
               element
             );
@@ -110,7 +110,7 @@ export function getAttributes (element: Element, page?: IPage): IPage {
             state.scrollY = +value;
           } else {
             log(
-              Errors.WARN,
+              LogType.WARN,
               `Invalid attribute value on <${nodeName}>, expected: number`,
               element
             );
@@ -129,7 +129,7 @@ export function getAttributes (element: Element, page?: IPage): IPage {
           if (name === 'history') {
             if (value !== 'push' && value !== 'replace') {
               log(
-                Errors.ERROR,
+                LogType.ERROR,
                 `Invalid attribute value on <${nodeName}>, expected: false, push or replace`,
                 element
               );
@@ -150,15 +150,14 @@ export function getAttributes (element: Element, page?: IPage): IPage {
 /**
  * Parse Path
  *
- * Builds an object model of the provided
- * path string.
+ * Builds an object model of the provided path string.
  */
 function parsePath (path: string) {
 
-  const state: ILocation = o();
+  const state: Location = o();
   const size = path.length;
 
-  if (size === 1 && path.charCodeAt(0) === 47) {
+  if (size === 1 && path.charCodeAt(0) === CharCode.FWD) {
     state.pathname = path;
     state.hash = nil;
     state.search = nil;
@@ -188,34 +187,57 @@ function parsePath (path: string) {
   return state;
 }
 
-function getPath (url: string, proto: number) {
+/**
+ * Fix Slash
+ *
+ * Removes extraneous ending slashes from pathname keys. For example,
+ * in some cases a href value might be `/path/` - This function will omit
+ * the ending slash, returning the value from `/path/` to `/path`
+ */
+function fixSlash (path: string) {
 
-  const path = url.indexOf('/', proto);
+  return path.length === 1
+    ? path
+    : path.charCodeAt(path.length - 1) === 47
+      ? path.slice(0, -1)
+      : path;
 
-  if (path > proto) {
+}
+
+/**
+ * Get Path
+ *
+ * Returns the pathname from `url` which is then used as the `key`
+ * reference in SPX sessions.
+ */
+function getPath (url: string, protocol: number) {
+
+  const path = url.indexOf('/', protocol);
+
+  if (path > protocol) {
+
     const hash = url.indexOf('#', path);
-    return hash < 0 ? url.slice(path) : url.slice(path, hash);
+
+    return hash < 0 ? fixSlash(url.slice(path)) : url.slice(path, hash);
   }
 
-  const param = url.indexOf('?', proto);
+  const param = url.indexOf('?', protocol);
 
-  if (param > proto) {
+  if (param > protocol) {
     const hash = url.indexOf('#', param);
-    return hash < 0 ? url.slice(param) : url.slice(param, hash);
+    return hash < 0 ? fixSlash(url.slice(param)) : url.slice(param, hash);
   }
 
-  return url.length - proto === hostname.length ? '/' : null;
+  return url.length - protocol === hostname.length ? '/' : null;
 
 }
 
 /**
  * Parse Origin
  *
- * Despite the name, this function will behave
- * identical to `parsePath` with the exception
- * that the `origin` value is validated against.
- *
- * > This is used when a URL was supplied.
+ * Despite the name, this function will behave identical to `parsePath`
+ * with the exception that the `origin` value is validated against. This
+ * is used when a URL was supplied.
  */
 function parseOrigin (url: string) {
 
@@ -244,21 +266,17 @@ function parseOrigin (url: string) {
 /**
  * Has Origin
  *
- * Checks to see if the URL contains an origin. We
- * use integer return values to inform the origin type.
- * If a value of `0` returned there is no origin in the URL.
- *
- * 1. http or https
- * 2. //
- * 3. www.
+ * Checks to see if the URL contains an origin. We use integer return
+ * values to inform the origin type. If a value of `0` returned there
+ * is no origin in the URL.
  */
-function hasOrigin (url: string): number {
+function hasOrigin (url: string): Origins {
 
-  if (url.startsWith('http')) return 1;
-  if (url.startsWith('//')) return 2;
-  if (url.startsWith('www.')) return 3;
+  if (url.startsWith('http')) return Origins.HTTP;
+  if (url.startsWith('//')) return Origins.SLASH;
+  if (url.startsWith('www.')) return Origins.WWW;
 
-  return 0;
+  return Origins.NONE;
 
 }
 
@@ -272,16 +290,21 @@ export function validKey (url: string) {
 
   if (typeof url !== 'string' || url.length === 0) return false;
 
-  if (url.charCodeAt(0) === 47) {
-    if (url.charCodeAt(1) !== 47) return true;
+  if (url.charCodeAt(0) === CharCode.FWD) { // 47 is unicode for '/'
+
+    if (url.charCodeAt(1) !== CharCode.FWD) return true;
     if (url.startsWith('www.', 2)) return url.startsWith(hostname, 6);
+
     return url.startsWith(hostname, 2);
+
   }
 
-  if (url.charCodeAt(0) === 63) return true;
+  if (url.charCodeAt(0) === CharCode.QWS) return true;
   if (url.startsWith('www.')) return url.startsWith(hostname, 4);
   if (url.startsWith('http')) {
+
     const start = url.indexOf('/', 4) + 2;
+
     return url.startsWith('www.', start)
       ? url.startsWith(hostname, start + 4)
       : url.startsWith(hostname, start);
@@ -295,19 +318,22 @@ export function validKey (url: string) {
  * Builds an object reference from a string path
  * value and returns a parsed record of the value.
  */
-export function parseKey (url: string): ILocation {
+export function parseKey (url: string): Location {
 
-  // 47 is unicode for '/'
-  if (url.charCodeAt(0) === 47) {
+  // eg: /
+  if (url.charCodeAt(0) === CharCode.FWD) {
 
-    return url.charCodeAt(1) !== 47
+    // eg: // or /path
+    return url.charCodeAt(1) !== CharCode.FWD
       ? parsePath(url) // Character is not '/' we have a pathname
       : parseOrigin(url.slice(2)); // Strips the double slash //
 
   }
 
-  // 63 is unicode for '?' (eg: ?foo=bar)
-  if (url.charCodeAt(0) === 63) return parsePath((location.pathname + url));
+  // eg: ?foo=bar
+  if (url.charCodeAt(0) === CharCode.QWS) {
+    return parsePath((location.pathname + url));
+  }
 
   // Path starts with protocol
   if (url.startsWith('https:') || url.startsWith('http:')) {
@@ -323,59 +349,81 @@ export function parseKey (url: string): ILocation {
 /**
  * Get Key (pathname)
  *
- * Returns the pathname cache key URL
- * reference which is used as property id
- * in the cache store.
+ * Returns the pathname cache key URL reference which is used as property id in the cache store.
  */
-export function getKey (link: string | ILocation): string {
+export function getKey (link: string | Location): string {
 
-  if (typeof link === 'object') return link.pathname + link.search;
+  if (typeof link === 'object') {
+    return fixSlash(link.pathname) + link.search;
+  }
 
-  if (link === nil) return '/';
+  if (link === nil || link === '/') return '/';
 
   const has = hasOrigin(link);
 
   if (has === 1) {
-    const proto = link.charCodeAt(4) === 115 ? 8 : 7;
-    const www = link.startsWith('www.', proto) ? (proto + 4) : proto;
-    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+
+    const protocol = link.charCodeAt(4) === 115 ? 8 : 7;
+    const www = link.startsWith('www.', protocol) ? (protocol + 4) : protocol;
+
+    return link.startsWith(hostname, www)
+      ? getPath(link, www)
+      : null;
   }
 
   if (has === 2) {
+
     const www = link.startsWith('www.', 2) ? 6 : 2;
-    return link.startsWith(hostname, www) ? getPath(link, www) : null;
+
+    return link.startsWith(hostname, www)
+      ? getPath(link, www)
+      : null;
   }
 
-  if (has === 3) return link.startsWith(hostname, 4) ? getPath(link, 4) : null;
+  if (has === 3) {
+    return link.startsWith(hostname, 4)
+      ? getPath(link, 4)
+      : null;
+  }
 
-  return link.startsWith(hostname, 0) ? getPath(link, 0) : null;
+  return link.startsWith(hostname, 0)
+    ? getPath(link, 0)
+    : null;
 
 };
 
-export function fallback (): ILocation {
+/**
+ * Fallback
+ *
+ * Obtains the SPX Page session `location` model as fallback by extracting
+ * the `window.location` data.
+ */
+export function fallback (): Location {
+
+  const { pathname, search, hash } = location;
 
   return o({
     hostname,
     origin,
-    pathname: location.pathname,
-    search: location.search,
-    hash: location.hash
+    pathname,
+    search,
+    hash
   });
 }
 
 /**
  * Get Location
  *
- * Parses link and returns an ILocation.
+ * Parses link and returns an Location.
  */
-export function getLocation (path: string): ILocation {
+export function getLocation (path: string): Location {
 
   if (path === nil) return fallback();
 
   const state = parseKey(path);
 
   if (state === null) {
-    log(Errors.ERROR, `Invalid pathname: ${path}`);
+    log(LogType.ERROR, `Invalid pathname: ${path}`);
   }
 
   state.origin = origin;
@@ -388,20 +436,20 @@ export function getLocation (path: string): ILocation {
 /**
  * Get Route
  *
- * Parses link and returns page state. When `link`
- * is a HTML Element (ie: `<a href=""></a>`) then
- * we parse the node and assign any attributes.
+ * Parses link and returns page state. When `link` is a HTML Element
+ * (i.e, `<a href=""></a>`) then we parse the node and assign any attributes.
  *
- * This function is triggered for every visit request
- * or action which infers navigations, ie: mouseover.
+ * This function is triggered for every visit request or action which infers
+ * navigations (i.e, mouseover).
  */
 export function getRoute <
-  T extends VisitType | Element | string,
-  Link extends T extends VisitType.HYDRATE ? string : T extends VisitType.INITIAL ? T : Element
-> (
-  link: Link,
-  type: VisitType = VisitType.VISIT
-): IPage {
+  Type extends VisitType | Element | string,
+  Link extends Type extends VisitType.HYDRATE
+  ? string
+  : Type extends VisitType.INITIAL
+  ? Type
+  : Element
+> (link: Link, type: VisitType = VisitType.VISIT): Page {
 
   // PASSED IN ELEMENT
   // Route state will be generated using node attributes
@@ -411,7 +459,7 @@ export function getRoute <
     return state;
   }
 
-  const state: IPage = o();
+  const state: Page = o();
 
   if (link === VisitType.INITIAL) {
 
@@ -430,7 +478,7 @@ export function getRoute <
 
   } else {
 
-    state.rev = location.pathname + location.search;
+    state.rev = fixSlash(location.pathname) + location.search;
     state.location = getLocation(typeof link === 'string' ? link : state.rev);
     state.key = getKey(state.location);
     state.type = type;
