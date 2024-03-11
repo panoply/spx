@@ -1,19 +1,22 @@
-import type { IPage } from '../types/page';
+import type { Page } from '../types/page';
 import { emit } from './events';
-import { Errors, VisitType } from '../shared/enums';
+import { LogType, VisitType } from '../shared/enums';
 import { d, h, s } from '../shared/native';
 import { hasProp, onNextTick } from '../shared/utils';
 import { log } from '../shared/logs';
 import { progress } from './progress';
 import { morph } from '../morph/morph';
+import { context } from '../components/observe';
+import { getSnapDom, patchPage } from './queries';
 import { $ } from './session';
-import * as q from './queries';
 import * as hover from '../observe/hovers';
 import * as intersect from '../observe/intersect';
 import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as proximity from '../observe/proximity';
 import * as fragment from '../observe/fragment';
+import { morphSnap, patchSnap } from '../morph/snapshot';
+
 /**
  * Tracked Nodes
  *
@@ -28,7 +31,7 @@ import * as fragment from '../observe/fragment';
 //   if (tracking.length > 0) {
 //     for (const node of tracking) {
 //       if (!node.hasAttribute('id')) {
-//         log(Errors.WARN, `Tracked node <${node.tagName.toLowerCase()}> must have id attribute`);
+//         log(LogType.WARN, `Tracked node <${node.tagName.toLowerCase()}> must have id attribute`);
 //       } else if (!$.tracked.has(node.id)) {
 //         d().appendChild(node);
 //         $.tracked.add(node.id);
@@ -93,7 +96,7 @@ async function morphHead (head: HTMLHeadElement, target: HTMLCollection): Promis
       const promise = new Promise<void>(function (resolve) {
 
         node.addEventListener('error', (e) => {
-          log(Errors.WARN, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
+          log(LogType.WARN, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
           resolve();
         });
 
@@ -126,49 +129,74 @@ async function morphHead (head: HTMLHeadElement, target: HTMLCollection): Promis
  * This function is also responsible for handling append,
  * prepend and tracked replacements of element in the dom.
  */
-function morphNodes (page: IPage, target: Document) {
+function morphNodes (page: Page, snapDom: Document) {
 
   const pageDom = d();
-  const snapDom = target.body;
 
   if (page.selector === 'body') {
 
-    morph(pageDom, snapDom);
+    morph(pageDom, snapDom.body);
+
+    if (context && context.$nodes.length > 0) {
+      onNextTick(() => {
+        morphSnap(snapDom.body, context.$nodes);
+        patchPage('type', VisitType.VISIT);
+      });
+    }
+
+  } else if (page.selector !== null) {
+
+    const pageNodes = pageDom.querySelectorAll<HTMLElement>(page.selector);
+    const snapNodes = snapDom.body.querySelectorAll<HTMLElement>(page.selector);
+    const nodeMorph: Set<Element> = s();
+
+    for (let i = 0, s = pageNodes.length; i < s; i++) {
+
+      const curNode = pageNodes[i];
+      const newNode = snapNodes[i];
+
+      if (!newNode || !curNode) continue;
+      if (!emit('render', curNode, newNode)) continue;
+      if (curNode.isEqualNode(newNode)) continue;
+
+      nodeMorph.add(
+        morph(
+          curNode,
+          newNode
+        )
+      );
+
+    }
+
+    if (page.type !== VisitType.VISIT && context && context.$nodes.length > 0) {
+      onNextTick(() => {
+        patchSnap(snapDom.body, pageDom, context.$nodes, nodeMorph);
+        patchPage('type', VisitType.VISIT);
+        nodeMorph.clear();
+      });
+    }
 
   } else {
 
-    const newNodes = snapDom.querySelectorAll<HTMLElement>(page.selector);
+    for (const id of page.fragments) {
 
-    if (newNodes.length === 0) {
+      const curNode = $.fragments.get(id);
+      const newNode = snapDom.getElementById(id);
 
-      log(Errors.WARN, `Unmatched targets on ${page.key}, applied <body> morph fallback.`, page.target);
-      morph(pageDom, snapDom);
+      if (!newNode || !curNode) continue;
+      if (!emit('render', curNode, newNode)) continue;
+      if (curNode.isEqualNode(newNode)) continue;
 
-    } else {
+      morph(curNode, newNode);
 
-      const domNodes = pageDom.querySelectorAll<HTMLElement>(page.selector);
-
-      if (domNodes.length !== newNodes.length) {
-
-        log(Errors.WARN, 'Targets mismatch, applied <body> morph ~ ensure fragments match between visits!');
-        morph(pageDom, snapDom);
-
-      } else {
-
-        for (let i = 0, s = domNodes.length; i < s; i++) {
-
-          const oldNode = domNodes[i];
-          const newNode = newNodes[i];
-
-          if (!newNode) continue;
-          if (!emit('render', oldNode, newNode)) continue;
-          if (oldNode.isEqualNode(newNode)) continue;
-
-          morph(oldNode, newNode);
-
-        }
+      if (context && context.$nodes.length > 0) {
+        onNextTick(() => {
+          morphSnap(newNode, context.$nodes);
+          patchPage('type', VisitType.VISIT);
+        });
       }
     }
+
   }
 
 }
@@ -182,7 +210,7 @@ function morphNodes (page: IPage, target: Document) {
  * will be swapped out via `innerHTML` to prevent missing replacements
  * for occuring.
  */
-function morphHydrate (state: IPage, target: Document): void {
+function morphHydrate (state: Page, target: Document): void {
 
   const nodes = state.hydrate;
 
@@ -237,7 +265,7 @@ function morphHydrate (state: IPage, target: Document): void {
   state.preserve = undefined;
   state.type = VisitType.VISIT;
 
-  q.update(state);
+  update(state);
 
   // q.purge(state.key);
 
@@ -247,7 +275,7 @@ function morphHydrate (state: IPage, target: Document): void {
  * Update the DOM and execute page adjustments
  * to new navigation point
  */
-export function update (page: IPage): IPage {
+export function update (page: Page): Page {
 
   hover.disconnect();
   intersect.disconnect();
@@ -255,9 +283,11 @@ export function update (page: IPage): IPage {
   mutations.disconnect();
   components.disconnect();
 
+  fragment.connect();
+
   if (!$.eval) document.title = page.title;
 
-  const snapDom = q.getSnapDom(page.snap);
+  const snapDom = getSnapDom(page.snap);
 
   if (page.type === VisitType.HYDRATE) {
     morphHydrate(page, snapDom);
@@ -270,7 +300,6 @@ export function update (page: IPage): IPage {
   progress.done();
 
   onNextTick(() => {
-    fragment.connect();
     hover.connect();
     intersect.connect();
     proximity.connect();
