@@ -1,5 +1,5 @@
-import type { IPage } from 'types';
-import { VisitType, Errors } from '../shared/enums';
+import type { Page } from 'types';
+import { VisitType, LogType } from '../shared/enums';
 import { getRoute } from './location';
 import { log } from '../shared/logs';
 import { onNextTick } from '../shared/utils';
@@ -16,6 +16,7 @@ import * as proximity from '../observe/proximity';
 import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as fragment from '../observe/fragment';
+import { emit } from './events';
 
 // import * as timer from '../test/timer';
 
@@ -25,7 +26,7 @@ import * as fragment from '../observe/fragment';
  * This function is invoked upon connection and is used to generate
  * an SPX instance. It will run only once, unless SPX re-invokes.
  */
-export function initialize (): Promise<IPage> {
+export function initialize (): Promise<Page> {
 
   const route = getRoute(VisitType.INITIAL);
 
@@ -37,13 +38,13 @@ export function initialize (): Promise<IPage> {
 
   defineProps($, {
     prev: {
-      get () { return $.pages[history.api.state.rev]; }
+      get: () => $.pages[history.api.state.rev]
     },
     page: {
-      get () { return $.pages[history.api.state.key]; }
+      get: () => $.pages[history.api.state.key]
     },
     snapDom: {
-      get () { return parse($.snaps[$.page.snap]); }
+      get: () => parse($.snaps[$.page.snap])
     }
   });
 
@@ -69,10 +70,12 @@ export function initialize (): Promise<IPage> {
     }
 
     onNextTick(() => {
-      q.patch('type', VisitType.VISIT);
+      q.patchPage('type', VisitType.VISIT);
       request.reverse(page);
       request.preload(page);
     });
+
+    emit('x');
 
     return page;
 
@@ -129,7 +132,7 @@ export function disconnect (): void {
   if ($.config.components) {
     components.disconnect();
     components.teardown();
-    $.components.registry.clear();
+    $.components.$registry.clear();
   }
 
   // Purge q
@@ -137,6 +140,6 @@ export function disconnect (): void {
 
   if ($.config.globalThis) delete window.spx;
 
-  log(Errors.INFO, 'Disconnected');
+  log(LogType.INFO, 'Disconnected');
 
 }
