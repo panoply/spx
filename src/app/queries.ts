@@ -1,12 +1,13 @@
-import { IPage } from '../types/page';
+import { Page } from '../types/page';
 import { emit } from './events';
 import { log } from '../shared/logs';
-import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector } from '../shared/utils';
+import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector, isEmpty } from '../shared/utils';
 import { assign, o, isArray, defineProps } from '../shared/native';
 import { $ } from './session';
-import { Errors, VisitType } from '../shared/enums';
+import { LogType, VisitType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
 import * as history from '../observe/history';
+import * as fragments from '../observe/fragment';
 import { SPX } from '../types/components';
 import { hook } from '../observe/components';
 
@@ -23,7 +24,7 @@ import { hook } from '../observe/components';
  * The function will assign options in accordance to the SPX connection if they did not exist in
  * the `page` state value that was passed.
  */
-export function create (page: IPage): IPage {
+export function create (page: Page): Page {
 
   const has = hasProps(page);
 
@@ -62,6 +63,7 @@ export function create (page: IPage): IPage {
     page.progress = $.config.progress.threshold;
   }
 
+  if (!has('fragments')) page.fragments = $.config.fragments;
   if (!has('history')) page.history = true;
   if (!has('visits')) page.visits = 0;
   if (!has('components')) page.components = [];
@@ -78,15 +80,16 @@ export function create (page: IPage): IPage {
  * Clones a page but applies a reset on the provided keys, changing them to
  * the connection defaults.
  */
-export function newPage (page: IPage) {
+export function newPage (page: Page) {
 
-  const state = assign<IPage, Partial<IPage>>(o(page), {
-    target: $.config.fragments,
-    selector: $.config.fragments.join(),
+  const state = assign<Page, Partial<Page>>(o(page), {
+    target: [],
+    selector: null,
     cache: $.config.cache,
     history: true,
     scrollX: 0,
-    scrollY: 0
+    scrollY: 0,
+    fragments: $.config.fragments
   });
 
   if ($.config.hover) {
@@ -112,9 +115,9 @@ export function newPage (page: IPage) {
  * Updates a page record, applies an augmentation to the **current** page by default
  * looking up the key with the `history.state` reference.
  */
-export function patch <T extends keyof IPage> (
+export function patchPage <T extends keyof Page> (
   prop: T,
-  value: T extends 'components' ? string[] : IPage[T],
+  value: T extends 'components' ? string[] : Page[T],
   key = history.api.state.key
 ) {
 
@@ -140,7 +143,7 @@ export function patch <T extends keyof IPage> (
  * Both a new page visit or subsequent visit will pass through this function. This will be called
  * after an XHR fetch completes or when state is to be added to the session memory.
  */
-export function set (state: IPage, snapshot: string): IPage {
+export function set (state: Page, snapshot: string): Page {
 
   const event = emit('before:cache', state, snapshot as any);
   const dom = typeof event === 'string' ? event : snapshot;
@@ -168,6 +171,8 @@ export function set (state: IPage, snapshot: string): IPage {
   $.pages[state.key] = state;
   $.snaps[state.snap] = dom;
 
+  fragments.snapshots(state);
+
   emit('after:cache', state);
   hook('oncache', state);
 
@@ -190,26 +195,13 @@ export function set (state: IPage, snapshot: string): IPage {
  * generated record should be provided. At the absolute very least, we need to pass a generated `route`
  * that was created via `getRoute()` location function.
  */
-export function update (page: IPage, snapshot?: string): IPage {
+export function update (page: Page, snapshot?: string): Page {
 
   const state = page.key in $.pages ? $.pages[page.key] : create(page);
 
   if (typeof snapshot === 'string') {
     $.snaps[state.snap] = snapshot;
     page.title = getTitle(snapshot);
-  }
-
-  page.ts = ts();
-  page.visits = page.visits + 1;
-
-  if (page.components.length > 0) {
-
-    const { connected } = $.components;
-
-    for (const component of page.components) {
-      if (!connected.has(component)) connected.add(component);
-    }
-
   }
 
   return assign(state, page);
@@ -227,7 +219,7 @@ export function setSnap (snapshot: string, key?: string) {
   if (snap) {
     $.snaps[snap] = snapshot;
   } else {
-    log(Errors.WARN, 'Snapshot record does not exist, update failed');
+    log(LogType.WARN, 'Snapshot record does not exist, update failed');
   }
 
 }
@@ -240,11 +232,11 @@ export function setSnap (snapshot: string, key?: string) {
  * `undefined` (i.e, not provided), the current page is returned according to the
  * `history.state` reference. If no `key` exists an error is thrown.
  */
-export function get (key?: string): { page: IPage, dom: Document } {
+export function get (key?: string): { page: Page, dom: Document } {
 
   if (!key) {
     if (history.api.state === null) {
-      log(Errors.WARN, 'Missing history state reference, page cannot be returned');
+      log(LogType.WARN, 'Missing history state reference, page cannot be returned');
       return;
     }
 
@@ -265,7 +257,7 @@ export function get (key?: string): { page: IPage, dom: Document } {
 
   }
 
-  log(Errors.ERROR, `No record exists: ${key}`);
+  log(LogType.ERROR, `No record exists: ${key}`);
 
 }
 
@@ -273,10 +265,11 @@ export function get (key?: string): { page: IPage, dom: Document } {
  * Get Snapshot DOM
  *
  * Returns a snapshot DOM. Optionally accepts a page `key` to return a specific
- * snapshot DOM record.
+ * snapshot DOM record OR a `snap` UUID
  */
 export function getSnapDom (key?: string): Document {
 
+  // character code 47 is / which infers page key.
   const uuid = key = key ? key.charCodeAt(0) === 47 ? $.pages[key].snap : key : $.page.snap;
 
   return parse($.snaps[uuid]);
@@ -289,15 +282,17 @@ export function getSnapDom (key?: string): Document {
  * Returns an array list of component intances which are currently
  * mounted (active) on the page.
  */
-export function getMounted (): { [instanceOf: string]: SPX.Class[] } {
+export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: SPX.Class[] } {
 
   const mounts: { [instanceOf: string]: SPX.Class[] } = o();
 
-  for (const instance of $.components.instances.values()) {
+  for (const instance of $.components.$instances.values()) {
 
     const { scope } = instance;
 
-    if (!$.components.connected.has(scope.key)) continue;
+    if (!$.components.$connected.has(scope.key)) continue;
+
+    if (mounted !== null && scope.mounted === mounted) continue;
 
     if (scope.alias !== null && !(scope.alias in mounts)) {
 
@@ -313,7 +308,7 @@ export function getMounted (): { [instanceOf: string]: SPX.Class[] } {
 
   }
 
-  return mounts;
+  return isEmpty(mounts) ? null : mounts;
 }
 
 /**
@@ -323,11 +318,11 @@ export function getMounted (): { [instanceOf: string]: SPX.Class[] } {
  * retrieve a specific page. If `key` is `undefined` (i.e, not provided), the current
  * page is returned according to the `history.state` reference.
  */
-export function getPage (key?: string): IPage {
+export function getPage (key?: string): Page {
 
   if (!key) {
     if (history.api.state === null) {
-      log(Errors.WARN, 'Missing history state reference, page cannot be returned');
+      log(LogType.WARN, 'Missing history state reference, page cannot be returned');
       return;
     }
 
@@ -336,7 +331,7 @@ export function getPage (key?: string): IPage {
 
   if (key in $.pages) return $.pages[key];
 
-  log(Errors.ERROR, `No page record exists for: ${key}`);
+  log(LogType.ERROR, `No page record exists for: ${key}`);
 
 }
 
