@@ -11,6 +11,94 @@
   left: 0px;
   z-index: 200;
 
+  &-search {
+    position: fixed;
+    width: 300px;
+    right: $spacer-5;
+    top: 20px;
+
+    input.fm-input {
+      border: $border-color $border-width solid;
+      border-radius: 5px;
+      background-color: $code-bg !important;
+      color: $white;
+      transition:
+        width linear 100ms,
+        margin-left linear 100ms;
+
+      &.is-active {
+        width: 400px;
+        margin-left: -150px;
+      }
+
+      &:focus {
+        color: $white;
+      }
+
+      &::-webkit-search-cancel-button {
+        background-color: $code-bg;
+      }
+
+      &::-webkit-search-cancel-button {
+        appearance: none;
+        margin: 0;
+        height: 21px;
+        width: 21px;
+        opacity: 0;
+        pointer-events: none;
+        background-size: 21px;
+        background-position: right 1px center;
+        position: absolute;
+        right: $input-padding-x;
+      }
+
+      &:focus::-webkit-search-cancel-button {
+        opacity: 1;
+        pointer-events: all;
+        cursor: pointer;
+        background-image: url(icon-delete($input-placeholder-color));
+
+        &:hover {
+          background-image: url(icon-delete($input-placeholder-color));
+        }
+      }
+    }
+
+    .search-list {
+      width: 400px;
+      height: 400px;
+      background-color: $code-bg;
+      border: $border-color $border-width solid;
+      overflow-y: scroll;
+      color: $white;
+      margin: 0;
+      padding: 0;
+      margin-left: -150px;
+
+      li {
+        border-top: $border-color $border-width solid;
+        color: $white;
+        list-style-type: none;
+        padding: 10px 5px;
+        border-bottom: 0.01rem solid #39424b;
+        font-size: 0.8rem;
+
+        &:hover {
+          background-color: #282a36;
+          cursor: pointer;
+        }
+
+        > h6 {
+          font-size: $font-size-sm;
+          margin-bottom: 0;
+        }
+        span {
+          font-size: $font-size-sm;
+        }
+      }
+    }
+  }
+
   @include media-breakpoint-down(sm) {
     backdrop-filter: blur(5px);
 

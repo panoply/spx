@@ -1,51 +1,40 @@
 .tabs {
-  padding-top: 0px;
+  background: #0f1215;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
 
-  nav > button {
-    color: $black;
-    font-weight: 900;
-    font-size: 0.825rem;
-    font-family:$headings-font-family;
-    text-transform: uppercase;
-    background-color: transparent;
-    border: 0;
-    border-bottom: 1px solid $border-color;
-    cursor: pointer;
-    // border-top-right-radius: 10px;
-    // border-top-left-radius: 10px;
+.tab {
+  font-family: $font-family-heading;
+  font-weight: $font-weight-bold;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #65696f;
+  font-weight: $font-weight-bolder;
+  text-transform: uppercase;
 
+  .icon-right {
+    width: 22px;
+    height: 22px;
+    margin-left: 3px;
+    fill: #65696f;
+  }
 
-    &:hover,
-    &:active,
-    &:focus {
-      color: $black;
-    }
-
-    &:last-child {
-      margin-right: 0;
-    }
-
-    &[aria-selected="true"] {
-      color: $black;
-      background-color: $blue;
-    }
-
-    &[aria-selected="false"] {
-      color: $white;
+  &:hover {
+    .icon-right {
+      fill: $white;
     }
   }
 
-  .panel,
-  .panel > ul {
-    position: relative;
-
-    > li {
-      list-style-type: inherit;
-    }
+  &.active {
+    color: $white;
   }
 }
 
-[role="tabpanel"][aria-hidden="true"] {
-  display: none;
-}
+.tab-content {
+  background-color: $code-bg;
 
+  > .papyrus {
+    margin-top: 0 !important;
+  }
+}

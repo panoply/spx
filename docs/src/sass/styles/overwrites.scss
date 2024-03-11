@@ -44,7 +44,7 @@ h2 {
 h3 {
   font-family: $font-family-other;
   font-size: $h3-font-size;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 h5 {
@@ -301,4 +301,12 @@ p {
       background-image: url(icon-minus($white));
     }
   }
+}
+
+/* -------------------------------------------- */
+/* EXAMPLES                                     */
+/* -------------------------------------------- */
+
+.reset {
+  all: initial;
 }

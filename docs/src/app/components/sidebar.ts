@@ -4,6 +4,14 @@ import spx from 'spx';
 
 export class Sidebar extends spx.Component<typeof Sidebar.connect> {
 
+  /**
+   * Relapse Instance
+   */
+  public relapse: Relapse;
+
+  /**
+   * SPX Connection
+   */
   static connect = {
     state: {
       multiple: Boolean,
@@ -15,33 +23,12 @@ export class Sidebar extends spx.Component<typeof Sidebar.connect> {
   };
 
   oninit () {
+
     this.relapse = relapse(this.dom);
-    console.log('onInit');
   }
 
-  onstate () {
-
-    //
-
+  onload () {
+    this.relapse.reinit();
   }
-
-  onload ({ data, type }) {
-
-    console.log('onLoad');
-
-    if (data) {
-      this.relapse.collapse(this.relapse.active);
-      this.relapse.expand(data.group);
-    }
-
-  }
-
-  onexit () {
-
-    console.log('onLeave');
-
-  }
-
-  public relapse: Relapse;
 
 }

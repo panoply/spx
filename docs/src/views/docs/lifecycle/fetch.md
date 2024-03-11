@@ -21,7 +21,7 @@ The fetch event will be triggered before an XHR request begins and a page is fet
 ```js
 import spx from 'spx';
 
-spx.on('fetch', function(state?: IPage){
+spx.on('fetch', function(state?: Page){
 
 
 })

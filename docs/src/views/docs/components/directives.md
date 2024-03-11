@@ -14,7 +14,7 @@ next:
 
 SPX Components
 
-### Single Component
+#### Components
 
 Connect templates to class components. Elements which are annotated with the `spx-component` attribute require a value matching the class name of an SPX component you wish to connect. By default, SPX will transform class component names to `kebab-case` format.
 
@@ -47,7 +47,7 @@ class SomeDemo extends spx.Component {
 
 ---
 
-### Component State
+#### State
 
 Component templates annotated with `spx-component` also accept state attributes. State attributes allow you to provide data via the DOM to components in an isolated manner. Components require an interface definition to be provided via the `connect → state` static property (see [state](/components/state)) and use a namespace XML like syntactic structure.
 
@@ -98,7 +98,7 @@ class Foo extends spx.Component {
 
 ---
 
-### State Bindings
+#### Bindings
 
 <!--prettier-ignore-->
 ```html
@@ -107,23 +107,9 @@ class Foo extends spx.Component {
 </span>
 ```
 
-### Multiple Components
+---
 
-<!--prettier-ignore-->
-```html
-<div
-  spx-component="foo|bar|baz"
-  spx-foo:some-string="foo-example"
-  spx-foo:some-number="1000"
-  spx-bar:some-string="bar-example"
-  spx-bar:cool-number="2000"
-  spx-baz:some-string="baz-example"
-  spx-baz:cool-number="3000">
-
-</div>
-```
-
-### Component Events
+#### Events
 
 DOM Events can be annotated to elements. The directive uses a simple `spx@` prefix followed by event name. The attribute values use an object dot `.` notation structure of `<component.<method>`
 
@@ -136,7 +122,7 @@ DOM Events can be annotated to elements. The directive uses a simple `spx@` pref
 </button>
 ```
 
-### Event Attrs
+#### Attrs
 
 In some cases you may want to pass data to method callbacks in components from a DOM element. The standard (state) directive structure can be used and all annotation will be provided to the event parameter argument in the class method. Event attrs are parsed and the provided **type** will be normalized.
 
@@ -173,11 +159,31 @@ class Foo extends spx.Component {
 :::
 ::::
 
-### Component Nodes
+---
+
+#### Nodes
 
 <!--prettier-ignore-->
 ```html
 <div spx-node="foo.name">
+
+</div>
+```
+
+---
+
+#### Multiple Components
+
+<!--prettier-ignore-->
+```html
+<div
+  spx-component="foo|bar|baz"
+  spx-foo:some-string="foo-example"
+  spx-foo:some-number="1000"
+  spx-bar:some-string="bar-example"
+  spx-bar:cool-number="2000"
+  spx-baz:some-string="baz-example"
+  spx-baz:cool-number="3000">
 
 </div>
 ```

@@ -1,7 +1,8 @@
 import { defineConfig } from 'tsup';
 import { basename, join } from 'node:path';
-import { readdir } from 'node:fs/promises';
+import { readdir, writeFile } from 'node:fs/promises';
 import ZIP from 'adm-zip';
+import { extract } from 'html-text-extractor';
 import * as pkg from '../package.json';
 
 /**
@@ -54,6 +55,47 @@ async function versions () {
 
 };
 
+async function search () {
+
+  const data = await extract('./public', [
+    'script',
+    'style',
+    'aside',
+    'svg',
+    'use',
+    'pre',
+    'hr',
+    'li',
+    'ul',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'strong',
+    'small',
+    'footer',
+    'header',
+    'nav',
+    'select',
+    'input',
+    'textarea',
+    'button',
+    'label',
+    'option'
+  ]);
+
+  const json = data.map(item => {
+    item.text = item.text.replace(/\s+/g, ' ');
+    item.url = `/${item.url.replace('/index.html', '').toLowerCase()}`;
+    return item;
+  });
+
+  await writeFile('src/data/spx.json', JSON.stringify(json, null, 2));
+
+}
+
 export default defineConfig(
   {
     entry: {
@@ -65,9 +107,14 @@ export default defineConfig(
       js: '.js'
     }),
     async onSuccess () {
-      if (this.env && this.env.NODE_ENV === 'production') {
+      if (this.env && this.env.NODE_ENV.prod === 'prod') {
         await versions();
+        await search();
+      } else if (this.env && this.env.NODE_ENV === 'search') {
+        await search();
       }
+
+      console.log(this.env);
     },
     clean: false,
     treeshake: false,

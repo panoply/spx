@@ -2,7 +2,7 @@
   "engine": "11ty",
   "files": {
     "includes": [
-      "./docs/site/views/include/*.liquid"
+      "./docs/src/views/include/*.liquid"
     ]
   },
   "format": {
@@ -11,6 +11,9 @@
     "indentSize": 2,
     "preserveLine": 1,
     "endNewline": false,
+    "ignore": [
+      "./docs/src/views/include/pages/*.liquid"
+    ],
     "liquid": {
       "commentIndent": true,
       "commentNewline": true,

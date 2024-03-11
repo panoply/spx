@@ -7,7 +7,7 @@
 @include media-breakpoint-up(xxl) {
   .content-offset {
     margin-left: $sidebar-width;
-    margin-right: $session-width;
+    // margin-right: $session-width;
   }
 }
 
@@ -24,5 +24,20 @@
   }
   to {
     transform: scaleX(100%);
+  }
+}
+
+.anchors > ul {
+  // background-color: #20242c;
+  padding: 20px;
+  display: block;
+  border: 0.01rem #2d333a solid;
+  border-radius: 5px;
+  position: sticky;
+  top: $spacer-5 * 2;
+  width: 300px;
+
+  li {
+    font-size: $font-size-sm;
   }
 }

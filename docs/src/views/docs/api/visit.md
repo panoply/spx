@@ -14,7 +14,7 @@ next:
 
 The `visit` method executed a programmatic trigger visit. The method expects a `url` as an argument and optionally accepts an page state options model. This method behaves the same way as trigger.
 
-**Returns:** `Promise<IPage>`<br>
+**Returns:** `Promise<Page>`<br>
 **Events:** `replace > request > cache > render > load`
 
 # Example

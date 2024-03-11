@@ -2,12 +2,12 @@
 title: 'Introduction'
 layout: base.liquid
 permalink: '/introduction/what-is-spx/index.html'
-prev:
-  label: 'Introduction'
-  uri: '/introduction/what-is-spx/'
-next:
-  label: 'Key Concepts'
-  uri: '/introduction/key-concepts/'
+grid: 'col-md-8'
+anchors:
+  - What is SPX?
+  - Why use SPX?
+  - Who uses SPX?
+  - How SPX Works?
 ---
 
 # What is SPX?

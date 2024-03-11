@@ -249,6 +249,14 @@
   "html.customData": [
     "./.vscode/custom-data/drawer.html-data.json",
   ],
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "./docs/public/search.json"
+      ],
+      "schema": {}
+    }
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": "explicit"
   },
@@ -282,6 +290,7 @@
     "iframes",
     "Livewire",
     "navigations",
+    "oninit",
     "spx",
     "Wanstrath",
     "worktree",

@@ -26,14 +26,14 @@ A SPX navigation sessions will begin immediately after a connection was initiali
 ```js
 interface ISession {
   readonly selectors: object;
-  readonly pages: { [key: string]: IPage };
+  readonly pages: { [key: string]: Page };
   readonly snapshots: { [uuid: string]: string };
   readonly memory: {
     size: string;
     bytes: number;
     visits: number;
   };
-  options: IOptions;
+  options: Options;
   observers: {
     history: boolean;
     hover: boolean;
@@ -80,7 +80,7 @@ State modifications can be carried out using attributes, methods or from within 
 ## Model
 
 ```js
-interface IPage {
+interface Page {
   uuid: string;
   key: string;
   rev: string;

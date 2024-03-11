@@ -1,7 +1,10 @@
 const eleventy = require('@panoply/11ty');
 const papyrus = require('papyrus');
 const container = require('markdown-it-container');
+const attrs = require('markdown-it-attrs');
+const anchor = require('markdown-it-anchor');
 const { terser, sprite, versions, markdown } = require('@sissel/11ty');
+const { readFile } = require('node:fs/promises');
 
 /**
  * Papyrus Syntax
@@ -45,6 +48,7 @@ function syntax ({ raw, language }) {
 
 };
 
+
 function tabs(md, tokens, idx) {
 
   if(tokens[idx].nesting === 1) {
@@ -54,48 +58,48 @@ function tabs(md, tokens, idx) {
     if (col !== null) {
 
       // opening tag
-      return col[1] ==='template' ? string([
+      return col[1] === 'template' ? [
         /* html */`
         <div spx-component="tabs">
           <div class="row gx-0 bd tabs py-2 px-2">
             <div class="col-auto mr-2">
               <button
                 type="button"
-                class="btn upcase tab active"
-                data-index="0"
-                spx-node="tabs.btn"
-                spx@click="tabs.toggle">
+                class="btn upper tab active"
+                spx-node="tabs.button"
+                spx@click="tabs.toggle"
+                spx-tabs:index="0">
                 Template
               </button>
             </div>
             <div class="col-auto">
               <button
                 type="button"
-                class="btn upcase tab"
-                data-index="1"
-                spx-node="tabs.btn"
-                spx@click="tabs.toggle">
+                class="btn upper tab"
+                spx-node="tabs.button"
+                spx@click="tabs.toggle"
+                spx-tabs:index="1">
                 Component
               </button>
             </div>
             <div class="col-auto">
               <button
                 type="button"
-                class="btn upcase tab"
-                data-index="1"
-                spx-node="tabs.btn"
-                spx@click="tabs.toggle">
+                class="btn upper tab"
+                spx-node="tabs.button"
+                spx@click="tabs.toggle"
+                spx-tabs:index="2">
                 Example
               </button>
             </div>
           </div>
-          <div class="col-12 tab-content" spx-node="tabs.tab">
+          <div class="col-12 tab-content" spx-node="tabs.panel">
         `,
-      ]) : string([
+      ].join('') : [
         /* html */`
-          <div class="col-12 tab-content d-none" spx-node="tabs.tab">
+          <div class="col-12 tab-content d-none" spx-node="tabs.panel">
         `
-      ])
+      ].join('')
     }
    }
 
@@ -107,9 +111,31 @@ function tabs(md, tokens, idx) {
 }
 
 
-function navigate () {
+/**
+ * @param {any[]} data
+ * @param {import('markdown-it').Token[]} tokens
+ */
+function json (data, tokens) {
+
+  const items = []
+
+  tokens.forEach((token, index) => {
+
+    if(token.type === 'inline' && token.content.length > 0) {
+
+      console.log(token)
+      items.push(token.content)
+
+    }
+  })
+
+  if(items.length > 0) data.push(items);
 
 }
+
+
+
+
 
 /**
  * Eleventy Build
@@ -118,6 +144,7 @@ function navigate () {
  */
 module.exports = eleventy(function (config) {
 
+
   markdown(config, {
     syntax,
     options: {
@@ -125,14 +152,26 @@ module.exports = eleventy(function (config) {
       linkify: true,
       typographer: true,
       breaks: false,
-    }
+    },
    })
+   .use(anchor, {
+    callback: (token, page) => {
+      token.attrs.push(['spx-node', 'scrollspy.anchor'])
+    }
+  })
   .use(container, 'tabs', { render: (tokens, idx) => tabs(markdown, tokens, idx) })
+  .use(attrs)
   .disable("code");
+
 
   config.addPlugin(versions, { version: require('../package.json').version });
   config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
   config.addPlugin(terser)
+  config.addPassthroughCopy({
+    'src/data/spx.json': 'search/spx.json'
+  })
+
+
 
   return {
     htmlTemplateEngine: 'liquid',

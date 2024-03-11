@@ -2,6 +2,7 @@
   spx-component="session|tabs"
   spx-session:action="initialize"
   class="w-100">
+
   <div class="tabs">
     <nav
       spx-node="tabs.panel"
@@ -60,12 +61,15 @@
 
       <div
         class="session-accordion"
-        spx-node="session.relapse">
+        data-relapse="session">
 
         {% assign tabs = 'pages,snapshots,components,history' | split: ',' %}
 
         {% for item in tabs %}
-          <details>
+          <details
+            {% if item == "pages" %}
+              open
+            {% endif %}>
             <summary>
               {% if item == 'history' %}
                 {{ item }} API
@@ -85,7 +89,6 @@
         {% endfor %}
 
       </div>
-
     </div>
 
     <div

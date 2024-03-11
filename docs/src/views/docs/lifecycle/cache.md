@@ -21,7 +21,7 @@ The cache event is fired after the record was saved to memory. This event will f
 ```js
 import spx from 'spx';
 
-spx.on('cache', function(state?: IPage){
+spx.on('cache', function(state?: Page){
 
   // void
 

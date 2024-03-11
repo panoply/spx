@@ -4,35 +4,47 @@ import spx, { SPX } from 'spx';
 
 export class Tabs extends spx.Component<typeof Tabs.connect> {
 
+  btn: any;
   static connect = {
     state: {
-      open: {
-        default: 0,
-        typeof: Number
-      }
-    }
+      size: Number,
+      open: Number
+    },
+    nodes: [
+      'buttons',
+      'button'
+    ]
   };
 
-  toggle ({ target }: SPX.Event<{}, HTMLElement>) {
+  oninit () {
 
-    this.state.open = +target.getAttribute('data-index');
+    console.log(this);
 
-    for (const btn of this.btnNodes) {
-      btn.classList.remove('active');
-    }
+    this.btn = this.buttonNodes || this.buttonsNode.children;
 
-    for (const tab of this.tabNodes) {
-      tab.classList.remove('d-block');
-      tab.classList.add('d-none');
-    }
-
-    this.btnNodes[this.state.open].classList.add('active');
-    this.tabNodes[this.state.open].classList.remove('d-none');
-    this.tabNodes[this.state.open].classList.add('d-block');
+    console.log(this.btn);
 
   }
 
-  tabNodes: HTMLElement[];
-  btnNodes: HTMLElement[];
+  toggle ({ attrs }: SPX.Event<{ index: number }>) {
+
+    if (this.state.open === attrs.index) return;
+
+    for (let i = 0, s = this.panelNodes.length; i < s; i++) {
+      if (i === attrs.index) {
+        this.btn[i].classList.add('active');
+        this.panelNodes[i].classList.remove('d-none');
+      } else {
+        this.btn[i].classList.remove('active');
+        this.panelNodes[i].classList.toggle('d-none', true);
+      }
+    }
+
+    this.state.open = attrs.index;
+  }
+
+  public panelNodes: HTMLElement[];
+  public buttonNodes: HTMLElement[];
+  public buttonsNode: HTMLElement;
 
 }

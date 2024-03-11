@@ -1,11 +1,12 @@
+import spx from 'spx';
+import relapse from 'relapse';
 import { Tabs } from './components/tabs';
+import { Modal } from './examples/modal';
 import { Session } from './components/session';
 import { Drawer } from './components/drawer';
 import { Dropdown } from './components/dropdown';
 import { IFrame } from './components/iframe';
-import { Sidebar } from './components/sidebar';
-import spx from 'spx';
-import relapse from 'relapse';
+import { Search } from './components/search';
 // import papyrus from '@liquify/papyrus'
 // import Prism from 'prismjs'
 
@@ -21,31 +22,41 @@ spx.register(
   Demo,
   Dropdown,
   Example,
+  Modal,
   Foo,
-  Sidebar,
   Bar,
   Test,
   Session,
   Drawer,
   IFrame,
-  Tabs
+  Tabs,
+  Search
 );
 
-spx.connect(
-  {
-    fragments: [
-      '#content'
-    ],
-    logLevel: 1,
-    hover: {
-      threshold: 100,
-      trigger: 'href'
-    },
-    progress: {
-      bgColor: 'red'
-    }
-
+spx.connect({
+  fragments: [
+    'content',
+    'menu'
+  ],
+  logLevel: 1,
+  hover: {
+    threshold: 100,
+    trigger: 'href'
+  },
+  progress: {
+    bgColor: 'red'
   }
-)(function () {
+
+})(() => relapse());
+
+spx.on('load', (page) => {
+
+  if (page.key === '/') {
+    relapse.has() && relapse.destroy();
+  } else if (!relapse.has()) {
+    relapse();
+  } else {
+    relapse.reinit();
+  }
 
 });

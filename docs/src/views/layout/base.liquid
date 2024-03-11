@@ -55,30 +55,34 @@
     {% else %}
 
       {% include 'navbar' %}
+      {% include 'search' %}
 
       <div class="container-fluid container-wrapper">
         <aside
-          id="sidenav"
           class="px-0 vh-100 bt br d-none d-sm-block sidebar drawer-left drawer-panel"
           spx-component="drawer"
           spx-drawer:direction="left"
-          spx-drawer:width="250px">
+          spx-drawer:width="280px">
           {% include 'sidebar' %}
         </aside>
-        <div class="row jc-center content-offset px-xxl-4">
-          <main
-            id="content"
-            class="col-11 col-md-12 px-xl-5 pb-4">
+        <div
+          id="content"
+          class="row jc-between content-offset pl-xxl-5">
+          <main class="col-11 {{ grid | default: 'col-md-8' }} px-xl-3 pb-4">
             {% include 'breadcrumb' %}
             {{ content }}
             {% include 'navigate' %}
           </main>
+          <div class="col-auto px-5 anchors d-none">
+            <ul>
+              {% if anchors %}
+                {% for name in anchors %}
+                  <li>{{ name }}</li>
+                {% endfor %}
+              {% endif %}
+            </ul>
+          </div>
         </div>
-        <aside
-          id="session"
-          class="session vh-100 bl d-none d-xxl-flex">
-          {% include 'session' %}
-        </aside>
       </div>
 
     {% endif %}

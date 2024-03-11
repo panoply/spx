@@ -21,7 +21,7 @@ The store event will be triggered immediately after a request has finished but b
 ```js
 import spx from 'spx';
 
-spx.on('store', function(state?: IPage, dom?: Document){
+spx.on('store', function(state?: Page, dom?: Document){
 
   // Optionally return dom
   return dom

@@ -16,6 +16,7 @@
     "11ty:build": "ENV=prod eleventy --config=.eleventy.cjs ",
     "tsup:watch": "tsup --watch",
     "tsup:build": "tsup --minify --env.NODE_ENV production",
+    "search:json": "tsup --env.NODE_ENV search",
     "sass:build": "sass ./src/sass/stylesheet.scss public/style.css --no-source-map",
     "sass:watch": "sass ./src/sass/stylesheet.scss public/style.css --poll --watch"
   },
@@ -28,8 +29,9 @@
   },
   "dependencies": {
     "@brixtol/bootstrap": "workspace:^",
+    "fuse.js": "^7.0.0",
     "qvp": "^0.3.2",
-    "relapse": "^0.7.0",
+    "relapse": "^0.8.1",
     "spx": "workspace:0.1.2-beta.1"
   },
   "devDependencies": {
@@ -45,14 +47,17 @@
     "adm-zip": "^0.5.10",
     "autoprefixer": "^10.4.17",
     "concurrently": "^8.2.2",
-    "cssnano": "^6.0.3",
-    "eslint": "^8.56.0",
+    "cssnano": "^6.0.5",
+    "eslint": "^8.57.0",
+    "html-text-extractor": "^1.1.1",
+    "markdown-it-anchor": "^8.6.7",
+    "markdown-it-attrs": "^4.1.6",
     "markdown-it-container": "^4.0.0",
-    "netlify-cli": "^17.15.7",
+    "netlify-cli": "^17.17.1",
     "papyrus": "^0.5.5",
-    "postcss": "^8.4.33",
+    "postcss": "^8.4.35",
     "postcss-cli": "^11.0.0",
-    "sass": "^1.70.0",
-    "tsup": "^8.0.1"
+    "sass": "^1.71.1",
+    "tsup": "^8.0.2"
   }
 }

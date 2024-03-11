@@ -2,12 +2,12 @@
 title: 'Installation'
 layout: base.liquid
 permalink: '/usage/installation/index.html'
-prev:
-  label: 'Tutorial'
-  uri: '/introduction/recommendations'
-next:
-  label: 'Connection'
-  uri: '/usage/connection/'
+grid: 'col-md-7'
+anchors:
+  - Installation
+  - Bundling SPX
+  - CDN
+  - Debug Mode
 ---
 
 # Installation

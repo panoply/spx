@@ -2,17 +2,11 @@
 title: 'Key Concepts'
 layout: base.liquid
 permalink: '/introduction/key-concepts/index.html'
-prev:
-  label: 'Introduction'
-  uri: '/introduction/what-is-spx/'
-next:
-  label: 'Session'
-  uri: '/introduction/session/'
 ---
 
 # Key Concepts
 
-SPX assumes developers have an intermediate level of font-end knowledge. Before leveraging the module, it's important to familiarize yourself with a couple of its key concepts which are listed on this page. When using SPX, all `href` link clicks are intercepted and seamlessly executed over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) so your web application will never perform full-page reloads, but instead partial (morphed) replacements. The XHR (DOM String) responses are stored in browser state and an active cache is persisted until a hard-refresh is incurred or hostname changes.
+SPX assumes developers have an intermediate level of font-end knowledge. Before leveraging the module, it's important to familiarize yourself with a couple of its key concepts which are listed on this page. When using SPX, all `href` link clicks are intercepted and seamlessly executed over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) so your web application will never perform full-page reloads, but instead it carries out partial (morphed) replacements. The XHR (DOM String) responses are stored in browser state and an active cache is persisted until a hard-refresh is incurred or hostname changes.
 
 The actual fetching operation happens preemptively and SPX offers varying sets of user defined configuration options for performing DOM element replacements when navigating between different urls of the same hostname. SPX is designed to replicate native browser behavior but developers should be mindful in their implementation.
 
@@ -22,11 +16,27 @@ The actual fetching operation happens preemptively and SPX offers varying sets o
 
 # Fragments
 
-Fragments in SPX refer to a collection of elements, identified by a selector, that coexist within web pages. By default, SPX assumes that descendant elements of `<body>` are dynamic and unique for each page in your web application. However, in reality, websites comprise both dynamic and static elements. It is not only encouraged but also considered good practice to explicitly define a set of fragments. This will help prevent SPX from performing extraneous DOM diffing operations every time a page visit occurs.
-
-You can define fragments in SPX either upon connection via the [`spx.connect()`](/api/connect)) method. SPX also supports directive overrides for defining fragments on a per-page level using attribute annotation. Link elements in the DOM which contain an [`spx-fragment`](/attributes/spx-fragment) attribute can be used to target a different set of elements between navigations.
+In SPX, fragments pertain to elements annotated with the `id` attribute that persist across various pages of your website. These fragments constitute the dynamic components of your web application, as their descendant elements undergo changes. Websites generally consist of a combination of dynamic and static elements. Static elements remain consistent across multiple visits, while dynamic elements vary with each visit.
 
 <br>
+
+:::: grid row
+::: grid col-6
+
+<!-- prettier-ignore -->
+```html
+<body>
+  <header>
+    <nav id="menu"><!-- --></nav>
+  </header>
+  <main id="main"><!-- --></main>
+  <footer>
+  </footer>
+</body>
+```
+
+:::
+::: grid col-6
 
 <!-- prettier-ignore -->
 ```js
@@ -34,11 +44,14 @@ import spx from 'spx';
 
 spx.connect({
   fragments: [
-    'nav',      // Targets HTML element <nav>
-    'main'      // Targets HTML element <main>
+    'menu',  // Targets <nav id="menu">
+    'main'   // Targets <main id="main">
   ]
 });
 ```
+
+:::
+::::
 
 ---
 

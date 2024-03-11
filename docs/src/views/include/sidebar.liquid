@@ -30,9 +30,11 @@
 {% comment %}
   MENU
 {% endcomment %}
+
 <nav
+  id="menu"
   class="sidebar-menu mt-0 mb-2 br-0 bt-0"
-  spx-component="sidebar">
+  data-relapse="sidebar">
 
   {% for item in navigation.menu %}
 
@@ -44,7 +46,6 @@
     {% if item.url %}
       <a
         spx-scroll="0"
-        spx-target="true"
         class="menu-link"
         href="{{ item.url | url }}"
         {% if page.url contains item.url %}
@@ -92,7 +93,6 @@
                       <li class="pl-1">
                         <a
                           spx-scroll="0"
-                          spx-target="true"
                           href="{{ child.url | url }}"
                           {% if page.url contains child.url %}
                             class="active"
@@ -107,7 +107,6 @@
             {% else %}
               <a
                 spx-scroll="0"
-                spx-target="true"
                 href="{{ link.url | url }}"
                 aria-disabled="true"
                 {% if page.url contains link.url %}

@@ -21,7 +21,7 @@ The prefetch event will be triggered for every prefetch request. Prefetch events
 ```js
 import spx from 'spx';
 
-spx.on('prefetch', function(element?: Element, location?: ILocation){
+spx.on('prefetch', function(element?: Element, location?: Location){
 
   // The <a> element the prefetch was invoked
   console.log(element);

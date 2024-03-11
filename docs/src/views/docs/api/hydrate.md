@@ -14,7 +14,7 @@ next:
 
 Programmatic hydrate execution. The method expects a `url` as first parameter and accepts an options string list of element selectors to replace along with an optional `pushState` method to apply. When no replacement selectors are provided then the `targets` are used.
 
-export function hydrate(url: string, nodes?: string[], pushState?: 'replace' | 'push'): Promise<IPage>
+export function hydrate(url: string, nodes?: string[], pushState?: 'replace' | 'push'): Promise<Page>
 
 # Example
 

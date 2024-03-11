@@ -11,13 +11,13 @@ spx.connect(options?: {}): (callback: (session?: ISession) => void) => void
 
 spx.session(store?: string, merge?:{}): ISession
 
-spx.hydrate(url?: string, targets: string[]): Promise<IPage>
+spx.hydrate(url?: string, targets: string[]): Promise<Page>
 
 spx.fetch(url: string): Promise<Document>
 
-spx.prefetch(string | Element): Promise<IPage>
+spx.prefetch(string | Element): Promise<Page>
 
-spx.visit(url: string, options?:{}): Promise<IPage>
+spx.visit(url: string, options?:{}): Promise<Page>
 
 spx.store(url?: string, merge?:{}): Page{}
 
@@ -25,7 +25,7 @@ spx.capture(targets: string[]): Promise<Element[]>
 
 spx.clear(url?: string): void
 
-spx.reload(): IPage
+spx.reload(): Page
 
 spx.disconnect(): void
 

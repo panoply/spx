@@ -2,12 +2,7 @@
 title: 'Connection'
 layout: base.liquid
 permalink: '/usage/connection/index.html'
-prev:
-  label: 'Installation'
-  uri: '/usage/installation'
-next:
-  label: 'Options'
-  uri: '/usage/options/'
+grid: 'col-md-7'
 ---
 
 # Connection

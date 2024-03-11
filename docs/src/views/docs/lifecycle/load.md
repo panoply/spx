@@ -21,7 +21,7 @@ The load event is the final lifecycle event to be triggered. Use this event to r
 ```js
 import spx from 'spx'
 
-spx.on('load', function(state?: IPage){
+spx.on('load', function(state?: Page){
 
   //
 

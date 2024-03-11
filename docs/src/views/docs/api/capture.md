@@ -14,7 +14,7 @@ next:
 
 The `capture` method performs a snapshot modification to the current document. Use this to align a snapshot cache record between navigations. This is helpful in situations where the dom is augmented and you want to preserve
 
-**Returns:** `Promise<IPage>`
+**Returns:** `Promise<Page>`
 
 # Example
 

@@ -97,6 +97,10 @@
           "url": "/introduction/key-concepts/"
         },
         {
+          "title": "Getting Started",
+          "url": "/introduction/getting-started/"
+        },
+        {
           "title": "Lexicon",
           "url": "/introduction/lexicon/"
         },
@@ -147,6 +151,10 @@
         {
           "title": "Structure",
           "url": "/components/structure/"
+        },
+        {
+          "title": "Context",
+          "url": "/components/context/"
         },
         {
           "title": "Directives",

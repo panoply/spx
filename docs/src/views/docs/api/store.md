@@ -14,4 +14,4 @@ next:
 
 The `store` method returns the records pertaining to the provided `url` or if not defined returns the current location. Optionally pass a `state` object reference to merge and augment the current references.
 
-**Returns:** `Promise<IPage>`
+**Returns:** `Promise<Page>`

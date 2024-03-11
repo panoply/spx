@@ -2,12 +2,21 @@
 title: 'Options'
 layout: base.liquid
 permalink: '/usage/options/index.html'
-prev:
-  label: 'Connection'
-  uri: '/usage/connection'
-next:
-  label: 'Resource Evaluation'
-  uri: '/usage/resource-evaluation/'
+grid: 'col-md-7'
+anchors:
+  - Options
+  - fragments
+  - globalThis
+  - manual
+  - schema
+  - timeout
+  - logLevel
+  - cache
+  - maxCache
+  - components
+  - hover
+  - proximity
+  - intersect
 ---
 
 # Options
@@ -21,6 +30,7 @@ import spx from 'spx'
 spx.connect({
   fragments: ['body'],       // Element selectors that will change
   timeout: 30000,            // Request Timeout limit
+  logLevel: 2,               // Console Logging level
   schema: 'spx',             // The data-attribute schema
   manual: false,             // Manually invoke observers
   globalThis: true,          // Allow global scope, i.e: window.spx
@@ -103,8 +113,31 @@ Request polling limit is used when a request is already in transit. By default t
 
 ```js
 import spx from 'spx';
+
 spx.connect({
   timeout: 30000 // The default time is set to 30s
+});
+```
+
+---
+
+## logLevel
+
+Request polling limit is used when a request is already in transit. By default this is set to `30000` which means requests will wait `30s` before the limit of the XHR request will timeout. If timeout limit is exceeded a normal page visit will be executed.
+
+| Level | Mode    | Description                                                               |
+| ----- | ------- | ------------------------------------------------------------------------- |
+| `1`   | DEBUG   | Used in development only. Applies detailed logging of varying operations. |
+| `2`   | VERBOSE | Less aggressive than DEBUG, informative logging overall.                  |
+| `3`   | INFO    | Info related logging, less aggressive than VERBOSE. Default level.        |
+| `4`   | WARN    | Only prints warnings or errors, recommended for production.               |
+| `5`   | ERROR   | Errors only. This is effectively silent mode, only throws will apply.     |
+
+```js
+import spx from 'spx';
+
+spx.connect({
+  logLevel: 3 // The default level is 3, printing info and warnings
 });
 ```
 

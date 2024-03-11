@@ -6,11 +6,9 @@
     height: var(--papyrus-scrollbar-width);
   }
 
-
   &::-webkit-scrollbar-track {
     background: var(--papyrus-scrollbar-track);
   }
-
 
   &::-webkit-scrollbar-thumb {
     background: var(--papyrus-scrollbar-thumb);
@@ -23,7 +21,6 @@
   &::-webkit-scrollbar-corner {
     background: transparent;
   }
-
 }
 
 .iframe-example {
@@ -31,5 +28,4 @@
   border: $border-width solid $border-color;
   border-radius: 7px;
   height: 240px;
-
 }
