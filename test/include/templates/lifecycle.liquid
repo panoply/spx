@@ -1,10 +1,11 @@
-<div
-  class="row mx-1"
-  spx-component="lifecycle"
-  spx-lifecycle:init="0"
-  spx-lifecycle:load="0"
-  spx-lifecycle:leave="0">
-  <div class="col-7 pr-1">
+<div class="row mx-1">
+  <div
+    class="col-7 pr-1"
+    spx-component="lifecycle"
+    spx-lifecycle:init="0"
+    spx-lifecycle:load="0"
+    spx-lifecycle:leave="0">
+
     <div
       class="row mt-b"
       id="lifecycle">
@@ -17,7 +18,6 @@
           class="py-2 px-4 bd"
           spx-node="lifecycle.foo"></span>
       </div>
-
       <div class="col tc py-3 bd rd mr-3">
         <h6 class="fw-bold fc-gray fs-sm mb-3">
           Bar Node:
@@ -43,9 +43,7 @@
           spx-node="lifecycle.qux"></span>
       </div>
     </div>
-  </div>
 
-  <div class="col-7 pr-1">
     <div class="row jc-center bt mt-4 py-3">
       <div class="col-auto">
         onInit Count:
@@ -72,5 +70,12 @@
           spx-bind="lifecycle.leave"></code>
       </div>
     </div>
+  </div>
+  <div class="col ml-5">
+    <!-- esthetic-ignore-start -->
+    <pre>
+    <code></code>
+    </pre>
+    <!-- esthetic-ignore-end -->
   </div>
 </div>

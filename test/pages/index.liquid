@@ -31,7 +31,9 @@
   <body>
     <div class="container">
       <div class="row">
-        <aside class="col-auto vh-100 br abs pt-5 px-5">
+        <aside
+          class="col-auto vh-100 br abs pt-5 px-5"
+          id="sidebar">
           {% for item in menu %}
             <strong class="upper">
               {{ item.title }}
@@ -53,8 +55,9 @@
             </ul>
           {% endfor %}
         </aside>
-        <main class="col offset-2 pl-5 py-5">
-          {{ page.url_active }}
+        <main
+          class="col offset-2 pl-5 py-5"
+          id="main">
           {{ content }}
         </main>
       </div>
