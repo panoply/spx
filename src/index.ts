@@ -1,18 +1,18 @@
 import type { LiteralUnion } from 'type-fest';
-import type { IConfig, IPage } from 'types';
+import type { Config, Page } from 'types';
 import { log } from './shared/logs';
 import { defineGetter, forNode, hasProp, size } from './shared/utils';
 import { $ } from './app/session';
 import { configure } from './app/config';
 import { getRoute } from './app/location';
-import { Errors, VisitType } from './shared/enums';
+import { LogType, VisitType } from './shared/enums';
 import { assign, d, defineProps, isArray, isBrowser, o, origin } from './shared/native';
 import { initialize, disconnect, observe } from './app/controller';
 import { clear } from './app/queries';
 import { on, off } from './app/events';
 import { morph } from './morph/morph';
 import { Component } from './components/extends';
-import { registerComponents, getComponentIdentifier } from './components/register';
+import { registerComponents, getComponentId } from './components/register';
 import { takeSnapshot } from './shared/dom';
 import * as q from './app/queries';
 import * as hrefs from './observe/hrefs';
@@ -61,18 +61,18 @@ const spx = o({
 /**
  * Connect SPX
  */
-function connect (options: IConfig = {}) {
+function connect (options: Config = {}) {
 
   if (isBrowser === false) {
-    return log(Errors.ERROR, 'Invalid runtime environment: window is undefined.');
+    return log(LogType.ERROR, 'Invalid runtime environment: window is undefined.');
   }
 
   if (!spx.supported) {
-    return log(Errors.ERROR, 'Browser does not support SPX');
+    return log(LogType.ERROR, 'Browser does not support SPX');
   }
 
   if (!window.location.protocol.startsWith('http')) {
-    return log(Errors.ERROR, 'Invalid protocol, SPX expects HTTPS or HTTP protocol');
+    return log(LogType.ERROR, 'Invalid protocol, SPX expects HTTPS or HTTP protocol');
   }
 
   configure(options);
@@ -91,13 +91,13 @@ function connect (options: IConfig = {}) {
       try {
         await callback(state);
       } catch (e) {
-        log(Errors.WARN, 'Connection Error', e);
+        log(LogType.WARN, 'Connection Error', e);
       }
     } else {
       callback(state);
     }
 
-    log(Errors.INFO, 'Connection Established');
+    log(LogType.INFO, 'Connection Established');
 
   };
 
@@ -108,7 +108,7 @@ function register (...classes: any[]) {
   if (typeof classes[0] === 'string') {
 
     if (classes.length > 2) {
-      log(Errors.ERROR, [
+      log(LogType.ERROR, [
         `Named component registration expects 2 parameters, recieved ${classes.length}.`,
         'Registry should follow this structure: spx.register("identifer", YourComponent)'
       ], classes);
@@ -124,13 +124,13 @@ function register (...classes: any[]) {
           if (typeof item[0] === 'string') {
             registerComponents({ [item[0]]: item[1] });
           } else if (typeof item === 'function') {
-            registerComponents({ [getComponentIdentifier(item)]: item });
+            registerComponents({ [getComponentId(item)]: item }, true);
           }
         }
       } else {
         const type = typeof component;
         if (type === 'function') {
-          registerComponents({ [getComponentIdentifier(component)]: component });
+          registerComponents({ [getComponentId(component)]: component }, true);
         } else if (type === 'object') {
           registerComponents(component);
         }
@@ -138,11 +138,13 @@ function register (...classes: any[]) {
     }
   }
 
-  if ($.ready) {
-    if (!$.config.components) {
+  if (!$.ready) {
+    on('x', function run () {
       components.connect();
-      $.config.components = true;
-    }
+      off('x', run);
+    });
+  } else {
+    components.connect();
   }
 
 }
@@ -155,12 +157,12 @@ function register (...classes: any[]) {
 function session () {
 
   return defineProps(o(), {
-    config: { get () { return $.config; } },
-    snaps: { get () { return $.snaps; } },
-    pages: { get () { return $.pages; } },
-    observers: { get () { return $.observe; } },
-    components: { get () { return $.components; } },
-    fragments: { get () { return $.fragments; } },
+    config: { get: () => $.config },
+    snaps: { get: () => $.snaps },
+    pages: { get: () => $.pages },
+    observers: { get: () => $.observe },
+    components: { get: () => $.components },
+    fragments: { get: () => $.fragments },
     memory: {
       get () {
         const memory = $.memory;
@@ -184,11 +186,11 @@ async function reload () {
   const page = await request.fetch(state);
 
   if (page) {
-    log(Errors.INFO, 'Triggered reload, page was re-cached');
+    log(LogType.INFO, 'Triggered reload, page was re-cached');
     return renderer.update(page);
   }
 
-  log(Errors.WARN, 'Reload failed, triggering refresh (cache will purge)');
+  log(LogType.WARN, 'Reload failed, triggering refresh (cache will purge)');
 
   return location.assign(state.key);
 
@@ -202,7 +204,7 @@ async function fetch (url: string) {
   const link = getRoute(url, VisitType.FETCH);
 
   if (link.location.origin !== origin) {
-    log(Errors.ERROR, 'Cross origin fetches are not allowed');
+    log(LogType.ERROR, 'Cross origin fetches are not allowed');
   }
 
   const dom = await request.request<Document>(link.key);
@@ -212,18 +214,18 @@ async function fetch (url: string) {
 }
 
 async function render (url: string, pushState: 'intersect' | 'replace' | 'push', fn: (
-  this: IPage,
+  this: Page,
   dom: Document,
 ) => Document) {
 
   const page = $.page;
   const route = getRoute(url);
 
-  if (route.location.origin !== origin) log(Errors.ERROR, 'Cross origin fetches are not allowed');
+  if (route.location.origin !== origin) log(LogType.ERROR, 'Cross origin fetches are not allowed');
 
   const dom = await request.request<Document>(route.key, { type: 'document' });
 
-  if (!dom) log(Errors.ERROR, `Fetch failed for: ${route.key}`, dom);
+  if (!dom) log(LogType.ERROR, `Fetch failed for: ${route.key}`, dom);
 
   await fn.call(page, dom) as Document;
 
@@ -274,19 +276,19 @@ function capture (targets?: string[]) {
 /**
  * Prefetch
  */
-async function prefetch (link: string): Promise<void|IPage> {
+async function prefetch (link: string): Promise<void|Page> {
 
   const path = getRoute(link, VisitType.PREFETCH);
 
   if (q.has(path.key)) {
-    log(Errors.WARN, `Cache already exists for ${path.key}, prefetch skipped`);
+    log(LogType.WARN, `Cache already exists for ${path.key}, prefetch skipped`);
     return;
   }
 
   const prefetch = await request.fetch(q.create(path));
   if (prefetch) return prefetch;
 
-  log(Errors.ERROR, `Prefetch failed for ${path.key}`);
+  log(LogType.ERROR, `Prefetch failed for ${path.key}`);
 
 };
 
@@ -370,7 +372,7 @@ async function hydrate (link: string, nodes?: string[]): Promise<Document> {
 /**
  * Visit
  */
-async function visit (link: string, options?: IPage): Promise<void|IPage> {
+async function visit (link: string, options?: Page): Promise<void|Page> {
 
   const route = getRoute(link);
   const merge = typeof options === 'object' ? assign(route, options) : route;
