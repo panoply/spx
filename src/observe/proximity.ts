@@ -6,8 +6,8 @@ import { getRoute } from '../app/location';
 import { emit } from '../app/events';
 import * as q from '../app/queries';
 import * as request from '../app/fetch';
-import { VisitType, Errors } from '../shared/enums';
-import { IProximity } from 'types';
+import { VisitType, LogType } from '../shared/enums';
+import { Proximity } from 'types';
 import { pointer } from '../shared/native';
 
 /**
@@ -30,7 +30,7 @@ function setBounds (target: HTMLLinkElement) {
 
   const rect = target.getBoundingClientRect();
   const attr = target.getAttribute($.qs.$proximity);
-  const distance = isNumber.test(attr) ? Number(attr) : ($.config.proximity as IProximity).distance;
+  const distance = isNumber.test(attr) ? Number(attr) : ($.config.proximity as Proximity).distance;
 
   return {
     target,
@@ -68,13 +68,13 @@ function observer (targets?: {
 
     if (node === -1) {
 
-      setTimeout(() => { wait = false; }, ($.config.proximity as IProximity).throttle);
+      setTimeout(() => { wait = false; }, ($.config.proximity as Proximity).throttle);
 
     } else {
 
       const { target } = targets[node];
       const page = q.create(getRoute(target, VisitType.PROXIMITY));
-      const delay = page.threshold || ($.config.proximity as IProximity).threshold;
+      const delay = page.threshold || ($.config.proximity as Proximity).threshold;
 
       request.throttle(page.key, async () => {
 
@@ -90,7 +90,7 @@ function observer (targets?: {
 
           if (targets.length === 0) {
             disconnect();
-            log(Errors.INFO, 'Proximity observer disconnected');
+            log(LogType.INFO, 'Proximity observer disconnected');
           }
         }
 

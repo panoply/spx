@@ -1,11 +1,11 @@
-import { Errors, VisitType } from '../shared/enums';
+import { LogType, VisitType } from '../shared/enums';
 import { ts } from '../shared/utils';
 import { log } from '../shared/logs';
 import { deviceType } from 'detect-it';
 import { XHR, pointer } from '../shared/native';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
-import { IPage } from '../types/page';
+import { Page } from '../types/page';
 import { getAttributes, getKey, getRoute } from '../app/location';
 import { progress } from '../app/progress';
 import { $ } from '../app/session';
@@ -88,6 +88,8 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
   // TODO: Handle same URL clicks on link elements
 
+  const isRoute = key === $.page.key;
+
   /**
    * Pointer Move/Drag
    *
@@ -98,7 +100,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
    * Credit to the brother mansedan for catching this.
    */
   const move = () => {
-    log(Errors.WARN, `Drag occurance deteced, cancelled visit: ${key}`);
+    log(LogType.WARN, `Drag occurance deteced, cancelled visit: ${key}`);
     handle.drag = true;
     target.removeEventListener(`${pointer}move`, move);
   };
@@ -120,21 +122,31 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
    * page state and history state. The subsequent parameter is
    * used to determine whether we a visting an fetched page or not
    */
-  const click = (state: IPage, subsequent = true) => {
+  const click = (state: Page, subsequent = true) => {
 
     $.pages[state.key].ts = ts();
+    $.pages[state.key].visits = state.visits + 1;
     $.pages[state.rev].scrollX = window.scrollX;
     $.pages[state.rev].scrollY = window.scrollY;
 
     hook('onvisit', state);
 
-    history.replace($.pages[state.rev]);
+    if (isRoute) {
 
-    if (subsequent) {
-      history.push(state);
+      log(LogType.VERBOSE, `URL Pathname matches current route: ${key}`);
+
       render.update(state);
+
     } else {
-      visit(state);
+
+      history.replace($.pages[state.rev]);
+
+      if (subsequent) {
+        history.push(state);
+        render.update(state);
+      } else {
+        visit(state);
+      }
     }
   };
 
@@ -159,7 +171,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
     request.cancel(key); // Cancel any other fetches in transit
 
-    log(Errors.INFO, `Request in transit: ${key}`);
+    log(LogType.INFO, `Request in transit: ${key}`);
 
     // console.log(request.timers, request.transit, request.xhr);
 
@@ -196,7 +208,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
   }
 };
 
-export async function visit (state: IPage) {
+export async function visit (state: Page) {
 
   // Trigger progress bar loading
   if (state.progress) progress.start(state.progress as number);
@@ -226,7 +238,7 @@ export async function visit (state: IPage) {
  * Executes a SPX navigation.
  *
  */
-export async function navigate (key: string, state?: IPage): Promise<void> {
+export async function navigate (key: string, state?: Page): Promise<void> {
 
   if (state) {
 

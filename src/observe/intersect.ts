@@ -1,6 +1,6 @@
 import { forEach } from '../shared/utils';
 import { log } from '../shared/logs';
-import { Errors, VisitType } from '../shared/enums';
+import { LogType, VisitType } from '../shared/enums';
 import { getNodeTargets } from '../shared/links';
 import { $ } from '../app/session';
 import { emit } from '../app/events';
@@ -31,7 +31,7 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
       entries.unobserve(entry.target);
 
     } else {
-      log(Errors.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
+      log(LogType.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
       entries.observe(entry.target);
     }
   }

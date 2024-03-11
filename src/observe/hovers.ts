@@ -1,4 +1,4 @@
-import { IHover, IPage } from 'types';
+import { Hover, Page } from 'types';
 import { XHR, pointer } from '../shared/native';
 import { forEach } from '../shared/utils';
 import { emit } from '../app/events';
@@ -30,7 +30,7 @@ function onEnter (event: MouseEvent): void {
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
 
   const state = q.create(route);
-  const delay = state.threshold || ($.config.hover as IHover).threshold;
+  const delay = state.threshold || ($.config.hover as Hover).threshold;
 
   request.throttle(route.key, function () {
 
@@ -50,7 +50,7 @@ function onEnter (event: MouseEvent): void {
  * concludes. This prevents fetches being made for hovers that
  * do not exceeds threshold.
  */
-function onLeave (this: IPage, event: MouseEvent) {
+function onLeave (this: Page, event: MouseEvent) {
 
   const target = getLink(event.target, $.qs.$hover);
 
