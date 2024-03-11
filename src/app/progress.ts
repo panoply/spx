@@ -1,6 +1,6 @@
 import { d } from '../shared/native';
 import { glue } from '../shared/utils';
-import { IProgress } from '../types/options';
+import { Progress as IProgress } from '../types/options';
 import { $ } from './session';
 
 function Progress () {
