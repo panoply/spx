@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 
-import { IPage } from './page';
+import { Page } from './page';
 
 /**
  * SPX Events
@@ -24,32 +24,30 @@ export type EventNames = (
  * Emitter Arguments
  */
 export type EmitterArguments<T extends EventNames> = (
-  T extends 'connected' ? [
-    state: IPage
-  ] :
+  T extends 'connected' ? [] :
   T extends 'visit' ? [
     event: MouseEvent
   ] :
   T extends 'popstate' ? [
     {
-      state: IPage
+      state: Page
     }
   ] :
   T extends 'prefetch' ? [
     target: Element,
-    state: IPage
+    state: Page
   ] :
   T extends 'fetch' ? [
-    state: IPage
+    state: Page
   ] :
   T extends 'before:cache' ? [
-    state: IPage,
+    state: Page,
     dom: Document
   ] : T extends 'after:cache' ? [
-    state: IPage
+    state: Page
   ] :
   T extends 'before:render' ? [
-    state: IPage
+    state: Page
   ] :
   T extends 'hydrate' ? [
     element: Element,
@@ -63,7 +61,7 @@ export type EmitterArguments<T extends EventNames> = (
     node: Element
   ] :
   T extends 'load' ? [
-    state: IPage
+    state: Page
   ] : never
 
 )
@@ -73,13 +71,7 @@ export type EmitterArguments<T extends EventNames> = (
  */
 export type LifecycleEvent<T extends EventNames> = (
 
-  T extends 'connected' ? (
-    /**
-     * Page state reference
-     */
-    state?: IPage
-
-  ) => void :
+  T extends 'connected' ? () => void :
 
   T extends 'visit' ? (
     /**
@@ -92,7 +84,7 @@ export type LifecycleEvent<T extends EventNames> = (
     /**
      * Page state reference
      */
-    state?: IPage
+    state?: Page
 
   ) => string[] | void:
 
@@ -104,14 +96,14 @@ export type LifecycleEvent<T extends EventNames> = (
     /**
      * Page state reference
      */
-    state?: IPage,
+    state?: Page,
 
   ) => void | false :
   T extends 'fetch' ? (
     /**
      * Page state reference
      */
-     state?: IPage,
+     state?: Page,
 
   ) => void | false :
 
@@ -119,7 +111,7 @@ export type LifecycleEvent<T extends EventNames> = (
     /**
      * Page state reference
      */
-    state?: IPage,
+    state?: Page,
     /**
      * Parsed document snapshot. Augment the snapshot
      * by returning the document.
@@ -132,7 +124,7 @@ export type LifecycleEvent<T extends EventNames> = (
     /**
      * Page state reference
      */
-    state?: IPage
+    state?: Page
 
   ) => void :
 
@@ -164,7 +156,7 @@ export type LifecycleEvent<T extends EventNames> = (
     /**
      * Page state reference
      */
-    state?: IPage
+    state?: Page
 
   ) => void : never
 )

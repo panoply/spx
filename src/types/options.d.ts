@@ -1,6 +1,6 @@
 export type Key = '/' | `${'/' | '?'}${string}`
 
-export interface IHover {
+export interface Hover {
   /**
    * How mousover prefetches should be triggered. By default this option is set
    * to trigger on all `<a>` href link elements. You can instead use the `attribute`
@@ -28,7 +28,7 @@ export interface IHover {
 
 }
 
-export interface IIntersect {
+export interface Intersect {
   /**
    * An offset rectangle applied to the root's href bounding box.
    *
@@ -45,7 +45,7 @@ export interface IIntersect {
   threshold?: number;
 }
 
-export interface IProximity {
+export interface Proximity {
   /**
    * The distance range the mouse should be within before
    * the prefetch is triggered. You can optionally override
@@ -84,7 +84,7 @@ export interface IProximity {
    throttle?: number;
 }
 
-export interface IProgress {
+export interface Progress {
   /**
    * The progress bar color
    *
@@ -240,7 +240,7 @@ export interface IObserverOptions {
    *
    * @default true
    */
-  hover?: boolean | IHover;
+  hover?: boolean | Hover;
 
   /**
    * #### SPX Intersect
@@ -262,7 +262,7 @@ export interface IObserverOptions {
    *
    * @default true
    */
-  intersect?: boolean | IIntersect;
+  intersect?: boolean | Intersect;
   /**
    * #### SPX Proximity
    *
@@ -280,11 +280,11 @@ export interface IObserverOptions {
    * ---
    * @default true
    */
-  proximity?: boolean | IProximity;
+  proximity?: boolean | Proximity;
 
 }
 
-export interface IOptions extends IObserverOptions {
+export interface Options extends IObserverOptions {
   /**
    * #### SPX Schema
    *
@@ -351,19 +351,19 @@ export interface IOptions extends IObserverOptions {
    *
    * SPX provides 4 log levels
    *
-   * > **`1`**
+   * > **VERBOSE - `1`**
    * >
-   * > All logs applied, trace, info, warnings and errors will be printed to the browser console.
+   * > Verbose logging to the console, use in development mode.
    *
-   * > **`2`** (default)
+   * > **INFO - `2`** (default)
    * >
    * > Suppress trace logs, prints info, warnings and errors to the browser console.
    *
-   * > **`3`**
+   * > **WARN - `3`**
    * >
    * > Suppress trace and info logs, prints warnings and errors to the browser console.
    *
-   * > **`4`**
+   * > **ERROR - `4`**
    * >
    * > Suppress trace, info and warning logs, only errors will be printed to the browser console.
    *
@@ -398,13 +398,18 @@ export interface IOptions extends IObserverOptions {
   /**
    * #### SPX Fragments
    *
-   * Define a set of page fragments (nodes) that are expected to change between navigations.
+   * Define a set of `id=""` annotated elements that are expected to change between navigations.
    * By default, SPX will swap the entire `<body>` fragment, but it is **highly recommended**
-   * that you define fragment selectors.
+   * that you define fragment ids.
+   *
+   * > **Please Note**
+   * >
+   * > Fragments **MUST** must be identifier values. Only elements which contain an `id=""` attribute
+   * > are considered fragments.
    *
    * ---
    *
-   * @default ['body']
+   * @default []
    */
   fragments?: string[];
   /**
@@ -511,13 +516,13 @@ export interface IOptions extends IObserverOptions {
    * Progress Bar configuration options. The SPX progress bar is dynamically rendered to the DOM.
    * This option allows you to customize its CSS style and the rendering rules to be applied. Setting
    * this to a boolean value of `false` will prevent the progress bar from showing, whereas a value of
-   * `true` will tell SPX to use the defaults (see {@link IProgress}).
+   * `true` will tell SPX to use the defaults (see {@link Progress}).
    *
    * ---
    *
    * @default true
    */
-  progress?: boolean | IProgress;
+  progress?: boolean | Progress;
   /**
    * #### SPX Components
    *

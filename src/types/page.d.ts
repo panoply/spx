@@ -1,5 +1,4 @@
 // eslint-disable-next-line no-unused-vars
-import type { IComponent } from './components';
 import type { VisitType } from '../shared/enums';
 
 /**
@@ -13,7 +12,7 @@ export interface ICacheSize {
 /**
  * Scroll position records
  */
-export interface IPosition {
+export interface Position {
   x: number;
   y: number;
 }
@@ -21,7 +20,7 @@ export interface IPosition {
 /**
  * The URL location object
  */
-export interface ILocation {
+export interface Location {
   /**
    * The URL origin name
    *
@@ -75,7 +74,7 @@ export interface IResource {
  * Configuration from each page visit. For every page navigation
  * the configuration object is generated in a immutable manner.
  */
-export interface IPage<T = any> {
+export interface Page<T = any> {
 
   /**
    * UUID reference to the page snapshot HTML Document element
@@ -199,7 +198,7 @@ export interface IPage<T = any> {
    * Location Records reference. This holds a parsed path
    * reference of the page.
    */
-  location: ILocation;
+  location: Location;
 
   /**
    * Controls the caching engine for the link navigation.
@@ -222,6 +221,14 @@ export interface IPage<T = any> {
    * ['#main', '.header', '[data-attr]', 'header']
    */
   target: string[];
+
+  /**
+   * List of fragment identifiers and `spx-target` references.
+   *
+   * @example
+   * ['foo', 'bar' , 't.a2ks1']
+   */
+  fragments: string[];
 
   /**
    * The element selector to use when targeting fragments between page visits.

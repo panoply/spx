@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import { Class, LiteralUnion, Merge, ArrayValues } from 'type-fest';
-import { IPage } from './page';
+import type { Class, LiteralUnion, Merge } from 'type-fest';
+import type { Page } from './page';
 
 /**
  * Type Constructors
@@ -20,7 +20,7 @@ type TypeOf<T extends TypeConstructors> = (
   T extends BooleanConstructor ? boolean :
   T extends StringConstructor ? string :
   T extends NumberConstructor ? number :
-  T extends ArrayConstructor ? unknown[] :
+  T extends ArrayConstructor ? T :
   T extends ObjectConstructor ? { [key: string]: unknown } : never
 )
 
@@ -205,15 +205,15 @@ export namespace SPX {
   export type State<T extends Connect> = Merge<{
     [K in keyof T['state']]?:
      T['state'][K] extends BooleanConstructor ? boolean :
-     T['state'][K] extends StringConstructor ? string :
-     T['state'][K] extends ArrayConstructor ? any[] :
+     T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
+     T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
      T['state'][K] extends NumberConstructor ? number :
-     T['state'][K] extends ObjectConstructor ? { [key: string]: any } :
+     T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
      T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
-     T['state'][K] extends TypeState<StringConstructor> ? string :
+     T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
      T['state'][K] extends TypeState<NumberConstructor> ? number :
-     T['state'][K] extends TypeState<ArrayConstructor> ? unknown[] :
-     T['state'][K] extends TypeState<ObjectConstructor> ? T['state'][K]['default'] : never
+     T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
+     T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> : never
   }, {
     /**
      * **Has Reference**
@@ -229,7 +229,7 @@ export namespace SPX {
     /**
      * Identifier
      */
-    readonly id?: string;
+    id?: string;
     /**
      * **State Interface**
      *
@@ -252,7 +252,7 @@ export namespace SPX {
      * DOM Node identifier references used to connect elements in the DOM with component
      * `this.<name>Node` values.
      */
-    nodes?: readonly string[]
+    nodes?: readonly string[];
   }
 
   export type HasNode<E extends Connect> = { [K in E['nodes'][number] as K extends string ? K : never]?: boolean; }
@@ -266,8 +266,8 @@ export namespace SPX {
      * Whether or not a node exists in the DOM
      */
     readonly [hasNode: `has${Capitalize<string>}Node`]: boolean;
-    readonly [node: `${Lowercase<string>}Node`]: HTMLElement;
-    readonly [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
+    [node: `${Lowercase<string>}Node`]: HTMLElement;
+    [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
 
     /**
      * **SPX Scope**
@@ -275,7 +275,7 @@ export namespace SPX {
      * Holds scope reference information about the instance, elements which pertain to the instance
      * and event reference handling.
      */
-    public readonly scope: IScope;
+    public readonly scope?: Scope;
 
     /**
      * **SPX Component Connection**
@@ -283,20 +283,6 @@ export namespace SPX {
      * Define the component presets
      */
     static readonly connect?: Connect;
-
-    /**
-     * **SPX Static Connect**
-     *
-     * Holds a reference to the static `connect` entries.
-     */
-    public readonly static?: Connect;
-
-    /**
-     * **SPX Document Element**
-     *
-     * Holds a reference to the DOM Document element `<html>` node.
-     */
-    public readonly html?: HTMLElement;
 
     /**
      * **SPX State**
@@ -310,14 +296,22 @@ export namespace SPX {
      *
      * Holds a reference to the SPX Element annotated with `spx-component`.
      */
-    public dom?: HTMLElement;
+    public dom: HTMLElement;
+
+    /**
+     * **SPX Document Element**
+     *
+     * Holds a reference to the DOM Document element `<html>` node.
+     */
+    public readonly html: HTMLElement;
 
     /**
      * **SPX `oninit`**
      *
      * An SPX component lifecycle callback that will be triggered on component register.
+     * This event will on fire once for each instance occurance throughout an SPX session.
      */
-    oninit(page?: IPage): void;
+    oninit(page?: Page): any;
     /**
      * **SPX `onload`**
      *
@@ -328,7 +322,7 @@ export namespace SPX {
      * spx.on('load', function() {})
      * ```
      */
-    onload(page?: IPage): void;
+    onload(page?: Page): any;
     /**
      * **SPX `onexit`**
      *
@@ -336,7 +330,7 @@ export namespace SPX {
      * to teardown any listeners.
      *
      */
-    onexit(page?: IPage): void;
+    onexit(page?: Page): any;
     /**
      * **SPX `onvisit`**
      *
@@ -347,7 +341,7 @@ export namespace SPX {
      * spx.on('load', function() {})
      * ```
      */
-    onvisit(page?: IPage): void;
+    onvisit(page?: Page): any;
     /**
      * **SPX `onfetch`**
      *
@@ -357,20 +351,20 @@ export namespace SPX {
      * spx.on('cache', function() {})
      * ```
      */
-    oncache(page?: IPage): void;
+    oncache(page?: Page): any;
     /**
      * **SPX `onstate`**
      *
      * An SPX component trigger that hooks into the state Proxy. Invokes when component attrs are
      * changed via the DOM.
      */
-    onstate(key?: string, value?: any): void | boolean;
+    onstate(key?: string, value?: any): any | boolean;
 
   }
 
 }
 
-export interface IComponentEventOptions {
+export interface ComponentEventOptions {
   /**
    * The abort controller for removing events - Defined internally
    */
@@ -389,7 +383,7 @@ export interface IComponentEventOptions {
   once?: boolean;
 }
 
-export interface IComponentEvent {
+export interface ComponentEvent {
   /**
    * The event attribute name which is also the key property
    *
@@ -408,7 +402,7 @@ export interface IComponentEvent {
   /**
    * The element reference key/s
    */
-  el: string
+  dom: string
   /**
    * Event `attrs` annotated on event elements which will be passed
    * in the eventthe callback method parameters.
@@ -439,10 +433,10 @@ export interface IComponentEvent {
    *
    * @default { signal: event.listner.signal }
    */
-  options: IComponentEventOptions;
+  options: ComponentEventOptions;
 }
 
-interface IComponentBinds {
+interface ComponentBinds {
   /**
    * The reference UUID mapping
    */
@@ -450,11 +444,7 @@ interface IComponentBinds {
   /**
    * The element reference key/s
    */
-  el: string
-  /**
-   * The element reference key/s
-   */
-  index: number;
+  dom: string
  /**
   * The selector reference
   */
@@ -467,6 +457,10 @@ interface IComponentBinds {
    * The node attribute key
    */
   stateAttr: string;
+  /**
+   * The current value
+   */
+  value: string;
  /**
   * Whether or not the node is child of the component template.
   * When `true` the node/s are contained within the dom element.
@@ -478,15 +472,9 @@ interface IComponentBinds {
   * this value is used as a determinator.
   */
   isChild: boolean;
-  /**
-   * The instance getter property name which returns the query selected elements.
-   *
-   * @example 'stateBind'
-   */
-  schema: LiteralUnion<`${string}Bind`, string>;
 }
 
-interface IComponentNodes {
+interface ComponentNodes {
   /**
    * The reference key UUID
    */
@@ -494,11 +482,7 @@ interface IComponentNodes {
   /**
    * The element reference key/s
    */
-  el: string
-  /**
-   * The element reference key/s
-   */
-  index: number;
+  dom: string
  /**
   * The state key reference binding will be bound
   */
@@ -528,7 +512,11 @@ interface IComponentNodes {
  * Mimics an expected user defined component which will be used to create instances.
  * The keys of this interface represent `static` attrs of user components.
  */
-export interface IComponentRegister extends SPX.Class { connect: Merge<SPX.Connect, { id: string }> }
+export interface ComponentRegister extends SPX.Class {
+  connect: Merge<SPX.Connect, {
+    id: string
+  }>
+}
 
 /**
  * Component Scope (onInit)
@@ -536,7 +524,7 @@ export interface IComponentRegister extends SPX.Class { connect: Merge<SPX.Conne
  * This interface describes a component in the DOM. SPX builds a model during tree
  * traversal and uses this reference to extend user defined components.
  */
-export interface IScope {
+export interface Scope {
   /**
    * The component alias name, represents the `id=""` value of a component
    */
@@ -546,9 +534,13 @@ export interface IScope {
    */
   instanceOf: string;
   /**
+   * The component instance name, represents the `spx-component=""` value of a component
+   */
+  static: SPX.Connect;
+  /**
    * The element reference key/s
    */
-  el: string
+  dom: string
   /**
    * Scope Key
    *
@@ -589,32 +581,19 @@ export interface IScope {
    * The UUID key matches elements `data-spx` value and the value is an array list
    * of component event models.
    */
-  events: { [key: string]: IComponentEvent; };
+  events: { [key: string]: ComponentEvent; };
   /**
    * Component Binds
    *
    * Node elements bound by state.
    */
-  binds: { [key: string]: IComponentBinds; };
+  binds:{ [stateKey: string]: { [key: string]: ComponentBinds; } };
   /**
    * Component Binds
    *
    * Node elements reference
    */
-  nodes: { [key: string]: IComponentNodes; };
-  /**
-   * Component Mappings
-   *
-   * Context scope maps
-   */
-  context: {
-    nodes: {
-      [key: string]: string[];
-    };
-    binds: {
-      [key: string]: string[];
-    }
-  }
+  nodes: { [key: string]: ComponentNodes; };
 }
 
 export enum ElementType {
@@ -641,33 +620,33 @@ export enum ElementType {
  *
  * The raw component as a class type.
  */
-export type IComponentClass = Class<SPX.Class>
+export type ComponentClass = Class<SPX.Class>
 
 /**
  * Component Sessions
  *
  * This interface represents the `$.component` value.
  */
-export interface IComponent {
+export interface ComponentSession {
   /**
    * Components register
    *
    * This contains raw class references that will be used to invoke instances.
    */
-  registry: Map<string, any>;
+  $registry: Map<string, any>;
   /**
    * Connected Instances
    *
    * Initialised component instances
    */
-  instances: Map<string, SPX.Class>;
+  $instances: Map<string, SPX.Class>;
   /**
    * Connected Elements
    *
    * Elements on interest in the DOM. Component DOM, Nodes and Event elements exists
    * in this map and will update for each page visit incurred.
    */
-  elements: Map<string, HTMLElement>;
+  $elements: Map<string, HTMLElement>;
   /**
    * Connected Elements
    *
@@ -675,10 +654,10 @@ export interface IComponent {
    * References represent the DOM `data-spx=""` UUIDs. This is Proxy which returns
    * component instance.
    */
-  reference: ProxyHandler<{ [key: string]: SPX.Class }>;
+  $reference: ProxyHandler<{ [key: string]: SPX.Class }>;
   /**
    * SPX Component instance UUID's existing on the page. Each entry
-   * points to an instance scope on {@link IComponent}.
+   * points to an instance scope on {@link ComponentSession}.
    */
-  connected: Set<string>
+  $connected: Set<string>;
 }

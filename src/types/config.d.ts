@@ -1,5 +1,5 @@
-import { IOptions, IProximity, IHover, IIntersect, IProgress } from './options';
-import { IPage } from './page';
+import type { Options, Proximity, Hover, Intersect, Progress } from './options';
+import type { Page } from './page';
 
 /**
  * Hovers
@@ -7,7 +7,7 @@ import { IPage } from './page';
  * Configuration specific hover observer
  * model which applied the selector.
  */
-export interface IHoverConfig extends IHover {
+export interface HoverConfig extends Hover {
   /**
    * Href selctor for hovers that applies
    * the correct schema.
@@ -21,7 +21,7 @@ export interface IHoverConfig extends IHover {
  * Configuration specific intersect observer
  * model which applied the selector.
  */
-export interface IIntersectConfig extends IIntersect {
+export interface IntersectConfig extends Intersect {
   /**
    * Href selctor for hovers that applies
    * the correct schema.
@@ -35,7 +35,7 @@ export interface IIntersectConfig extends IIntersect {
  * Configuration specific intersect observer
  * model which applied the selector.
  */
-export interface IProximitConfig extends IProximity {
+export interface IProximitConfig extends Proximity {
   /**
    * Href selctor for proximity that applies
    * the correct schema.
@@ -49,7 +49,7 @@ export interface IProximitConfig extends IProximity {
  * record throughout the SPX session. This is accessible
  * for every page.
  */
-export interface IMemory {
+export interface Memory {
   /**
    * Current in-store memory in Bytes
    */
@@ -81,7 +81,7 @@ export interface IMemory {
  * Conditional reference object for observers.
  * Assigns a connection status to each observer.
  */
-export interface IObservers {
+export interface Observers {
   /**
    * Whether or not resource element observer has connected and
    * is monitoring the DOM for dymanically injected references.
@@ -134,7 +134,7 @@ export interface IObservers {
  * String `key > value` references to DOM attributes
  * selectors used in the SPX instance.
  */
-export interface ISelectors {
+export interface Selectors {
   /**
    * The `<a>` href selector value.
    *
@@ -155,7 +155,7 @@ export interface ISelectors {
    * The `spx-target` attribute with exclusion reference
    *
    * ```js
-   * '[spx-target]:not([spx-target=false])'
+   * '[spx-target]:not(a[spx-target]):not([spx-target=false])'
    * ```
    */
   $targets?: string;
@@ -371,7 +371,7 @@ export interface ISelectors {
  * from options. Observers either use a boolean
  * `false` when disabled of the merged defaults.
  */
-export interface IConfig extends IOptions {
+export interface Config extends Options {
   /**
    * Connection key (first page) SPX was started
    */
@@ -379,19 +379,19 @@ export interface IConfig extends IOptions {
   /**
    * Progress Bar
    */
-  progress?: IProgress;
+  progress?: Progress;
   /**
    * Hover Prefeching
    */
-  hover?: false | IHover;
+  hover?: false | Hover;
   /**
    * Intersection Prefetching
    */
-  intersect?: false | IIntersect;
+  intersect?: false | Intersect;
   /**
    * Proximity Prefetching
    */
-  proximity?: false | IProximity;
+  proximity?: false | Proximity;
 }
 
 /**
@@ -400,7 +400,7 @@ export interface IConfig extends IOptions {
  * Partial references extracted from the
  * page store. Written to the history stack API.
  */
-type HistoryState = Pick<IPage, (
+type HistoryState = Pick<Page, (
   | 'key'
   | 'rev'
   | 'scrollX'
@@ -415,12 +415,61 @@ type HistoryState = Pick<IPage, (
  * the native exports using `as` type.
  */
 export type HistoryAPI = {
+  /**
+   * Returns an Integer representing the number of elements in the session history,
+   * including the currently loaded page. For example, for a page loaded in a new tab
+   * this property returns `1`.
+   */
   readonly length: number;
+  /**
+   * Allows web applications to explicitly set default scroll restoration behavior on
+   * history navigation. This property can be either auto or manual.
+   */
   scrollRestoration: ScrollRestoration;
+  /**
+   * Returns an any value representing the state at the top of the history stack.
+   * This is a way to look at the state without having to wait for a popstate event.
+   */
   state: HistoryState;
+  /**
+   * This asynchronous method goes to the previous page in session history, the
+   * same action as when the user clicks the browser's Back button. Equivalent to
+   * `history.go(-1)`.
+   *
+   * Calling this method to go back beyond the first page in the session history
+   * has no effect and doesn't raise an exception.
+   */
   back(): void;
+  /**
+   * This asynchronous method goes to the next page in session history, the same action
+   * as when the user clicks the browser's Forward button; this is equivalent to `history.go(1)`.
+   *
+   * Calling this method to go forward beyond the most recent page in the session history has
+   * no effect and doesn't raise an exception.
+   */
   forward(): void;
+  /**
+   * Asynchronously loads a page from the session history, identified by its relative
+   * location to the current page, for example `-1` for the previous page or `1` for the next page.
+   * If you specify an out-of-bounds value (for instance, specifying `-1` when there are no
+   * previously-visited pages in the session history), this method silently has no effect.
+   * Calling `go()` without parameters or a value of `0` reloads the current page.
+   */
   go(delta?: number): void;
+  /**
+   * Pushes the given data onto the session history stack with the specified title (and, if provided, URL).
+   * The data is treated as opaque by the DOM; you may specify any JavaScript object that can be serialized.
+   * Note that all browsers but Safari currently ignore the title parameter. For more information, see:
+   *
+   * - [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API/Working_with_the_History_API).
+   */
   pushState(data: HistoryState, unused: string, url?: string | URL | null): void;
+  /**
+   * Updates the most recent entry on the history stack to have the specified data, title, and, if provided,
+   * URL. The data is treated as opaque by the DOM; you may specify any JavaScript object that can be
+   * serialized. Note that all browsers but Safari currently ignore the title parameter. For more information:
+   *
+   * - [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API/Working_with_the_History_API).
+   */
   replaceState(data: HistoryState, unused: string, url?: string | URL | null): void;
 };

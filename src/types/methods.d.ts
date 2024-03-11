@@ -1,10 +1,10 @@
 /* eslint-disable no-use-before-define */
 import type { LiteralUnion } from 'type-fest';
-import type { IPage } from './page';
-import type { IObserverOptions, IOptions } from './options';
+import type { Page } from './page';
+import type { IObserverOptions, Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
-import type { IConfig, IObservers, IMemory } from './config';
-import type { IComponent, SPX } from './components';
+import type { Config, Observers, Memory } from './config';
+import type { ComponentSession, SPX } from './components';
 import { Session } from '../app/session';
 
 /**
@@ -62,7 +62,7 @@ export const supported: boolean;
  * Returns the SPX configuration defined on connection. This
  * is getter method.
  */
-export const config: IConfig;
+export const config: Config;
 
 /**
  * #### Session
@@ -96,7 +96,7 @@ export const $: Session;
  * })
  * ```
  */
-export function connect(options?: IOptions): ((callback: (state?: IPage) => void) => Promise<void>);
+export function connect(options?: Options): ((callback: (state?: Page) => void) => Promise<void>);
 
 /**
  * #### Session
@@ -119,12 +119,12 @@ export function connect(options?: IOptions): ((callback: (state?: IPage) => void
  * ```
  */
 export function session(key?: string, merge?: object): {
-  pages: { [key: string]: IPage; };
+  pages: { [key: string]: Page; };
   snaps: { [uuid: string]: string; };
-  memory: IMemory & { size: string };
-  config: IConfig;
-  observers: IObservers;
-  components: IComponent
+  memory: Memory & { size: string };
+  config: Config;
+  observers: Observers;
+  components: ComponentSession
 }
 
 /**
@@ -205,7 +205,7 @@ export function register(...component:
  * spx.reload();
  * ```
  */
-export function reload(): Promise<IPage>;
+export function reload(): Promise<Page>;
 
 /**
  * #### Add Event Listener
@@ -293,7 +293,7 @@ export function off<T extends EventNames>(event: T, callback: LifecycleEvent<T> 
  *
  * View or modify page state record.
  */
-export function state (key?: string, store?: IPage): { page: IPage, dom: Document }
+export function state (key?: string, store?: Page): { page: Page, dom: Document }
 
 /**
  * #### Render
@@ -305,7 +305,7 @@ export function render <T = any>(url: string, pushState: 'replace' | 'push', fn:
     /**
      * The current page state
      */
-    page: IPage;
+    page: Page;
     /**
      * The current document
      */
@@ -315,7 +315,7 @@ export function render <T = any>(url: string, pushState: 'replace' | 'push', fn:
    * The fetched document
    */
   dom: Document
-) => Document, context?: T): Promise<IPage>
+) => Document, context?: T): Promise<Page>
 
 /**
  * #### Observe
@@ -408,7 +408,7 @@ export function hydrate(url: string, nodes: string[]): Promise<Document>
  * node as an argument. This method behaves the same way as hover, intersect
  * or proximity prefetch.
  */
-export function prefetch(link: string): Promise<IPage>
+export function prefetch(link: string): Promise<Page>
 
 /**
  * #### Visit
@@ -416,7 +416,7 @@ export function prefetch(link: string): Promise<IPage>
  * Executes a programmatic visit. The method optionally
  * accepts a page state modifier as second argument.
  */
-export function visit(link: string, state?: IPage): Promise<IPage>;
+export function visit(link: string, state?: Page): Promise<Page>;
 
 /**
  * #### Fetch
