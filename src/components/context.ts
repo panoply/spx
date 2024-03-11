@@ -1,10 +1,9 @@
-import { IComponentBinds, IComponentEvent, IComponentNodes, IScope, SPX } from '../types/components';
-import { Errors, VisitType } from '../shared/enums';
-import { d, defineProp, o } from '../shared/native';
-import { addEvent } from './listeners';
-import { markComponents, markSnap } from '../morph/snapshot';
+import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope } from '../types/components';
+import { LogType } from '../shared/enums';
+import { d, o } from '../shared/native';
 import { log } from '../shared/logs';
-import { getMounted } from '../app/queries';
+import { walkElements } from '../morph/walk';
+import { setInstances } from './instances';
 import { $ } from '../app/session';
 import * as u from '../shared/utils';
 import * as fragment from '../observe/fragment';
@@ -53,7 +52,7 @@ export interface Context {
   /**
    * Component Scopes
    */
-  $scopes: { [component: string]: IScope[]; }
+  $scopes: { [component: string]: Scope[]; }
   /**
    * Holds a temporary storage of HTML Elements that have been marked with
    * a reference dataset value. The entries will be used to align snapshots.
@@ -74,6 +73,12 @@ export interface Context {
    * @default null
    */
   $element: string;
+  /**
+   * Holds a reference to the last known element identifier
+   *
+   * @default null
+   */
+  $snaps: string;
 }
 
 /* -------------------------------------------- */
@@ -102,7 +107,7 @@ export function getComponentValues (input: string) {
  *
  * Event parameter syntacticals provided on elements annotated with event directives.
  */
-export function getEventParams (attributes: NamedNodeMap, event: IComponentEvent) {
+export function getEventParams (attributes: NamedNodeMap, event: ComponentEvent) {
 
   for (let i = 0, s = attributes.length; i < s; i++) {
 
@@ -120,7 +125,7 @@ export function getEventParams (attributes: NamedNodeMap, event: IComponentEvent
       if (!(prop in event.params)) {
         event.params[prop] = u.attrValueFromType(value);
       } else {
-        //  log(Errors.WARN, `Duplicated event attrs defined: ${name}="${value}"`);
+        //  log(LogType.WARN, `Duplicated event attrs defined: ${name}="${value}"`);
       }
 
     }
@@ -156,43 +161,6 @@ export function isDirective (attrs: string | NamedNodeMap) {
 
 }
 
-/**
- * Walk Elements
- *
- * Walks the component node and executes callback on all `Element` types (i.e, `4`).
- * We cannot `querySelector` attributes which SPX uses due to their syntactical patterns,
- * so we walk the DOM and cherry pick SPX Component specific directives.
- *
- * This function is will traverse the DOM and return Elements from which we analyze and
- * reason with to compose component scopes.
- */
-export function walkElements <T extends Element> (node: T, callback: (node: T) => void) {
-
-  callback(node);
-
-  let e: Element;
-  let i: number;
-
-  if (node.firstElementChild) {
-    i = 0;
-    e = node.children[i];
-  }
-
-  while (e) {
-
-    if ((e.nodeName === 'svg' || e.nodeName === 'CODE') && e.childElementCount > 0) {
-      i = 0;
-      e = e.nextElementSibling;
-    }
-
-    if (e) walkElements(e, callback);
-
-    e = node.children[++i];
-
-  }
-
-};
-
 export function walkNode (node: HTMLElement, context: Context): false | Context | void {
 
   // Quick check before proceeding to help prevent unnecessary inspection
@@ -222,9 +190,10 @@ export function getContext ($morph: HTMLElement = null): Context {
   return o<Context>({
     $aliases: o(),
     $scopes: o(),
-    $nodes: [],
     $element: null,
-    $morph
+    $nodes: [],
+    $morph,
+    $snaps: $morph ? o() : null
   });
 
 }
@@ -247,7 +216,7 @@ export function getScope (id: string, { $scopes, $aliases }: Context) {
 
 export function setRefs (node: HTMLElement, instance: string, ref: string) {
 
-  $.components.reference[ref] = instance;
+  $.components.$reference[ref] = instance;
 
   const value = node.getAttribute($.qs.$ref);
   const suffix = value ? `${value},${ref}` : ref;
@@ -258,29 +227,25 @@ export function setRefs (node: HTMLElement, instance: string, ref: string) {
 
 }
 
-export function setScope (instanceOf: string, dom?: HTMLElement, context?: Context): IScope {
+export function setScope (instanceOf: string, dom?: HTMLElement, context?: Context): Scope {
 
-  const { registry } = $.components;
+  const { $registry } = $.components;
   const key = u.uuid();
-  const scope: IScope = o<Partial<IScope>>({
+  const scope: Scope = o<Partial<Scope>>({
     key,
     mounted: false,
     ref: `c.${key}`,
     state: o(),
     nodes: o(),
     events: o(),
-    binds: o(),
-    context: o({
-      nodes: o(),
-      binds: o()
-    })
+    binds: o()
   });
 
   if (dom) {
 
     setRefs(dom, key, scope.ref);
 
-    scope.el = context.$element;
+    scope.dom = context.$element;
     scope.mounted = true;
     scope.inFragment = fragment.contains(dom);
 
@@ -290,15 +255,15 @@ export function setScope (instanceOf: string, dom?: HTMLElement, context?: Conte
 
   }
 
-  if (registry.has(instanceOf)) {
+  if ($registry.has(instanceOf)) {
 
     scope.instanceOf = instanceOf;
 
     if (scope.alias) {
-      if (!registry.has(scope.alias)) {
+      if (!$registry.has(scope.alias)) {
         context.$aliases[scope.alias] = instanceOf;
       } else {
-        log(Errors.ERROR, [
+        log(LogType.ERROR, [
           `Component alias "${scope.alias}" matches a component identifer in the registry.`,
           'An alias reference must be unique and cannot match component names.'
         ]);
@@ -327,7 +292,7 @@ export function setScope (instanceOf: string, dom?: HTMLElement, context?: Conte
 
 export function setEvent (node: HTMLElement, name: string, value: string, context: Context) {
 
-  const event: IComponentEvent = o();
+  const event: ComponentEvent = o();
   const hasOptions = value.indexOf('{');
   const eventName = name.slice($.config.schema.length);
   const listener = new AbortController();
@@ -337,7 +302,7 @@ export function setEvent (node: HTMLElement, name: string, value: string, contex
   /* -------------------------------------------- */
 
   event.key = `e.${u.uuid()}`;
-  event.el = `${context.$element}`;
+  event.dom = `${context.$element}`;
   event.isWindow = eventName.startsWith('window:');
   event.eventName = event.isWindow ? eventName.slice(7) : eventName;
   event.attached = false;
@@ -374,12 +339,12 @@ export function setEvent (node: HTMLElement, name: string, value: string, contex
   // We only allow one method to be passed per event
   // Let's warn if more than 1 sequence is passed.
   if (eventValue.length > 1) {
-    log(Errors.WARN, `No more than 1 DOM Event listener method allowed in value: ${value}`);
+    log(LogType.WARN, `No more than 1 DOM Event listener method allowed in value: ${value}`);
   }
 
   // Deconstruct event value, we use dot . notation, thus we split.
   const [ instanceOf, method ] = eventValue[0].split('.');
-  const scope: IScope = getScope(instanceOf, context);
+  const scope: Scope = getScope(instanceOf, context);
 
   event.listener = listener;
   event.method = method.trim();
@@ -395,17 +360,14 @@ export function setNodes (node: HTMLElement, value: string, context: Context) {
   for (const nodeValue of u.attrValueNotation(value)) {
 
     const [ instanceOf, keyProp ] = nodeValue.split('.');
-    const scope: IScope = getScope(instanceOf, context);
+    const scope: Scope = getScope(instanceOf, context);
     const key = setRefs(node, scope.key, `n.${u.uuid()}`);
 
-    if (!(keyProp in scope.context.nodes)) scope.context.nodes[keyProp] = [];
-
-    scope.nodes[key] = o<IComponentNodes>({
+    scope.nodes[key] = o<ComponentNodes>({
       key,
       keyProp,
-      el: context.$element,
+      dom: context.$element,
       schema: `${keyProp}Node`,
-      index: scope.context.nodes[keyProp].push(key) - 1,
       isChild: scope.mounted
     });
 
@@ -418,19 +380,20 @@ export function setBinds (node: HTMLElement, value: string, context: Context) {
   for (const bindValue of u.attrValueNotation(value)) {
 
     const [ instanceOf, stateKey ] = bindValue.split('.');
-    const scope: IScope = getScope(instanceOf, context);
+    const scope: Scope = getScope(instanceOf, context);
     const key = setRefs(node, scope.key, `b.${u.uuid()}`);
 
-    if (!(stateKey in scope.context.binds)) scope.context.binds[stateKey] = [];
+    if (!(stateKey in scope.binds)) {
+      scope.binds[stateKey] = o();
+    }
 
-    scope.binds[key] = o<IComponentBinds>({
+    scope.binds[stateKey][key] = o<ComponentBinds>({
       key,
       stateKey,
-      index: scope.context.binds[stateKey].push(key) - 1,
-      el: context.$element,
+      value: node.innerText,
+      dom: context.$element,
       stateAttr: `${$.config.schema}${instanceOf}:${stateKey}`,
       selector: `[${$.qs.$ref}*=${u.escSelector(key)}]`,
-      schema: `${stateKey}Bind`,
       isChild: scope.mounted
     });
 
@@ -442,7 +405,7 @@ export function setAttrs (node: HTMLElement, context: Context, instanceOf?: stri
   if (instanceOf === null && alias === null) {
     context.$element = u.uuid();
     context.$nodes.push(context.$element);
-    $.components.elements.set(context.$element, node);
+    $.components.$elements.set(context.$element, node);
   }
 
   for (let n = node.attributes.length - 1; n >= 0; n--) {
@@ -458,7 +421,7 @@ export function setAttrs (node: HTMLElement, context: Context, instanceOf?: stri
       }
 
       if (name.startsWith(schema)) {
-        getScope(instanceOf, context).state[name.slice(schema.length)] = value;
+        getScope(instanceOf, context).state[u.camelCase(name.slice(schema.length))] = value;
       }
     }
 
@@ -480,23 +443,24 @@ export function setAttrs (node: HTMLElement, context: Context, instanceOf?: stri
 
 export function setComponent (node: HTMLElement, value: string, context: Context) {
 
-  const { registry, elements } = $.components;
+  const { $registry, $elements } = $.components;
   const { $scopes, $aliases } = context;
   const id = node.hasAttribute('id') ? node.id.trim() : null;
 
   context.$element = u.uuid();
   context.$nodes.push(context.$element);
-  elements.set(context.$element, node);
+
+  $elements.set(context.$element, node);
 
   for (const instanceOf of getComponentValues(value)) {
 
-    if (!registry.has(instanceOf)) {
+    if (!$registry.has(instanceOf)) {
 
-      log(Errors.ERROR, `Component does not exist in registry: ${instanceOf}`);
+      log(LogType.ERROR, `Component does not exist in registry: ${instanceOf}`);
 
     } else {
 
-      let scope: IScope;
+      let scope: Scope;
 
       if (instanceOf in $scopes) {
 
@@ -506,7 +470,7 @@ export function setComponent (node: HTMLElement, value: string, context: Context
 
           setRefs(node, scope.key, scope.ref);
 
-          scope.el = context.$element;
+          scope.dom = context.$element;
           scope.mounted = true;
           scope.inFragment = fragment.contains(node);
 
@@ -542,167 +506,6 @@ export function setComponent (node: HTMLElement, value: string, context: Context
     }
 
   };
-
-}
-
-function setNodeContext (instance: SPX.Class, scope: IScope) {
-
-  for (const prop in scope.context.nodes) {
-
-    const keys = scope.context.nodes[prop];
-
-    if (keys.length === 1) {
-
-      const node = scope.nodes[keys[0]];
-
-      if (!(node.schema in instance)) {
-        defineProp(instance, node.schema, {
-          get (this: SPX.Class) {
-            return $.components.elements.get(node.el);
-          }
-        });
-      }
-
-    } else {
-
-      for (const key of keys) {
-
-        const schema = `${key}s`;
-
-        if (!(schema in instance)) {
-          defineProp(instance, schema, {
-            get (this: SPX.Class) {
-              const { elements } = $.components;
-              const { context, nodes } = this.scope;
-              return context.nodes[prop].map(id => elements.get(nodes[id].el));
-            }
-          });
-        }
-      }
-    }
-
-  }
-}
-
-export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
-
-  // Mark Snapshot
-  // Intial visits will apply adjustments to snapshot
-  //
-  if ($.page.type === VisitType.INITIAL && $nodes.length > 0) markSnap($nodes);
-
-  const isReverse = $.page.type === VisitType.REVERSE;
-  const snapMarks = [];
-  const {
-    elements,
-    connected,
-    instances,
-    registry,
-    reference
-  } = $.components;
-
-  for (const instanceOf in $scopes) {
-    for (const scope of $scopes[instanceOf]) {
-
-      if (scope.instanceOf === null) {
-        if (instanceOf in $aliases) {
-          scope.instanceOf = $aliases[instanceOf];
-        } else {
-          continue;
-        }
-      }
-
-      let Component: any;
-      let instance: SPX.Class;
-
-      if (scope.mounted === false && ($morph !== null || isReverse)) {
-
-        const mounted = getMounted();
-
-        if (scope.alias !== null && scope.alias in mounted) {
-
-          instance = mounted[scope.alias][0];
-          Component = instance.static;
-
-        } else {
-
-          if (scope.instanceOf in mounted) {
-            if (mounted[scope.instanceOf].length === 1) {
-
-              instance = mounted[scope.instanceOf][0];
-              Component = instance.static;
-
-            } else {
-
-              // ERROR - MORE THAN 1 INSTANCE
-
-            }
-
-          } else {
-
-            // ERROR - NO COMPONENT INSTANCE EXISTS IN INCREMENTAL UPDATE
-          }
-
-        }
-
-        scope.key = instance.scope.key;
-        scope.ref = instance.scope.ref;
-
-        snapMarks.push([
-          `[${$.qs.$component}*=${u.escSelector(instance.scope.instanceOf)}]`,
-          instance.scope.key
-        ]);
-
-      } else {
-
-        Component = registry.get(scope.instanceOf);
-        instance = new Component(scope, Component.connect);
-
-      }
-
-      setNodeContext(instance, scope);
-
-      if ($morph === null && 'nodes' in Component && Component.nodes.length > 0) {
-        for (const name of Component.nodes) {
-          defineProp(instance, `has${u.upcase(name)}Node`, {
-            get () {
-              return `${name}Node` in instance;
-            }
-          });
-        }
-      }
-
-      for (const key in scope.events) {
-
-        let event: IComponentEvent;
-
-        if ($morph !== null && scope.mounted === false) {
-          event = instance.scope.events[key] = scope.events[key];
-          reference[key] = instance.scope.key;
-        } else {
-          event = scope.events[key];
-        }
-
-        addEvent(instance, elements.get(event.el), event);
-
-      }
-
-      if ($morph === null || (($morph !== null || isReverse) && scope.mounted === true)) {
-
-        connected.add(scope.key);
-        instances.set(scope.key, instance);
-
-        log(Errors.TRACE, `Mounted (init) component ${instance.static.id} (${scope.key})`, '#6dd093');
-
-        if ('oninit' in instance) instance.oninit($.page);
-
-      }
-
-    };
-
-  }
-
-  u.onNextTick(() => markComponents(snapMarks));
 
 }
 
