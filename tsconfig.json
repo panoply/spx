@@ -16,7 +16,7 @@
     "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
-    "target": "ES6",
+    "target": "ES2017",
     "lib": [
       "es2020",
       "dom",
