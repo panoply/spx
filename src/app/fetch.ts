@@ -1,11 +1,11 @@
 /* eslint-disable n/no-callback-literal */
-import type { IPage, Key } from '../types';
+import type { Page, Key } from '../types';
 import { emit } from './events';
 import { log } from '../shared/logs';
 import { hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
 import { XHR, isArray } from '../shared/native';
-import { Errors, VisitType } from '../shared/enums';
+import { LogType, VisitType } from '../shared/enums';
 import { $ } from './session';
 import * as q from './queries';
 
@@ -128,7 +128,7 @@ export function abort (key: string): void {
 
   if (XHR.$request.has(key)) {
     XHR.$request.get(key).abort();
-    log(Errors.WARN, `Cancelled request: ${key}`);
+    log(LogType.WARN, `Cancelled request: ${key}`);
   }
 
 };
@@ -145,7 +145,7 @@ export function cancel (key?: string): void {
   for (const [ url, xhr ] of XHR.$request) {
     if (key !== url) {
       xhr.abort();
-      log(Errors.WARN, `Pending request aborted: ${url}`);
+      log(LogType.WARN, `Pending request aborted: ${url}`);
     }
   }
 
@@ -158,7 +158,7 @@ export function cancel (key?: string): void {
  * locations defined in configuration. This
  * fetch is executed only once.
  */
-export function preload (state: IPage) {
+export function preload (state: Page) {
 
   if ($.config.preload !== null) {
 
@@ -202,7 +202,7 @@ export function preload (state: IPage) {
  * dispatched at different points, like (for example) in
  * popstate operations or at initial load.
  */
-export async function reverse (state: IPage): Promise<void> {
+export async function reverse (state: Page): Promise<void> {
 
   if (state.rev === state.key) return;
 
@@ -212,15 +212,15 @@ export async function reverse (state: IPage): Promise<void> {
 
   fetch(page).then(page => {
     if (page) {
-      log(Errors.INFO, `Reverse fetch completed: ${page.rev}`);
+      log(LogType.INFO, `Reverse fetch completed: ${page.rev}`);
     } else {
-      log(Errors.WARN, `Reverse fetch failed: ${state.rev}`);
+      log(LogType.WARN, `Reverse fetch failed: ${state.rev}`);
     }
   });
 
 }
 
-export async function wait (state: IPage): Promise<IPage> {
+export async function wait (state: Page): Promise<Page> {
 
   if (!XHR.$transit.has(state.key)) return state;
 
@@ -241,16 +241,16 @@ export async function wait (state: IPage): Promise<IPage> {
  * from being dispatched when an indentical fetch is inFlight.
  * Page state is returned and the session is update success.
  */
-export async function fetch (state: IPage): Promise<false|IPage> {
+export async function fetch (state: Page): Promise<false|Page> {
 
   if (XHR.$request.has(state.key)) {
     if (state.type !== VisitType.HYDRATE) {
 
       if (state.type === VisitType.REVERSE && XHR.$request.has(state.rev)) {
         XHR.$request.get(state.rev).abort();
-        log(Errors.WARN, `Request aborted: ${state.rev}`);
+        log(LogType.WARN, `Request aborted: ${state.rev}`);
       } else {
-        log(Errors.WARN, `Request in transit: ${state.key}`);
+        log(LogType.WARN, `Request in transit: ${state.key}`);
       }
 
       return false;
@@ -258,7 +258,7 @@ export async function fetch (state: IPage): Promise<false|IPage> {
   }
 
   if (!emit('fetch', state)) {
-    log(Errors.WARN, `Request cancelled via dispatched event: ${state.key}`);
+    log(LogType.WARN, `Request cancelled via dispatched event: ${state.key}`);
     return false;
   }
 
