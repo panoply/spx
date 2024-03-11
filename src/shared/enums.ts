@@ -10,40 +10,29 @@ export enum Attributes {
   NAMES = 'hydrate|append|prepend|target|progress|threshold|scroll|position|proximity|hover|cache|history',
 }
 
-export enum ElementType {
-  /**
-   * Element is a component, annotated with `spx-component=""`
-   */
-  COMPONENT = 1,
-  /**
-   * Element is a node, annotated with `spx-node=""`
-   */
-  NODE,
-  /**
-   * Element is a binding, annotated with `spx-bind=""`
-   */
-  BINDING,
-  /**
-   * Element is an event, annotated with `spx@event=""`
-   */
-  EVENT
-}
-
 export enum Refs {
   /**
    * An SPX Component, eg: `spx-component=""`
+   *
+   * Value is `99` as per `'c'.charCodeAt(0)`
    */
   COMPONENT = 99,
   /**
    * An SPX Event Node, eg: `spx@click=""`
+   *
+   *  Value is `101` as per `'e'.charCodeAt(0)`
    */
   EVENT = 101,
   /**
    * An SPX Node, eg: `spx-node=""`
+   *
+   *  Value is 110` as per `'n'.charCodeAt(0)`
    */
   NODE = 110,
     /**
    * An SPX Binding, eg: `spx-bind=""`
+   *
+   *  Value is `98` as per `'b'.charCodeAt(0)`
    */
   BINDING = 98
 }
@@ -67,16 +56,108 @@ export enum Nodes {
   COMMENT_NODE = 8,
 }
 
+export enum CharCode {
+  /**
+   * Forward Slash `/`
+   */
+  FWD = 47,
+  /**
+   * Question Mark `?`
+   */
+  QWS = 63,
+  /**
+   * Dot `.`
+   */
+  DOT = 46,
+  /**
+   * Left Square Bracket `[`
+   */
+  LSB = 91,
+  /**
+   * Hash `#`
+   */
+  HSH = 35,
+  /**
+   * Lowercase letter `h`
+   */
+  LCH = 104,
+  /**
+   * Lowercase letter `i`
+   */
+  LCI = 105,
+  /**
+   * Lowercase letter `p`
+   */
+  LCP = 112
+}
+
+/**
+ * Origins
+ *
+ * see `location.ts` file function `hasOrigin`
+ */
+export enum Origins {
+  /**
+   * URL is likely a pathname
+   */
+  NONE = 1,
+  /**
+   * URL starts with `http` or `https`
+   */
+  HTTP = 1,
+  /**
+   * URL starts with `//`
+   */
+  SLASH = 2,
+  /**
+   * URL starts with `www`
+   */
+  WWW = 3
+}
+
+/**
+ * Log Colors
+ */
+export enum Colors {
+  CYAN = '#2cc9ee',
+  GRAY = '#999',
+  GREEN = '#6DD093',
+  PURPLE = '#7b97ca',
+  PINK = '#F48FB1',
+  WHITE = '#FFF',
+  RED = '#f86461'
+}
+
 /**
  * Error Types
  */
-export enum Errors {
-
+export enum LogLevel {
   /**
    * Prints trace info to console (does not throw)
    */
-  TRACE = 1,
+  VERBOSE = 1,
+  /**
+   * Prints info to console (does not throw)
+   */
+  INFO = 2,
+  /**
+   * Prints warning to console (does not throw)
+   */
+  WARN = 3,
+  /**
+   * Prints error to console (will throw Error)
+   */
+  ERROR = 4
+}
 
+/**
+ * Error Types
+ */
+export enum LogType {
+  /**
+   * Prints Verbose info to console (does not throw)
+   */
+  VERBOSE = 1,
   /**
    * Prints info to console (does not throw)
    */
