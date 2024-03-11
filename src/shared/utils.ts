@@ -1,9 +1,10 @@
-import type { IPage } from '../types/page';
-import { Errors } from './enums';
+import type { Page } from '../types/page';
+import { LogType } from './enums';
 import { assign, defineProp, d, nil, isArray, s } from './native';
 import { $ } from '../app/session';
 import * as regex from './regexp';
 import { log } from '../shared/logs';
+import { LiteralUnion, SetReturnType } from 'type-fest';
 
 /**
  * Get Fragment Selector
@@ -81,14 +82,24 @@ export function attrJSON (attr: string, string?: string) {
 
     const json = (string || attr)
       .replace(/\\'|'/g, (m) => m[0] === '\\' ? m : '"')
-      .replace(/([{,])\s*(.+?)\s*:/g, '$1 "$2":');
+      .replace(/\[|[^\s[\]]*|\]/g, match => /[[\]]/.test(match)
+        ? match : match.split(',').map(
+          value => value
+            .replace(/^(\w+)$/, '"$1"')
+            .replace(/^"([\d.]+)"$/g, '$1')
+        ).join(','))
+      .replace(/([a-zA-Z0-9_-]+)\s*:/g, '"$1":')
+      .replace(/:\s*([$a-zA-Z_-]+)\s*([,\]}])/g, ':"$1"$2')
+      .replace(/,([\]}])/g, '$1')
+      .replace(/([a-zA-Z_-]+)\s*,/g, '"$1",')
+      .replace(/([\]},\s]+)?"(true|false)"([\s,{}\]]+)/g, '$1$2$3');
 
     return JSON.parse(json);
 
   } catch (err) {
 
     log(
-      Errors.ERROR,
+      LogType.ERROR,
       'Invalid JSON expression in attribute value: ' + JSON.stringify(attr || string, null, 2),
       err
     );
@@ -186,7 +197,7 @@ export function onNextTickResolve () {
  */
 export function onNextTick (callback: () => void) {
 
-  setTimeout(() => callback(), 1);
+  return setTimeout(() => callback(), 1);
 
 }
 
@@ -278,21 +289,27 @@ export function hasProp<T extends object> (object: T, property: keyof T | string
  *
  * Creates a getter on an object. Accepts curried callback.
  */
-export function defineGetter <T> (object: T, name?: string, value?: any) {
+export function defineGetter <T> (
+  object: T,
+  name?: undefined | LiteralUnion<keyof T, string>,
+  value?: any
+) {
 
-  if (arguments.length > 1) {
+  if (name !== undefined) {
 
-    defineProp(object, name, { get () { return value; } });
+    defineProp(object, name, { get: () => value });
+
+    return object;
 
   } else {
 
-    return (name: string, value: any, options?: Omit<PropertyDescriptor, 'get'>) => {
+    return (name: string, value: any, options?: Omit<PropertyDescriptor, 'get'>): T => {
 
       if (hasProp<any>(object, name)) return;
 
-      function get () { return value; };
+      const get = () => value; ;
 
-      return defineProp(object, name, options
+      return defineProp<T>(object, name, options
         ? assign(options, { get })
         : <PropertyDescriptor>{ get });
     };
@@ -308,7 +325,7 @@ export function defineGetter <T> (object: T, name?: string, value?: any) {
  * all targets and keep a record of them, then when we come accross the spx-target
  * node, we check to see if it is a decendent of an already morphed target and exclude
  */
-export function targets (page: IPage) {
+export function targets (page: Page) {
 
   if (hasProp(page, 'target')) {
 
@@ -326,7 +343,7 @@ export function targets (page: IPage) {
 
   }
 
-  return [ ...$.config.fragments ];
+  return [];
 
 }
 
@@ -338,7 +355,7 @@ export function selector (target: string[]) {
 
   //  `${(target.length === 0 ? $.config.fragments : target).join(',')},${$.qs.$targets}`;
 
-  return `${(target.length === 0 ? $.config.fragments : target).join(',')}`;
+  return target.length === 0 ? null : target.join(',');
 
 }
 
@@ -473,6 +490,18 @@ export function downcase (input: string) {
 export function upcase (input: string) {
 
   return input[0].toUpperCase() + input.slice(1);
+}
+
+/**
+ * Camel Case
+ *
+ * Converts a string from kebab-case or snake_case to camelCase.
+ */
+export function kebabCase (input: string) {
+
+  return /[A-Z]/.test(input)
+    ? input.replace(/(.{1})([A-Z])/g, '$1-$2').toLowerCase()
+    : input;
 }
 
 /**
