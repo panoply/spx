@@ -77,7 +77,7 @@ export const nil = '';
 /**
  * Cached console method
  */
-export const { warn, info, error } = console;
+export const { warn, info, error, debug } = console;
 
 /* -------------------------------------------- */
 /* EXTENDS                                      */
