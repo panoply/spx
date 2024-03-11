@@ -1,7 +1,7 @@
 import type { Merge } from 'type-fest';
-import type { IConfig, IPage, IObservers, IMemory, ISelectors, IProgress, IIntersect, IProximity, IHover } from 'types';
+import type { Config, Page, Observers, Memory, Selectors, Progress, Intersect, Proximity, Hover } from 'types';
 import { m, o, p, s } from '../shared/native';
-import { IComponent } from '../types/components';
+import { ComponentSession } from '../types/components';
 
 export interface Session {
   /**
@@ -28,11 +28,15 @@ export interface Session {
    */
   eval: boolean;
   /**
+   * Log Level
+   */
+  logLevel: number;
+  /**
    * Selectors
    *
    * String key > value references to DOM attributes selectors used in the SPX instance.
    */
-  readonly qs: ISelectors;
+  readonly qs: Selectors;
 
   /**
    * Configuration
@@ -42,7 +46,7 @@ export interface Session {
    * pjax instance should run. The options defined here are
    * the defaults applied at runtime.
    */
-  readonly config: Merge<IConfig, { components: any }>;
+  readonly config: Merge<Config, { components: any }>;
 
   /**
    * Events Model
@@ -66,7 +70,7 @@ export interface Session {
    * - Proximity
    * - Resources
    */
-  readonly observe: IObservers;
+  readonly observe: Observers;
 
   /**
    * Memory
@@ -74,7 +78,7 @@ export interface Session {
    * This o reference which holds the storage memory
    * record throughout the pjax session.
    */
-  readonly memory: IMemory;
+  readonly memory: Memory;
 
   /**
    * Event type IDs. Event types are categorizes
@@ -183,7 +187,7 @@ export interface Session {
    *
    * Returns the last known page state model or null if none exists
    */
-  readonly prev?: IPage;
+  readonly prev?: Page;
 
   /**
    * Page
@@ -191,7 +195,7 @@ export interface Session {
    * Returns the current page state model according to the `history.state.key`
    * reference. This is a getter which will always reflect current page.
    */
-  readonly page?: IPage;
+  readonly page?: Page;
 
   /**
    * Snapshot
@@ -209,7 +213,7 @@ export interface Session {
    * configuration model. The os in this store are
    * also available to the history API.
    */
-  readonly pages: { [url: string]: IPage };
+  readonly pages: { [url: string]: Page };
 
   /**
    * Snapshots
@@ -226,14 +230,14 @@ export interface Session {
    * Holds a Set reference to fragments that will change between
    * page navigation. The Set is update after each page render.
    */
-  readonly fragments: Set<HTMLElement>
+  readonly fragments: Map<string, HTMLElement>
 
   /**
    * Components
    *
    * Maintains component models.
    */
-  readonly components: IComponent;
+  readonly components: ComponentSession;
 
   /**
    * Resources
@@ -249,8 +253,9 @@ export const $: Session = o<Session>({
   eval: true,
   patched: false,
   loaded: false,
-  qs: o<ISelectors>(),
-  config: o<IConfig>({
+  logLevel: 2,
+  qs: o<Selectors>(),
+  config: o<Config>({
     fragments: [ 'body' ],
     timeout: 30000,
     globalThis: true,
@@ -258,6 +263,7 @@ export const $: Session = o<Session>({
     manual: false,
     logLevel: 2,
     cache: true,
+    components: null,
     maxCache: 100,
     reverse: true,
     preload: null,
@@ -268,20 +274,20 @@ export const $: Session = o<Session>({
       link: null,
       meta: false
     }),
-    hover: o<IHover>({
+    hover: o<Hover>({
       trigger: 'href',
       threshold: 250
     }),
-    intersect: o<IIntersect>({
+    intersect: o<Intersect>({
       rootMargin: '0px 0px 0px 0px',
       threshold: 0
     }),
-    proximity: o<IProximity>({
+    proximity: o<Proximity>({
       distance: 75,
       threshold: 250,
       throttle: 500
     }),
-    progress: o<IProgress>({
+    progress: o<Progress>({
       bgColor: '#111',
       barHeight: '3px',
       minimum: 0.08,
@@ -292,13 +298,13 @@ export const $: Session = o<Session>({
       trickleSpeed: 200
     })
   }),
-  fragments: s(),
-  components: o<IComponent>({
-    registry: m(),
-    instances: m(),
-    connected: s(),
-    elements: m(),
-    reference: p({ get: (target, key: string) => $.components.instances.get(target[key]) })
+  fragments: m(),
+  components: o<ComponentSession>({
+    $registry: m(),
+    $instances: m(),
+    $connected: s(),
+    $elements: m(),
+    $reference: p({ get: (target, key: string) => $.components.$instances.get(target[key]) })
   }),
   events: o(),
   observe: o(),
