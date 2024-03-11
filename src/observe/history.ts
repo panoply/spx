@@ -1,14 +1,14 @@
-import { HistoryState, HistoryAPI, IPage } from 'types';
+import { HistoryState, HistoryAPI, Page } from 'types';
 import { $ } from '../app/session';
-import { assign, isArray } from '../shared/native';
+import { assign } from '../shared/native';
 import { hasProps, promiseResolve } from '../shared/utils';
 import { log } from '../shared/logs';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as q from '../app/queries';
-import { Errors, VisitType } from '../shared/enums';
+import { LogType, VisitType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
-import { emit } from '../app/events';
+// import { emit } from '../app/events';
 import { teardown } from './components';
 
 /**
@@ -72,7 +72,7 @@ export async function load () {
  *
  * Assigns the `page` with last known `history.state` reference and aligns scroll position.
  */
-export function initialize (page: IPage) {
+export function initialize (page: Page) {
 
   if (has(page.key)) {
     scrollTo(api.state.scrollX, api.state.scrollY);
@@ -102,7 +102,7 @@ export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
 
   api.replaceState(state, state.title, state.key);
 
-  log(Errors.TRACE, `History replaceState: ${api.state.key}`);
+  log(LogType.VERBOSE, `History replaceState: ${api.state.key}`);
 
   return api.state;
 
@@ -113,7 +113,7 @@ export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
  *
  * Applied `history.pushState` and passes SPX references.
  */
-export function push ({ key, rev, title }: IPage) {
+export function push ({ key, rev, title }: Page) {
 
   const state: HistoryState = {
     key,
@@ -125,7 +125,7 @@ export function push ({ key, rev, title }: IPage) {
 
   api.pushState(state, state.title, state.key);
 
-  log(Errors.TRACE, `History pushState: ${api.state.key}`);
+  log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
 
   return api.state;
 
@@ -153,30 +153,25 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
       request.reverse(event.state.rev);
     }
 
-    log(Errors.TRACE, `History popState: ${event.state.key}`);
+    const page = $.pages[event.state.key];
 
-    $.pages[event.state.key].type = VisitType.POPSTATE;
-
-    const targets = emit('popstate', { state: $.pages[event.state.key] });
-
-    if (isArray(targets)) {
-      q.patch('target', targets, event.state.key);
+    if (page.type === VisitType.REVERSE) {
+      log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
+    } else {
+      log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
     }
 
-    render.update($.pages[event.state.key]);
+    q.patchPage('type', VisitType.POPSTATE);
+
+    render.update(page);
 
   } else {
 
+    log(LogType.VERBOSE, `History popState fetch: ${event.state.key}`);
     teardown();
 
     event.state.type = VisitType.POPSTATE;
-
     const page = await request.fetch(event.state);
-    const targets = emit('popstate', { state: $.pages[event.state.key] });
-
-    if (isArray(targets)) {
-      q.patch('target', targets, event.state.key);
-    }
 
     // No page, infers we have no record available
     // we apply an assign fallback
@@ -223,7 +218,7 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
  * reference, which is passed on initialisation and used to execute
  * assignment for history push~state when no context exists.
  */
-export function connect (page?: IPage): IPage {
+export function connect (page?: Page): Page {
 
   if ($.observe.history) return;
 
