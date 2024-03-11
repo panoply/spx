@@ -2,8 +2,6 @@ import { Nodes } from '../shared/enums';
 import { morphAttributes } from './attributes';
 import { $ } from '../app/session';
 import { m, o, s } from '../shared/native';
-import { onNextTick } from '../shared/utils';
-import { morphSnap } from './snapshot';
 import * as forms from './forms';
 import * as observe from '../components/observe';
 
@@ -501,6 +499,7 @@ function walkNodes (curNode: ChildNode, skipKeys: boolean, context: MorphContext
       // Only report the node as discarded if it is not keyed. We do this because
       // at the end we loop through all keyed elements that were unmatched
       // and then discard them in one final pass.
+
       observe.removeNode(curChild as HTMLElement); // onNodeDiscarded(curChild);
 
       if (curChild.firstChild) {
@@ -797,14 +796,6 @@ export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
 
   context.$lookup.clear();
   context.$remove.clear();
-
-  // Final process involves manipulating the snapshot reference
-  // This is done outside the event loop, so will be carried out
-  // in the post -render cycle after the DOM has already rendered.
-  //
-  if (observe.context && observe.context.$nodes.length > 0) {
-    onNextTick(() => morphSnap(snapNode, observe.context.$nodes));
-  }
 
   return morphedNode;
 }
