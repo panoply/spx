@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 
 import type { LiteralUnion } from 'type-fest';
-import type { IConfig, IEval, IObserverOptions, IOptions, ISelectors } from '../types';
+import type { Config, IEval, IObserverOptions, Options, Selectors } from '../types';
 import { patchSetAttribute } from '../shared/patch';
-import { Attributes, Errors } from '../shared/enums';
+import { Attributes, CharCode, LogType } from '../shared/enums';
 import { assign, defineProps, isArray, nil, o } from '../shared/native';
 import { log } from '../shared/logs';
 import { hasProp } from '../shared/utils';
@@ -16,7 +16,7 @@ import { $ } from './session';
  *
  * Merges observer configuration with defaults.
  */
-export function observers (options: IOptions) {
+export function observers (options: Options) {
 
   for (const key of <Array<keyof IObserverOptions>>[
     'hover',
@@ -49,12 +49,12 @@ export function observers (options: IOptions) {
  */
 function not (attr: string, name: 'hover' | 'intersect' | 'proximity') {
 
-  const s = `:not([${attr}${name}=false]):not([${attr}link])`;
+  const prefix = `:not([${attr}${name}=false]):not([${attr}link])`;
 
   switch (name.charCodeAt(0)) {
-    case 104: return `${s}:not([${attr}proximity]):not([${attr}intersect])`;
-    case 105: return `${s}:not([${attr}hover]):not([${attr}proximity])`;
-    case 112: return `${s}:not([${attr}intersect]):not([${attr}hover])`;
+    case CharCode.LCH: return `${prefix}:not([${attr}proximity]):not([${attr}intersect])`;
+    case CharCode.LCI: return `${prefix}:not([${attr}hover]):not([${attr}proximity])`;
+    case CharCode.LCP: return `${prefix}:not([${attr}intersect]):not([${attr}hover])`;
   }
 
 };
@@ -65,7 +65,7 @@ function not (attr: string, name: 'hover' | 'intersect' | 'proximity') {
  * Constructs the query selectors used in resource evaluation. This
  * is a curried caller, first call merges `eval` options, second assigns qs.
  */
-function evaluators (options: IOptions, attr: string, disable: string) {
+function evaluators (options: Options, attr: string, disable: string) {
 
   if ('eval' in options) {
     if (options.eval) {
@@ -99,49 +99,84 @@ function evaluators (options: IOptions, attr: string, disable: string) {
       if ($.config.eval[tag].length > 0) {
         return $.config.eval[tag].map<string>((s: string) => `${s}:${disable}`).join(',');
       } else {
-        log(Errors.WARN, `Missing eval ${tag} value, SPX will use defaults`);
+        log(LogType.WARN, `Missing eval ${tag} value, SPX will use defaults`);
         return defaults;
       }
     }
 
-    log(Errors.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
+    log(LogType.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
 
   };
 }
+
+/**
+ * Fragment Selectors
+ *
+ * Validates that fragment selectors are id values.
+ */
+function fragments (options: Options) {
+
+  const elements: string[] = [];
+
+  if ('fragments' in options && isArray(options.fragments) && options.fragments.length > 0) {
+    for (const fragment of options.fragments) {
+
+      const charCode = fragment.charCodeAt(0);
+
+      // check for . or [ starting characters
+      if (charCode === CharCode.DOT || charCode === CharCode.LSB) {
+
+        log(LogType.WARN, [
+          `Invalid fragment selector "${fragment}" provided. Fragments must be id annotated values.`,
+          'Use spx-target attributes for additional fragment selections.'
+        ]);
+
+        continue;
+
+      } else if (charCode === CharCode.HSH) { // hash selectors will augment, eg: #foo > foo
+        elements.push(fragment.slice(1).trim());
+      } else {
+        elements.push(fragment.trim());
+      }
+    }
+  } else {
+    return [ 'body' ];
+  }
+
+  return elements;
+
+}
+
 /**
  * Initialize
  *
  * Connects store and intialized the workable state management model. Connect MUST be called
  * upon SPX initialization. This function acts as a class `constructor` establishing an instance.
  */
-export function configure (options: IOptions = o()) {
+export function configure (options: Options = o()) {
 
   patchSetAttribute();
 
   defineProps($, {
     ready: {
-      get () {
-        return document.readyState === 'complete';
-      }
+      get: () => document.readyState === 'complete'
     },
     types: {
-      get () {
-        return o({
-          INITIAL: 0,
-          PREFETCH: 1,
-          FETCH: 2,
-          PRELOAD: 3,
-          REVERSE: 4,
-          POPSTATE: 5,
-          VISIT: 6,
-          HYDRATE: 7,
-          CAPTURE: 8,
-          RELOAD: 9,
-          HOVER: 10,
-          INTERSECT: 11,
-          PROXIMITY: 12
-        });
-      }
+      get: () => o({
+        INITIAL: 0,
+        PREFETCH: 1,
+        FETCH: 2,
+        PRELOAD: 3,
+        REVERSE: 4,
+        POPSTATE: 5,
+        VISIT: 6,
+        HYDRATE: 7,
+        CAPTURE: 8,
+        RELOAD: 9,
+        HOVER: 10,
+        INTERSECT: 11,
+        PROXIMITY: 12
+      })
     }
   });
 
@@ -153,13 +188,9 @@ export function configure (options: IOptions = o()) {
     // as we assign them to the registry.
     delete options.components;
 
-    $.config.components = true;
-
-  } else {
-    $.config.components = false;
   }
 
-  assign<IConfig, IOptions>($.config, observers(options));
+  assign<Config, Options>($.config, observers(options));
 
   const schema = $.config.schema;
   const attr = schema === 'spx' ? 'spx' : schema.endsWith('-') ? schema : schema === null ? nil : `${schema}-`;
@@ -167,6 +198,7 @@ export function configure (options: IOptions = o()) {
   const disable = `not([${attr}eval=false])`;
   const evals = evaluators(options, attr, disable);
 
+  $.config.fragments = fragments(options);
   $.config.schema = attr;
   $.config.index = null;
   $.memory.bytes = 0;
@@ -175,7 +207,7 @@ export function configure (options: IOptions = o()) {
 
   // qs
   // Registers all the attribute a selector entries SPX will use
-  assign<ISelectors, ISelectors>($.qs, {
+  assign<Selectors, Selectors>($.qs, {
     $attrs: new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i'),
     $find: new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i'),
     $param: new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i'),
