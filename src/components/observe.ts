@@ -1,5 +1,5 @@
 import { $ } from '../app/session';
-import { Errors, Nodes, Refs } from '../shared/enums';
+import { Colors, LogType, Nodes, Refs } from '../shared/enums';
 import { Context, getContext, walkNode, isDirective, setRefs } from './context';
 import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
@@ -14,13 +14,62 @@ export function resetContext () {
 
 }
 
-function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
+function connect (node: HTMLElement, refs: string[]) {
 
-  const { reference, connected, elements } = $.components;
+  const {
+    $reference,
+    $connected,
+    $elements
+  } = $.components;
 
   for (const id of refs) {
 
-    const instance: SPX.Class = reference[id];
+    const instance: SPX.Class = $reference[id];
+
+    if (!instance) continue;
+
+    const ref = id.charCodeAt(0);
+
+    if (ref === Refs.COMPONENT) {
+
+      $connected.add(instance.scope.key);
+      $elements.set(instance.scope.dom, node);
+
+      instance.scope.mounted = true;
+
+      log(LogType.VERBOSE, `Component ${instance.scope.static.id} mounted: ${instance.scope.key}`, Colors.GREEN);
+
+    } else if (ref === Refs.EVENT) {
+
+      addEvent(instance, node, instance.scope.events[id]);
+
+    } else if (ref === Refs.NODE) {
+
+      $elements.set(instance.scope.nodes[id].dom, node);
+
+    } else if (ref === Refs.BINDING) {
+
+      const { binds } = instance.scope;
+
+      for (const key in binds) {
+        if (id in binds[key]) {
+          node.innerText = binds[key][id].value;
+          $elements.set(binds[key][id].dom, node);
+          break;
+        }
+      }
+    }
+  }
+
+}
+
+function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
+
+  const { $reference, $connected, $elements } = $.components;
+
+  for (const id of refs) {
+
+    const instance: SPX.Class = $reference[id];
 
     if (!instance) continue;
 
@@ -29,82 +78,61 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
     if (ref === Refs.COMPONENT) {
 
       instance.scope.mounted = false;
-      connected.delete(instance.scope.key);
-      elements.delete(instance.scope.el);
+      $connected.delete(instance.scope.key);
+      $elements.delete(instance.scope.dom);
 
-      for (const key in instance.scope.nodes) {
-        elements.delete(instance.scope.nodes[key].el);
+      const { scope } = instance;
+
+      for (const key in scope.nodes) {
+        $elements.delete(scope.nodes[key].dom);
       }
 
-      for (const key in instance.scope.binds) {
-        elements.delete(instance.scope.binds[key].el);
+      for (const key in scope.binds) {
+        for (const uuid in scope.binds[key]) {
+          $elements.delete(scope.binds[key][uuid].dom);
+        }
       }
 
-      for (const key in instance.scope.events) {
-        removeEvent(instance, instance.scope.events[key]);
+      for (const key in scope.events) {
+        removeEvent(instance, scope.events[key]);
       }
 
-      log(Errors.TRACE, `Unmounted component ${instance.static.id} (${instance.scope.key})`, '#8f5150');
+      log(LogType.VERBOSE, `Component ${instance.scope.static.id} unmounted: ${instance.scope.key}`, Colors.PURPLE);
 
     } else if (ref === Refs.EVENT) {
 
       removeEvent(instance, instance.scope.events[id]);
 
-    } else if (ref === Refs.NODE || ref === Refs.BINDING) {
-
-      const node = instance.scope[ref === Refs.BINDING ? 'binds' : 'nodes'][id];
-
-      if (newNode && curNode.isEqualNode(newNode)) {
-
-        setRefs(curNode, instance.scope.key, id);
-
-        elements.set(node.el, curNode);
-
-        context.$nodes.push(node.el);
-
-      } else {
-
-        elements.delete(node.el);
-
-      }
-
-    }
-  }
-
-}
-
-function connect (node: HTMLElement, refs: string[]) {
-
-  const { reference, connected, elements } = $.components;
-
-  for (const id of refs) {
-
-    const instance = reference[id];
-
-    if (!instance) continue;
-
-    const ref = id.charCodeAt(0);
-
-    if (ref === Refs.COMPONENT) {
-
-      connected.add(instance.scope.key);
-      elements.set(instance.scope.el, node);
-      instance.scope.mounted = true;
-
-      log(Errors.TRACE, `Mounted component ${instance.static.id} (${instance.scope.key})`, '#6dd093');
-
-    } else if (ref === Refs.EVENT) {
-
-      addEvent(instance, node, instance.scope.events[id]);
-
     } else if (ref === Refs.NODE) {
 
-      elements.set(instance.scope.nodes[id].el, node);
+      const node = instance.scope.nodes[id];
+
+      $elements.delete(node.dom);
+
+      if (newNode && curNode.isEqualNode(newNode)) {
+        setRefs(curNode, instance.scope.key, id);
+        context.$nodes.push(node.dom);
+      }
 
     } else if (ref === Refs.BINDING) {
 
-      elements.set(instance.scope.binds[id].el, node);
+      const { binds } = instance.scope;
 
+      for (const key in binds) {
+
+        if (id in binds[key]) {
+
+          $elements.delete(binds[key][id].dom);
+
+          if (newNode && curNode.isEqualNode(newNode)) {
+            setRefs(curNode, instance.scope.key, id);
+            context.$nodes.push(binds[key][id].dom);
+          }
+
+          break;
+        }
+
+      }
     }
   }
 
@@ -115,6 +143,7 @@ export function removeNode (node: HTMLElement) {
   if (node.nodeType !== Nodes.ELEMENT_NODE && node.nodeType !== Nodes.FRAGMENT_NODE) return;
 
   if (node.hasAttribute($.qs.$ref)) {
+
     disconnect(
       node,
       node.getAttribute($.qs.$ref).split(',')
@@ -140,6 +169,7 @@ export function addedNode (node: HTMLElement) {
       }
 
       walkNode(node, context);
+
     }
   }
 }
@@ -161,16 +191,17 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
   } else {
 
     if (!context) {
-      context = getContext(newNode);
+      context = getContext(curNode);
     } else {
-      context.$morph = newNode;
+      context.$morph = curNode;
     }
 
+    // We disconnect current node references
     if (cRef && !nRef) {
       disconnect(curNode, cRef, newNode);
-      if (curNode.hasAttribute($.qs.$ref)) return;
     }
 
-    walkNode(curNode, context);
+    if (isDirective(newNode.attributes)) walkNode(curNode, context);
+
   }
 }
