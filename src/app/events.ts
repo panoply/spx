@@ -4,8 +4,9 @@ import type { EventNames, EmitterArguments } from '../types';
 import { forEach } from '../shared/utils';
 import { log } from '../shared/logs';
 import { parse } from '../shared/dom';
-import { Errors } from '../shared/enums';
+import { LogType } from '../shared/enums';
 import { $ } from './session';
+import { LiteralUnion } from 'type-fest';
 
 /**
  * Emit Event
@@ -13,7 +14,7 @@ import { $ } from './session';
  * Private function use for emitting events
  * which users are subscribed.
  */
-export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T>) {
+export function emit<T extends EventNames> (name: LiteralUnion<T, string>, ...args: EmitterArguments<T>) {
 
   const isCache = name === 'before:cache';
 
@@ -45,7 +46,7 @@ export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T
  *
  * Exposed as public method on `spx`
  */
-export function on (name: EventNames, callback?: () => void, scope?: any) {
+export function on (name: LiteralUnion<EventNames, string>, callback?: () => void, scope?: any) {
 
   if (!(name in $.events)) $.events[name] = [];
 
@@ -58,7 +59,7 @@ export function on (name: EventNames, callback?: () => void, scope?: any) {
  *
  * Exposed as public method on `spx`
  */
-export function off (name: EventNames, callback: (() => void) | number) {
+export function off (name: LiteralUnion<EventNames, string>, callback: (() => void) | number) {
 
   if (name in $.events) {
 
@@ -67,7 +68,7 @@ export function off (name: EventNames, callback: (() => void) | number) {
     if (events && typeof callback === 'number') {
 
       events.splice(callback, 1);
-      log(Errors.INFO, `Removed ${name} event listener (id: ${callback})`);
+      log(LogType.INFO, `Removed ${name} event listener (id: ${callback})`);
       if (events.length === 0) delete $.events[name];
 
     } else {
@@ -78,18 +79,21 @@ export function off (name: EventNames, callback: (() => void) | number) {
         for (let i = 0, s = events.length; i < s; i++) {
           if (events[i] !== callback) {
             live.push(events[i]);
-          } else {
-            log(Errors.INFO, `Removed ${name} event listener (id: ${i})`);
+          } else if (name !== 'x') { // Do not log "x" events, they are internal
+            log(LogType.INFO, `Removed ${name} event listener (id: ${i})`);
           }
         }
       }
 
-      if (live.length) $.events[name] = live;
-      else delete $.events[name];
+      if (live.length) {
+        $.events[name] = live;
+      } else {
+        delete $.events[name];
+      }
     }
 
   } else {
-    log(Errors.WARN, `There are no ${name} event listeners`);
+    log(LogType.WARN, `There are no ${name} event listeners`);
   }
 
   return this;
