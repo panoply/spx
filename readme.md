@@ -118,7 +118,7 @@ Connect the component to DOM elements, add the following to a defined `fragment`
 ```html
 <section spx-component="counter">
 
-  Clicked: <span spx-node="counter.node">0</span>
+  Clicked: <span spx-node="counter.count">0</span>
 
   <button type="button" spx@click="counter.increment">
     Increment
