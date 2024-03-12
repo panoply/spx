@@ -1,10 +1,11 @@
 <br>
+<p align="center">
 <a href="https://spx.js.org">
-<img align="left" src="https://raw.githubusercontent.com/panoply/spx/13d4440296f86ca276c7de7b710dcd714f69b94f/docs/site/assets/svg/logo.svg" width="150px">
+<img src="https://raw.githubusercontent.com/panoply/spx/13d4440296f86ca276c7de7b710dcd714f69b94f/docs/site/assets/svg/logo.svg"
+width="160px">
 </a>
-<h1 align="right">
-  <i>SINGLE PAGE XHR</i>
-</h1>
+</p>
+<h1>&nbsp;</h1>
 
 Single Page XHR - The essential enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (15kb gzip) over the wire (push~state) solution that employs an incremental (snapshot) morphing tactic with DOM driven component capabilities integrated at the core.
 
