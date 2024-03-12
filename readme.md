@@ -7,6 +7,8 @@ width="160px">
 </p>
 <h1></h1>
 
+### SPX ~ Single Page XHR
+
 Single Page XHR - The essential enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (15kb gzip) over the wire (push~state) solution that employs an incremental (snapshot) morphing tactic with DOM driven component capabilities integrated at the core.
 
 ### Documentation
