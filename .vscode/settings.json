@@ -1,4 +1,6 @@
 {
+  "npm.packageManager": "pnpm",
+  "prettier.ignorePath": ".prettierignore",
   "stylelint.validate": [
     "scss",
     "sass",
@@ -246,17 +248,6 @@
       ]
     },
   },
-  "html.customData": [
-    "./.vscode/custom-data/drawer.html-data.json",
-  ],
-  "json.schemas": [
-    {
-      "fileMatch": [
-        "./docs/public/search.json"
-      ],
-      "schema": {}
-    }
-  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": "explicit"
   },
@@ -264,12 +255,10 @@
     "editor.defaultFormatter": "sissel.shopify-liquid",
     "editor.formatOnSave": true
   },
-  "npm.packageManager": "pnpm",
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true
   },
-  "prettier.ignorePath": ".prettierignore",
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -277,8 +266,7 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/node_modules": true,
-    "**/test/public": true,
-    "**/test/unit": true
+    "**/pnpm-lock.yaml": true
   },
   "cSpell.words": [
     "Alexey",

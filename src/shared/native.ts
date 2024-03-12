@@ -171,6 +171,6 @@ export class XHR extends XMLHttpRequest {
    * and trigger operations like hover or proximity
    * prefetching.
    */
-  static $timeout: { [key: string]: number } = o();
+  static $timeout: { [key: string]: NodeJS.Timeout } = o();
 
 }

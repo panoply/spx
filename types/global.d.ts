@@ -1,12 +1,15 @@
 /* eslint-disable no-unused-vars */
-import { HistoryAPI } from './config';
-import SPX from './methods';
+
+import type { HistoryAPI } from './config';
+import type SPX from './spx';
+export * from './components';
+export * from './session';
 export * from './events';
-export * from './methods';
+export * from './spx';
 export * from './options';
 export * from './config';
 export * from './page';
-export * as default from './methods';
+export * as default from './spx';
 
 declare global {
 

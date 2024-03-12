@@ -1,11 +1,11 @@
 import type { Page, Location } from 'types';
+import { $ } from './session';
 import { nil, o, origin } from '../shared/native';
 import { log } from '../shared/logs';
 import { chunk, hasProp, attrJSON, camelCase, splitAttrArrayValue, selector } from '../shared/utils';
 import { CharCode, LogType, Origins, VisitType } from '../shared/enums';
-import { $ } from './session';
-import * as regex from '../shared/regexp';
 import { newPage } from './queries';
+import * as regex from '../shared/regexp';
 
 /**
  * Location hostname eg: brixtol.com

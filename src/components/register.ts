@@ -1,9 +1,8 @@
-import { camelCase, downcase, hasProp, hasProps } from '../shared/utils';
+import type { ComponentRegister, Merge } from 'types';
 import { $ } from '../app/session';
+import { camelCase, downcase, hasProp, hasProps } from '../shared/utils';
 import { Colors, LogType } from '../shared/enums';
-import { ComponentRegister } from '../types/components';
 import { log } from '../shared/logs';
-import { Merge } from 'type-fest';
 
 type Register = Merge<ComponentRegister, {
   /**

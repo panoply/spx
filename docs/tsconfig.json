@@ -25,11 +25,5 @@
     "moduleResolution": "node",
     "emitDeclarationOnly": true,
     "isolatedModules": true,
-    "baseUrl": ".",
-    "paths": {
-      "moloko": [
-        "."
-      ]
-    }
   }
 }

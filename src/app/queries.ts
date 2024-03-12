@@ -1,14 +1,14 @@
-import { Page } from '../types/page';
+import type { Page } from 'types';
+import { $ } from './session';
 import { emit } from './events';
 import { log } from '../shared/logs';
 import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector, isEmpty } from '../shared/utils';
 import { assign, o, isArray, defineProps } from '../shared/native';
-import { $ } from './session';
 import { LogType, VisitType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
 import * as history from '../observe/history';
 import * as fragments from '../observe/fragment';
-import { SPX } from '../types/components';
+import { SPX } from '../../types/components';
 import { hook } from '../observe/components';
 
 /**

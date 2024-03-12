@@ -1,5 +1,5 @@
 {
-  "name": "spx-docs",
+  "name": "@spx/docs",
   "version": "1.0.0",
   "private": true,
   "description": "SPX Documentation",
@@ -7,12 +7,12 @@
   "license": "MIT",
   "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
   "scripts": {
-    "dev": "rm -rf public && concurrently \"pnpm run 11ty:watch\" \"pnpm run sass:watch\" \"pnpm run sass-examples:watch\" \"pnpm tsup:watch\"",
+    "dev": "rm -rf public && concurrently \"pnpm run 11ty:watch\" \"pnpm run sass:watch\" \"pnpm tsup:watch\"",
     "stage": "netlify dev -c \"eleventy --watch --serve --watch\" --targetPort 8080",
     "build": "rm -rf public && pnpm run 11ty:build && pnpm run sass:build && pnpm run postcss && pnpm run tsup:build",
     "postcss": "postcss public/style.css -r --no-map",
     "release": "netlify build && netlify deploy",
-    "11ty:watch": "eleventy --config=.eleventy.cjs --serve --watch",
+    "11ty:watch": "eleventy --config=.eleventy.cjs --serve --watch --quiet --incremental",
     "11ty:build": "ENV=prod eleventy --config=.eleventy.cjs ",
     "tsup:watch": "tsup --watch",
     "tsup:build": "tsup --minify --env.NODE_ENV production",
@@ -28,14 +28,14 @@
     ]
   },
   "dependencies": {
-    "@brixtol/bootstrap": "workspace:^",
     "fuse.js": "^7.0.0",
     "qvp": "^0.3.2",
     "relapse": "^0.8.1",
-    "spx": "workspace:0.1.2-beta.1"
+    "spx": "link:.."
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
+    "@brixtol/bootstrap": "^1.7.2",
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@panoply/11ty": "^0.3.0",
     "@sissel/11ty": "^0.2.2",

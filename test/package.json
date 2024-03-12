@@ -1,5 +1,5 @@
 {
-  "name": "spx-test",
+  "name": "@spx/test",
   "private": true,
   "version": "1.0.0",
   "description": "",
@@ -8,14 +8,14 @@
   "scripts": {
     "test": "rm -rf public && concurrently \"pnpm run e2e\" \"pnpm run tsup\"",
     "tsup": "tsup --watch",
-    "e2e": "eleventy --config=.eleventy.cjs --serve --watch"
+    "e2e": "eleventy --config=.eleventy.cjs --serve --watch --quiet --incremental"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
-    "@brixtol/bootstrap": "workspace:^",
+    "@brixtol/bootstrap": "^1.7.2",
     "@panoply/11ty": "^0.3.0",
     "concurrently": "^8.2.2",
     "tsup": "^8.0.2"

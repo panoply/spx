@@ -1,10 +1,9 @@
-import type { Page } from '../types/page';
+import type { Page, LiteralUnion } from 'types';
+import { $ } from '../app/session';
 import { LogType } from './enums';
 import { assign, defineProp, d, nil, isArray, s } from './native';
-import { $ } from '../app/session';
 import * as regex from './regexp';
 import { log } from '../shared/logs';
-import { LiteralUnion, SetReturnType } from 'type-fest';
 
 /**
  * Get Fragment Selector

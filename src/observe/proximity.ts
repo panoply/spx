@@ -1,14 +1,14 @@
+import type { Proximity } from 'types';
 import { $ } from '../app/session';
 import { getTargets } from '../shared/links';
 import { isNumber } from '../shared/regexp';
 import { log } from '../shared/logs';
 import { getRoute } from '../app/location';
 import { emit } from '../app/events';
+import { VisitType, LogType } from '../shared/enums';
+import { pointer } from '../shared/native';
 import * as q from '../app/queries';
 import * as request from '../app/fetch';
-import { VisitType, LogType } from '../shared/enums';
-import { Proximity } from 'types';
-import { pointer } from '../shared/native';
 
 /**
  * Detects if the cursor (mouse) is in range of a target element.

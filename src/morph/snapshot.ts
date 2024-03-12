@@ -1,10 +1,10 @@
-import type { ComponentBinds } from '../types/components';
+import type { ComponentBinds } from 'types';
+import { $ } from '../app/session';
 import { isDirective } from '../components/context';
 import { log } from '../shared/logs';
 import { LogType } from '../shared/enums';
-import { $ } from '../app/session';
-import * as q from '../app/queries';
 import { walkElements } from './walk';
+import * as q from '../app/queries';
 
 // export function markComponents (datasets: Array<[string, string]>) {
 

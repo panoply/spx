@@ -1,10 +1,10 @@
-import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope } from '../types/components';
+import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope } from 'types';
+import { $ } from '../app/session';
 import { LogType } from '../shared/enums';
 import { d, o } from '../shared/native';
 import { log } from '../shared/logs';
 import { walkElements } from '../morph/walk';
 import { setInstances } from './instances';
-import { $ } from '../app/session';
 import * as u from '../shared/utils';
 import * as fragment from '../observe/fragment';
 

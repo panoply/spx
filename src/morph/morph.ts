@@ -1,7 +1,7 @@
-import { Nodes } from '../shared/enums';
-import { morphAttributes } from './attributes';
 import { $ } from '../app/session';
 import { m, o, s } from '../shared/native';
+import { Nodes } from '../shared/enums';
+import { morphAttributes } from './attributes';
 import * as forms from './forms';
 import * as observe from '../components/observe';
 

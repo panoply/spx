@@ -1,8 +1,7 @@
-import type { LiteralUnion } from 'type-fest';
-import type { Config, Page } from 'types';
+import type { Config, Page, LiteralUnion } from 'types';
+import { $ } from './app/session';
 import { log } from './shared/logs';
 import { defineGetter, forNode, hasProp, size } from './shared/utils';
-import { $ } from './app/session';
 import { configure } from './app/config';
 import { getRoute } from './app/location';
 import { LogType, VisitType } from './shared/enums';

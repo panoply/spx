@@ -1,15 +1,14 @@
-import { HistoryState, HistoryAPI, Page } from 'types';
+import type { HistoryState, HistoryAPI, Page } from 'types';
 import { $ } from '../app/session';
 import { assign } from '../shared/native';
 import { hasProps, promiseResolve } from '../shared/utils';
 import { log } from '../shared/logs';
+import { LogType, VisitType } from '../shared/enums';
+import { getKey, getRoute } from '../app/location';
+import { teardown } from './components';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as q from '../app/queries';
-import { LogType, VisitType } from '../shared/enums';
-import { getKey, getRoute } from '../app/location';
-// import { emit } from '../app/events';
-import { teardown } from './components';
 
 /**
  * History API `window.history`

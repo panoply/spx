@@ -4,9 +4,12 @@
 node_modules/
 docs/
 test/
+src/
 
 # FILES
+tsup.config.ts
 tsconfig.json
+pnpm-lock.yaml
 
 # DOT FILES
 .gitignore
@@ -14,5 +17,4 @@ tsconfig.json
 .npmignore
 
 # MARKDOWN
-changelog.md
 readme.md

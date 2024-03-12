@@ -113,8 +113,6 @@ export default defineConfig(
       } else if (this.env && this.env.NODE_ENV === 'search') {
         await search();
       }
-
-      console.log(this.env);
     },
     clean: false,
     treeshake: false,

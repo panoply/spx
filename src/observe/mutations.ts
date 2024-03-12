@@ -1,9 +1,9 @@
+import { $ } from '../app/session';
+import { d } from '../shared/native';
 import { getComponents } from '../components/context';
 import { morphHead } from '../morph/snapshot';
 import { Nodes } from '../shared/enums';
 import { isResourceTag } from '../shared/regexp';
-import { d } from '../shared/native';
-import { $ } from '../app/session';
 
 const resources = new MutationObserver(function ([ mutation ]: MutationRecord[]) {
 
@@ -13,7 +13,7 @@ const resources = new MutationObserver(function ([ mutation ]: MutationRecord[])
 
   if (isAdded || mutation.removedNodes.length > 0) {
 
-    const [ node ] = isAdded ? mutation.addedNodes : mutation.removedNodes;
+    const node = isAdded ? mutation.addedNodes[0] : mutation.removedNodes[0];
 
     if (node.nodeType !== Nodes.ELEMENT_NODE) return;
 

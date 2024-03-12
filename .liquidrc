@@ -3,6 +3,9 @@
   "files": {
     "includes": [
       "./docs/src/views/include/*.liquid"
+    ],
+    "data": [
+      "./docs/src/data/*.json"
     ]
   },
   "format": {
@@ -11,9 +14,6 @@
     "indentSize": 2,
     "preserveLine": 1,
     "endNewline": false,
-    "ignore": [
-      "./docs/src/views/include/pages/*.liquid"
-    ],
     "liquid": {
       "commentIndent": true,
       "commentNewline": true,

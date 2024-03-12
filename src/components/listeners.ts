@@ -1,5 +1,4 @@
-import type { Merge } from 'type-fest';
-import type { ComponentEvent, SPX } from '../types/components';
+import type { ComponentEvent, SPX, Merge } from 'types';
 import { assign, o } from '../shared/native';
 import { defineGetter, hasProp } from '../shared/utils';
 import { LogType } from '../shared/enums';

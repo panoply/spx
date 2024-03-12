@@ -1,8 +1,8 @@
+import { $ } from '../app/session';
 import { forEach } from '../shared/utils';
 import { log } from '../shared/logs';
 import { LogType, VisitType } from '../shared/enums';
 import { getNodeTargets } from '../shared/links';
-import { $ } from '../app/session';
 import { emit } from '../app/events';
 import { getRoute } from '../app/location';
 import * as request from '../app/fetch';

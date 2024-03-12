@@ -1,11 +1,8 @@
 [build]
-publish = "public"
-
-  [build.environment]
-  NPM_FLAGS = "--prefix=/dev/null"
+  publish = "public"
 
 [[headers]]
-for = "/*"
+  for = "/*"
 
   [headers.values]
-  Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Origin = "*"

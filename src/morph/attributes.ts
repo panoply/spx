@@ -1,8 +1,8 @@
+import { $ } from '../app/session';
 import { Nodes } from '../shared/enums';
 import { nil } from '../shared/native';
-import * as observe from '../components/observe';
-import { $ } from '../app/session';
 import { isDirective } from '../components/context';
+import * as observe from '../components/observe';
 
 /**
  * Set or Remove boolean attribute annotations, specifically used for Form elements

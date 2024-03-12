@@ -5,7 +5,7 @@ import type { IObserverOptions, Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
 import type { Config, Observers, Memory } from './config';
 import type { ComponentSession, SPX } from './components';
-import { Session } from '../app/session';
+import type { Session } from './session';
 
 /**
  * #### SPX Component

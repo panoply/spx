@@ -1,14 +1,15 @@
+import type { Page } from 'types';
+import { deviceType } from 'detect-it';
+import { $ } from '../app/session';
 import { LogType, VisitType } from '../shared/enums';
 import { ts } from '../shared/utils';
 import { log } from '../shared/logs';
-import { deviceType } from 'detect-it';
 import { XHR, pointer } from '../shared/native';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
-import { Page } from '../types/page';
 import { getAttributes, getKey, getRoute } from '../app/location';
 import { progress } from '../app/progress';
-import { $ } from '../app/session';
+import { hook } from './components';
 import * as hover from './hovers';
 import * as proximity from './proximity';
 import * as intersect from './intersect';
@@ -16,7 +17,6 @@ import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as history from './history';
 import * as q from '../app/queries';
-import { hook } from './components';
 
 /**
  * Handles a clicked link, prevents special click types.

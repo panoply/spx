@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
-
-import type { LiteralUnion } from 'type-fest';
-import type { Config, IEval, IObserverOptions, Options, Selectors } from '../types';
+import type { Config, IEval, IObserverOptions, Options, Selectors, LiteralUnion } from 'types';
+import { $ } from './session';
 import { patchSetAttribute } from '../shared/patch';
 import { Attributes, CharCode, LogType } from '../shared/enums';
 import { assign, defineProps, isArray, nil, o } from '../shared/native';
@@ -9,7 +8,6 @@ import { log } from '../shared/logs';
 import { hasProp } from '../shared/utils';
 import { progress } from './progress';
 import { registerComponents } from '../components/register';
-import { $ } from './session';
 
 /**
  * Observe Options

@@ -1,11 +1,11 @@
 import type { Page } from 'types';
+import { $ } from './session';
 import { VisitType, LogType } from '../shared/enums';
 import { getRoute } from './location';
 import { log } from '../shared/logs';
 import { onNextTick } from '../shared/utils';
 import { defineProps } from '../shared/native';
 import { parse, takeSnapshot } from '../shared/dom';
-import { $ } from './session';
 import * as q from './queries';
 import * as hrefs from '../observe/hrefs';
 import * as hover from '../observe/hovers';

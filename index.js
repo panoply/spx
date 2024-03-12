@@ -4,7 +4,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// ../../node_modules/.pnpm/detect-it@4.0.1/node_modules/detect-it/dist/detect-it.esm.js
+// node_modules/.pnpm/detect-it@4.0.1/node_modules/detect-it/dist/detect-it.esm.js
 var w = typeof window !== "undefined" ? window : { screen: {}, navigator: {} };
 var matchMedia = (w.matchMedia || function() {
   return { matches: false };
@@ -288,8 +288,8 @@ function defineGetter(object2, name, value) {
     return (name2, value2, options2) => {
       if (hasProp(object2, name2))
         return;
-      const get3 = () => value2;
-      return defineProp(object2, name2, options2 ? assign(options2, { get: get3 }) : { get: get3 });
+      const get2 = () => value2;
+      return defineProp(object2, name2, options2 ? assign(options2, { get: get2 }) : { get: get2 });
     };
   }
 }
@@ -405,7 +405,7 @@ function patchSetAttribute() {
 }
 
 // src/app/progress.ts
-function Progress() {
+function ProgressBar() {
   const pending = [];
   const node = document.createElement("div");
   let status = null;
@@ -524,7 +524,7 @@ function Progress() {
   }
   return { start, done, style };
 }
-var progress = Progress();
+var progress = ProgressBar();
 
 // src/components/register.ts
 function getComponentId(instance, identifier) {
@@ -792,130 +792,15 @@ function off(name, callback) {
   return this;
 }
 
-// src/app/fetch.ts
-function request(key, {
-  method = "GET",
-  body = null,
-  headers = null,
-  type = "text"
-} = {}) {
-  return new Promise(function(resolve, reject) {
-    const xhr = new XHR();
-    xhr.key = key;
-    xhr.responseType = type;
-    xhr.open(method, key);
-    xhr.setRequestHeader("spx-request", "true");
-    if (headers !== null) {
-      for (const prop in headers) {
-        xhr.setRequestHeader(prop, headers[prop]);
-      }
-    }
-    xhr.onloadstart = function() {
-      XHR.$request.set(this.key, xhr);
-    };
-    xhr.onload = function() {
-      resolve(this.response);
-    };
-    xhr.onerror = function() {
-      reject(this.statusText);
-    };
-    xhr.onabort = function() {
-      delete XHR.$timeout[this.key];
-      XHR.$transit.delete(this.key);
-      XHR.$request.delete(this.key);
-    };
-    xhr.onloadend = function(event) {
-      XHR.$request.delete(this.key);
-      $.memory.bytes = $.memory.bytes + event.loaded;
-      $.memory.visits = $.memory.visits + 1;
-    };
-    xhr.send(body);
-  });
-}
-function cleanup(key) {
-  if (!(key in XHR.$timeout))
-    return true;
-  clearTimeout(XHR.$timeout[key]);
-  return delete XHR.$timeout[key];
-}
-function throttle(key, callback, delay) {
-  if (key in XHR.$timeout)
-    return;
-  if (!has(key)) {
-    XHR.$timeout[key] = setTimeout(callback, delay);
-  }
-}
-function cancel(key) {
-  for (const [url, xhr] of XHR.$request) {
-    if (key !== url) {
-      xhr.abort();
-      log(3 /* WARN */, `Pending request aborted: ${url}`);
-    }
-  }
-}
-function preload(state) {
-  if ($.config.preload !== null) {
-    if (isArray($.config.preload)) {
-      const promises = $.config.preload.filter((path) => {
-        const route = getRoute(path, 3 /* PRELOAD */);
-        return route.key !== path ? fetch(create(route)) : false;
-      });
-      return Promise.allSettled(promises);
-    } else if (typeof $.config.preload === "object") {
-      if (hasProp($.config.preload, state.key)) {
-        const promises = $.config.preload[state.key].map((path) => fetch(
-          create(
-            getRoute(
-              path,
-              3 /* PRELOAD */
-            )
-          )
-        ));
-        return Promise.allSettled(promises);
-      }
-    }
-  }
-}
-async function reverse(state) {
-  if (state.rev === state.key)
-    return;
-  const page = create(getRoute(state.rev, 4 /* REVERSE */));
-  await onNextTickResolve();
-  fetch(page).then((page2) => {
-    if (page2) {
-      log(2 /* INFO */, `Reverse fetch completed: ${page2.rev}`);
-    } else {
-      log(3 /* WARN */, `Reverse fetch failed: ${state.rev}`);
-    }
-  });
-}
-async function wait(state) {
-  if (!XHR.$transit.has(state.key))
-    return state;
-  const snapshot = await XHR.$transit.get(state.key);
-  XHR.$transit.delete(state.key);
-  delete XHR.$timeout[state.key];
-  return set(state, snapshot);
-}
-async function fetch(state) {
-  if (XHR.$request.has(state.key)) {
-    if (state.type !== 7 /* HYDRATE */) {
-      if (state.type === 4 /* REVERSE */ && XHR.$request.has(state.rev)) {
-        XHR.$request.get(state.rev).abort();
-        log(3 /* WARN */, `Request aborted: ${state.rev}`);
-      } else {
-        log(3 /* WARN */, `Request in transit: ${state.key}`);
-      }
-      return false;
-    }
-  }
-  if (!emit("fetch", state)) {
-    log(3 /* WARN */, `Request cancelled via dispatched event: ${state.key}`);
-    return false;
-  }
-  XHR.$transit.set(state.key, request(state.key));
-  return wait(state);
-}
+// src/observe/components.ts
+var components_exports = {};
+__export(components_exports, {
+  connect: () => connect3,
+  disconnect: () => disconnect2,
+  hook: () => hook,
+  mount: () => mount,
+  teardown: () => teardown
+});
 
 // src/morph/walk.ts
 function walkElements(node, callback) {
@@ -1218,97 +1103,6 @@ function morphHead(method, newNode) {
   }
 }
 
-// src/observe/components.ts
-var components_exports = {};
-__export(components_exports, {
-  connect: () => connect,
-  disconnect: () => disconnect,
-  hook: () => hook,
-  mount: () => mount,
-  teardown: () => teardown
-});
-function teardown() {
-  for (const ref in $.components.$reference) {
-    delete $.components.$reference[ref];
-  }
-  for (const instance of $.components.$instances.values()) {
-    for (const key in instance.scope.events) {
-      removeEvent(instance, instance.scope.events[key]);
-    }
-  }
-  $.components.$elements.clear();
-  $.components.$instances.clear();
-  $.components.$connected.clear();
-  log(2 /* INFO */, "Component instances were disconnected");
-}
-function mount(promises) {
-  const promise = promises.map(([instance, method]) => instance.scope.mounted ? instance[method]($.page) : Promise.reject(instance.scope.instanceOf));
-  return Promise.race(promise);
-}
-function hook(event, params, cb) {
-  if (event === "onvisit")
-    return onNextTick(() => hook(null, params));
-  const { $connected, $instances } = $.components;
-  let method = 1 /* SYNC */;
-  let promises = [];
-  if (event === null)
-    event = "onvisit";
-  else if (event === "onload") {
-    method = 2 /* ONLOAD */;
-    promises = [];
-    patchPage("components", toArray($connected));
-  } else if (event === "onexit") {
-    method = 3 /* ONEXIT */;
-    promises = [];
-  }
-  for (const uuid3 of $connected) {
-    const instance = $instances.get(uuid3);
-    if (instance && event in instance) {
-      if (method === 1 /* SYNC */) {
-        instance[event](params);
-      } else {
-        promises.push([instance, event]);
-      }
-    }
-  }
-  if (promises.length > 0) {
-    mount(promises).then(() => {
-      for (const [instance] of promises) {
-        instance.scope.mounted = method === 2 /* ONLOAD */;
-      }
-    }).catch(() => {
-      for (const [instance] of promises) {
-        instance.scope.mounted = false;
-      }
-    });
-  }
-}
-function connect() {
-  if (!$.config.components)
-    return;
-  if ($.observe.components)
-    return;
-  if ($.page.type === 0 /* INITIAL */) {
-    getComponents();
-  } else {
-    if (context) {
-      setInstances(context).then(() => {
-        hook("onload", $.page);
-        resetContext();
-      });
-    } else {
-      hook("onload", $.page);
-    }
-  }
-  $.observe.components = true;
-}
-function disconnect() {
-  if (!$.observe.components)
-    return;
-  hook("onexit", $.page);
-  $.observe.components = false;
-}
-
 // src/components/instances.ts
 function defineNodes(instance, nodes) {
   const model = o();
@@ -1425,7 +1219,7 @@ function setInstances({ $scopes, $aliases, $nodes, $morph }) {
 }
 
 // src/observe/fragment.ts
-function connect2() {
+function connect() {
   const fragments2 = [];
   for (const id of $.page.fragments) {
     const element = document.getElementById(id);
@@ -1744,7 +1538,7 @@ function resetContext() {
     context = void 0;
   });
 }
-function connect3(node, refs) {
+function connect2(node, refs) {
   const {
     $reference,
     $connected,
@@ -1776,7 +1570,7 @@ function connect3(node, refs) {
     }
   }
 }
-function disconnect2(curNode, refs, newNode) {
+function disconnect(curNode, refs, newNode) {
   const { $reference, $connected, $elements } = $.components;
   for (const id of refs) {
     const instance = $reference[id];
@@ -1828,7 +1622,7 @@ function removeNode(node) {
   if (node.nodeType !== 1 /* ELEMENT_NODE */ && node.nodeType !== 11 /* FRAGMENT_NODE */)
     return;
   if (node.hasAttribute($.qs.$ref)) {
-    disconnect2(
+    disconnect(
       node,
       node.getAttribute($.qs.$ref).split(",")
     );
@@ -1836,7 +1630,7 @@ function removeNode(node) {
 }
 function addedNode(node) {
   if (node.hasAttribute($.qs.$ref)) {
-    connect3(node, node.getAttribute($.qs.$ref).split(","));
+    connect2(node, node.getAttribute($.qs.$ref).split(","));
   } else {
     if (isDirective(node.attributes)) {
       if (!context) {
@@ -1854,10 +1648,10 @@ function updateNode(curNode, newNode, cRef, nRef) {
   if (nRef)
     nRef = nRef.split(",");
   if (cRef && nRef) {
-    disconnect2(curNode, cRef);
-    connect3(curNode, nRef);
+    disconnect(curNode, cRef);
+    connect2(curNode, nRef);
   } else if (!cRef && nRef) {
-    connect3(curNode, nRef);
+    connect2(curNode, nRef);
   } else {
     if (!context) {
       context = getContext(curNode);
@@ -1865,11 +1659,219 @@ function updateNode(curNode, newNode, cRef, nRef) {
       context.$morph = curNode;
     }
     if (cRef && !nRef) {
-      disconnect2(curNode, cRef, newNode);
+      disconnect(curNode, cRef, newNode);
     }
     if (isDirective(newNode.attributes))
       walkNode(curNode, context);
   }
+}
+
+// src/observe/components.ts
+function teardown() {
+  for (const ref in $.components.$reference) {
+    delete $.components.$reference[ref];
+  }
+  for (const instance of $.components.$instances.values()) {
+    for (const key in instance.scope.events) {
+      removeEvent(instance, instance.scope.events[key]);
+    }
+  }
+  $.components.$elements.clear();
+  $.components.$instances.clear();
+  $.components.$connected.clear();
+  log(2 /* INFO */, "Component instances were disconnected");
+}
+function mount(promises) {
+  const promise = promises.map(([instance, method]) => instance.scope.mounted ? instance[method]($.page) : Promise.reject(instance.scope.instanceOf));
+  return Promise.race(promise);
+}
+function hook(event, params, cb) {
+  if (event === "onvisit")
+    return onNextTick(() => hook(null, params));
+  const { $connected, $instances } = $.components;
+  let method = 1 /* SYNC */;
+  let promises = [];
+  if (event === null)
+    event = "onvisit";
+  else if (event === "onload") {
+    method = 2 /* ONLOAD */;
+    promises = [];
+    patchPage("components", toArray($connected));
+  } else if (event === "onexit") {
+    method = 3 /* ONEXIT */;
+    promises = [];
+  }
+  for (const uuid3 of $connected) {
+    const instance = $instances.get(uuid3);
+    if (instance && event in instance) {
+      if (method === 1 /* SYNC */) {
+        instance[event](params);
+      } else {
+        promises.push([instance, event]);
+      }
+    }
+  }
+  if (promises.length > 0) {
+    mount(promises).then(() => {
+      for (const [instance] of promises) {
+        instance.scope.mounted = method === 2 /* ONLOAD */;
+      }
+    }).catch(() => {
+      for (const [instance] of promises) {
+        instance.scope.mounted = false;
+      }
+    });
+  }
+}
+function connect3() {
+  if (!$.config.components)
+    return;
+  if ($.observe.components)
+    return;
+  if ($.page.type === 0 /* INITIAL */) {
+    getComponents();
+  } else {
+    if (context) {
+      setInstances(context).then(() => {
+        hook("onload", $.page);
+        resetContext();
+      });
+    } else {
+      hook("onload", $.page);
+    }
+  }
+  $.observe.components = true;
+}
+function disconnect2() {
+  if (!$.observe.components)
+    return;
+  hook("onexit", $.page);
+  $.observe.components = false;
+}
+
+// src/app/fetch.ts
+function request(key, {
+  method = "GET",
+  body = null,
+  headers = null,
+  type = "text"
+} = {}) {
+  return new Promise(function(resolve, reject) {
+    const xhr = new XHR();
+    xhr.key = key;
+    xhr.responseType = type;
+    xhr.open(method, key);
+    xhr.setRequestHeader("spx-request", "true");
+    if (headers !== null) {
+      for (const prop in headers) {
+        xhr.setRequestHeader(prop, headers[prop]);
+      }
+    }
+    xhr.onloadstart = function() {
+      XHR.$request.set(this.key, xhr);
+    };
+    xhr.onload = function() {
+      resolve(this.response);
+    };
+    xhr.onerror = function() {
+      reject(this.statusText);
+    };
+    xhr.onabort = function() {
+      delete XHR.$timeout[this.key];
+      XHR.$transit.delete(this.key);
+      XHR.$request.delete(this.key);
+    };
+    xhr.onloadend = function(event) {
+      XHR.$request.delete(this.key);
+      $.memory.bytes = $.memory.bytes + event.loaded;
+      $.memory.visits = $.memory.visits + 1;
+    };
+    xhr.send(body);
+  });
+}
+function cleanup(key) {
+  if (!(key in XHR.$timeout))
+    return true;
+  clearTimeout(XHR.$timeout[key]);
+  return delete XHR.$timeout[key];
+}
+function throttle(key, callback, delay) {
+  if (key in XHR.$timeout)
+    return;
+  if (!has(key)) {
+    XHR.$timeout[key] = setTimeout(callback, delay);
+  }
+}
+function cancel(key) {
+  for (const [url, xhr] of XHR.$request) {
+    if (key !== url) {
+      xhr.abort();
+      log(3 /* WARN */, `Pending request aborted: ${url}`);
+    }
+  }
+}
+function preload(state) {
+  if ($.config.preload !== null) {
+    if (isArray($.config.preload)) {
+      const promises = $.config.preload.filter((path) => {
+        const route = getRoute(path, 3 /* PRELOAD */);
+        return route.key !== path ? fetch(create(route)) : false;
+      });
+      return Promise.allSettled(promises);
+    } else if (typeof $.config.preload === "object") {
+      if (hasProp($.config.preload, state.key)) {
+        const promises = $.config.preload[state.key].map((path) => fetch(
+          create(
+            getRoute(
+              path,
+              3 /* PRELOAD */
+            )
+          )
+        ));
+        return Promise.allSettled(promises);
+      }
+    }
+  }
+}
+async function reverse(state) {
+  if (state.rev === state.key)
+    return;
+  const page = create(getRoute(state.rev, 4 /* REVERSE */));
+  await onNextTickResolve();
+  fetch(page).then((page2) => {
+    if (page2) {
+      log(2 /* INFO */, `Reverse fetch completed: ${page2.rev}`);
+    } else {
+      log(3 /* WARN */, `Reverse fetch failed: ${state.rev}`);
+    }
+  });
+}
+async function wait(state) {
+  if (!XHR.$transit.has(state.key))
+    return state;
+  const snapshot = await XHR.$transit.get(state.key);
+  XHR.$transit.delete(state.key);
+  delete XHR.$timeout[state.key];
+  return set(state, snapshot);
+}
+async function fetch(state) {
+  if (XHR.$request.has(state.key)) {
+    if (state.type !== 7 /* HYDRATE */) {
+      if (state.type === 4 /* REVERSE */ && XHR.$request.has(state.rev)) {
+        XHR.$request.get(state.rev).abort();
+        log(3 /* WARN */, `Request aborted: ${state.rev}`);
+      } else {
+        log(3 /* WARN */, `Request in transit: ${state.key}`);
+      }
+      return false;
+    }
+  }
+  if (!emit("fetch", state)) {
+    log(3 /* WARN */, `Request cancelled via dispatched event: ${state.key}`);
+    return false;
+  }
+  XHR.$transit.set(state.key, request(state.key));
+  return wait(state);
 }
 
 // src/morph/attributes.ts
@@ -2528,7 +2530,7 @@ var resources = new MutationObserver(function([mutation]) {
     return;
   const isAdded = mutation.addedNodes.length;
   if (isAdded || mutation.removedNodes.length > 0) {
-    const [node] = isAdded ? mutation.addedNodes : mutation.removedNodes;
+    const node = isAdded ? mutation.addedNodes[0] : mutation.removedNodes[0];
     if (node.nodeType !== 1 /* ELEMENT_NODE */)
       return;
     if ($.eval && isResourceTag.test(node.nodeName)) {
@@ -2804,8 +2806,8 @@ function update(page) {
   disconnect4();
   disconnect6();
   disconnect5();
-  disconnect();
-  connect2();
+  disconnect2();
+  connect();
   if (!$.eval)
     document.title = page.title;
   const snapDom = getSnapDom(page.snap);
@@ -2821,7 +2823,7 @@ function update(page) {
     connect4();
     connect5();
     connect7();
-    connect();
+    connect3();
     connect6();
   });
   emit("load", page);
@@ -3542,12 +3544,12 @@ function initialize2() {
   const DOMReady = () => {
     const page = set(state, takeSnapshot());
     connect9();
-    connect2();
+    connect();
     if ($.config.manual === false) {
       connect4();
       connect5();
       connect7();
-      connect();
+      connect3();
       connect6();
     }
     onNextTick(() => {
@@ -3573,8 +3575,8 @@ function observe() {
   connect5();
   disconnect6();
   connect7();
-  disconnect();
-  connect();
+  disconnect2();
+  connect3();
   disconnect5();
   connect6();
 }
@@ -3586,7 +3588,7 @@ function disconnect9() {
   disconnect4();
   disconnect6();
   if ($.config.components) {
-    disconnect();
+    disconnect2();
     teardown();
     $.components.$registry.clear();
   }
@@ -3691,11 +3693,11 @@ function register(...classes) {
   }
   if (!$.ready) {
     on("x", function run() {
-      connect();
+      connect3();
       off("x", run);
     });
   } else {
-    connect();
+    connect3();
   }
 }
 function session() {

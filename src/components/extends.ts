@@ -2,12 +2,10 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-redeclare */
 
-import { ValueOf } from 'type-fest';
+import type { Scope, ValueOf } from 'types';
+import { $ } from '../app/session';
 import { o, nil, isArray, defineProps, defineProp, m } from '../shared/native';
 import { attrJSON, hasProp, isEmpty, kebabCase, upcase } from '../shared/utils';
-import { Scope } from '../types/components';
-// import { morphBinds } from '../morph/snapshot';
-import { $ } from '../app/session';
 
 /**
  * Component Extends

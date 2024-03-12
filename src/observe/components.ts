@@ -1,16 +1,15 @@
 /* eslint-disable no-unused-vars */
+import type { SPX } from 'types';
+import { $ } from '../app/session';
 import { getComponents } from '../components/context';
 import { setInstances } from '../components/instances';
 import { removeEvent } from '../components/listeners';
 import { context, resetContext } from '../components/observe';
 import { LogType, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
-import { $ } from '../app/session';
 import { toArray } from '../shared/native';
-import { get, patchPage } from '../app/queries';
+import { patchPage } from '../app/queries';
 import { onNextTick } from '../shared/utils';
-import { Page } from '../types/page';
-import { SPX } from '../types/components';
 
 export type Lifecycle = (
   | 'oninit'

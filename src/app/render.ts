@@ -1,21 +1,21 @@
-import type { Page } from '../types/page';
+import type { Page } from 'types';
+import { $ } from './session';
 import { emit } from './events';
 import { LogType, VisitType } from '../shared/enums';
 import { d, h, s } from '../shared/native';
 import { hasProp, onNextTick } from '../shared/utils';
-import { log } from '../shared/logs';
 import { progress } from './progress';
-import { morph } from '../morph/morph';
 import { context } from '../components/observe';
 import { getSnapDom, patchPage } from './queries';
-import { $ } from './session';
+import { morph } from '../morph/morph';
+import { morphSnap, patchSnap } from '../morph/snapshot';
+import { log } from '../shared/logs';
 import * as hover from '../observe/hovers';
 import * as intersect from '../observe/intersect';
 import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as proximity from '../observe/proximity';
 import * as fragment from '../observe/fragment';
-import { morphSnap, patchSnap } from '../morph/snapshot';
 
 /**
  * Tracked Nodes

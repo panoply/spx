@@ -1,26 +1,25 @@
 {
   "exclude": [
-    "node_modules/**",
-    "cheerio",
-    "docs"
+    "node_modules/**"
   ],
   "include": [
+    "types/*.ts",
     "src/**/*.ts",
-    "types/*",
     "docs/src/app/**/*.ts",
     "test/assets/**/*.ts"
   ],
+  "typeAcquisition": {
+    "enable": true,
+  },
   "compilerOptions": {
-    "incremental": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
-    "target": "ES2017",
+    "skipDefaultLibCheck": true,
+    "target": "ES2018",
     "lib": [
-      "es2020",
-      "dom",
-      "dom.iterable"
+      "DOM"
     ],
     "typeRoots": [
       "node_modules/@types"
@@ -29,9 +28,10 @@
     "moduleResolution": "node",
     "emitDeclarationOnly": true,
     "isolatedModules": true,
+    "baseUrl": ".",
     "paths": {
       "types": [
-        "./src/types/index.d.ts"
+        "types/types.d.ts",
       ]
     }
   }

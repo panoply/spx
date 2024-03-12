@@ -1,10 +1,11 @@
+import type { SPX } from 'types';
+import type { Context } from './context';
 import { $ } from '../app/session';
 import { Colors, LogType, Nodes, Refs } from '../shared/enums';
-import { Context, getContext, walkNode, isDirective, setRefs } from './context';
+import { getContext, walkNode, isDirective, setRefs } from './context';
 import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
 import { onNextTick } from '../shared/utils';
-import { SPX } from '../types/components';
 
 export let context: Context;
 

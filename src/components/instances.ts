@@ -1,5 +1,6 @@
-import type { ComponentEvent, Scope, SPX, ComponentSession, ComponentNodes } from '../types/components';
+import type { ComponentEvent, Scope, SPX, ComponentSession, ComponentNodes } from 'types';
 import type { Context } from './context';
+import { $ } from '../app/session';
 import { Colors, LogType, VisitType } from '../shared/enums';
 import { defineProp, defineProps, o } from '../shared/native';
 import { addEvent } from './listeners';
@@ -7,9 +8,8 @@ import { Component as Extended } from './extends';
 import { morphSnap } from '../morph/snapshot';
 import { log } from '../shared/logs';
 import { getMounted } from '../app/queries';
-import { $ } from '../app/session';
-import * as u from '../shared/utils';
 import { mount } from '../observe/components';
+import * as u from '../shared/utils';
 
 /**
  * Define Nodes

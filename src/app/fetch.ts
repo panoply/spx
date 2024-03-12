@@ -1,12 +1,12 @@
 /* eslint-disable n/no-callback-literal */
-import type { Page, Key } from '../types';
+import type { Page, Key } from 'types';
+import { $ } from './session';
 import { emit } from './events';
 import { log } from '../shared/logs';
 import { hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
 import { XHR, isArray } from '../shared/native';
 import { LogType, VisitType } from '../shared/enums';
-import { $ } from './session';
 import * as q from './queries';
 
 interface RequestParams {

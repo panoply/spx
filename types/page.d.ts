@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import type { VisitType } from '../shared/enums';
+import type { VisitType } from '../src/shared/enums';
 
 /**
  * Cache Size

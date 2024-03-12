@@ -1,9 +1,9 @@
-import { getSnapDom, patchPage, setSnap } from '../app/queries';
+import type { Page } from 'types';
 import { $ } from '../app/session';
+import { getSnapDom, patchPage, setSnap } from '../app/queries';
 import { VisitType } from '../shared/enums';
 import { d } from '../shared/native';
 import { forNode, onNextTick, uuid } from '../shared/utils';
-import { Page } from '../types/page';
 
 /**
  * Connect Fragments

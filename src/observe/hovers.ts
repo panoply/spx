@@ -1,13 +1,13 @@
-import { Hover, Page } from 'types';
+import type { Hover, Page } from 'types';
+import { $ } from '../app/session';
 import { XHR, pointer } from '../shared/native';
 import { forEach } from '../shared/utils';
 import { emit } from '../app/events';
-import { $ } from '../app/session';
-import * as q from '../app/queries';
-import * as request from '../app/fetch';
 import { getKey, getRoute } from '../app/location';
 import { getLink, getTargets } from '../shared/links';
 import { VisitType } from '../shared/enums';
+import * as q from '../app/queries';
+import * as request from '../app/fetch';
 
 /**
  * Attempts to visit location, Handles bubbled mouseovers and

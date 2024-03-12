@@ -1,9 +1,9 @@
+import type { Progress } from 'types';
+import { $ } from './session';
 import { d } from '../shared/native';
 import { glue } from '../shared/utils';
-import { Progress as IProgress } from '../types/options';
-import { $ } from './session';
 
-function Progress () {
+function ProgressBar () {
 
   /**
    * Pending Queue
@@ -23,7 +23,7 @@ function Progress () {
   /**
    * Progress Status
    */
-  let timeout: number;
+  let timeout: NodeJS.Timeout;
 
   /**
    * Progress Element
@@ -35,7 +35,7 @@ function Progress () {
    *
    * Customize the inline CSS styling of the progress bar node.
    */
-  const style = ({ bgColor, barHeight, speed, easing }: IProgress) => {
+  const style = ({ bgColor, barHeight, speed, easing }: Progress) => {
 
     node.style.cssText = glue(
       'pointer-events:none;',
@@ -255,4 +255,4 @@ function Progress () {
   return { start, done, style };
 }
 
-export const progress = Progress();
+export const progress = ProgressBar();

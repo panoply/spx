@@ -2,10 +2,14 @@
   "name": "spx",
   "version": "0.1.2-beta.1",
   "private": false,
-  "description": "Single Page XHR for enhancing SSR powered web applications using PushState + XHR",
+  "description": "Single Page XHR - The essential enhancement for SSR powered web applications",
   "homepage": "https://spx.js.org",
-  "license": "MIT",
-  "author": "ΝΙΚΟΛΑΣ ΣΑΒΒΙΔΗΣ",
+  "license": "CC BY-NC-ND 4.0",
+  "author": {
+    "name": "Νίκος Σαβίδης",
+    "email": "n.savvidis@gmx.com",
+    "url": "https://x.com/niksavvidis"
+  },
   "keywords": [
     "spx",
     "xhr",
@@ -24,6 +28,23 @@
   "bugs": {
     "url": "https://github.com/panoply/spx/issues"
   },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=7"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "LICENSE",
+    "types/components.d.ts",
+    "types/config.d.ts",
+    "types/events.d.ts",
+    "types/global.d.ts",
+    "types/options.d.ts",
+    "types/page.d.ts",
+    "types/session.d.ts",
+    "types/spx.d.ts"
+  ],
   "type": "module",
   "typings": "index.d.ts",
   "module": "./index.js",
@@ -48,31 +69,27 @@
       ]
     }
   },
-  "ava": {
-    "files": [
-      "./test/dom/connect.test.mjs"
-    ]
+  "scripts": {
+    "dev": "pnpm tsup & conc -n \"DOCS,TEST,SPX\" -c \"#81D4FA,#FF69B,#00CED1\" \"pnpm doc dev\" \"pnpm test test\" \"tsup --watch\"",
+    "doc": "pnpm -F @spx/docs",
+    "test": "pnpm -F @spx/test",
+    "build": "ENV=PROD tsup --minify terser && gzip-size index.js --include-original"
   },
   "devDependencies": {
     "@sissel/eslint-config": "^1.2.1",
     "@sissel/prettier-config": "^1.2.5",
-    "ava": "^6.1.1",
-    "browser-env": "^3.3.0",
+    "concurrently": "^8.2.2",
     "detect-it": "^4.0.1",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.20.1",
     "gzip-size-cli": "^5.1.0",
-    "tsup": "^8.0.1",
-    "type-fest": "^4.10.2",
-    "typescript": "^5.3.3"
-  },
-  "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup --minify --env.NODE_ENV production && gzip-size index.js --include-original",
-    "deploy": "pnpm exec bin/docs.sh",
-    "test": "ava --color --verbose --watch --timeout=2m"
+    "terser": "^5.29.1",
+    "tsup": "^8.0.2",
+    "type-fest": "^4.12.0",
+    "typescript": "^5.4.2"
   },
   "optionalDependencies": {
-    "eslint": "^8.56.0",
+    "@types/node": "^20.11.26",
+    "eslint": "^8.57.0",
     "prettier": "^3.2.5"
   }
 }
