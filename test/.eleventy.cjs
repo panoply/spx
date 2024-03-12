@@ -4,7 +4,7 @@ module.exports = eleventy(function (config) {
 
 
   config.addPassthroughCopy({
-    './node_modules/@brixtol/bootstrap/index.css': 'style.css'
+    './node_modules/@brixtol/bootstrap/bootstrap.css': 'style.css'
   })
 
   return {

@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
-    "@brixtol/bootstrap": "^1.7.2",
+    "@brixtol/bootstrap": "^1.7.3",
     "@panoply/11ty": "^0.3.0",
     "concurrently": "^8.2.2",
     "tsup": "^8.0.2"

@@ -14,8 +14,8 @@ devDependencies:
     specifier: ^2.0.1
     version: 2.0.1
   '@brixtol/bootstrap':
-    specifier: ^1.7.2
-    version: 1.7.2
+    specifier: ^1.7.3
+    version: 1.7.3
   '@panoply/11ty':
     specifier: ^0.3.0
     version: 0.3.0(@11ty/eleventy@2.0.1)
@@ -149,8 +149,8 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@brixtol/bootstrap@1.7.2:
-    resolution: {integrity: sha512-kWEu3kL5S6V0gzWKs03PaFaNg06nbB2XZ19/jnhxeHshkFHCIa7/9nddAyRi3ghQcJ9J9Fl85Z0osUbOpm45Tw==}
+  /@brixtol/bootstrap@1.7.3:
+    resolution: {integrity: sha512-Zwyna9ptsMvK2PjCzgw50Y5IqLkwwyRmQ5ss8AaC9TlvRwt9UEu/0zD2S7P3R68/+9Sr6D0t0/9anHd37tpGpQ==}
     engines: {node: '>=16', pnpm: '>=6'}
     dev: true
 
