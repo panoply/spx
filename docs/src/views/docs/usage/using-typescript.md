@@ -35,7 +35,7 @@ SPX.State     // Component static connect > state
 
 # Component State
 
-Components are will always extend the `spx.Component` subclass which can be used for auto-typing. In TypeScript projects, type parameters can be inferred by passing `typeof` on static `connect` object reference. This provision, will allow SPX to apply type completions and validations to the `this.state` reference.
+Components will always extend the `spx.Component` subclass which can be used for auto-typing. In TypeScript projects, type parameters can be inferred by passing `typeof` on static `connect` object reference. This provision, will allow SPX to apply type completions and validations to the `this.state` reference.
 
 <!-- prettier-ignore -->
 ```ts
