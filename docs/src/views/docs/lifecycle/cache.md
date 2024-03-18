@@ -1,6 +1,7 @@
 ---
 title: 'Cache Event'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecyclecache/index.html'
 prev:
   label: 'Installation'

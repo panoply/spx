@@ -1,6 +1,7 @@
 ---
 title: 'SPX Events - Store'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecyclestore/index.html'
 prev:
   label: 'Installation'

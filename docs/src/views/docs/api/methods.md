@@ -1,8 +1,8 @@
 ---
 title: 'Methods'
-permalink: '/api/index.html'
 layout: base.liquid
-order: 4
+group: api
+permalink: '/api/index.html'
 sidebar:
   - 'spx.session'
   - 'spx.supported'

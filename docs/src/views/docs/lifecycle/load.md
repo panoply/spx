@@ -1,6 +1,7 @@
 ---
 title: 'Load Event'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecycleload/index.html'
 prev:
   label: 'Installation'

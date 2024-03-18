@@ -1,6 +1,7 @@
 ---
 title: 'Fetch Event'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecyclefetch/index.html'
 prev:
   label: 'Installation'

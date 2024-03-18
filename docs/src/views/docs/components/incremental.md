@@ -1,6 +1,7 @@
 ---
 title: 'SPX Components - Incremental'
 layout: base.liquid
+group: 'directive'
 permalink: '/components/incremental/index.html'
 prev:
   label: 'Session'

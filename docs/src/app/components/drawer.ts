@@ -8,9 +8,6 @@ import qvp from 'qvp';
 
 export class Drawer extends spx.Component<typeof Drawer.connect> {
 
-  /**
-   * Stimulus: values
-   */
   static connect = {
     state: {
       outsideClick: Boolean,
@@ -20,14 +17,8 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
       direction: String,
       shift: String,
       redraw: String,
-      isOpen: {
-        typeof: Boolean,
-        default: false
-      },
-      bodyScroll: {
-        typeof: Boolean,
-        default: false
-      },
+      isOpen: Boolean,
+      bodyScroll: Boolean,
       backdrop: {
         typeof: Boolean,
         default: true
@@ -37,24 +28,16 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
         default: 'overlay'
       }
     },
-    nodes: [
+    nodes: <const>[
       'button',
       'shift'
-    ] as const
+    ]
   };
 
-  backdrop: HTMLElement;
-
-  /**
-   * Returns the drawer direction class name
-   */
   get directionClass () {
     return `drawer-${this.state.direction}`;
   }
 
-  /**
-   * Returns the drawer shift class name
-   */
   get shiftClass () {
     return `drawer-${this.state.mode}`;
   }
@@ -202,9 +185,6 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   };
 
-  /**
-   * Set attribute requirements for the elements which apply transform shifting
-   */
   shiftElements () {
 
     if (this.state.mode === 'pull') {
@@ -248,9 +228,6 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
     }
   }
 
-  /**
-   * Click detected outside, eg: document body
-   */
   outsideClick = (event: Event) => {
 
     if (event.target !== this.dom) {
@@ -260,9 +237,6 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   };
 
-  /**
-   * Toggle Drawer
-   */
   toggle = (event?: MouseEvent) => {
 
     if (event) event.preventDefault();
@@ -279,9 +253,6 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   };
 
-  /**
-   * Touch Move prevention event
-   */
   touchMove = (event: TouchEvent) => {
 
     if (this.state.isOpen) {
@@ -292,9 +263,6 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   };
 
-  /**
-   * Keyboard events
-   */
   keyboard = (event: KeyboardEvent) => {
 
     switch (event.code) {
@@ -304,13 +272,10 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   };
 
-  /* -------------------------------------------- */
-  /* TYPES                                        */
-  /* -------------------------------------------- */
-
-  shiftNode: HTMLElement;
-  shiftNodes: HTMLElement[];
-  buttonNode: HTMLElement;
-  buttonNodes: HTMLElement[];
+  public backdrop: HTMLElement;
+  public shiftNode: HTMLElement;
+  public shiftNodes: HTMLElement[];
+  public buttonNode: HTMLElement;
+  public buttonNodes: HTMLElement[];
 
 }

@@ -1,13 +1,8 @@
 ---
 title: 'Hydrate'
 layout: base.liquid
+group: api
 permalink: '/api/hydrate/index.html'
-prev:
-  label: 'spx.clear'
-  uri: '/methods/clear/'
-next:
-  label: 'spx.store'
-  uri: '/methods/store/'
 ---
 
 # spx.hydrate

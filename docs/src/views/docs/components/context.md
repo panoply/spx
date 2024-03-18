@@ -1,6 +1,7 @@
 ---
 title: 'Components - Context'
 layout: base.liquid
+group: 'directive'
 permalink: '/components/context/index.html'
 grid: 'col-md-7'
 ---

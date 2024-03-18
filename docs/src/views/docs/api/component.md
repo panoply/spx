@@ -1,11 +1,6 @@
 ---
 title: 'Component'
 layout: base.liquid
+group: api
 permalink: '/api/component/index.html'
-prev:
-  label: 'Methods'
-  uri: '/methods'
-next:
-  label: 'spx.on'
-  uri: '/methods/on/'
 ---

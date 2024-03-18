@@ -190,10 +190,10 @@ export class Dropdown extends spx.Component<typeof Dropdown.connect> {
   /* TYPES                                        */
   /* -------------------------------------------- */
 
-  collapseNode: HTMLElement;
-  buttonNode: HTMLElement;
-  placeholderNode: HTMLElement;
-  inputNode: HTMLElement;
-  viewportNode: HTMLElement;
+  public collapseNode: HTMLElement;
+  public buttonNode: HTMLElement;
+  public placeholderNode: HTMLElement;
+  public inputNode: HTMLElement;
+  public viewportNode: HTMLElement;
 
 }

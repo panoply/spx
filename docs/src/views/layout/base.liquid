@@ -89,5 +89,8 @@
 
     {% sprite %}
 
+    {% assign raw = content | raw %}
+    {% search raw %}
+
   </body>
 </html>

@@ -1,41 +1,28 @@
 ---
 title: 'Key Concepts'
 layout: base.liquid
+group: introduction
 permalink: '/introduction/key-concepts/index.html'
+grid: 'col-md-8'
 ---
 
 # Key Concepts
 
-SPX assumes developers have an intermediate level of font-end knowledge. Before leveraging the module, it's important to familiarize yourself with a couple of its key concepts which are listed on this page. When using SPX, all `href` link clicks are intercepted and seamlessly executed over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) so your web application will never perform full-page reloads, but instead it carries out partial (morphed) replacements. The XHR (DOM String) responses are stored in browser state and an active cache is persisted until a hard-refresh is incurred or hostname changes.
+Before using SPX, it is important to acquaint yourself with a few of its fundamental **key concepts** outlined on this page. Gaining familiarity with these concepts and understanding the approaches employed by SPX will allow you to better leverage the module in an effective manner and enable you to take advantage of its capabilities with more command.
 
-The actual fetching operation happens preemptively and SPX offers varying sets of user defined configuration options for performing DOM element replacements when navigating between different urls of the same hostname. SPX is designed to replicate native browser behavior but developers should be mindful in their implementation.
+<br>
 
-{% include 'iframe', url: '/iframe/using-defaults/page-a' %}
+# Rendering Cycle
 
----
+SPX integrates into your web application and takes control of the rendering cycle. It achieves this by intercepting link clicks and executing navigation in an isolated and controlled manner. Pages are fetched over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) and the XHR (DOM String) responses are stored in browser state where they will remain until called upon.
+
+{% include 'flow' %}
 
 # Fragments
 
 In SPX, fragments pertain to elements annotated with the `id` attribute that persist across various pages of your website. These fragments constitute the dynamic components of your web application, as their descendant elements undergo changes. Websites generally consist of a combination of dynamic and static elements. Static elements remain consistent across multiple visits, while dynamic elements vary with each visit.
 
-<br>
-
 :::: grid row
-::: grid col-6
-
-<!-- prettier-ignore -->
-```html
-<body>
-  <header>
-    <nav id="menu"><!-- --></nav>
-  </header>
-  <main id="main"><!-- --></main>
-  <footer>
-  </footer>
-</body>
-```
-
-:::
 ::: grid col-6
 
 <!-- prettier-ignore -->
@@ -44,16 +31,31 @@ import spx from 'spx';
 
 spx.connect({
   fragments: [
-    'menu',  // Targets <nav id="menu">
-    'main'   // Targets <main id="main">
+    'menu',  // <nav id="menu"></nav>
+    'main'   // <div id="main"></div>
   ]
 });
 ```
 
 :::
+::: grid col-6
+
+<!-- prettier-ignore -->
+```html
+<body>
+  <header>
+    <nav id="menu"><!-- --></nav>
+  </header>
+  <main>
+    <div id="main"><!-- --></div>
+  </main>
+</body>
+```
+
+:::
 ::::
 
----
+<br>
 
 # Morphing
 
@@ -82,7 +84,7 @@ By specifying the `targets` option as `['nav', 'main']` upon `spx.connect()`, SP
 
 Using targets is highly encouraged when working with SPX, as it not only improves the performance and rendering capabilities of the module but also promotes good practices when dealing with markup languages like HTML. So, leverage targets to unlock the full potential of SPX in your web application.
 
----
+<br>
 
 # Navigation
 
@@ -197,3 +199,7 @@ SPX incorporates an efficient in-memory cache to store fetched pages. After each
 Each SPX snapshot (DOM String) remains accessible throughout an SPX session, preserving the state of the visited pages. The cache is available until a full page refresh occurs or the hostname changes, ensuring seamless navigation within the session. The cache algorithm employed by SPX is pre-emptive, making visits a low-cost operation. SPX executes visits asynchronously and sequentially, without blocking other tasks. Requests can be easily aborted, queued, and prioritized, which is particularly useful when multiple requests are awaiting processing, and a user clicks on a link that's at the end of the queue. SPX's intelligent handling ensures smooth and optimized navigation in such cases.
 
 Additionally, SPX makes use of the HistoryAPI `state` reference when performing cached visits, further enhancing the efficiency of the caching mechanism. It also respects the execution of external resources such as scripts and styles, ensuring a seamless browsing experience for users.
+
+# How it works?
+
+SPX integrates into your web application and takes control of the rendering cycle. It achieves this by intercepting link clicks and executing navigation in an isolated and controlled manner. Pages are fetched over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) and the XHR (DOM String) responses are stored in browser state where they will remain until called upon. The fetching operations will execute preemptively, so when users navigate between different URL's (of the same hostname) the requested page DOM which results in web applications becoming these long running instances that function in an incremental manner.

@@ -59,7 +59,7 @@ blockquote {
   margin-right: 15px;
 
   padding: 15px;
-  padding-left: 65px;
+  padding-left: 65px !important;
   background-color: $code-inline-bg;
   border: $border-width $border-color solid;
   border-radius: 0.5rem;
@@ -307,6 +307,15 @@ p {
 /* EXAMPLES                                     */
 /* -------------------------------------------- */
 
-.reset {
-  all: initial;
+.demo-left {
+  .papyrus {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+.demo-right {
+  margin-top: 26px;
+  margin-bottom: 26px;
+  border-top-right-radius: $papyrus-code-border-radius;
+  border-bottom-right-radius: $papyrus-code-border-radius;
 }

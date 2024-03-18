@@ -1,18 +1,13 @@
 ---
 title: 'SPX Methods | Render'
 layout: base.liquid
+group: api
 permalink: '/api/render/index.html'
-prev:
-  label: 'Installation'
-  uri: '/usage/installation'
-next:
-  label: 'Options'
-  uri: '/usage/options/'
 ---
 
 # spx.render
 
-The `spx.render` method can be leveraged to perform targeted rendering insertions in the DOM. It works similar to [spx-append](/attributes/spx-append) and [spx-prepend](/attributes/spx-append) but provides programmatic control over the operation. The method accepts either a function callback that expects a configuration return value.
+The `spx.render` method can be leveraged to perform targeted rendering insertions in the DOM. It works similar to [spx-append](/directives/spx-append) and [spx-prepend](/directives/spx-append) but provides programmatic control over the operation. The method accepts either a function callback that expects a configuration return value.
 
 ::: note
 Use this method with mindfulness. Expensive operations was cause bottlenecks.

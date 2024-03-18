@@ -1,13 +1,8 @@
 ---
 title: 'Basic Example'
 layout: base.liquid
+group: usage
 permalink: '/usage/basic-example/index.html'
-prev:
-  label: 'Session'
-  uri: '/introduction/session/'
-next:
-  label: 'Recommendations'
-  uri: '/introduction/recommendations'
 ---
 
 # Real World

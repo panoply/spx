@@ -1,13 +1,8 @@
 ---
 title: 'Resource Evaluation'
-layout: base.liquid
 permalink: '/usage/resource-evaluation/index.html'
-prev:
-  label: 'Options'
-  uri: '/usage/options'
-next:
-  label: 'Methods'
-  uri: '/methods/'
+layout: base.liquid
+group: usage
 ---
 
 # Resource Evaluation

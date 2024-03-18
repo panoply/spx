@@ -1,6 +1,7 @@
 ---
 title: 'Installation'
 layout: base.liquid
+group: usage
 permalink: '/usage/installation/index.html'
 grid: 'col-md-7'
 anchors:
@@ -12,7 +13,7 @@ anchors:
 
 # Installation
 
-SPX is available for consumption via the [NPM](https://www.npmjs.com/package/spx) registry as an ESM module for usage in Browser environments. SPX is lightweight with a distribution size of **10kb** (gzipped).
+SPX is available for consumption via the [NPM](https://www.npmjs.com/package/spx) registry as an ESM module for usage in Browser environments. SPX is lightweight with a distribution size of **15kb** (gzipped).
 
 ##### PNPM
 

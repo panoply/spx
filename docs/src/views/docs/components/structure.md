@@ -1,6 +1,7 @@
 ---
 title: 'SPX Components - Structure'
 layout: base.liquid
+group: 'directive'
 permalink: '/components/structure/index.html'
 ---
 
@@ -172,7 +173,7 @@ export class Modal extends spx.Component {
 
 # Incremental
 
-Incremental components can be progressively extended upon when mounted within static fragment or targeting specific elements via [spx-target](/attributes/spx-target). Incremental components will adapt automatically, without the need to tear down or perform manual re-connection across different routes in your web application.
+Incremental components can be progressively extended upon when mounted within static fragment or targeting specific elements via [spx-target](/directives/spx-target). Incremental components will adapt automatically, without the need to tear down or perform manual re-connection across different routes in your web application.
 
 :::: grid row
 ::: grid col-6

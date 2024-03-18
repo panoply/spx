@@ -1,6 +1,7 @@
 ---
 title: 'Render Event'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecyclerender/index.html'
 prev:
   label: 'Installation'

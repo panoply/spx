@@ -1,13 +1,8 @@
 ---
 title: 'Off'
 layout: base.liquid
+group: api
 permalink: '/api/off/index.html'
-prev:
-  label: 'spx.on'
-  uri: '/methods/on/'
-next:
-  label: 'spx.visit'
-  uri: '/methods/visit/'
 ---
 
 # spx.off

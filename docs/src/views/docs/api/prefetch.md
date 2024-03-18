@@ -1,13 +1,8 @@
 ---
 title: 'Prefetch'
 layout: base.liquid
+group: api
 permalink: '/api/prefetch/index.html'
-prev:
-  label: 'spx.visit'
-  uri: '/methods/visit/'
-next:
-  label: 'spx.fetch'
-  uri: '/methods/fetch/'
 ---
 
 # spx.prefetch

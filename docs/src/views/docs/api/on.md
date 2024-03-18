@@ -1,13 +1,8 @@
 ---
 title: 'On'
 layout: base.liquid
+group: api
 permalink: '/api/on/index.html'
-prev:
-  label: 'spx.connect'
-  uri: '/methods/connect/'
-next:
-  label: 'spx.on'
-  uri: '/methods/off/'
 ---
 
 # spx.on

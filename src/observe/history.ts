@@ -77,7 +77,7 @@ export function initialize (page: Page) {
     scrollTo(api.state.scrollX, api.state.scrollY);
     assign(page, api.state);
   } else {
-    replace(page);
+    replace(page as unknown as HistoryState);
   }
 
   return page;
@@ -91,7 +91,7 @@ export function initialize (page: Page) {
  */
 export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
 
-  const state: HistoryState = {
+  const state: Omit<HistoryState, 'location'> = {
     key,
     rev,
     scrollX,
@@ -112,9 +112,10 @@ export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
  *
  * Applied `history.pushState` and passes SPX references.
  */
-export function push ({ key, rev, title }: Page) {
+export function push ({ key, rev, title, location }: Page) {
 
-  const state: HistoryState = {
+  const path = location.pathname + location.search;
+  const state: Omit<HistoryState, 'location'> = {
     key,
     rev,
     title,
@@ -122,7 +123,7 @@ export function push ({ key, rev, title }: Page) {
     scrollX: 0
   };
 
-  api.pushState(state, state.title, state.key);
+  api.pushState(state, state.title, path);
 
   log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
 
@@ -138,8 +139,6 @@ export function push ({ key, rev, title }: Page) {
 async function pop (event: PopStateEvent & { state: HistoryState }) {
 
   // console.log('POP', event.state.key, event.state.position);
-
-  if (!($.loaded || $.ready)) return;
 
   if (event.state === null) return;
 
@@ -226,7 +225,6 @@ export function connect (page?: Page): Page {
   if (api.scrollRestoration) api.scrollRestoration = 'manual';
 
   addEventListener('popstate', pop, false);
-  addEventListener('load', load, false);
 
   $.observe.history = true;
 

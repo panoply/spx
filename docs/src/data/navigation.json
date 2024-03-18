@@ -93,24 +93,12 @@
           "url": "/introduction/what-is-spx/"
         },
         {
-          "title": "Key Concepts",
-          "url": "/introduction/key-concepts/"
-        },
-        {
           "title": "Getting Started",
           "url": "/introduction/getting-started/"
         },
         {
-          "title": "Lexicon",
-          "url": "/introduction/lexicon/"
-        },
-        {
-          "title": "Sessions",
-          "url": "/introduction/session/"
-        },
-        {
-          "title": "Lifecycle Methods",
-          "url": "/introduction/lifecycle/"
+          "title": "Key Concepts",
+          "url": "/introduction/key-concepts/"
         }
       ]
     },
@@ -137,10 +125,6 @@
         {
           "title": "Using TypeScript",
           "url": "/usage/using-typescript/"
-        },
-        {
-          "title": "VSCode Extension",
-          "url": "/usage/vscode-extension/"
         }
       ]
     },
@@ -165,7 +149,7 @@
           "url": "/components/state/"
         },
         {
-          "title": "Event Listeners",
+          "title": "Events",
           "url": "/components/events/"
         },
         {
@@ -175,96 +159,96 @@
       ]
     },
     {
-      "title": "Attributes",
-      "group": "/attributes/",
+      "title": "Directives",
+      "group": "/directives/",
       "links": [
         {
           "title": "spx-target",
-          "url": "/attributes/spx-target/"
+          "url": "/directives/spx-target/"
         },
         {
           "title": "spx-morph",
-          "url": "/attributes/spx-morph/"
+          "url": "/directives/spx-morph/"
         },
         {
           "title": "spx-replace",
-          "url": "/attributes/spx-replace/"
+          "url": "/directives/spx-replace/"
         },
         {
           "title": "spx-hover",
-          "url": "/attributes/spx-hover/"
+          "url": "/directives/spx-hover/"
         },
         {
           "title": "spx-eval",
-          "url": "/attributes/spx-eval/"
+          "url": "/directives/spx-eval/"
         },
         {
           "title": "spx-data",
-          "url": "/attributes/spx-data/"
+          "url": "/directives/spx-data/"
         },
         {
           "title": "spx-component",
-          "url": "/attributes/spx-component/"
+          "url": "/directives/spx-component/"
         },
         {
           "title": "spx-node",
-          "url": "/attributes/spx-node/"
+          "url": "/directives/spx-node/"
         },
         {
           "title": "spx-bind",
-          "url": "/attributes/spx-bind/"
+          "url": "/directives/spx-bind/"
         },
         {
           "title": "spx-watch",
-          "url": "/attributes/spx-watch/"
+          "url": "/directives/spx-watch/"
         },
         {
           "title": "spx-hydrate",
-          "url": "/attributes/spx-hydrate/"
+          "url": "/directives/spx-hydrate/"
         },
         {
           "title": "spx-intersect",
-          "url": "/attributes/spx-intersect/"
+          "url": "/directives/spx-intersect/"
         },
         {
           "title": "spx-prepend",
-          "url": "/attributes/spx-prepend/"
+          "url": "/directives/spx-prepend/"
         },
         {
           "title": "spx-append",
-          "url": "/attributes/spx-append/"
+          "url": "/directives/spx-append/"
         },
         {
           "title": "spx-threshold",
-          "url": "/attributes/spx-threshold/"
+          "url": "/directives/spx-threshold/"
         },
         {
           "title": "spx-proximity",
-          "url": "/attributes/spx-proximity/"
+          "url": "/directives/spx-proximity/"
         },
         {
           "title": "spx-position",
-          "url": "/attributes/spx-position/"
+          "url": "/directives/spx-position/"
         },
         {
           "title": "spx-progress",
-          "url": "/attributes/spx-progress/"
+          "url": "/directives/spx-progress/"
         },
         {
           "title": "spx-scroll",
-          "url": "/attributes/spx-scroll/"
+          "url": "/directives/spx-scroll/"
         },
         {
           "title": "spx-cache",
-          "url": "/attributes/spx-cache/"
+          "url": "/directives/spx-cache/"
         },
         {
           "title": "spx-disable",
-          "url": "/attributes/spx-disable/"
+          "url": "/directives/spx-disable/"
         },
         {
           "title": "spx-history",
-          "url": "/attributes/spx-history/"
+          "url": "/directives/spx-history/"
         }
       ]
     },
@@ -307,6 +291,10 @@
         {
           "title": "spx.render",
           "url": "/api/render/"
+        },
+        {
+          "title": "spx.request",
+          "url": "/api/request/"
         },
         {
           "title": "spx.capture",

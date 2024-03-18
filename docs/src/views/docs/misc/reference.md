@@ -1,5 +1,6 @@
 ---
 title: 'Reference'
+group: 'directive'
 permalink: '/reference/index.html'
 layout: base.liquid
 order: 6

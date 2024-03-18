@@ -1,13 +1,8 @@
 ---
 title: 'Capture'
 layout: base.liquid
+group: api
 permalink: '/api/capture/index.html'
-prev:
-  label: 'spx.fetch'
-  uri: '/methods/fetch'
-next:
-  label: 'spx.reload'
-  uri: '/methods/reload/'
 ---
 
 # spx.capture `spx.capture(targets: string[])`

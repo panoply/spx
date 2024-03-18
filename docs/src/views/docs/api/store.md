@@ -1,13 +1,8 @@
 ---
 title: 'Store'
 layout: base.liquid
+group: api
 permalink: '/api/store/index.html'
-prev:
-  label: 'Installation'
-  uri: '/usage/installation'
-next:
-  label: 'Options'
-  uri: '/usage/options/'
 ---
 
 # spx.store `spx.store(url?: string, state?: IState)`

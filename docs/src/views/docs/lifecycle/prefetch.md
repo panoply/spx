@@ -1,6 +1,7 @@
 ---
 title: 'Prefetch Event'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecycleprefetch/index.html'
 prev:
   label: 'Installation'

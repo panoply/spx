@@ -1,5 +1,6 @@
 ---
 layout: iframe.liquid
+group: 'directive'
 permalink: '/iframe/using-defaults/page-b'
 data: 'using-defaults'
 ---

@@ -1,13 +1,8 @@
 ---
 title: 'Clear'
 layout: base.liquid
+group: api
 permalink: '/api/clear/index.html'
-prev:
-  label: 'spx.reload'
-  uri: '/methods/reload'
-next:
-  label: 'spx.hydrate'
-  uri: '/methods/hydrate/'
 ---
 
 # spx.clear

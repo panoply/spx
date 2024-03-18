@@ -1,6 +1,7 @@
 ---
 title: 'Visit Event'
 layout: base.liquid
+group: 'directive'
 permalink: '/lifecyclevisit/index.html'
 prev:
   label: 'Installation'

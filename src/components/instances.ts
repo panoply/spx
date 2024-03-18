@@ -141,6 +141,11 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
 
         }
 
+        if (!instance) {
+          log(LogType.WARN, 'Increment component instance failed as instance was undefined', scope);
+          continue;
+        }
+
         scope.key = instance.scope.key;
         scope.ref = instance.scope.ref;
 

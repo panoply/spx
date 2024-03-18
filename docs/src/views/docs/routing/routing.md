@@ -1,6 +1,7 @@
 ---
 title: 'Routing'
 layout: base.liquid
+group: 'directive'
 permalink: '/routing/index.html'
 order: 7
 sidebar:

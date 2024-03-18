@@ -1,6 +1,7 @@
 ---
 title: 'Components - Directives'
 layout: base.liquid
+group: 'directive'
 permalink: '/components/directives/index.html'
 prev:
   label: 'Session'

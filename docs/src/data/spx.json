@@ -190,161 +190,161 @@
   },
   {
     "href": "attributes/spx-bind/index.html",
-    "url": "/attributes/spx-bind",
+    "url": "/directives/spx-bind",
     "anchor": "",
     "title": "spx-bind",
     "text": "Attributes Spx bind The spx-bind spx-watch"
   },
   {
     "href": "attributes/spx-cache/index.html",
-    "url": "/attributes/spx-cache",
+    "url": "/directives/spx-cache",
     "anchor": "",
     "title": "spx-cache",
     "text": "Attributes Spx cache Controls the caching engine of each SPX navigation. When using spx-cache spx-hover Passing a false Passing a reset Passing a clear Passing a update Passing a restore spx-disable The spx-cache When annotating <button> This attribute is a string spx-disable"
   },
   {
     "href": "attributes/spx-append/index.html",
-    "url": "/attributes/spx-append",
+    "url": "/directives/spx-append",
     "anchor": "",
     "title": "spx-append",
     "text": "Attributes Spx append Executes an append replacement upon visit, where the array list values are used as targets. Index [0] [1] The spx-append This attribute is a string[][] The surrounding parenthesis () spx-threshold"
   },
   {
     "href": "attributes/spx-component/index.html",
-    "url": "/attributes/spx-component",
+    "url": "/directives/spx-component",
     "anchor": "",
     "title": "spx-component",
     "text": "Attributes Spx component The spx-component spx-node"
   },
   {
     "href": "attributes/spx-eval/index.html",
-    "url": "/attributes/spx-eval",
+    "url": "/directives/spx-eval",
     "anchor": "",
     "title": "spx-eval",
     "text": "Attributes Spx eval Used on resources contained within the <head> false <script> <script src=\"*\"></script> When a <script> spx-eval=\"false\" The spx-eval This attribute is a boolean true spx-eval spx-data"
   },
   {
     "href": "attributes/spx-data/index.html",
-    "url": "/attributes/spx-data",
+    "url": "/directives/spx-data",
     "anchor": "",
     "title": "spx-data",
     "text": "Attributes Spx data The spx-data The spx-data <a> The above code sample would result be converted from kebab-case camelCase Each event will pass the data values in page state. spx-component"
   },
   {
     "href": "attributes/spx-disable/index.html",
-    "url": "/attributes/spx-disable",
+    "url": "/directives/spx-disable",
     "anchor": "",
     "title": "spx-disable",
     "text": "Attributes Spx disable Use on <a> spx-disable spx-cache=\"restore\" The spx-disable This attribute is a truthy true spx-disable Clicking this link will clear cache and a normal page navigation will be executed. Clicking this link will execute a normal page navigation but will inform SPX to save the current cache and restore it upon the next SPX enabled visit. See spx-history"
   },
   {
     "href": "attributes/spx-history/index.html",
-    "url": "/attributes/spx-history",
+    "url": "/directives/spx-history",
     "anchor": "",
     "title": "spx-history",
     "text": "Attributes Spx history Controls the history pushstate for the navigation. Accepts false replace push false replace push The spx-history This attribute is a string spx.connect"
   },
   {
     "href": "attributes/spx-hover/index.html",
-    "url": "/attributes/spx-hover",
+    "url": "/directives/spx-hover",
     "anchor": "",
     "title": "spx-hover",
     "text": "Attributes Spx hover Performs a prefetch of the href <a> trigger attribute spx.connect() If you have set trigger href false <a spx-hover=\"false\"> If you set hover pre-fetching to false spx.connect() On mobile devices the the prefetch will execute on the touchstart The spx-hover This attribute is a boolean true spx-hover spx-eval"
   },
   {
     "href": "attributes/spx-hydrate/index.html",
-    "url": "/attributes/spx-hydrate",
+    "url": "/directives/spx-hydrate",
     "anchor": "",
     "title": "spx-hydrate",
     "text": "Attributes Spx hydrate Executes a controlled replacement of the defined elements. You should perform hydration when server side logic is required to adjust or apply changes to a visitors session as it will allow your application to seamlessly adapt and progressively align the UI without having to trigger a full-page reload. Hydration incurs side effects and the SPX session will be augmented, see below: The spx-hydrate Triggering via an annotated <button> This attribute is a string[] The surrounding parenthesis () Lets assume we informed SPX to trigger replacements on the #menu #main #note When performing a navigation visit the target elements #menu #main #note spx-hydrate spx-hydrate spx-intersect"
   },
   {
     "href": "attributes/spx-intersect/index.html",
-    "url": "/attributes/spx-intersect",
+    "url": "/directives/spx-intersect",
     "anchor": "",
     "title": "spx-intersect",
     "text": "Attributes Spx intersect The spx-intersect Intersection Observer Annotating link elements with spx-intersect spx-intersect=\"true\" Intersect rootMargin threshold spx-intersect spx-intersect=\"true\" <a> <a> When using element annotation to target contained <a> spx-intersect=\"false\" Intersection triggers can perform append, prepend or replace operations when viewport matches occur. Passing a value of append prepend replace spx-intersect <a> Using intersection triggers are helpful in cases where you require scroll position to invoke fetching. The Infinite Scrolling You need to provide the value defined attribute to perform intersection triggers. For example, if you provide an append trigger via spx-intersect=\"append\" spx-append=\"\" spx-prepend"
   },
   {
     "href": "attributes/spx-node/index.html",
-    "url": "/attributes/spx-node",
+    "url": "/directives/spx-node",
     "anchor": "",
     "title": "spx-node",
     "text": "Attributes Spx node The spx-node component.name component spx-component=\"*\" name spx-bind"
   },
   {
     "href": "attributes/spx-morph/index.html",
-    "url": "/attributes/spx-morph",
+    "url": "/directives/spx-morph",
     "anchor": "",
     "title": "spx-morph",
     "text": "Attributes Spx morph Controls DOM morphing operations and will be referenced during DOM diffing. The spx-morph morph renderer dirty spx-morph The spx-morph target <body> This attribute is a string Passing a value of attrs Passing a value of children In the below example, we will assume the that data-attr spx-morph=\"children\" Passing a value of preserve preserve spx-replace"
   },
   {
     "href": "attributes/spx-prepend/index.html",
-    "url": "/attributes/spx-prepend",
+    "url": "/directives/spx-prepend",
     "anchor": "",
     "title": "spx-prepend",
     "text": "Attributes Spx prepend Executes a prepend replacement on visit, where the array list values are used as targets. Index [0] [1] The spx-prepend This attribute is a string[][] The surrounding parenthesis () spx-append"
   },
   {
     "href": "attributes/spx-position/index.html",
-    "url": "/attributes/spx-position",
+    "url": "/directives/spx-position",
     "anchor": "",
     "title": "spx-position",
     "text": "Attributes Spx position Sets the scroll position of the next navigation. This is a space separated expression with colon separated prop and value. The spx-threshold This attribute is a number spx-progress"
   },
   {
     "href": "attributes/spx-proximity/index.html",
-    "url": "/attributes/spx-proximity",
+    "url": "/directives/spx-proximity",
     "anchor": "",
     "title": "spx-proximity",
     "text": "Attributes Spx proximity Triggers a proximity fetch when the cursor is within range of an <a> number distance The spx-proximity <body> This attribute is a number false spx-position"
   },
   {
     "href": "attributes/spx-progress/index.html",
-    "url": "/attributes/spx-progress",
+    "url": "/directives/spx-progress",
     "anchor": "",
     "title": "spx-progress",
     "text": "Attributes Spx progress Controls the progress bar delay. By default, progress will use the threshold defined in configuration presets defined upon connection, else it will use the value defined on link attributes. Passing in a value of false The spx-progress This attribute can be number false spx-scroll"
   },
   {
     "href": "attributes/spx-replace/index.html",
-    "url": "/attributes/spx-replace",
+    "url": "/directives/spx-replace",
     "anchor": "",
     "title": "spx-replace",
     "text": "Attributes Spx replace Executes a replacement of defined targets, where each target defined in the array is replaced in the navigation visit. Targets defined in spx.connect() The spx-replace This attribute is a string[] The surrounding parenthesis () ' \" spx-hover"
   },
   {
     "href": "attributes/spx-target/index.html",
-    "url": "/attributes/spx-target",
+    "url": "/directives/spx-target",
     "anchor": "",
     "title": "spx-target",
     "text": "Attributes Spx target Enables targeted replacements on specified elements. The spx-target string[] boolean true false true false targets[] spx-target <a href=\"*\"> string string[] The attributes value determines the tag annotation. Boolean values of either true false string string[] This attribute value accepts the following types: The following examples attempt to showcase spx-target spx-morph"
   },
   {
     "href": "attributes/spx-scroll/index.html",
-    "url": "/attributes/spx-scroll",
+    "url": "/directives/spx-scroll",
     "anchor": "",
     "title": "spx-scroll",
     "text": "Attributes Spx scroll Sets scrollTop position, can be used as a simpler alias to spx-position The spx-threshold This attribute is a number spx-cache"
   },
   {
     "href": "attributes/spx-threshold/index.html",
-    "url": "/attributes/spx-threshold",
+    "url": "/directives/spx-threshold",
     "anchor": "",
     "title": "spx-threshold",
     "text": "Attributes Spx threshold By default, this will be set to whatever preset configuration was defined in spx.connect() spx-threshold threshold The spx-threshold This attribute either a number spx-proximity"
   },
   {
     "href": "attributes/spx-track/index.html",
-    "url": "/attributes/spx-track",
+    "url": "/directives/spx-track",
     "anchor": "",
     "title": "spx-track",
     "text": "Attributes Spx track The spx-track <body> svg The spx-track <body> <a> This attribute is a truthy true spx-track Lets assume you are navigating from Page 1 Page 2 #main Page 1 #main #main spx-track If navigation started on Page 2"
   },
   {
     "href": "attributes/spx-watch/index.html",
-    "url": "/attributes/spx-watch",
+    "url": "/directives/spx-watch",
     "anchor": "",
     "title": "spx-watch",
     "text": "Attributes Spx watch Watches an element and keeps the snapshot record aligned. spx-hydrate"
@@ -602,7 +602,7 @@
     "text": "Examples Script evaluation Page a Index Page A Page B I am Page A"
   },
   {
-    "href": "views/docs/attributes/index.html",
+    "href": "views/docs/directives/index.html",
     "url": "/views/docs/attributes",
     "anchor": "",
     "title": "",

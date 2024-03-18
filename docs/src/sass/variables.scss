@@ -4,6 +4,7 @@
 
 $variable-prefix: null;
 $enable-font-smoothing: true;
+
 /* -------------------------------------------- */
 /* EDITABLE OPTIONS                             */
 /* -------------------------------------------- */
@@ -270,7 +271,7 @@ $input-placeholder-color: $white;
 /* -------------------------------------------- */
 
 $papyrus-code-bg: #1c2028;
-$papyrus-font-size: 0.885em;
+$papyrus-font-size: 1em;
 $papyrus-code-border-radius: 0.4em;
 $papyrus-line-height: 1.5;
 $papyrus-code-padding-y: 1em;
@@ -289,14 +290,6 @@ $papyrus-ts-literal-property: #22c0cb;
 
     &.keyword + .property {
       color: #87abb3;
-    }
-
-    &.keyword.module + .keyword {
-      color: #81d4fa;
-
-      + .class-name {
-        color: #fafafa !important;
-      }
     }
 
     &.class-name {

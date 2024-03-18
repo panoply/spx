@@ -1,0 +1,43 @@
+@include media-breakpoint-up(md) {
+  .content-offset {
+    margin-left: $sidebar-width;
+  }
+}
+
+@include media-breakpoint-up(xxl) {
+  .content-offset {
+    margin-left: $sidebar-width;
+    // margin-right: $session-width;
+  }
+}
+
+.comparison {
+  background: $blue;
+  height: 4px;
+  margin: 0;
+  transform-origin: 0;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(100%);
+  }
+}
+
+.anchors > ul {
+  // background-color: #20242c;
+  padding: 20px;
+  display: block;
+  border: 0.01rem #2d333a solid;
+  border-radius: 5px;
+  position: sticky;
+  top: $spacer-5 * 2;
+  width: 300px;
+
+  li {
+    font-size: $font-size-sm;
+  }
+}

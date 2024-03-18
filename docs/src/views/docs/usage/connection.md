@@ -1,6 +1,7 @@
 ---
 title: 'Connection'
 layout: base.liquid
+group: usage
 permalink: '/usage/connection/index.html'
 grid: 'col-md-7'
 ---

@@ -1,6 +1,7 @@
 ---
 title: 'SPX | Acknowledgements'
 layout: base.liquid
+group: 'directive'
 permalink: '/misc/acknowledgements/index.html'
 prev:
   label: 'Benchmarks'

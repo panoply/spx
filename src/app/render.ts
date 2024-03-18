@@ -133,13 +133,15 @@ function morphNodes (page: Page, snapDom: Document) {
 
   const pageDom = d();
 
-  if (page.selector === 'body') {
+  if (page.selector === 'body' || page.fragments.length === 0) {
 
-    morph(pageDom, snapDom.body);
+    const newDom = snapDom.body;
+
+    morph(pageDom, newDom);
 
     if (context && context.$nodes.length > 0) {
       onNextTick(() => {
-        morphSnap(snapDom.body, context.$nodes);
+        morphSnap(newDom, context.$nodes);
         patchPage('type', VisitType.VISIT);
       });
     }

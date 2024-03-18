@@ -1,13 +1,8 @@
 ---
 title: 'Reload'
 layout: base.liquid
+group: api
 permalink: '/api/reload/index.html'
-prev:
-  label: 'spx.fetch'
-  uri: '/methods/fetch/'
-next:
-  label: 'spx.clear'
-  uri: '/methods/clear/'
 ---
 
 # spx.reload

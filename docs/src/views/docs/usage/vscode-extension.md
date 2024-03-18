@@ -1,13 +1,8 @@
 ---
+permalink: '/usage/vscode-extension/index.html'
 title: 'VSCode Extension'
 layout: base.liquid
-permalink: '/usage/vscode-extension/index.html'
-prev:
-  label: 'Options'
-  uri: '/usage/options'
-next:
-  label: 'Methods'
-  uri: '/methods/'
+group: usage
 ---
 
 # VSCode Extension

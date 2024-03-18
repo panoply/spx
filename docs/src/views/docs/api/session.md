@@ -1,13 +1,8 @@
 ---
 title: 'Session'
 layout: base.liquid
+group: api
 permalink: '/api/session/index.html'
-prev:
-  label: 'Installation'
-  uri: '/usage/installation'
-next:
-  label: 'Options'
-  uri: '/usage/options/'
 ---
 
 # spx.session `spx.session()`

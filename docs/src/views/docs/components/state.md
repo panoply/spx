@@ -1,6 +1,7 @@
 ---
 title: 'Components - State'
 layout: base.liquid
+group: 'directive'
 permalink: '/components/state/index.html'
 grid: 'col-md-7'
 ---

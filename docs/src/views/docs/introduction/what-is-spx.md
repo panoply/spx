@@ -1,6 +1,7 @@
 ---
 title: 'Introduction'
 layout: base.liquid
+group: introduction
 permalink: '/introduction/what-is-spx/index.html'
 grid: 'col-md-8'
 anchors:

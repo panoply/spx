@@ -1,0 +1,54 @@
+{
+  "size": {
+    "title": "Download Size",
+    "content": "Gzipped distribution size for related modules.",
+    "items": [
+      {
+        "name": "SPX",
+        "size": "15kb",
+        "bar": 30
+      },
+      {
+        "name": "HTMX + Idiomorph",
+        "size": "20kb",
+        "bar": 50
+      },
+      {
+        "name": "Alpine + Packages",
+        "size": "30kb",
+        "bar": 65
+      },
+      {
+        "name": "Stimulus + Turbo",
+        "size": "50kb",
+        "bar": 80
+      }
+    ]
+  },
+  "perf": {
+    "title": "Download Size",
+    "content": "Gzipped distribution size for related modules.",
+    "items": [
+      {
+        "name": "SPX",
+        "time": "200ms",
+        "bar": 30
+      },
+      {
+        "name": "HTMX + Idiomorph",
+        "time": "300ms",
+        "bar": 50
+      },
+      {
+        "name": "Alpine + Packages",
+        "time": "450ms",
+        "bar": 65
+      },
+      {
+        "name": "Stimulus + Turbo",
+        "time": "550ms",
+        "bar": 80
+      }
+    ]
+  }
+}

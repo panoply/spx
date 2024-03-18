@@ -59,11 +59,11 @@ export function getAttributes (element: Element, page?: Page): Page {
       // KEY REFERENCE
       if (nodeName === 'href') {
 
-        state.rev = fixSlash(location.pathname) + location.search;
+        state.rev = location.pathname + location.search;
 
         if (!page) {
           state.location = getLocation(nodeValue);
-          state.key = fixSlash(state.location.pathname) + state.location.search;
+          state.key = state.location.pathname + state.location.search;
         }
 
       } else {
@@ -188,23 +188,6 @@ function parsePath (path: string) {
 }
 
 /**
- * Fix Slash
- *
- * Removes extraneous ending slashes from pathname keys. For example,
- * in some cases a href value might be `/path/` - This function will omit
- * the ending slash, returning the value from `/path/` to `/path`
- */
-function fixSlash (path: string) {
-
-  return path.length === 1
-    ? path
-    : path.charCodeAt(path.length - 1) === 47
-      ? path.slice(0, -1)
-      : path;
-
-}
-
-/**
  * Get Path
  *
  * Returns the pathname from `url` which is then used as the `key`
@@ -218,14 +201,14 @@ function getPath (url: string, protocol: number) {
 
     const hash = url.indexOf('#', path);
 
-    return hash < 0 ? fixSlash(url.slice(path)) : url.slice(path, hash);
+    return hash < 0 ? url.slice(path) : url.slice(path, hash);
   }
 
   const param = url.indexOf('?', protocol);
 
   if (param > protocol) {
     const hash = url.indexOf('#', param);
-    return hash < 0 ? fixSlash(url.slice(param)) : url.slice(param, hash);
+    return hash < 0 ? url.slice(param) : url.slice(param, hash);
   }
 
   return url.length - protocol === hostname.length ? '/' : null;
@@ -354,7 +337,7 @@ export function parseKey (url: string): Location {
 export function getKey (link: string | Location): string {
 
   if (typeof link === 'object') {
-    return fixSlash(link.pathname) + link.search;
+    return link.pathname + link.search;
   }
 
   if (link === nil || link === '/') return '/';
@@ -478,7 +461,7 @@ export function getRoute <
 
   } else {
 
-    state.rev = fixSlash(location.pathname) + location.search;
+    state.rev = location.pathname + location.search;
     state.location = getLocation(typeof link === 'string' ? link : state.rev);
     state.key = getKey(state.location);
     state.type = type;

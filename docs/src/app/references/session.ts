@@ -21,10 +21,9 @@ export default {
   append: 'List of fragments to be appened from and to. Accepts multiple. [[\'#main\', \'.header\'], [\'[data-attr]\', \'header\']]',
   prepend: 'List of fragments to be prepend from and to. Accepts multiple. [[\'#main\', \'.header\'], [\'[data-attr]\', \'header\']]',
   proximity: 'Define proximity prefetch distance from which fetching should begin. This value is relative to the cursor offset of defined elements using the spx-proximity attribute.',
-
   origin: 'The URL origin name.',
   hostname: 'The URL Hostname.',
   pathname: 'The URL Pathname.',
   search: 'The URL search params. If none exist this property will be an empty string.',
-  hash: 'The URL Hash. If none exists then this property will be an empty string.',
+  hash: 'The URL Hash. If none exists then this property will be an empty string.'
 };

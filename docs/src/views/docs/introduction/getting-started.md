@@ -1,6 +1,7 @@
 ---
 title: 'Getting Started'
 layout: base.liquid
+group: introduction
 permalink: '/introduction/getting-started/index.html'
 ---
 

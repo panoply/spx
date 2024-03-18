@@ -1,13 +1,8 @@
 ---
 title: 'Visit'
 layout: base.liquid
+group: api
 permalink: '/api/visit/index.html'
-prev:
-  label: 'spx.off'
-  uri: '/methods/on/'
-next:
-  label: 'spx.prefetch'
-  uri: '/methods/visit/'
 ---
 
 # spx.visit
