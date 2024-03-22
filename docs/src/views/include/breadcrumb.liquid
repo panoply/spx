@@ -8,7 +8,10 @@
     {% svg 'arrow-right', 'icon icon-right' %}
   </div>
   <div class="col-auto pt-1">
-    {{ links[1] | capitalize }}
+    {{ links[1]
+      | replace: '-', ' '
+      | capitalize
+      | replace: 'spx', 'SPX' }}
   </div>
 
   {% if links[2] %}
@@ -16,7 +19,10 @@
       {% svg 'arrow-right', 'icon icon-right' %}
     </div>
     <div class="col-auto pt-1">
-      {{ links[2] | replace: '-', ' ' | capitalize }}
+      {{ links[2]
+        | replace: '-', ' '
+        | capitalize
+        | replace: 'spx', 'SPX' }}
     </div>
   {% endif %}
 
@@ -25,7 +31,10 @@
       {% svg 'arrow-right', 'icon icon-right' %}
     </div>
     <div class="col-auto pt-1">
-      {{ links[3] | replace: '-', ' ' | capitalize }}
+      {{ links[3]
+        | replace: '-', ' '
+        | capitalize
+        | replace: 'spx', 'SPX' }}
     </div>
   {% endif %}
 </div>

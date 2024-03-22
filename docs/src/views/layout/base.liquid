@@ -9,9 +9,8 @@
 
   <head>
     <title>
-      {{ title }}
+      {{ title | prepend: 'SPX | ' }}
     </title>
-
     <meta charset="UTF-8">
     <meta
       name="description"
@@ -58,39 +57,39 @@
       {% include 'search' %}
 
       <div class="container-fluid container-wrapper">
+
         <aside
           class="px-0 vh-100 bt br d-none d-sm-block sidebar drawer-left drawer-panel"
           spx-component="drawer"
           spx-drawer:direction="left"
-          spx-drawer:width="280px">
+          spx-drawer:width="280">
           {% include 'sidebar' %}
         </aside>
+
         <div
           id="content"
           class="row jc-between content-offset pl-xxl-5">
+
           <main class="col-11 {{ grid | default: 'col-md-8' }} px-xl-3 pb-4">
             {% include 'breadcrumb' %}
             {{ content }}
-            {% include 'navigate' %}
+            {% include 'paginate' %}
           </main>
-          <div class="col-auto px-5 anchors d-none">
-            <ul>
-              {% if anchors %}
+
+          {% if anchors %}
+            <div class="col-auto px-5 anchors d-none">
+              <ul>
                 {% for name in anchors %}
                   <li>{{ name }}</li>
                 {% endfor %}
-              {% endif %}
-            </ul>
-          </div>
+              </ul>
+            </div>
+          {% endif %}
         </div>
       </div>
 
     {% endif %}
-
     {% sprite %}
-
-    {% assign raw = content | raw %}
-    {% search raw %}
 
   </body>
 </html>

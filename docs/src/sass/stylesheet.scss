@@ -26,18 +26,20 @@
 @import '../../node_modules/papyrus/theme/languages/scss';
 @import '../../node_modules/papyrus/theme/languages/json';
 @import '../../node_modules/papyrus/theme/languages/treeview';
+
 /* -------------------------------------------- */
 /* COMPONENTS                                   */
 /* -------------------------------------------- */
+@import 'extend/base';
+@import 'extend/sidebar';
+@import 'extend/navbar';
+@import 'extend/layout';
+@import 'extend/iframes';
 
-@import 'styles/layout';
 @import 'styles/svg';
 @import 'styles/overwrites';
 @import 'styles/code';
-@import 'styles/navbar';
-@import 'styles/sidebar';
 @import 'styles/json-tree';
 @import 'styles/landing';
 @import 'styles/session';
 @import 'styles/tabs';
-@import 'styles/iframe';

@@ -191,7 +191,10 @@ module.exports = eleventy(function (config) {
     }
   })
 
-  config.addPlugin(versions, { version: require('../package.json').version });
+  config.addPassthroughCopy({
+    'src/assets/flow.svg': 'assets/flow.svg'
+  })
+
   config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
   config.addPlugin(terser)
 

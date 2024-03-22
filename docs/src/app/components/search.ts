@@ -26,7 +26,7 @@ export class Search extends spx.Component<typeof Search.connect> {
     ]
   };
 
-  async oninit () {
+  async connect () {
 
     const list = await fetch(this.state.source);
 

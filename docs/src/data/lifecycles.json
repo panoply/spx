@@ -1,0 +1,135 @@
+{
+  "listeners": [
+    {
+      "order": "1",
+      "name": "connected",
+      "description": "",
+      "cancellable": true
+    },
+    {
+      "order": "1",
+      "name": "disconnect",
+      "description": "",
+      "cancellable": true
+    },
+    {
+      "order": "2",
+      "name": "popstate",
+      "description": "",
+      "cancellable": true
+    },
+    {
+      "order": "3",
+      "name": "mutation",
+      "description": "",
+      "cancellable": true
+    },
+    {
+      "order": "3",
+      "name": "prefetch",
+      "description": "",
+      "cancellable": true
+    },
+    {
+      "order": "4",
+      "name": "resource",
+      "description": "",
+      "cancellable": true,
+      "params": {
+        "page": "Page",
+        "type": "Type",
+        "path": "string"
+      }
+    }
+  ],
+  "events": [
+    {
+      "order": "1",
+      "name": "exit",
+      "description": "",
+      "cancellable": false,
+      "params": {
+        "page": "Page"
+      }
+    },
+    {
+      "order": "2",
+      "name": "visit",
+      "description": "",
+      "cancellable": true,
+      "arguments": {
+        "event": "Event",
+        "page": "Page",
+        "type": "Type"
+      }
+    },
+    {
+      "order": "3",
+      "name": "fetch",
+      "description": "",
+      "cancellable": true,
+      "arguments": {
+        "page": "Page",
+        "type": "Type"
+      }
+    },
+    {
+      "order": "4",
+      "name": "cache",
+      "description": "",
+      "cancellable": true,
+      "arguments": {
+        "page": "Page",
+        "type": "Type"
+      }
+    },
+    {
+      "order": "5",
+      "name": "render",
+      "description": "",
+      "cancellable": true,
+      "arguments": {
+        "curDom": "HTMLElement",
+        "newDom": "HTMLElement"
+      }
+    },
+    {
+      "order": "6",
+      "name": "load",
+      "description": "",
+      "cancellable": true,
+      "arguments": {
+        "page": "Page"
+      }
+    }
+  ],
+  "hooks": [
+    {
+      "order": "1",
+      "name": "connect",
+      "cancellable": false,
+      "description": "Fired when a component is connected to the DOM.",
+      "params": {
+        "page": "Page"
+      }
+    },
+    {
+      "order": "2",
+      "name": "onmount",
+      "description": "Triggered after a component has been mounted onto the DOM.",
+      "cancellable": false,
+      "params": {
+        "page": "Page"
+      }
+    },
+    {
+      "order": "3",
+      "name": "unmount",
+      "description": "Executed when a component is removed from the DOM.",
+      "cancellable": false,
+      "params": {
+        "page": "Page"
+      }
+    }
+  ]
+}

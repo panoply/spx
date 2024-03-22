@@ -1,14 +1,7 @@
 ---
-title: 'SPX | Acknowledgements'
-layout: base.liquid
-group: 'directive'
 permalink: '/misc/acknowledgements/index.html'
-prev:
-  label: 'Benchmarks'
-  uri: '/misc/benchmarks/'
-next:
-  label: 'What is SPX?'
-  uri: '/introduction/what-is-spx/'
+title: 'Acknowledgements'
+layout: base.liquid
 ---
 
 # Acknowledgements

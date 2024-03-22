@@ -1,13 +1,17 @@
 ---
 title: 'spx-target'
 layout: base.liquid
-group: 'directive'
 permalink: '/directives/spx-target/index.html'
 ---
 
 # spx-target
 
-Enables targeted replacements on specified elements. The `spx-target` attribute can be applied to any element in the DOM and accepts either a `string[]` list of selectors or a `boolean` value. When a boolean value of `true` or `false` is provided, it informs SPX whether the respective node (element) should be included (`true`) or excluded (`false`) from replacement operations during navigations. The attribute also serves as a means to override the `targets[]` defined upon SPX connection. When the `spx-target` attribute is applied to link elements (e.g., `<a href="*">`) and the value is recognized as a selector (`string`) or list of selectors (`string[]`), SPX will apply replacements to the specified elements.
+The `spx-target` attribute facilitates targeted replacements on specified elements within the DOM. This attribute can be applied to any element and accepts either a `string[]` list of selectors or a boolean value.
+
+- When a boolean value of `true` or `false` is provided, it informs SPX whether the respective node (element) should be included (`true`) or excluded (`false`) from replacement operations during navigations.
+- Additionally, the attribute serves as a means to override the `targets[]` defined upon SPX connection.
+
+When the `spx-target` attribute is applied to link elements (e.g., `<a href="*">`) and the value is recognized as a selector (`string`) or list of selectors (`string[]`), SPX will apply replacements to the specified elements.
 
 ### Tags
 

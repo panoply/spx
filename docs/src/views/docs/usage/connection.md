@@ -3,16 +3,15 @@ title: 'Connection'
 layout: base.liquid
 group: usage
 permalink: '/usage/connection/index.html'
-grid: 'col-md-7'
 ---
 
 # Connection
 
-SPX requires invoking and can be initialized using the `spx.connect()` method. This method returns a curried (function) callback which is triggered once which fires upon **DOMContentLoaded**. SPX will save the outer HTML of the current document in snapshot cache using `document.documentElement.outerHTML` upon connection whereas all additional snapshots are saved after an XHR request completes.
+SPX initialization requires invoking the `spx.connect()` method. This method returns a curried callback function, triggered once the **DOMContentLoaded** event fires. Upon connection, SPX saves the outer HTML of the current document in the snapshot cache using `document.documentElement.outerHTML`. Subsequent snapshots are saved after an XHR request completes.
 
 <br>
 
-#### Option 1
+#### Example 1
 
 SPX Connection using default options
 
@@ -25,7 +24,7 @@ spx.connect(); // (session) => {}
 
 <br>
 
-#### Option 2
+#### Example 2
 
 SPX Connection using default options with callback:
 
@@ -42,7 +41,7 @@ spx.connect()(function(session) {
 
 <br>
 
-#### Option 3
+#### Example 3
 
 SPX Connection with `fragment[]` options and callback:
 
@@ -51,11 +50,39 @@ SPX Connection with `fragment[]` options and callback:
 import spx from 'spx';
 
 spx.connect({
-  fragment: ['nav', 'main'] // <nav> and <main> elements will be swapped
+  fragment: [
+    'menu',  // #menu is dynamic and will morph
+    'main'   // #main is dynamic and will morph
+  ]
 })(function(session) {
 
   // You initialize third party js in this callback
   console.log(session);
 
 });
+```
+
+<br>
+
+#### Example 4
+
+SPX Connection with curried callback reference:
+
+<!-- prettier-ignore -->
+```js
+import spx from 'spx';
+
+const domReady = spx.connect({
+  fragment: [
+    'menu',  // #menu is dynamic and will morph
+    'main'   // #main is dynamic and will morph
+  ]
+});
+
+export default domReady(function(session) {
+
+  // You initialize third party js in this callback
+  console.log(session);
+
+})
 ```

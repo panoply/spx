@@ -14,12 +14,16 @@ export class Sidebar extends spx.Component<typeof Sidebar.connect> {
     }
   };
 
-  oninit () {
+  connect () {
     this.relapse = relapse(this.dom);
   }
 
-  onload () {
+  onmount () {
     this.relapse.reinit();
+  }
+
+  unmount () {
+
   }
 
   public relapse: Relapse;

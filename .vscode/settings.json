@@ -10,6 +10,7 @@
   "stylelint.packageManager": "pnpm",
   "stylelint.enable": false,
   "scss.validate": false,
+  "editor.suggestSelection": "recentlyUsedByPrefix",
   "highlight.regexes": {
     "(?<=:{3,4}\\s)(grid|example|tabs|css|scss|html|note)": {
       "decorations": [
@@ -42,184 +43,7 @@
         }
       ]
     },
-    "(?<=spx-bind\\=\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)": {
-      "decorations": [
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#fff"
-        },
-      ]
-    },
-    "(spx)(@)(\\w+)(\\=)(\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)(?=\")": {
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#FF93BC"
-        },
-        {
-          "color": "#FFF78C"
-        },
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#9EE34F"
-        },
-      ]
-    },
-    "(spx)(@)(window)(:)(\\w+)(\\=)(\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)(?=\")": {
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#FF93BC"
-        },
-        {
-          "color": "#FFF78C"
-        },
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#9EE34F"
-        },
-      ]
-    },
-    "(spx-on)(\\=)(\")([$a-zA-Z0-9_-]+)(@)(\\w+)(\\.)(\\w+)(?=\")": {
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#FF93BC"
-        },
-        {
-          "color": "#FFF78C"
-        },
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#FFFFFF"
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#9EE34F"
-        },
-      ]
-    },
-    "(spx-.*?)(\\=)(\")(window)(\\.)([$a-zA-Z0-9_-]+)(@)(\\w+)(?=\")": {
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#FF93BC"
-        },
-        {
-          "color": "#FFF78C"
-        },
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#FFFFFF",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#9EE34F"
-        },
-      ]
-    },
-    "(spx-[a-z]+)(?=\\=\")": {
-      "filterFileRegex": ".*\\.liquid",
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        }
-      ]
-    },
-    "(spx\\-component)(?=\\=\")": {
-      "filterFileRegex": ".*\\.liquid",
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        }
-      ]
-    },
-    "(?<=spx-[a-z]+:[a-z-]+\\=\")(window)(\\.)": {
-      "decorations": [
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-      ]
-    },
-    "(?<=spx-.*?\\=\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)": {
-      "decorations": [
-        {
-          "color": "#81D4FA",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#fff"
-        },
-      ]
-    },
-    "(?<=spx-[a-z]+:[a-z-]+\\=\")(\\d+\\p?\\x?)": {
-      "decorations": [
-        {
-          "color": "#A96EE4",
-        }
-      ]
-    },
-    "\\b(oninit|onload|onexit|onstate|oncache|onvisit)\\b(?=\\s*\\()": {
+    "\\b(connect|onmount|unmount)\\b(?=\\s*\\()": {
       "decorations": [
         {
           "color": "#58e093",
@@ -227,37 +51,222 @@
         }
       ]
     },
-    "(?<=spx-[a-z]+:[a-z-]+\\=\")(false|true)": {
-      "decorations": [
-        {
-          "color": "#F48FB1"
-        }
-      ]
-    },
-    "(spx-[a-z]+)(:)([a-z-]+)(?=[=])": {
-      "decorations": [
-        {
-          "color": "#91b5eb",
-        },
-        {
-          "color": "#E91E63",
-        },
-        {
-          "color": "#FFFFFF",
-        }
-      ]
-    },
+    // "(?<=spx-bind\\=\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)": {
+    //   "decorations": [
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#fff"
+    //     },
+    //   ]
+    // },
+    // "(spx)(@)(\\w+)(\\=)(\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)(?=\")": {
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#FF93BC"
+    //     },
+    //     {
+    //       "color": "#FFF78C"
+    //     },
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#9EE34F"
+    //     },
+    //   ]
+    // },
+    // "(spx)(@)(window)(:)(\\w+)(\\=)(\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)(?=\")": {
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#FF93BC"
+    //     },
+    //     {
+    //       "color": "#FFF78C"
+    //     },
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#9EE34F"
+    //     },
+    //   ]
+    // },
+    // "(spx-on)(\\=)(\")([$a-zA-Z0-9_-]+)(@)(\\w+)(\\.)(\\w+)(?=\")": {
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#FF93BC"
+    //     },
+    //     {
+    //       "color": "#FFF78C"
+    //     },
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#FFFFFF"
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#9EE34F"
+    //     },
+    //   ]
+    // },
+    // "(spx-.*?)(\\=)(\")(window)(\\.)([$a-zA-Z0-9_-]+)(@)(\\w+)(?=\")": {
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#FF93BC"
+    //     },
+    //     {
+    //       "color": "#FFF78C"
+    //     },
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#FFFFFF",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#9EE34F"
+    //     },
+    //   ]
+    // },
+    // "(spx-[a-z]+)(?=\\=\")": {
+    //   "filterFileRegex": ".*\\.liquid",
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     }
+    //   ]
+    // },
+    // "(spx\\-component)(?=\\=\")": {
+    //   "filterFileRegex": ".*\\.liquid",
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     }
+    //   ]
+    // },
+    // "(?<=spx-[a-z]+:[a-z-]+\\=\")(window)(\\.)": {
+    //   "decorations": [
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //   ]
+    // },
+    // "(?<=spx-.*?\\=\")([$a-zA-Z0-9_-]+)(\\.)(\\w+)": {
+    //   "decorations": [
+    //     {
+    //       "color": "#81D4FA",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#fff"
+    //     },
+    //   ]
+    // },
+    // "(?<=spx-[a-z]+:[a-z-]+\\=\")(\\d+\\p?\\x?)": {
+    //   "decorations": [
+    //     {
+    //       "color": "#A96EE4",
+    //     }
+    //   ]
+    // },
+    // "\\b(oninit|onload|onexit|onstate|oncache|onvisit)\\b(?=\\s*\\()": {
+    //   "decorations": [
+    //     {
+    //       "color": "#58e093",
+    //       "fontStyle": "bold"
+    //     }
+    //   ]
+    // },
+    // "(?<=spx-[a-z]+:[a-z-]+\\=\")(false|true)": {
+    //   "decorations": [
+    //     {
+    //       "color": "#F48FB1"
+    //     }
+    //   ]
+    // },
+    // "(spx-[a-z]+)(:)([a-z-]+)(?=[=])": {
+    //   "decorations": [
+    //     {
+    //       "color": "#91b5eb",
+    //     },
+    //     {
+    //       "color": "#E91E63",
+    //     },
+    //     {
+    //       "color": "#FFFFFF",
+    //     }
+    //   ]
+    // },
   },
   "editor.codeActionsOnSave": {
     "source.fixAll.stylelint": "explicit"
   },
   "[liquid]": {
     "editor.defaultFormatter": "sissel.shopify-liquid",
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[typescript]": {
     "editor.parameterHints.enabled": true,
-    "editor.suggest.showModules": true
+    "editor.suggest.showModules": true,
   },
   "files.exclude": {
     "**/.git": true,

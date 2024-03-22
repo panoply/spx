@@ -1,8 +1,7 @@
 ---
+permalink: '/misc/lexicon/index.html'
 title: 'Lexicon'
 layout: base.liquid
-group: introduction
-permalink: '/introduction/lexicon/index.html'
 ---
 
 # Lexicon

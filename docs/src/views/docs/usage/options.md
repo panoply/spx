@@ -3,7 +3,6 @@ title: 'Options'
 layout: base.liquid
 group: usage
 permalink: '/usage/options/index.html'
-grid: 'col-md-7'
 anchors:
   - Options
   - fragments

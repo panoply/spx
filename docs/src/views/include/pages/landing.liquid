@@ -15,7 +15,7 @@
 
         <a
           spx-target="body"
-          href="/introduction/what-is-spx/"
+          href="/what-is-spx/"
           class="hero-logo d-block m-auto mb-3">
           {% svg 'logo' %}
         </a>
@@ -31,7 +31,7 @@
       <div class="row my-4 jc-center ai-center">
         <a
           spx-target="body"
-          href="/introduction/what-is-spx/"
+          href="/what-is-spx/"
           class="col-5 col-md-2 goto-link tc">
           Documentation
         </a>
@@ -45,8 +45,8 @@
       </div>
 
     </div>
-    <div class="version">
-      {% version %}
+    <div class="version upper fc-dark-gray ff-head">
+      {{ pkg.version | prepend: 'version ' }}
     </div>
 
   </div>

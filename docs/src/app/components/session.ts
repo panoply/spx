@@ -1,10 +1,9 @@
 import { JSONTree, Tree } from '../modules/json-tree';
 import spx from 'spx';
-import relapse, { Relapse } from 'relapse';
 
-export class Session extends spx.Component<typeof Session.connect> {
+export class Session extends spx.Component<typeof Session.define> {
 
-  static connect = {
+  static define = {
     state: {
       action: String
     }

@@ -7,9 +7,9 @@ import spx from 'spx';
  *
  * Facilitates Dropdown/Collapsible functionality.
  */
-export class Dropdown extends spx.Component<typeof Dropdown.connect> {
+export class Dropdown extends spx.Component<typeof Dropdown.define> {
 
-  static connect = {
+  static define = {
     state: {
       selected: String,
       form: String,

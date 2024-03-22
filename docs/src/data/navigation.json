@@ -85,31 +85,33 @@
   ],
   "menu": [
     {
-      "title": "Introduction",
-      "group": "/introduction/",
+      "title": "Getting Started",
       "links": [
         {
           "title": "What is SPX?",
-          "url": "/introduction/what-is-spx/"
+          "url": "/what-is-spx/"
         },
         {
-          "title": "Getting Started",
-          "url": "/introduction/getting-started/"
+          "title": "Installation",
+          "url": "/installation/"
         },
         {
           "title": "Key Concepts",
-          "url": "/introduction/key-concepts/"
+          "url": "/key-concepts/"
+        },
+        {
+          "title": "Tutorial",
+          "url": "/tutorial/"
+        },
+        {
+          "title": "Getting Help",
+          "url": "/getting-help/"
         }
       ]
     },
     {
       "title": "Usage",
-      "group": "/usage/",
       "links": [
-        {
-          "title": "Installation",
-          "url": "/usage/installation/"
-        },
         {
           "title": "Connection",
           "url": "/usage/connection/"
@@ -123,30 +125,37 @@
           "url": "/usage/resource-evaluation/"
         },
         {
+          "title": "Lifecycle Events",
+          "url": "/usage/lifecycle-events/"
+        },
+        {
           "title": "Using TypeScript",
           "url": "/usage/using-typescript/"
+        },
+        {
+          "title": "VSCode Extension",
+          "url": "/usage/vscode-extension/"
         }
       ]
     },
     {
       "title": "Components",
-      "group": "/components/",
       "links": [
         {
-          "title": "Structure",
-          "url": "/components/structure/"
+          "title": "Overview",
+          "url": "/components/overview/"
         },
         {
-          "title": "Context",
-          "url": "/components/context/"
-        },
-        {
-          "title": "Directives",
-          "url": "/components/directives/"
+          "title": "Definitions",
+          "url": "/components/definitions/"
         },
         {
           "title": "State",
           "url": "/components/state/"
+        },
+        {
+          "title": "Hooks",
+          "url": "/components/hooks/"
         },
         {
           "title": "Events",
@@ -155,12 +164,19 @@
         {
           "title": "Nodes",
           "url": "/components/nodes/"
+        },
+        {
+          "title": "Markup",
+          "url": "/components/directives/"
+        },
+        {
+          "title": "Register",
+          "url": "/components/register/"
         }
       ]
     },
     {
       "title": "Directives",
-      "group": "/directives/",
       "links": [
         {
           "title": "spx-target",
@@ -169,10 +185,6 @@
         {
           "title": "spx-morph",
           "url": "/directives/spx-morph/"
-        },
-        {
-          "title": "spx-replace",
-          "url": "/directives/spx-replace/"
         },
         {
           "title": "spx-hover",
@@ -203,20 +215,8 @@
           "url": "/directives/spx-watch/"
         },
         {
-          "title": "spx-hydrate",
-          "url": "/directives/spx-hydrate/"
-        },
-        {
           "title": "spx-intersect",
           "url": "/directives/spx-intersect/"
-        },
-        {
-          "title": "spx-prepend",
-          "url": "/directives/spx-prepend/"
-        },
-        {
-          "title": "spx-append",
-          "url": "/directives/spx-append/"
         },
         {
           "title": "spx-threshold",
@@ -254,7 +254,6 @@
     },
     {
       "title": "API",
-      "group": "/api/",
       "links": [
         {
           "title": "spx.connect",
@@ -323,6 +322,23 @@
         {
           "title": "spx.disconnect",
           "url": "/api/disconnect/"
+        }
+      ]
+    },
+    {
+      "title": "Miscellaneous",
+      "links": [
+        {
+          "title": "Sessions",
+          "url": "/miscellaneous/sessions/"
+        },
+        {
+          "title": "Lexicon",
+          "url": "/miscellaneous/lexicon/"
+        },
+        {
+          "title": "Acknowledgements",
+          "url": "/miscellaneous/acknowledgements/"
         }
       ]
     }

@@ -1,8 +1,8 @@
 import spx from 'spx';
 
-export class ScrollSpy extends spx.Component<typeof ScrollSpy.connect> {
+export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
-  static connect = {
+  static define = {
     state: {
       threshold: Number,
       rootMargin: {
@@ -18,7 +18,7 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.connect> {
   /**
    * Stimulus: Initialize
    */
-  oninit () {
+  connect () {
     this.anchors = [];
     this.options = {
       rootMargin: this.rootMarginValue,
@@ -29,12 +29,12 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.connect> {
   /**
    * Stimulus: Connect
    */
-  onload () {
+  onmount () {
 
     for (const a of this.anchorTargets) {
       const anchor = a.href.slice(a.href.lastIndexOf('#'));
-      const element = this.element.querySelector(anchor) as HTMLHeadingElement;
-      if (this.element.contains(element)) {
+      const element = this.dom.querySelector(anchor) as HTMLHeadingElement;
+      if (this.dom.contains(element)) {
         this.anchors.push(element);
         a.onclick = () => {
           setTimeout(() => {
@@ -54,6 +54,15 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.connect> {
     window.onscroll = this.onScroll;
   }
 
+  /**
+   * Stimulus: Disconnect
+   */
+  unmount (): void {
+
+    this.anchors = [];
+
+  }
+
   onScroll = () => {
 
     this.anchors.forEach((v, i) => {
@@ -66,13 +75,6 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.connect> {
       }
     });
   };
-
-  /**
-   * Stimulus: Disconnect
-   */
-  onexit (): void {
-    this.anchors = [];
-  }
 
   /* -------------------------------------------- */
   /* TYPE VALUES                                  */

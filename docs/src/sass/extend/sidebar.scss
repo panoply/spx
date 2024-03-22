@@ -46,13 +46,13 @@
     font-size: 0.6rem;
     opacity: 1;
     font-weight: 100;
-    color: #424e67;
   }
 
   &-menu {
     padding: 15px 5px 0px 0;
     width: 100%;
 
+    .child-links,
     .menu-link {
       display: flex;
       align-items: center;
@@ -85,14 +85,20 @@
 
     .list {
       margin-left: 20px;
-      margin-top: 10px;
-      margin-bottom: 10px;
 
       > li {
         position: relative;
         display: flex;
         flex-direction: column;
         height: 25px;
+
+        &:first-of-type {
+          margin-top: 10px;
+        }
+
+        &:last-of-type {
+          margin-bottom: 10px;
+        }
 
         > a {
           margin: 0;

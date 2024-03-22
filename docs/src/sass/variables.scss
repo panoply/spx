@@ -25,7 +25,7 @@ $salmon: #ff8ab0;
 $red: #dc3545;
 $orange: #ef8c39;
 $yellow: #ffe77a;
-$green: #c2ff49;
+$green: #9ee34f;
 $teal: #20c997;
 $cyan: #7ef0ff;
 $sea: #8bd3fd;
@@ -39,7 +39,7 @@ $gray-200: #f9f9f9; // FONT COLOUR
 $gray-300: #f2f0f1;
 $gray-400: #c4c8cc;
 $gray-500: #a4a6a8;
-$gray-600: #999999;
+$gray-600: #57647f;
 $gray-700: #212529;
 $gray-800: #282a36; // CODE BACKGROUND
 $gray-900: #181b20;
@@ -54,7 +54,7 @@ $background-colors: (
   'gray': $gray-100,
   'cyan': $cyan,
   'ebony': $gray-800,
-  'code': $gray-900,
+  'code': #1c2028,
   'white': $white
 );
 
@@ -72,13 +72,14 @@ $font-colors: (
   'black': $black,
   'white': $gray-200,
   'gray': $gray-500,
+  'dark-gray': $gray-600,
   'red': $red,
   'yellow': $yellow,
   'cyan': $cyan,
   'green': $green,
-  'purple': $purple,
   'blue': $blue,
-  'salmon': $salmon
+  'purple': $purple,
+  'pink': $pink
 );
 
 /* -------------------------------------------- */

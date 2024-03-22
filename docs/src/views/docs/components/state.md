@@ -1,20 +1,18 @@
 ---
-title: 'Components - State'
-layout: base.liquid
-group: 'directive'
 permalink: '/components/state/index.html'
-grid: 'col-md-7'
+layout: base.liquid
+title: Component States
 ---
 
 # State
 
-Component state is stored in the DOM and bindings are established in mounted components. State references require you define an interface model via the static `connect.state` object within components and accept several different definition structures.
+Component state is stored in the DOM, and bindings are established in mounted components. State references necessitate the definition of an interface model via the static `connect.state` object within components, supporting various definition structures.
 
 <br>
 
-### Type Constructors
+# Type Constructors
 
-In the below code snippet we have defined some state for a tab component. For developers coming from Stimulus, you'll notice how SPX components are almost identical to how you might define `values` in controllers.
+In the following code snippet, we've defined some state for a tab component. Developers familiar with Stimulus will notice that SPX components closely resemble how you might define `values` in controllers.
 
 <!-- prettier-ignore -->
 ```ts
@@ -22,7 +20,7 @@ import spx from 'spx';
 
 export class Example extends spx.Component {
 
-  static connect = {
+  static define = {
     state: {
       startTab: Number,
       activeColor: String,
@@ -34,11 +32,11 @@ export class Example extends spx.Component {
 }
 ```
 
-<br>
+---
 
-### Default State
+# Default State
 
-Let's now expand on the above definitions and provide some default values to state interfaces, again this approach is similar to Stimulus, with differences being naming convention. In this example, we will instead provide a pre-defined set of `disableTabs` in the interface.
+Let's now elaborate on the previous definitions and provide some default values to state interfaces. This approach mirrors Stimulus, with differences in naming convention. In this example, we'll specify a pre-defined set of `disableTabs` in the interface.
 
 <!-- prettier-ignore -->
 ```ts
@@ -46,7 +44,7 @@ import spx from 'spx';
 
 export class Example extends spx.Component {
 
-  static connect = {
+  static define = {
     state: {
       startTab: Number,
       activeColor: String,
@@ -54,18 +52,18 @@ export class Example extends spx.Component {
       disabledTabs: {
         typeof: Array,
         default: [4,5] // Tab indexes 4 and 5 will be disabled
-      },
+      }
     }
   };
 
 }
 ```
 
-<br>
+---
 
-### Persisted State
+# Persisted State
 
-In addition to the above approaches, you may require persisted state values. Persist states will instruct SPX to preserve the state values between page navigations, skipping state resets whenever a component disconnects.
+In addition to the above approaches, you may require persisted state values. Persisted states instruct SPX to preserve the state values between page navigations, thereby skipping state resets whenever a component disconnects.
 
 <!-- prettier-ignore -->
 ```ts
@@ -73,7 +71,7 @@ import spx from 'spx';
 
 export class Example extends spx.Component {
 
-  static connect = {
+  static define = {
     state: {
       startTab: Number,
       activeColor: String,
@@ -84,18 +82,18 @@ export class Example extends spx.Component {
       disabledTabs: {
         typeof: Array,
         default: [4,5] // Tab indexes 4 and 5 will be disabled
-      },
+      }
     }
   };
 
 }
 ```
 
-<br>
+---
 
-### Shared State
+# Shared State
 
-Shared state instructs SPX to maintain state across all instances of a component. Changes applied to shared state is incremental and it can be controlled for multiple points in your web application.
+Shared state instructs SPX to maintain state across all instances of a component. Changes applied to shared state are incremental, and it can be controlled from multiple points within your web application.
 
 <!-- prettier-ignore -->
 ```ts
@@ -103,7 +101,7 @@ import spx from 'spx';
 
 export class Example extends spx.Component {
 
-  static connect = {
+  static define = {
     state: {
       counter: {
         typeof: Number,

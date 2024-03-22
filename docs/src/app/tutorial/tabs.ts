@@ -1,11 +1,11 @@
 import spx, { SPX } from 'spx';
 
-export class Tabs extends spx.Component<typeof Tabs.connect> {
+export class Tabs extends spx.Component<typeof Tabs.define> {
 
   public buttonNode: HTMLElement;
   public panelNodes: HTMLElement[];
 
-  static connect = {
+  static define = {
 
     state: {
       init: Number,
@@ -17,7 +17,7 @@ export class Tabs extends spx.Component<typeof Tabs.connect> {
     ]
   };
 
-  oninit () {
+  connect () {
     this.state.hasInit && this.toggle({ attrs: { idx: this.state.init } } as any);
     console.log(this.state.hasInit);
   }

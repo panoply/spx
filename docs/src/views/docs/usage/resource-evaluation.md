@@ -7,15 +7,15 @@ group: usage
 
 # Resource Evaluation
 
-External resources linked within `<script>`, `<link>` or those which that dictate the browser's treatment of external references fall under the category of **Resources** in SPX. SPX governs rendering operations, so it is imperative to deliberate on how it should manage such assets and files which demand evaluation. While SPX is configured by default to handle a limited subset of resource elements without additional configuration, developers are strongly encouraged to fine-tune and expand support to align with their application's specific requirements.
+External resources linked within `<script>`, `<link>`, or those which dictate the browser's treatment of external references are categorized as **Resources** in SPX. As SPX governs rendering operations, it's crucial to be intentional about how it manages such assets and files that require evaluation. While SPX is configured by default to handle a limited subset of resource elements without additional configuration, developers are strongly encouraged to fine-tune and expand support to align with their application's specific requirements.
 
-> For optimal performance it is recommended that you limit resource evaluation to the absolute minimum and if possible trigger your projects execution at runtime.
+> For optimal performance, it's recommended to minimize resource evaluation to the absolute minimum and ideally trigger project execution at runtime only.
 
 ---
 
 # Configuration
 
-Resources control is made available upon connection via the `eval` configuration option. The `eval` option accepts either a `boolean` or an `object` type. When passing an `object`, each key represents a resource tag. You can provide [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) and have SPX apply evaluation in accordance.
+Control over resources is facilitated through the `eval` configuration option upon connection. This option can accept either a `boolean` or an `object` type. When passing an `object`, each key represents a resource tag. You can provide [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) to instruct SPX to apply evaluation accordingly.
 
 <br>
 
@@ -39,38 +39,36 @@ spx.connect({
 
 #### Attribute Directives
 
-Connection settings are treated as defaults, and developers can override `eval` options by annotating resource elements with the `spx-eval` attribute directive. The `spx-eval` attribute accepts a `boolean` value of `true` or `false`.
+Connection settings serve as defaults, allowing developers to override `eval` options by annotating resource elements with the `spx-eval` attribute directive. The `spx-eval` attribute accepts a `boolean` value of `true` or `false`.
 
 <!-- prettier-ignore -->
 <!-- prettier-ignore -->
 ```html
 <head>
-  <script spx-eval="false"></script>          <!-- Prevent evaluation from occurring -->
-  <script spx-eval="true"></script>           <!-- Ensures evaluation will apply always -->
+  <script spx-eval="false"></script>   <!-- Prevent evaluation from occurring -->
+  <script spx-eval="true"></script>    <!-- Ensures evaluation will apply always -->
 </head>
 ```
 
 ---
 
-#### Script Evaluation
+# Script Evaluation
 
-Script occurrences in the DOM are evaluated and initialized asynchronously. By default, re-evaluation applies to all inline scripts whereas linked scripts (i.e `<script src="">`) will only be evaluated once and never again after that. Modules that initialize using an IIFE execution pattern will require decoupling if re-evaluation is required. When navigating between pages that depend upon linked resources being analyzed and re-executed, it is recommended to call inline.
+Script occurrences in the DOM are evaluated and initialized asynchronously. By default, re-evaluation applies to all inline scripts, whereas linked scripts (i.e., `<script src="">`) will only be evaluated once and never again thereafter. Modules that initialize using an IIFE execution pattern will require decoupling if re-evaluation is necessary. When navigating between pages that depend on linked resources being analyzed and re-executed, it is recommended to call inline scripts. Scripts within the `<body>` or within defined fragments should be avoided. There is little necessity for `<body>` script occurrences, and developers can easily replicate such logic using component design architecture.
 
-> In cases where the default behavior is problematic, you can configure SPX to perform re-evaluation on a per-resource basis control using the spx-eval attribute or eval configuration option.
+> In cases where the default behavior is problematic, you can configure SPX to perform re-evaluation on a per-resource basis using the `spx-eval` attribute or `eval` configuration option.
 
-Scripts that exist in the `<body>`` or within defined fragments should be avoided. There is little necessity for `<body>` script occurrences and developers can easily replicate such logic using component design architecture.
+### Placements
 
-# Recommendations
+JavaScript evaluation between navigations is supported when `<script>` elements are contained within the document `<head>` or `<body>` elements. However, script tags in the `<body>` are **highly discouraged** and can lead to issues. You can avoid loading scripts in the body by taking advantage of ESM, which is widely supported in almost all modern browsers. Leverage dynamic imports (`import('.')`) within your bundle instead of rendering inline.
 
-In order to get the most out of this module below are a few recommendations developers should consider when leveraging it in their projects. SPX was developed for certain use cases but using it on its own can be a tad vanilla, as such developers are encouraged to couple it with other modules.
-
-### Script Evaluation
-
-JavaScript evaluation between navigations is supported when `<script>` elements are contained within the document `<head>` or `<body>` elements, though the latter is discouraged. A better approach is to use external scripts or leverage dynamic imports (`import('.')`) within your bundle.
-
+<!-- prettier-ignore -->
 ```html
 <head>
-  <script src="https://unpkg.com/spx"></script>
+
+  <script src="https://unpkg.com/spx" type="module">
+    spx.connect()
+  </script>
 
   <script spx-eval="false">
     console.log('Run once');
@@ -79,20 +77,37 @@ JavaScript evaluation between navigations is supported when `<script>` elements 
   <script>
     console.log('Run EveryTime');
   </script>
+
 </head>
 <body>
-  ...
 
-  <!-- Avoid This -->
+  <!-- Avoid this, you are very uncool if you do -->
   <script>
     console.log('Avoid scripts in the <body>');
   </script>
-
-  ...
 </body>
 ```
 
-### Style Evaluation
+<br>
+
+### Load Event
+
+You may wish to leverage SPX lifecycle events to re-invoke JavaScript code between page visits. This is ideal for tasks such as Google Analytics and scripts that require per-page execution. The `spx.on('load')` event fires each time a page visit concludes and has rendered to the DOM. It serves as the final event to execute and is equivalent to using the `DOMContentLoaded` event.
+
+<!-- prettier-ignore -->
+```js
+import spx from 'spx';
+
+spx.on('load', function () {
+
+  gtag('js', new Date()); // Trigger google analytics each time page loads
+
+})
+```
+
+---
+
+# Style Evaluation
 
 Stylesheet and inline CSS evaluation is supported for `<style>` and `<link rel="stylesheet>` elements contained in the `<head>` or `<body>` elements. External stylesheets reference using `<link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `spx-eval="true"` attribute annotations.
 
@@ -128,79 +143,3 @@ Stylesheet and inline CSS evaluation is supported for `<style>` and `<link rel="
   ...
 </body>
 ```
-
-### Leverage Pre-fetching
-
-The pre-fetching capabilities this SPX variation provides can drastically improve the speed of rendering. When used correctly pages will load instantaneously between navigations. By default, the pre-fetching features are opt-in and require attribute annotation but you can customize how, where and when SPX should execute a pre-fetch.
-
-```js
-spx.connect({
-  hover: {
-    trigger: 'href', // prefetch all <a href=""> nodes
-    threshold: 250 // begin prefetch after 250ms of cursor entering
-  }
-});
-```
-
-# Usage with Stimulus
-
-SPX works great with [stimulus.js](https://stimulusjs.org/). SPX can used as an alternative to Turbo and though it does not offer as many features, you will get faster navigations. Stimulus is a very simple framework and when working with SSR projects it helps alleviate the complications developers tend to face. The reason one would choose this project over Turbo comes down to performance and given that Stimulus handles most of the business logic, SPX is great alternative.
-
-<!-- prettier-ignore -->
-```js
-import spx from 'spx';
-import { Application } from '@hotwired/stimulus';
-import { Carousel } from './controllers/carousel'
-
-spx.connect({
-  targets: ['#main']
-  hover: {
-    trigger: 'href',
-    threshold: 250
-  }
-})(function () {
-
-  const stimulus = Application.start();
-
-  stimulus.register('carousel', Carousel);
-
-  // etc etc
-
-});
-```
-
-### JavaScript Execution
-
-The best possible approach when you need to invoke JavaScript like Google Analytics and scripts which require per-page execution is to use the `spx.on('load')` event. This event will fire each time a page visit concludes and has rendered to the dom.
-
-<!-- prettier-ignore -->
-```js
-import spx from 'spx';
-
-
-spx.on('load', function () {
-
-  gtag('js', new Date());
-
-})
-```
-
-# Minification
-
-By default, all fetched pages are stored in memory so for every request the HTML dom string response will be in cache. The smaller your HTML pages the more performant the rendering engine will operate. In addition to minification it is generally good practice to consider using semantic HTML5 as much as possible this will help negate the amount of markup pages require.
-
-# Script
-
-TODO
-
-# Style
-
-TODO
-
-# Link
-
-TODO
-
-# Meta
-
-TODO

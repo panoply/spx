@@ -6,9 +6,9 @@ import qvp from 'qvp';
 /* CLASS                                        */
 /* -------------------------------------------- */
 
-export class Drawer extends spx.Component<typeof Drawer.connect> {
+export class Drawer extends spx.Component<typeof Drawer.define> {
 
-  static connect = {
+  static define = {
     state: {
       outsideClick: Boolean,
       height: String,
@@ -45,7 +45,7 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
   /**
    * Stimulus: Initialize
    */
-  oninit () {
+  connect () {
 
     if (!this.backdrop) {
       this.backdrop = document.createElement('div');
@@ -88,7 +88,7 @@ export class Drawer extends spx.Component<typeof Drawer.connect> {
 
   }
 
-  onload () {
+  onmount () {
 
     if (this.state.isOpen) {
       if (qvp.test([ 'lg', 'xl', 'xxl' ])) {

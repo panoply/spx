@@ -1,0 +1,24 @@
+<div class="row jc-center ml-2 bt pt-5">
+  <div class="col-7 tc bg-code py-3">
+    <span
+      class="d-block tc fc-white pb-3 ff-head"
+      style="font-size:30px"
+      spx-bind="counter.count">0</span>
+    <div spx-component="counter">
+      <div class="row jc-center">
+        <button
+          type="button"
+          class="btn bc-white btn-white rd-2 col-auto bd mr-2"
+          spx@click="counter.increment">
+          increase
+        </button>
+        <button
+          type="button"
+          class="btn bc-white  btn-white rd-2 col-auto bd"
+          spx@click="counter.decrement">
+          decrease
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -22,5 +22,24 @@
         "disable": false
       }
     ]
+  },
+  "using-hooks": {
+    "links": [
+      {
+        "title": "Page A",
+        "url": "/iframe/using-hooks/page-a/",
+        "disable": false
+      },
+      {
+        "title": "Page B",
+        "url": "/iframe/using-hooks/page-b/",
+        "disable": false
+      },
+      {
+        "title": "Page C",
+        "url": "/iframe/using-hooks/page-c/",
+        "disable": false
+      }
+    ]
   }
 }
