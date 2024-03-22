@@ -1,15 +1,13 @@
-import type { Page } from 'types';
+import type { Class, Page } from 'types';
 import { $ } from './session';
 import { emit } from './events';
 import { log } from '../shared/logs';
-import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector, isEmpty } from '../shared/utils';
+import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector } from '../shared/utils';
 import { assign, o, isArray, defineProps } from '../shared/native';
 import { LogType, VisitType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
 import * as history from '../observe/history';
 import * as fragments from '../observe/fragment';
-import { SPX } from '../../types/components';
-import { hook } from '../observe/components';
 
 /**
  * Create Session Page
@@ -174,7 +172,6 @@ export function set (state: Page, snapshot: string): Page {
   fragments.snapshots(state);
 
   emit('after:cache', state);
-  hook('oncache', state);
 
   return state;
 
@@ -282,18 +279,17 @@ export function getSnapDom (key?: string): Document {
  * Returns an array list of component intances which are currently
  * mounted (active) on the page.
  */
-export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: SPX.Class[] } {
+export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: Class[] } {
 
-  const mounts: { [instanceOf: string]: SPX.Class[] } = o();
+  const mounts: { [instanceOf: string]: Class[] } = o();
+  const { $instances, $connected } = $.components;
 
-  for (const instance of $.components.$instances.values()) {
+  for (const instance of $instances.values()) {
 
     const { scope } = instance;
 
-    if (!$.components.$connected.has(scope.key)) continue;
-
+    if (!$connected.has(scope.key)) continue;
     if (mounted !== null && scope.mounted === mounted) continue;
-
     if (scope.alias !== null && !(scope.alias in mounts)) {
 
       mounts[scope.alias] = [ instance ];
@@ -308,7 +304,7 @@ export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: SP
 
   }
 
-  return isEmpty(mounts) ? null : mounts;
+  return mounts;
 }
 
 /**
