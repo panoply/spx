@@ -1,4 +1,4 @@
-import type { ComponentEvent, SPX, Merge } from 'types';
+import type { ComponentEvent, Merge, Class } from 'types';
 import { assign, o } from '../shared/native';
 import { defineGetter, hasProp } from '../shared/utils';
 import { LogType } from '../shared/enums';
@@ -31,7 +31,7 @@ export function isValidEvent (eventName: string, node: Element | Window) {
  * Assigns the `event.attrs` key to event method callbacks when DOM elements
  * contains attrs-state on containing element.
  */
-export function eventAttrs (instance: SPX.Class, event: ComponentEvent, node?: HTMLElement) {
+export function eventAttrs (instance: Class, event: ComponentEvent, node?: HTMLElement) {
 
   /**
    * The component event method
@@ -56,7 +56,7 @@ export function eventAttrs (instance: SPX.Class, event: ComponentEvent, node?: H
  * Removes an existing listener from a component instance method and updates the
  * the `$.components.elements` Map, removing the element attached.
  */
-export function removeEvent (instance: SPX.Class, event: ComponentEvent) {
+export function removeEvent (instance: Class, event: ComponentEvent) {
 
   if (!event.attached) return;
 
@@ -80,7 +80,7 @@ export function removeEvent (instance: SPX.Class, event: ComponentEvent) {
  * Adds a listener to the instance method and binds any `attrs` the event _might_
  * have passed on the element.
  */
-export function addEvent (instance: SPX.Class, node: HTMLElement, event: ComponentEvent) {
+export function addEvent (instance: Class, node: HTMLElement, event: ComponentEvent) {
 
   if (event.attached) return;
 
