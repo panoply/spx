@@ -20,7 +20,6 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 - Pre-fetching capabilities using hover, intersection or proximity observers.
 - Snapshot caching engine and per-page state control.
 - Powerful pub/sub event driven lifecycle triggers.
-- Provides a client side DOM hydration approach.
 - Gracefully handles script and style asset evaluation.
 - Attribute driven programmatic control.
 
@@ -96,7 +95,7 @@ import spx from 'spx';
 
 class Counter extends spx.Component {
 
-  static connect = {
+  static define = {
     nodes: ['count'],
     state: {
       clicks: Number
