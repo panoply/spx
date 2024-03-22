@@ -1,8 +1,8 @@
 import spx, { SPX } from 'spx';
 
-export class Update extends spx.Component<typeof Update.connect> {
+export class Update extends spx.Component<typeof Update.define> {
 
-  static connect = {
+  static define = {
     state: {
       label: String,
       color: String,

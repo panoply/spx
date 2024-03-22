@@ -1,8 +1,8 @@
 import spx, { SPX } from 'spx';
 
-export class Basic extends spx.Component<typeof Basic.connect> {
+export class Basic extends spx.Component<typeof Basic.define> {
 
-  static connect = {
+  static define = {
     state: {
       clicks: {
         typeof: Number,
@@ -27,7 +27,7 @@ export class Basic extends spx.Component<typeof Basic.connect> {
     ]
   };
 
-  onload () {
+  onmount () {
 
     console.log('onLoad - Demo Controller:', this.state);
 
@@ -64,8 +64,8 @@ export class Basic extends spx.Component<typeof Basic.connect> {
   /* NODES                                        */
   /* -------------------------------------------- */
 
-  public feedbackNode: HTMLElement;
-  public outputNode: HTMLElement;
-  public counterNode: HTMLElement;
+  // public feedbackNode: HTMLElement;
+  // public outputNode: HTMLElement;
+  // public counterNode: HTMLElement;
 
 }

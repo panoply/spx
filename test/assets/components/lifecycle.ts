@@ -1,8 +1,8 @@
 import spx from 'spx';
 
-export class Lifecycle extends spx.Component<typeof Lifecycle.connect> {
+export class Lifecycle extends spx.Component<typeof Lifecycle.define> {
 
-  static connect = {
+  static define = {
     state: {
       init: Number,
       load: Number,
@@ -16,7 +16,7 @@ export class Lifecycle extends spx.Component<typeof Lifecycle.connect> {
     ]
   };
 
-  oninit (): void {
+  connect (): void {
 
     ++this.state.init;
 
@@ -29,7 +29,7 @@ export class Lifecycle extends spx.Component<typeof Lifecycle.connect> {
 
   }
 
-  onload (): void {
+  onmount (): void {
 
     ++this.state.load;
 
@@ -53,7 +53,7 @@ export class Lifecycle extends spx.Component<typeof Lifecycle.connect> {
 
   }
 
-  onexit (): void {
+  unmount (): void {
 
     ++this.state.leave;
 

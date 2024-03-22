@@ -1,12 +1,12 @@
 import spx from 'spx';
 
-export class Async extends spx.Component<typeof Async.connect> {
+export class Async extends spx.Component<typeof Async.define> {
 
   static delay (time: number) {
     return new Promise<void>((resolve) => setTimeout(() => resolve(), time));
   }
 
-  static connect = {
+  static define = {
     id: 'async',
     state: {
       noDelay: Boolean,
@@ -19,16 +19,57 @@ export class Async extends spx.Component<typeof Async.connect> {
     ]
   };
 
-  async oninit () {
+  async connect () {
 
     await Async.delay(this.state.initDelay);
     this.initNode.innerText = `Initialized after ${this.state.initDelay}ms`;
 
   }
 
-  async onload () {
+  async onmount () {
 
     await Async.delay(this.state.loadDelay);
+    this.loadNode.innerText = `Loaded after ${this.state.initDelay + this.state.loadDelay}ms`;
+
+  }
+
+  /* -------------------------------------------- */
+  /* NODES                                        */
+  /* -------------------------------------------- */
+
+  public initNode: HTMLElement;
+  public loadNode: HTMLElement;
+
+}
+
+export class Async2 extends spx.Component<typeof Async.define> {
+
+  static delay (time: number) {
+    return new Promise<void>((resolve) => setTimeout(() => resolve(), time));
+  }
+
+  static define = {
+    id: 'async2',
+    state: {
+      noDelay: Boolean,
+      initDelay: Number,
+      loadDelay: Number
+    },
+    nodes: <const>[
+      'init',
+      'load'
+    ]
+  };
+
+  async connect () {
+
+    await Async.delay(this.state.initDelay);
+    this.initNode.innerText = `Initialized after ${this.state.initDelay}ms`;
+
+  }
+
+  onmount () {
+
     this.loadNode.innerText = `Loaded after ${this.state.loadDelay}ms`;
 
   }
@@ -42,43 +83,35 @@ export class Async extends spx.Component<typeof Async.connect> {
 
 }
 
-export class Async2 extends spx.Component<typeof Async.connect> {
+export class AsyncFetch extends spx.Component<typeof AsyncFetch.define> {
 
-  static delay (time: number) {
-    return new Promise<void>((resolve) => setTimeout(() => resolve(), time));
-  }
-
-  static connect = {
-    id: 'async2',
+  static define = {
     state: {
-      noDelay: Boolean,
-      initDelay: Number,
-      loadDelay: Number
-    },
-    nodes: <const>[
-      'init',
-      'load'
-    ]
+      data: Array
+    }
   };
 
-  async oninit () {
-
-    await Async.delay(this.state.initDelay);
-    this.initNode.innerText = `Initialized after ${this.state.initDelay}ms`;
-
-  }
-
-  onload () {
-
-    this.loadNode.innerText = `Loaded after ${this.state.loadDelay}ms`;
+  async connect () {
+    // Fake Request
+    const response = await fetch('https://api.placeholderjson.dev/shipments');
+    // Store in state
+    this.state.data = await response.json();
 
   }
 
-  /* -------------------------------------------- */
-  /* NODES                                        */
-  /* -------------------------------------------- */
+  onmount () {
 
-  public initNode: HTMLElement;
-  public loadNode: HTMLElement;
+    // The connect hook will trigger before onmount so state
+    // will be available in this hook.
+    console.log(this.state.data);
+
+  }
+
+  unmount (page) {
+
+    // Fired when the component has been removed from the DOM
+    console.log(page);
+
+  }
 
 }

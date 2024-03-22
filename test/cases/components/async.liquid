@@ -6,6 +6,12 @@ permalink: '/components/async/index.html'
 ---
 
 <h4 class="fw-bold pb-3 mb-4 bb">
+  Async Fetch
+</h4>
+
+<div spx-component="asyncFetch"></div>
+
+<h4 class="fw-bold pb-3 mb-4 bb">
   Async Lifecycles
 </h4>
 
@@ -20,10 +26,10 @@ permalink: '/components/async/index.html'
 <div class="row mt-4 g-0">
   <div class="col-5 bx bb">
     {% for number in (1..6) %}
-      {% assign delay = 2 %}
+      {% assign delay = 1 %}
 
       {% if number == 2 %}
-        {% assign delay = 3 %}
+        {% assign delay = 2 %}
       {% endif %}
 
       <div
