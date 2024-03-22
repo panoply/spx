@@ -52,6 +52,8 @@
   &-menu {
     padding: 15px 5px 0px 0;
     width: 100%;
+    max-height: calc(100vh - 90px);
+    overflow-y: scroll;
 
     .menu-link {
       display: flex;
