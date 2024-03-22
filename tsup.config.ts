@@ -17,16 +17,13 @@ export default defineConfig({
   terserOptions: {
     compress: {
       passes: 10,
-      keep_fargs: false,
-      module: true,
-      toplevel: true,
-      booleans_as_integers: true
+      module: true
     }
   },
   platform: 'browser',
   keepNames: false,
   splitting: false,
-  target: 'es2018',
+  target: 'es2017',
   globalName: 'spx',
   treeshake: 'recommended',
   esbuildOptions (options) {
