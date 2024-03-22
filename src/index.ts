@@ -27,6 +27,7 @@ const spx = o({
   off,
   observe,
   connect,
+  component,
   capture,
   form,
   render,
@@ -101,6 +102,14 @@ function connect (options: Config = {}) {
   };
 
 };
+
+function component (identifer: string) {
+
+  const mounts = q.getMounted();
+
+  return mounts[identifer][0];
+
+}
 
 function register (...classes: any[]) {
 

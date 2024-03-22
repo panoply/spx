@@ -116,6 +116,35 @@ export enum Origins {
 }
 
 /**
+ * Component Hooks
+ */
+export enum Hooks {
+  /**
+   * Signals a connection `onmount` trigger should apply. Used when establishing a new
+   * instance or on `INITIAL` page visit types.
+   */
+  CONNNECT = 1,
+  /**
+   * Signals that the component should trigger `onmount` on next `component.connect()`
+   * observer action.
+   */
+  MOUNT = 2,
+  /**
+   * Indicates that the component has mounted and is rendered in the DOM.
+   */
+  MOUNTED = 3,
+  /**
+   * Signals that the component should trigger `unmount` on the next `component.disconnect()`
+   * observe action.
+   */
+  UNMOUNT = 4,
+  /**
+   * Indicates the the component is unmounted and no present in the DOM.
+   */
+  UNMOUNTED = 5
+}
+
+/**
  * Log Colors
  */
 export enum Colors {

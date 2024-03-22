@@ -28,22 +28,20 @@ export function getComponentId (instance: Register, identifier?: string) {
 
   identifier = downcase(identifier || name);
 
-  if (!hasProp(instance, 'connect')) {
-    instance.connect = { id: identifier, state: {}, nodes: [] };
+  if (!hasProp(instance, 'define')) {
+    instance.define = { id: identifier, state: {}, nodes: [] };
   }
 
-  const has = hasProps(instance.connect);
+  const has = hasProps(instance.define);
 
-  if (!has('state')) instance.connect.state = {};
-  if (!has('nodes')) instance.connect.nodes = [];
-  if (!has('id')) instance.connect.id = identifier;
-  if (identifier !== instance.connect.id) {
-    identifier = camelCase(instance.connect.id);
-  }
+  if (!has('state')) instance.define.state = {};
+  if (!has('nodes')) instance.define.nodes = [];
+  if (!has('id')) instance.define.id = identifier;
+  if (identifier !== instance.define.id) identifier = camelCase(instance.define.id);
 
-  if (name !== original && /^[A-Z]|[_-]/.test(instance.connect.id)) {
+  if (name !== original && /^[A-Z]|[_-]/.test(instance.define.id)) {
     log(LogType.WARN, [
-      `Component identifer name "${instance.connect.id}" must use camelCase format.`,
+      `Component identifer name "${instance.define.id}" must use camelCase format.`,
       `The identifer has been converted to "${identifier}"`
     ]);
   }

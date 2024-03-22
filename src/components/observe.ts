@@ -1,7 +1,7 @@
-import type { SPX } from 'types';
+import type { Class } from 'types';
 import type { Context } from './context';
 import { $ } from '../app/session';
-import { Colors, LogType, Nodes, Refs } from '../shared/enums';
+import { Colors, Hooks, LogType, Nodes, Refs } from '../shared/enums';
 import { getContext, walkNode, isDirective, setRefs } from './context';
 import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
@@ -25,7 +25,7 @@ function connect (node: HTMLElement, refs: string[]) {
 
   for (const id of refs) {
 
-    const instance: SPX.Class = $reference[id];
+    const instance: Class = $reference[id];
 
     if (!instance) continue;
 
@@ -36,7 +36,7 @@ function connect (node: HTMLElement, refs: string[]) {
       $connected.add(instance.scope.key);
       $elements.set(instance.scope.dom, node);
 
-      instance.scope.mounted = true;
+      instance.scope.mounted = Hooks.MOUNT;
 
       log(LogType.VERBOSE, `Component ${instance.scope.static.id} mounted: ${instance.scope.key}`, Colors.GREEN);
 
@@ -66,11 +66,11 @@ function connect (node: HTMLElement, refs: string[]) {
 
 function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
 
-  const { $reference, $connected, $elements } = $.components;
+  const { $reference, $elements, $connected } = $.components;
 
   for (const id of refs) {
 
-    const instance: SPX.Class = $reference[id];
+    const instance: Class = $reference[id];
 
     if (!instance) continue;
 
@@ -78,8 +78,7 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
 
     if (ref === Refs.COMPONENT) {
 
-      instance.scope.mounted = false;
-      $connected.delete(instance.scope.key);
+      $connected.delete(id);
       $elements.delete(instance.scope.dom);
 
       const { scope } = instance;
@@ -99,6 +98,8 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
       }
 
       log(LogType.VERBOSE, `Component ${instance.scope.static.id} unmounted: ${instance.scope.key}`, Colors.PURPLE);
+
+      scope.mounted = Hooks.UNMOUNT;
 
     } else if (ref === Refs.EVENT) {
 

@@ -1,30 +1,26 @@
 /* eslint-disable no-unused-vars */
-import type { SPX } from 'types';
+import type { Class, SPX } from 'types';
 import { $ } from '../app/session';
 import { getComponents } from '../components/context';
 import { setInstances } from '../components/instances';
 import { removeEvent } from '../components/listeners';
 import { context, resetContext } from '../components/observe';
-import { LogType, VisitType } from '../shared/enums';
+import { Hooks, LogType, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
-import { toArray } from '../shared/native';
+import { assign, o, toArray } from '../shared/native';
 import { patchPage } from '../app/queries';
-import { onNextTick } from '../shared/utils';
+import { onNextTick, promiseResolve } from '../shared/utils';
 
 export type Lifecycle = (
-  | 'oninit'
-  | 'onexit'
-  | 'onload'
-  | 'onvisit'
-  | 'onstate'
-  | 'onfetch'
-  | 'oncache'
+  | 'connect'
+  | 'onmount'
+  | 'unmount'
 )
 
-const enum HookMethod {
-  SYNC = 1,
-  ONLOAD = 2,
-  ONEXIT = 3
+export function hookArguments () {
+
+  return assign(o(), { page: assign(o(), $.page) });
+
 }
 
 export function teardown () {
@@ -47,57 +43,102 @@ export function teardown () {
 
 }
 
-export function mount (promises: [instance: SPX.Class, method: string][]) {
+export function mount (promises: [
+  scopeKey: string,
+  firstHook: string,
+  nextHook?: string
+][]) {
 
-  const promise = promises.map(([ instance, method ]) => (
-    instance.scope.mounted
-      ? instance[method]($.page)
-      : Promise.reject<string>(instance.scope.instanceOf)
-  ));
+  const { $instances } = $.components;
+  const params = hookArguments();
+  const promise: any[] = [];
+
+  for (const [
+    scopeKey,
+    firstHook,
+    nextHook
+  ] of promises) {
+
+    const instance = $instances.get(scopeKey);
+
+    let MOUNT: string = 'mount';
+
+    if (instance.scope.mounted === Hooks.UNMOUNT) {
+      MOUNT = 'unmount';
+    }
+
+    const seq = async () => {
+
+      try {
+
+        if (!instance.scope.connect && nextHook && instance.scope.mounted === Hooks.CONNNECT) {
+
+          await instance[firstHook](params);
+          await instance[nextHook](params);
+          instance.scope.connect = true; // updates scope.connect, ensures it triggers once
+        } else {
+          await instance[firstHook](params);
+        }
+
+        instance.scope.mounted = instance.scope.mounted === Hooks.UNMOUNT
+          ? Hooks.UNMOUNTED
+          : Hooks.MOUNTED;
+
+        return;
+
+      } catch (_) { /* Fall through and reject outside of catch */ }
+
+      log(LogType.WARN, `Component to failed to ${MOUNT}: ${instance.scope.instanceOf} (${scopeKey})`);
+
+      return Promise.reject<string>(scopeKey);
+
+    };
+
+    promise.push(promiseResolve().then(seq));
+
+  }
 
   return Promise.race(promise);
 
 }
 
-export function hook (event: Lifecycle, params: any, cb?: () => void) {
-
-  if (event === 'onvisit') return onNextTick(() => hook(null, params));
+export function hook (event?: Lifecycle) {
 
   const { $connected, $instances } = $.components;
+  const promises: [
+    scopeKey: string,
+    firstHook: string,
+    nextHook?: string
+  ][] = [];
 
-  let method: HookMethod = HookMethod.SYNC;
-  let promises: [instance: SPX.Class, method: string][] = [];
+  patchPage('components', toArray($connected));
 
-  if (event === null) event = 'onvisit';
-  else if (event === 'onload') {
-    method = HookMethod.ONLOAD;
-    promises = [];
-    patchPage('components', toArray($connected));
-  } else if (event === 'onexit') {
-    method = HookMethod.ONEXIT;
-    promises = [];
-  }
+  for (const scopeKey of $connected) {
 
-  for (const uuid of $connected) {
-    const instance = $instances.get(uuid);
+    const instance = $instances.get(scopeKey);
+
+    if (instance.scope.mounted === Hooks.UNMOUNT) {
+      event = 'unmount';
+    } else {
+      event = 'onmount';
+    }
+
     if (instance && event in instance) {
-      if (method === HookMethod.SYNC) {
-        instance[event](params);
+      if (event === 'onmount' && !instance.scope.connect && 'connect' in instance) {
+        promises.push([ scopeKey, 'connect', event ]);
       } else {
-        promises.push([ instance, event ]);
+        if (instance.scope.mounted !== Hooks.MOUNTED) {
+          promises.push([ scopeKey, event ]);
+        }
       }
     }
   }
 
   if (promises.length > 0) {
-    mount(promises).then(() => {
-      for (const [ instance ] of promises) {
-        instance.scope.mounted = method === HookMethod.ONLOAD;
-      }
-    }).catch(() => {
-      for (const [ instance ] of promises) {
-        instance.scope.mounted = false;
-      }
+    mount(promises).catch((scopeKey) => {
+      const instance = $instances.get(scopeKey);
+      instance.scope.mounted = Hooks.UNMOUNTED;
+      $connected.delete(scopeKey);
     });
   }
 }
@@ -115,14 +156,13 @@ export function connect () {
 
     if (context) {
 
-      setInstances(context).then(() => {
-        hook('onload', $.page);
-        resetContext();
-      });
+      setInstances(context)
+        .then(hook)
+        .then(resetContext);
 
     } else {
 
-      hook('onload', $.page);
+      hook();
 
     }
   }
@@ -135,7 +175,7 @@ export function disconnect () {
 
   if (!$.observe.components) return;
 
-  hook('onexit', $.page);
+  hook('unmount');
 
   $.observe.components = false;
 
