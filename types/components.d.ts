@@ -1,366 +1,115 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import type { Class, LiteralUnion, Merge } from 'type-fest';
+import type { LiteralUnion, Merge } from 'type-fest';
 import type { Page } from './page';
+import type { SPX, TypeState } from './namespace';
+import { Hooks } from 'src/shared/enums';
 
 /**
- * Type Constructors
+ * **SPX Component State**
  *
- * Used for the `static attrs = {}` state interface of custom components
+ * Helper utility for automatically assigning `this.state` to components.
+ *
+ * ```ts
+ * import spx, { SPX } from 'spx';
+ *
+ * class Example extends spx.Component {
+ *
+ *    public state: SPX.State<typeof Example.connect>;
+ *
+ *    static connect = {}
+ *
+ * }
+ * ```
  */
-export type TypeConstructors = (
-  | StringConstructor
-  | BooleanConstructor
-  | ObjectConstructor
-  | NumberConstructor
-  | ArrayConstructor
-)
-
-type TypeOf<T extends TypeConstructors> = (
-  T extends BooleanConstructor ? boolean :
-  T extends StringConstructor ? string :
-  T extends NumberConstructor ? number :
-  T extends ArrayConstructor ? T :
-  T extends ObjectConstructor ? { [key: string]: unknown } : never
-)
-
-type TypeState<T extends TypeConstructors> = {
+export type State<T extends SPX.Define> = Merge<{
+  [K in keyof T['state']]?:
+  T['state'][K] extends BooleanConstructor ? boolean :
+  T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
+  T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
+  T['state'][K] extends NumberConstructor ? number :
+  T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
+  T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
+  T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
+  T['state'][K] extends TypeState<NumberConstructor> ? number :
+  T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
+  T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> : never
+}, {
   /**
-   * The state type
-   */
-  typeof: T;
-  /**
-   * Default value to use
-   */
-  default: TypeOf<T>;
-} | {
-  /**
-   * The state type
-   */
-  typeof: T;
-  /**
-   * Default value to use
-   */
-  default?: TypeOf<T>;
-  /**
-   * Whether or not to persist this state reference
-   */
-  persist?: boolean;
-};
-
-type TypeEvent<E, T, A> = Merge<E, {
-  /**
-   * Event Target
-   */
-  target: T;
-  /**
-   * **SPX Event Attrs**
-   *
-   * Parameter values passed on event annotated elements.
-   */
-  attrs: A;
+  * **Has Reference**
+  *
+  * Whether or not the state reference exists on the component template.
+  */
+  [K in keyof T['state'] as K extends string ? `has${Capitalize<K>}` : never]: boolean;
 }>
 
-interface DOMEvents {
-  Event: Event;
-  InputEvent: InputEvent;
-  KeyboardEvent: KeyboardEvent;
-  TouchEvent: TouchEvent;
-  PointerEvent: PointerEvent;
-  DragEvent: DragEvent;
-  FocusEvent: FocusEvent;
-  MouseEvent: MouseEvent;
-  AnimationEvent: AnimationEvent;
-  WheelEvent: WheelEvent;
-  SubmitEvent: SubmitEvent
-  ToggleEvent: ToggleEvent;
-  FormDataEvent: FormDataEvent;
-}
-
-type Attrs = { [key: string]: unknown; }
-
-/**
- * **SPX Component Utilities**
- *
- * Small collection of TypeScript utilities for dealing with SPX
- * components.
- */
-export namespace SPX {
+export abstract class Class<T = SPX.Define> {
 
   /**
-   * An event sent when the state of contacts with a touch-sensitive surface changes.
-   * This surface can be a touch screen or trackpad, for example. The event can describe
-   * one or more points of contact with the screen and includes support for detecting movement,
-   * addition and removal of contact points, and so forth.
+   * **Node Exists**
    *
-   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/Event)
+   * Whether or not a node exists in the DOM
    */
-  export type Event<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['Event'], E, A>;
-  /**
-   * The InputEvent interface represents an event notifying the user of editable content changes.
-   *
-   * ```html
-   *
-   * <input
-   *  type="text"
-   *  spx@input="component.method" />
-   *
-   * ```
-   *
-   * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/InputEvent)
-   */
-  export type InputEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['InputEvent'], E, A>;
-  /**
-   * KeyboardEvent objects describe a user interaction with the keyboard; each event describes a
-   * single interaction between the user and a key (or combination of a key with modifier keys) on
-   * the keyboard.
-   *
-   * ```html
-   *
-   * <input
-   *  type="text"
-   *  spx@keydown="component.method" />
-   *
-   * ```
-   *
-   * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent)
-   */
-  export type KeyboardEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['KeyboardEvent'], E, A>;
-  /**
-   * An event sent when the state of contacts with a touch-sensitive surface changes. This surface
-   * can be a touch screen or trackpad, for example. The event can describe one or more points of
-   * contact with the screen and includes support for detecting movement, addition and removal of
-   * contact points, and so forth.
-   *
-   * ```html
-   *
-   * <input
-   *  type="text"
-   *  spx@keydown="component.method" />
-   *
-   * ```
-   *
-   * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent)
-   */
-  export type TouchEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['TouchEvent'], E, A>;
-  /**
-   * The state of a DOM event produced by a pointer such as the geometry of the contact point,
-   * the device type that generated the event, the amount of pressure that was applied on the contact
-   * surface, etc.
-   *
-   * ```html
-   *
-   * <button
-   *  type="button"
-   *  spx@click="component.method">
-   *  Click
-   * </button>
-   *
-   * ```
-   *
-   * [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent)
-   */
-  export type PointerEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['PointerEvent'], E, A>;
-  export type DragEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['DragEvent'], E, A>;
-  export type FocusEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['FocusEvent'], E, A>;
-  export type MouseEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['MouseEvent'], E, A>;
-  export type AnimationEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['AnimationEvent'], E, A>;
-  export type WheelEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['WheelEvent'], E, A>;
-  export type SubmitEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['SubmitEvent'], E, A>;
-  export type ToggleEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['ToggleEvent'], E, A>;
-  export type FormDataEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['FormDataEvent'], E, A>;
+  readonly [hasNode: `has${Capitalize<string>}Node`]: boolean;
+  [node: `${Lowercase<string>}Node`]: HTMLElement;
+  [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
 
   /**
-   * **SPX State Interface**
+   * **SPX Scope**
    *
-   * Type represents the static `connect.state` structure of type contstructors
+   * Holds scope reference information about the instance, elements which pertain to the instance
+   * and event reference handling.
    */
-  export type Types = {
-   [key: string]:
-   | TypeConstructors
-   | TypeOf<BooleanConstructor>
-   | TypeOf<StringConstructor>
-   | TypeOf<NumberConstructor>
-   | TypeOf<ArrayConstructor>
-   | TypeOf<ObjectConstructor>
-  }
+  public readonly scope?: Scope;
 
   /**
-   * **SPX Component State**
+   * **SPX Component Connection**
    *
-   * Helper utility for automatically assigning `this.state` to components.
-   *
-   * ```ts
-   * import spx, { SPX } from 'spx';
-   *
-   * class Example extends spx.Component {
-   *
-   *    public state: SPX.State<typeof Example.connect>;
-   *
-   *    static connect = {}
-   *
-   * }
-   * ```
+   * Define the component presets
    */
-  export type State<T extends Connect> = Merge<{
-    [K in keyof T['state']]?:
-     T['state'][K] extends BooleanConstructor ? boolean :
-     T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
-     T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
-     T['state'][K] extends NumberConstructor ? number :
-     T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
-     T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
-     T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
-     T['state'][K] extends TypeState<NumberConstructor> ? number :
-     T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
-     T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> : never
-  }, {
-    /**
-     * **Has Reference**
-     *
-     * Whether or not the state reference exists on the component template.
-     */
-    [K in keyof T['state'] as K extends string ? `has${Capitalize<K>}` : never]: boolean;
-  }>
+  static readonly define?: SPX.Define;
 
-  type Selector<T extends Connect> = { [K in T['nodes'][number]]: HTMLElement }
+  /**
+   * **SPX State**
+   *
+   * An auto-generated workable object of `connect.state` and component attribute state references.
+   */
+  public readonly state?: State<T>;
 
-  export interface Connect {
-    /**
-     * Identifier
-     */
-    id?: string;
-    /**
-     * **State Interface**
-     *
-     * Attribute state references used to connect DOM states with component `this.state`.
-     * Accepts Constructor types or `typeof` and `default` object presets.
-     */
-    state?: {
-      [key: `${Lowercase<string>}${string}`]: (
-        | TypeConstructors
-        | TypeOf<BooleanConstructor>
-        | TypeOf<StringConstructor>
-        | TypeOf<NumberConstructor>
-        | TypeOf<ArrayConstructor>
-        | TypeOf<ObjectConstructor>
-      )
-    };
-    /**
-     * **Nodes Reference**
-     *
-     * DOM Node identifier references used to connect elements in the DOM with component
-     * `this.<name>Node` values.
-     */
-    nodes?: readonly string[];
-  }
+  /**
+   * **SPX Dom**
+   *
+   * Holds a reference to the SPX Element annotated with `spx-component`.
+   */
+  public dom: HTMLElement;
 
-  export type HasNode<E extends Connect> = { [K in E['nodes'][number] as K extends string ? K : never]?: boolean; }
-  export type GetNode<T extends Connect> = T['nodes'][number] extends string ? T['nodes'][number] : string;
+  /**
+   * **SPX Document Element**
+   *
+   * Holds a reference to the DOM Document element `<html>` node.
+   */
+  public readonly html: HTMLElement;
 
-  export abstract class Class<T = Connect> {
-
-    /**
-     * **Node Exists**
-     *
-     * Whether or not a node exists in the DOM
-     */
-    readonly [hasNode: `has${Capitalize<string>}Node`]: boolean;
-    [node: `${Lowercase<string>}Node`]: HTMLElement;
-    [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
-
-    /**
-     * **SPX Scope**
-     *
-     * Holds scope reference information about the instance, elements which pertain to the instance
-     * and event reference handling.
-     */
-    public readonly scope?: Scope;
-
-    /**
-     * **SPX Component Connection**
-     *
-     * Define the component presets
-     */
-    static readonly connect?: Connect;
-
-    /**
-     * **SPX State**
-     *
-     * An auto-generated workable object of `connect.state` and component attribute state references.
-     */
-    public readonly state?: State<T>;
-
-    /**
-     * **SPX Dom**
-     *
-     * Holds a reference to the SPX Element annotated with `spx-component`.
-     */
-    public dom: HTMLElement;
-
-    /**
-     * **SPX Document Element**
-     *
-     * Holds a reference to the DOM Document element `<html>` node.
-     */
-    public readonly html: HTMLElement;
-
-    /**
-     * **SPX `oninit`**
-     *
-     * An SPX component lifecycle callback that will be triggered on component register.
-     * This event will on fire once for each instance occurance throughout an SPX session.
-     */
-    oninit(page?: Page): any;
-    /**
-     * **SPX `onload`**
-     *
-     * An SPX component lifecycle triggered for every navigation. This is the equivalent of
-     * of using the SPX event emitters, e.g:
-     *
-     * ```js
-     * spx.on('load', function() {})
-     * ```
-     */
-    onload(page?: Page): any;
-    /**
-     * **SPX `onexit`**
-     *
-     * An SPX component lifecycle trigger that executes before a page replacement occurs. Use this
-     * to teardown any listeners.
-     *
-     */
-    onexit(page?: Page): any;
-    /**
-     * **SPX `onvisit`**
-     *
-     * An SPX component lifecycle trigger that executes right before a visit concludes and a page
-     * replacement. This is the equivalent of using the SPX event emitters, e.g:
-     *
-     * ```js
-     * spx.on('load', function() {})
-     * ```
-     */
-    onvisit(page?: Page): any;
-    /**
-     * **SPX `onfetch`**
-     *
-     * An SPX component lifecycle trigger that executes when new record and snapshot is applied to cache
-     *
-     * ```js
-     * spx.on('cache', function() {})
-     * ```
-     */
-    oncache(page?: Page): any;
-    /**
-     * **SPX `onstate`**
-     *
-     * An SPX component trigger that hooks into the state Proxy. Invokes when component attrs are
-     * changed via the DOM.
-     */
-    onstate(key?: string, value?: any): any | boolean;
-
-  }
+  /**
+   * **SPX `connect`**
+   *
+   * An SPX component lifecycle callback that will be triggered on component register.
+   * This event will on fire once for each instance occurance throughout an SPX session.
+   */
+  connect(session?: { page?: Page }): any;
+  /**
+   * **SPX `onmount`**
+   *
+   * SPX lifecycle hook triggered each time the component is present in the DOM.
+   */
+  onmount(session?: { page?: Page }): any;
+  /**
+   * **SPX `unmount`**
+   *
+   * SPX lifecycle hook that executes when a component is removed from the DOM.
+   *
+   */
+  unmount(session?: { page?: Page }): any;
 
 }
 
@@ -512,8 +261,8 @@ interface ComponentNodes {
  * Mimics an expected user defined component which will be used to create instances.
  * The keys of this interface represent `static` attrs of user components.
  */
-export interface ComponentRegister extends SPX.Class {
-  connect: Merge<SPX.Connect, {
+export interface ComponentRegister extends Class {
+  define: Merge<SPX.Define, {
     id: string
   }>
 }
@@ -536,7 +285,7 @@ export interface Scope {
   /**
    * The component instance name, represents the `spx-component=""` value of a component
    */
-  static: SPX.Connect;
+  static: SPX.Define;
   /**
    * The element reference key/s
    */
@@ -563,10 +312,22 @@ export interface Scope {
    */
   inFragment: boolean;
   /**
-   * Whether or not this component is mounted in the DOM. When `true` component element
-   * exists, when false it does not.
+   * Whether or not this component has been connected. When `true` the `connect` hook methods
+   * has been triggered, whereas a value of `false` indicates that `connect()` has yet to be
+   * called.
    */
-  mounted: boolean;
+  connect: boolean;
+  /**
+   * The current mount status of the component. This is an `enum` value which will signal
+   * how observer connection and disconnection actions will proceed.
+   *
+   * - `1 = CONNECT`_Component will apply a sequention connect_
+   * - `2 = MOUNT` _Component will mount on next obserser connect call._
+   * - `3 = MOUNTED` _Component has mounted and hook has been triggered_
+   * - `4 = UNMOUNT` _Component will unmount on next obserser disconnect call._
+   * - `5 = UNMOUNTED` _Component has unmounted and is not present in the DOM._
+   */
+  mounted: Hooks;
   /**
    * Component State
    *
@@ -620,7 +381,7 @@ export enum ElementType {
  *
  * The raw component as a class type.
  */
-export type ComponentClass = Class<SPX.Class>
+export type ComponentClass = Class<Class>
 
 /**
  * Component Sessions
@@ -639,7 +400,7 @@ export interface ComponentSession {
    *
    * Initialised component instances
    */
-  $instances: Map<string, SPX.Class>;
+  $instances: Map<string, Class>;
   /**
    * Connected Elements
    *
@@ -654,7 +415,7 @@ export interface ComponentSession {
    * References represent the DOM `data-spx=""` UUIDs. This is Proxy which returns
    * component instance.
    */
-  $reference: ProxyHandler<{ [key: string]: SPX.Class }>;
+  $reference: ProxyHandler<{ [key: string]: Class }>;
   /**
    * SPX Component instance UUID's existing on the page. Each entry
    * points to an instance scope on {@link ComponentSession}.

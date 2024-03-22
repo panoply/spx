@@ -4,7 +4,7 @@ import type { Page } from './page';
 import type { IObserverOptions, Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
 import type { Config, Observers, Memory } from './config';
-import type { ComponentSession, SPX } from './components';
+import type { ComponentSession, Class } from './components';
 import type { Session } from './session';
 
 /**
@@ -19,10 +19,10 @@ import type { Session } from './session';
  * ```ts
  * import spx, { SPX } from 'spx';
  *
- * class Demo extends spx.Componen<typeof Demo.connect> {
+ * class Demo extends spx.Component<typeof Demo.define> {
  *
- *  // Connect Options
- *  static connect = {}
+ *  // Define Options
+ *  static define = {}
  *
  *  // Event Types with attrs
  *  onClick (event: SPX.Event<{ foo: 'bar' }>) {
@@ -46,7 +46,7 @@ import type { Session } from './session';
  * }
  *```
  */
-export class Component<T = typeof Component.connect> extends SPX.Class<T> {}
+export abstract class Component<T = typeof Component.define> extends Class<T> {}
 
 /**
  * #### Supported
@@ -97,6 +97,23 @@ export const $: Session;
  * ```
  */
 export function connect(options?: Options): ((callback: (state?: Page) => void) => Promise<void>);
+
+/**
+ * #### Component
+ *
+ * Returns a component instance
+ *
+ * ---
+ *
+ * #### Example
+ *
+ * ```js
+* import spx from 'spx';
+*
+* spx.component('identifier')
+* ```
+*/
+export function component(identifer: string): Class;
 
 /**
  * #### Session
@@ -444,7 +461,7 @@ export function visit(link: string, state?: Page): Promise<Page>;
 export function fetch(url: string): Promise<Document>
 
 /**
- * Clear
+ * #### Clear
  *
  * Removes a cache references. Optionally clear a specific
  * record by passing a url key reference.
@@ -452,7 +469,7 @@ export function fetch(url: string): Promise<Document>
 export function clear(url?: string | string[]): void;
 
 /**
- * Disconnect
+ * #### Disconnect
  *
  * Disconnects SPX, purges all records in memory and
  * removes all observer listeners.
