@@ -1,6 +1,6 @@
 import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope } from 'types';
 import { $ } from '../app/session';
-import { LogType } from '../shared/enums';
+import { Hooks, LogType } from '../shared/enums';
 import { d, o } from '../shared/native';
 import { log } from '../shared/logs';
 import { walkElements } from '../morph/walk';
@@ -233,7 +233,8 @@ export function setScope (instanceOf: string, dom?: HTMLElement, context?: Conte
   const key = u.uuid();
   const scope: Scope = o<Partial<Scope>>({
     key,
-    mounted: false,
+    mounted: Hooks.UNMOUNTED,
+    connect: false,
     ref: `c.${key}`,
     state: o(),
     nodes: o(),
@@ -246,7 +247,7 @@ export function setScope (instanceOf: string, dom?: HTMLElement, context?: Conte
     setRefs(dom, key, scope.ref);
 
     scope.dom = context.$element;
-    scope.mounted = true;
+    scope.mounted = Hooks.MOUNT;
     scope.inFragment = fragment.contains(dom);
 
     if (dom.hasAttribute('id')) {
@@ -277,7 +278,7 @@ export function setScope (instanceOf: string, dom?: HTMLElement, context?: Conte
     scope.alias = instanceOf || null;
     scope.instanceOf = null;
 
-    if (scope.mounted) {
+    if (scope.mounted === Hooks.MOUNT) {
 
       // null value signals that while this instanceOf name
       // does not exist in the registry, it might be an alias
@@ -368,7 +369,7 @@ export function setNodes (node: HTMLElement, value: string, context: Context) {
       keyProp,
       dom: context.$element,
       schema: `${keyProp}Node`,
-      isChild: scope.mounted
+      isChild: scope.mounted === Hooks.MOUNT
     });
 
   }
@@ -394,7 +395,7 @@ export function setBinds (node: HTMLElement, value: string, context: Context) {
       dom: context.$element,
       stateAttr: `${$.config.schema}${instanceOf}:${stateKey}`,
       selector: `[${$.qs.$ref}*=${u.escSelector(key)}]`,
-      isChild: scope.mounted
+      isChild: scope.mounted === Hooks.MOUNT
     });
 
   }
@@ -466,12 +467,12 @@ export function setComponent (node: HTMLElement, value: string, context: Context
 
         scope = u.last($scopes[instanceOf]);
 
-        if (scope.mounted === false) {
+        if (scope.mounted === Hooks.UNMOUNTED) {
 
           setRefs(node, scope.key, scope.ref);
 
           scope.dom = context.$element;
-          scope.mounted = true;
+          scope.mounted = Hooks.MOUNT;
           scope.inFragment = fragment.contains(node);
 
         } else {
