@@ -1,0 +1,22 @@
+---
+title: 'Incremental - Page A'
+layout: index.liquid
+group: 'directive'
+permalink: '/components/incremental/page-a/index.html'
+base: /components/incremental/
+---
+
+{% include 'header', title: 'Incremental - Page A' %}
+{% include 'pages', type: 'incremental', target: 'section' %}
+{% include 'incremental' %}
+
+<section class="row bt mt-4 ml-1 py-3">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="incremental.increment">
+    Increment Counter
+  </button>
+
+</section>

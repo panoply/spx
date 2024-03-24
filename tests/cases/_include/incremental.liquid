@@ -2,16 +2,16 @@
   <div class="col-7">
     <div
       class="row mt-b"
-      spx-component="update"
-      spx-update:count="0"
-      spx-update:color="black"
-      spx-update:label="{{ title }}">
+      spx-component="incremental"
+      spx-incremental:count="0"
+      spx-incremental:color="black"
+      spx-incremental:label="{{ title }}">
 
       <div class="col tc py-3 bd rd mr-3">
         <h6 class="fw-bold fc-gray fs-sm mb-3">
           Label:
         </h6>
-        <span spx-node="update.label">
+        <span spx-node="incremental.label">
           {{ title }}
         </span>
       </div>
@@ -22,7 +22,7 @@
         </h6>
         <code
           class="fs-lg"
-          spx-bind="update.count">0</code>
+          spx-bind="incremental.count">0</code>
       </div>
 
       <div class="col tc py-3 bd rd">
@@ -31,7 +31,7 @@
         </h6>
         <span
           class="py-2 px-4 bd"
-          spx-node="update.color"></span>
+          spx-node="incremental.color"></span>
       </div>
 
     </div>

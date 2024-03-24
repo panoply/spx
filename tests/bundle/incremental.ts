@@ -1,6 +1,6 @@
 import spx, { SPX } from 'spx';
 
-export class Update extends spx.Component<typeof Update.define> {
+export class Incremental extends spx.Component<typeof Incremental.define> {
 
   static define = {
     state: {

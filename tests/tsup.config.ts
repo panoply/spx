@@ -4,8 +4,8 @@ export default defineConfig(
   {
     entry: {
       bundle: './bundle.ts',
-      'fragments-valid': './cases/options/fragments/bundle/valid.ts',
-      'fragments-error': './cases/options/fragments/bundle/error.ts'
+      'fragments-valid': './cases/options-fragments/bundle/valid.ts',
+      'fragments-error': './cases/options-fragments/bundle/error.ts'
     },
     outDir: './public',
     outExtension: () => ({ js: '.js' }),
