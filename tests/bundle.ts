@@ -1,8 +1,8 @@
 import spx from 'spx';
-import { Basic } from './components/basic';
-import { Update } from './components/update';
-import { Lifecycle } from './components/lifecycle';
-import { Async, Async2, AsyncFetch } from './components/async';
+import { Basic } from './bundle/basic';
+import { Update } from './bundle/update';
+import { Lifecycle } from './bundle/lifecycle';
+import { Async, Async2, AsyncFetch } from './bundle/async';
 
 spx.register(Basic, Update, Lifecycle, Async, Async2, AsyncFetch);
 

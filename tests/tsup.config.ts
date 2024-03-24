@@ -3,9 +3,9 @@ import { defineConfig } from 'tsup';
 export default defineConfig(
   {
     entry: {
-      bundle: './assets/bundle.ts',
-      'fragments-valid': './assets/options/fragments/valid.ts',
-      'fragments-error': './assets/options/fragments/error.ts'
+      bundle: './bundle.ts',
+      'fragments-valid': './cases/options/fragments/bundle/valid.ts',
+      'fragments-error': './cases/options/fragments/bundle/error.ts'
     },
     outDir: './public',
     outExtension: () => ({ js: '.js' }),

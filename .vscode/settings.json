@@ -275,7 +275,9 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/node_modules": true,
-    "**/pnpm-lock.yaml": true
+    "**/pnpm-lock.yaml": true,
+    "**/tests/public": true
+    // "**/old": true
   },
   "cSpell.words": [
     "Alexey",
