@@ -18,7 +18,7 @@ module.exports = eleventy(function (config) {
       input: '.',
       output: 'public',
       includes: 'cases/_include',
-      layouts: 'cases'
+      layouts: 'cases/_layouts'
     }
   };
 
