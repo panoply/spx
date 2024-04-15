@@ -9,7 +9,6 @@ import { emit } from '../app/events';
 import { getLink } from '../shared/links';
 import { getAttributes, getKey, getRoute } from '../app/location';
 import { progress } from '../app/progress';
-import { hook } from './components';
 import * as hover from './hovers';
 import * as proximity from './proximity';
 import * as intersect from './intersect';
@@ -128,8 +127,6 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
     $.pages[state.key].visits = state.visits + 1;
     $.pages[state.rev].scrollX = window.scrollX;
     $.pages[state.rev].scrollY = window.scrollY;
-
-    hook('onvisit', state);
 
     if (isRoute) {
 
