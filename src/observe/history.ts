@@ -5,7 +5,7 @@ import { hasProps, promiseResolve } from '../shared/utils';
 import { log } from '../shared/logs';
 import { LogType, VisitType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
-import { teardown } from './components';
+// import { teardown } from './components';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as q from '../app/queries';
@@ -101,7 +101,9 @@ export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
 
   api.replaceState(state, state.title, state.key);
 
-  log(LogType.VERBOSE, `History replaceState: ${api.state.key}`);
+  if ($.logLevel === LogType.VERBOSE) {
+    log(LogType.VERBOSE, `History replaceState: ${api.state.key}`);
+  }
 
   return api.state;
 
@@ -125,7 +127,9 @@ export function push ({ key, rev, title, location }: Page) {
 
   api.pushState(state, state.title, path);
 
-  log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
+  if ($.logLevel === LogType.VERBOSE) {
+    log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
+  }
 
   return api.state;
 
@@ -153,10 +157,12 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
     const page = $.pages[event.state.key];
 
-    if (page.type === VisitType.REVERSE) {
-      log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
-    } else {
-      log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
+    if ($.logLevel === LogType.VERBOSE) {
+      if (page.type === VisitType.REVERSE) {
+        log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
+      } else {
+        log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
+      }
     }
 
     q.patchPage('type', VisitType.POPSTATE);
@@ -165,8 +171,11 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
   } else {
 
-    log(LogType.VERBOSE, `History popState fetch: ${event.state.key}`);
-    teardown();
+    if ($.logLevel === LogType.VERBOSE) {
+      log(LogType.VERBOSE, `History popState fetch: ${event.state.key}`);
+    }
+
+    //  teardown();
 
     event.state.type = VisitType.POPSTATE;
     const page = await request.fetch(event.state);
@@ -194,9 +203,9 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
     } else {
 
       // We have got zero knoweldge, we will carry out fetch
-      // let's firs teardown any components
+      // let's first teardown any components
 
-      teardown();
+      // teardown();
 
       const data = q.create(getRoute(key, VisitType.POPSTATE));
 
