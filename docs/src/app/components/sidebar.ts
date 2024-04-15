@@ -2,9 +2,9 @@
 import relapse, { Relapse } from 'relapse';
 import spx from 'spx';
 
-export class Sidebar extends spx.Component<typeof Sidebar.connect> {
+export class Sidebar extends spx.Component<typeof Sidebar.define> {
 
-  static connect = {
+  static define = {
     state: {
       multiple: Boolean,
       open: {
