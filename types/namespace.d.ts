@@ -197,9 +197,9 @@ export namespace SPX {
 
   export type Define = {
     /**
-     * Identifier
+     * Identifier Name
      */
-    id?: string;
+    name?: string;
     /**
      * **State Interface**
      *
