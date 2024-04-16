@@ -263,7 +263,7 @@ interface ComponentNodes {
  */
 export interface ComponentRegister extends Class {
   define: Merge<SPX.Define, {
-    id: string
+    name: string
   }>
 }
 
@@ -283,9 +283,9 @@ export interface Scope {
    */
   instanceOf: string;
   /**
-   * The component instance name, represents the `spx-component=""` value of a component
+   * Returns the components **static** `define` object
    */
-  static: SPX.Define;
+  define: SPX.Define;
   /**
    * The element reference key/s
    */
@@ -421,4 +421,9 @@ export interface ComponentSession {
    * points to an instance scope on {@link ComponentSession}.
    */
   $connected: Set<string>;
+  /**
+   * SPX Component instance UUID's existing on the page. Each entry
+   * points to an instance scope on {@link ComponentSession}.
+   */
+  $cached?: Map<HTMLElement, string>;
 }
