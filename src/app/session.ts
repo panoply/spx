@@ -57,6 +57,7 @@ export const $: Session = o<Session>({
     $instances: m(),
     $connected: s(),
     $elements: m(),
+    $cached: m(),
     $reference: p({ get: (target, key: string) => $.components.$instances.get(target[key]) })
   }),
   events: o(),
