@@ -11,17 +11,8 @@ export default defineConfig({
   clean: false,
   outDir: './',
   minify: PROD,
-  minifyIdentifiers: PROD,
-  minifySyntax: PROD,
-  minifyWhitespace: PROD,
-  terserOptions: {
-    compress: {
-      passes: 10,
-      module: true
-    }
-  },
   platform: 'browser',
-  keepNames: false,
+  keepNames: true,
   splitting: false,
   target: 'es2017',
   globalName: 'spx',
@@ -36,8 +27,8 @@ export default defineConfig({
     if (!PROD) {
       const time = new Date();
       await utimes('./docs/src/app/index.ts', time, time);
-      await utimes('./test/assets/bundle.ts', time, time);
-      await utimes('./test/pages/index.liquid', time, time);
+      await utimes('./tests/bundle.ts', time, time);
+      await utimes('./tests/cases/_layouts/index.liquid', time, time);
     }
   }
 });
