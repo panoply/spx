@@ -67,10 +67,12 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
 
   $.components.$elements.delete(event.dom);
 
-  log(LogType.VERBOSE, [
-    `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
-    `${instance.scope.static.id}: ${instance.scope.key}`
-  ]);
+  if ($.logLevel === LogType.VERBOSE) {
+    log(LogType.VERBOSE, [
+      `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
+      `${instance.scope.define.name}: ${instance.scope.key}`
+    ]);
+  }
 
 }
 
@@ -85,7 +87,7 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
   if (event.attached) return;
 
   if (!(event.method in instance)) {
-    log(LogType.WARN, `Undefined callback method: ${instance.scope.static.id}.${event.method}()`);
+    log(LogType.WARN, `Undefined callback method: ${instance.scope.define.name}.${event.method}()`);
     return;
   }
 
@@ -96,19 +98,19 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
       addEventListener(event.eventName, eventAttrs(instance, event));
     }
   } else {
-
     if (isValidEvent(event.eventName, node)) {
       node.addEventListener(event.eventName, eventAttrs(instance, event), event.options);
       $.components.$elements.set(event.dom, node);
     }
-
   }
 
-  log(LogType.VERBOSE, [
-    `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
-    `${instance.scope.static.id}: ${instance.scope.key}`
-  ]);
-
   event.attached = true;
+
+  if ($.logLevel === LogType.VERBOSE) {
+    log(LogType.VERBOSE, [
+      `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
+      `${instance.scope.define.name}: ${instance.scope.key}`
+    ]);
+  }
 
 }
