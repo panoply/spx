@@ -8,7 +8,7 @@ import { context, resetContext } from '../components/observe';
 import { Hooks, LogType, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
 import { assign, o, toArray } from '../shared/native';
-import { patchPage } from '../app/queries';
+import { getSnapDom, patchPage } from '../app/queries';
 import { onNextTick, promiseResolve } from '../shared/utils';
 
 export type Lifecycle = (
@@ -16,6 +16,12 @@ export type Lifecycle = (
   | 'onmount'
   | 'unmount'
 )
+
+type LifecycleHooks = [
+  scopeKey: string,
+  firstHook: string,
+  nextHook?: string
+][]
 
 export function hookArguments () {
 
@@ -43,41 +49,33 @@ export function teardown () {
 
 }
 
-export function mount (promises: [
-  scopeKey: string,
-  firstHook: string,
-  nextHook?: string
-][]) {
+export function mount (promises: LifecycleHooks) {
 
   const { $instances } = $.components;
   const params = hookArguments();
   const promise: any[] = [];
 
-  for (const [
-    scopeKey,
-    firstHook,
-    nextHook
-  ] of promises) {
+  for (const [ scopeKey, firstHook, nextHook ] of promises) {
 
     const instance = $instances.get(scopeKey);
-
-    let MOUNT: string = 'mount';
-
-    if (instance.scope.mounted === Hooks.UNMOUNT) {
-      MOUNT = 'unmount';
-    }
+    const { scope } = instance;
+    const MOUNT: string = scope.mounted === Hooks.UNMOUNT ? 'unmount' : 'mount';
 
     const seq = async () => {
 
       try {
 
-        if (!instance.scope.connect && nextHook && instance.scope.mounted === Hooks.CONNNECT) {
+        if (!scope.connect && nextHook && scope.mounted === Hooks.CONNNECT) {
 
           await instance[firstHook](params);
           await instance[nextHook](params);
-          instance.scope.connect = true; // updates scope.connect, ensures it triggers once
+
+          scope.connect = true; // updates scope.connect, ensures it triggers once
+
         } else {
+
           await instance[firstHook](params);
+
         }
 
         instance.scope.mounted = instance.scope.mounted === Hooks.UNMOUNT
@@ -102,33 +100,32 @@ export function mount (promises: [
 
 }
 
-export function hook (event?: Lifecycle) {
+export function hook () {
 
   const { $connected, $instances } = $.components;
-  const promises: [
-    scopeKey: string,
-    firstHook: string,
-    nextHook?: string
-  ][] = [];
+  const promises: LifecycleHooks = [];
 
-  patchPage('components', toArray($connected));
+  // patchPage('components', toArray($connected));
 
   for (const scopeKey of $connected) {
 
     const instance = $instances.get(scopeKey);
-
-    if (instance.scope.mounted === Hooks.UNMOUNT) {
-      event = 'unmount';
-    } else {
-      event = 'onmount';
-    }
+    const { scope } = instance;
+    const event = scope.mounted === Hooks.UNMOUNT ? 'unmount' : 'onmount';
 
     if (instance && event in instance) {
-      if (event === 'onmount' && !instance.scope.connect && 'connect' in instance) {
-        promises.push([ scopeKey, 'connect', event ]);
+      if (event === 'onmount' && 'connect' in instance && scope.connect === false) {
+        promises.push([
+          scopeKey,
+          'connect',
+          event
+        ]);
       } else {
-        if (instance.scope.mounted !== Hooks.MOUNTED) {
-          promises.push([ scopeKey, event ]);
+        if (scope.mounted !== Hooks.MOUNTED && scope.mounted !== Hooks.UNMOUNTED) {
+          promises.push([
+            scopeKey,
+            event
+          ]);
         }
       }
     }
@@ -175,7 +172,7 @@ export function disconnect () {
 
   if (!$.observe.components) return;
 
-  hook('unmount');
+  hook();
 
   $.observe.components = false;
 
