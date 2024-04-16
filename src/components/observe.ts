@@ -7,8 +7,18 @@ import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
 import { onNextTick } from '../shared/utils';
 
+/**
+ * Context Model
+ *
+ * Contructed when nodes are traversed pertaining to components.
+ */
 export let context: Context;
 
+/**
+ * Context Reset
+ *
+ * Sets the `content` reference to `undefined` outside the event loop.
+ */
 export function resetContext () {
 
   onNextTick(() => { context = undefined; });
@@ -17,11 +27,7 @@ export function resetContext () {
 
 function connect (node: HTMLElement, refs: string[]) {
 
-  const {
-    $reference,
-    $connected,
-    $elements
-  } = $.components;
+  const { $reference, $connected, $elements } = $.components;
 
   for (const id of refs) {
 
@@ -30,27 +36,30 @@ function connect (node: HTMLElement, refs: string[]) {
     if (!instance) continue;
 
     const ref = id.charCodeAt(0);
+    const { scope } = instance;
 
     if (ref === Refs.COMPONENT) {
 
-      $connected.add(instance.scope.key);
-      $elements.set(instance.scope.dom, node);
+      $connected.add(scope.key);
+      $elements.set(scope.dom, node);
 
-      instance.scope.mounted = Hooks.MOUNT;
+      scope.mounted = Hooks.MOUNT;
 
-      log(LogType.VERBOSE, `Component ${instance.scope.static.id} mounted: ${instance.scope.key}`, Colors.GREEN);
+      if ($.logLevel === LogType.VERBOSE) {
+        log(LogType.VERBOSE, `Component ${scope.define.name} mounted: ${scope.key}`, Colors.GREEN);
+      }
 
     } else if (ref === Refs.EVENT) {
 
-      addEvent(instance, node, instance.scope.events[id]);
+      addEvent(instance, node, scope.events[id]);
 
     } else if (ref === Refs.NODE) {
 
-      $elements.set(instance.scope.nodes[id].dom, node);
+      $elements.set(scope.nodes[id].dom, node);
 
     } else if (ref === Refs.BINDING) {
 
-      const { binds } = instance.scope;
+      const { binds } = scope;
 
       for (const key in binds) {
         if (id in binds[key]) {
@@ -75,13 +84,12 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
     if (!instance) continue;
 
     const ref = id.charCodeAt(0);
+    const { scope } = instance;
 
     if (ref === Refs.COMPONENT) {
 
       $connected.delete(id);
       $elements.delete(instance.scope.dom);
-
-      const { scope } = instance;
 
       for (const key in scope.nodes) {
         $elements.delete(scope.nodes[key].dom);
@@ -97,38 +105,38 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
         removeEvent(instance, scope.events[key]);
       }
 
-      log(LogType.VERBOSE, `Component ${instance.scope.static.id} unmounted: ${instance.scope.key}`, Colors.PURPLE);
+      if ($.logLevel === LogType.VERBOSE) {
+        log(LogType.VERBOSE, `Component ${scope.define.name} unmounted: ${scope.key}`, Colors.PURPLE);
+      }
 
       scope.mounted = Hooks.UNMOUNT;
 
     } else if (ref === Refs.EVENT) {
 
-      removeEvent(instance, instance.scope.events[id]);
+      removeEvent(instance, scope.events[id]);
 
     } else if (ref === Refs.NODE) {
 
-      const node = instance.scope.nodes[id];
+      const node = scope.nodes[id];
 
       $elements.delete(node.dom);
 
       if (newNode && curNode.isEqualNode(newNode)) {
-        setRefs(curNode, instance.scope.key, id);
+        setRefs(curNode, scope.key, id);
         context.$nodes.push(node.dom);
       }
 
     } else if (ref === Refs.BINDING) {
 
-      const { binds } = instance.scope;
+      for (const key in scope.binds) {
 
-      for (const key in binds) {
+        if (id in scope.binds[key]) {
 
-        if (id in binds[key]) {
-
-          $elements.delete(binds[key][id].dom);
+          $elements.delete(scope.binds[key][id].dom);
 
           if (newNode && curNode.isEqualNode(newNode)) {
-            setRefs(curNode, instance.scope.key, id);
-            context.$nodes.push(binds[key][id].dom);
+            setRefs(curNode, scope.key, id);
+            context.$nodes.push(scope.binds[key][id].dom);
           }
 
           break;
@@ -145,11 +153,7 @@ export function removeNode (node: HTMLElement) {
   if (node.nodeType !== Nodes.ELEMENT_NODE && node.nodeType !== Nodes.FRAGMENT_NODE) return;
 
   if (node.hasAttribute($.qs.$ref)) {
-
-    disconnect(
-      node,
-      node.getAttribute($.qs.$ref).split(',')
-    );
+    disconnect(node, node.getAttribute($.qs.$ref).split(','));
   }
 
 }
@@ -199,10 +203,7 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
     }
 
     // We disconnect current node references
-    if (cRef && !nRef) {
-      disconnect(curNode, cRef, newNode);
-    }
-
+    if (cRef && !nRef) disconnect(curNode, cRef, newNode);
     if (isDirective(newNode.attributes)) walkNode(curNode, context);
 
   }
