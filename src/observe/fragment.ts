@@ -8,7 +8,8 @@ import { forNode, onNextTick, uuid } from '../shared/utils';
 /**
  * Connect Fragments
  *
- * Updates the session `$.fragments` record
+ * Updates the session `$.fragments` references. The `$.page.fragments` will hold identifers
+ * and its here were we obtain the elements for each identifier.
  */
 export function connect () {
 
@@ -42,7 +43,7 @@ export function snapshots (page: Page) {
 
       const snapDom = getSnapDom(page.snap);
       const selector = page.selector !== 'body' && page.selector !== null
-        ? `${page.target.join()},${$.qs.$targets}`
+        ? `${$.qs.$targets}`
         : $.qs.$targets;
 
       const targets = snapDom.body.querySelectorAll<HTMLElement>(selector);
@@ -53,6 +54,11 @@ export function snapshots (page: Page) {
       // console.log(targets, domNode);
 
       forNode(targets, (node, index) => {
+
+        // SKIP <a href></a> ELEMENTS
+        // NOTE: Added during slotenmaker build, might break something, check at later time
+        if (node.nodeName === 'A') return;
+        if (contains(node)) return;
 
         if (!node.hasAttribute('id')) {
 
