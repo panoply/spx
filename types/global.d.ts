@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 import type { HistoryAPI } from './config';
-import type SPX from './spx';
+import type * as SPX from './spx';
 export * from './components';
 export * from './session';
 export * from './events';
