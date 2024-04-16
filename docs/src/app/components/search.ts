@@ -11,9 +11,9 @@ interface Results {
   url: string;
 }
 
-export class Search extends spx.Component<typeof Search.connect> {
+export class Search extends spx.Component<typeof Search.define> {
 
-  static connect = {
+  static define = {
     id: 'search',
     state: {
       active: Boolean,

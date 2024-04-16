@@ -90,6 +90,8 @@ export class Drawer extends spx.Component<typeof Drawer.define> {
 
   onmount () {
 
+    spx.on('load', () => this.close(), this);
+
     if (this.state.isOpen) {
       if (qvp.test([ 'lg', 'xl', 'xxl' ])) {
         this.close();
