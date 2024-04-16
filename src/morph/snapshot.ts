@@ -134,7 +134,8 @@ export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) 
       const nodeRef = nodes.shift();
 
       if (!nodeRef) {
-        log(LogType.ERROR, 'Undefined reference, the snapshot record failed to align', node);
+        // console.log('MORPH SNAP', nodeRef, node);
+        // log(LogType.ERROR, 'Undefined reference, the snapshot record failed to align', node);
       }
 
       if ($elements.has(nodeRef)) {
@@ -155,11 +156,12 @@ export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) 
           }
 
           return false;
-
         }
 
       } else {
-        log(LogType.ERROR, 'Undefined reference, the snapshot record failed to align', node);
+
+        // log(LogType.ERROR, 'Undefined reference, the snapshot record failed to align', node);
+
       }
     }
 
