@@ -68,7 +68,7 @@
 
         <div
           id="content"
-          class="row jc-between content-offset pl-xxl-5">
+          class="row jc-center jc-md-between content-offset pl-xxl-5">
 
           <main class="col-11 {{ grid | default: 'col-md-8' }} px-xl-3 pb-4">
             {% include 'breadcrumb' %}
@@ -77,7 +77,7 @@
           </main>
 
           {% if anchors %}
-            <div class="col-auto px-5 anchors d-none">
+            <div class="col-auto px-5 anchors">
               <ul>
                 {% for name in anchors %}
                   <li>{{ name }}</li>
@@ -90,6 +90,7 @@
 
     {% endif %}
     {% sprite %}
+    {% search %}
 
   </body>
 </html>

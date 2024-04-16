@@ -165,7 +165,7 @@ export const Component = class {
         } else if (type === Boolean) {
           this.state[prop] = typeof value === 'boolean' ? value : value === 'true' || false;
         } else if (type === Number) {
-          this.state[prop] = value ? +value : 0;
+          this.state[prop] = value ? Number(value) : 0;
         } else if (type === Array) {
           this.state[prop] = value || [];
         } else if (type === Object) {
@@ -247,7 +247,7 @@ export const Component = class {
         } else if (type === Boolean) {
           this.state[prop] = typeof value === 'boolean' ? value : value === 'true' || false;
         } else if (type === Number) {
-          this.state[prop] = value ? +value : 0;
+          this.state[prop] = value ? Number(value) : 0;
         } else if (type === Array) {
           this.state[prop] = defined ? attrJSON(value) : json ? value : [];
         } else if (type === Object) {
