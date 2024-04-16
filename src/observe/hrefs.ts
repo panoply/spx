@@ -130,9 +130,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
     if (isRoute) {
 
-      log(LogType.VERBOSE, `URL Pathname matches current route: ${key}`);
-
-      render.update(state);
+      log(LogType.INFO, `Identical pathname, page visit skipped: ${key}`);
 
     } else {
 
