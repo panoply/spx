@@ -13,22 +13,37 @@ import * as fragment from '../observe/fragment';
 
   The components algorithm is a series of functions which execute top > down. There are 2 different traversal
   operations for components in SPX. The first one is the intialization traversal, this occurs at runtime and
-  involves walking the DOM. The second operation is a incremental traversal which occurs during morphs. The
+  involves walking the DOM. The second operation is an incremental traversal which occurs during morphs. The
   initialization operation executes only once, whereas the incremental traversal occurs for each visit.
 
   DATASET REFERENCES
 
   Component elements (dom, events, binds and nodes) will be annotated with a data-spx="" value. The value is
-  is mapped to instances. Each time we encounted an element of interest (component directive) we mark it with
-  an UUID reference on the data-spx="" attribute. UUID marks use the following pattern:
+  is mapped to instances. Each time we encounter an element of interest (component directive) we mark it with
+  an UUID reference via the data-spx="" attribute. The UUID value within that attribute use the following pattern:
 
   c.a1b2c3  - Components begin with "c"
   b.fw32dk  - Binds begin with "b"
   e.tudhj2  - Events begin with "e"
   n.xcnd34  - Nodes begins with "n"
 
-  In situations where an element is annotated with multiple directive, the reference will be comma separated.
-  When determine the element of interest in morph operations and acquire the related instance (see observe.ts).
+  In situations where an element is annotated with multiple directives, for example:
+
+  BEFORE:
+    <div
+      spx@mouseover="ref.callback"
+      spx-node="ref.id"
+    ></div>
+
+  AFTER:
+    <div
+      spx@mouseover="ref.callback"
+      spx-node="ref.id"
+      data-spx="e.tudhj2,n.xcnd34"
+    ></div>
+
+  Notice in the AFTER example, the data-spx="" value has comma separated UUID refs. The values UUIDs are important
+  because these will determine elements of interest during morph operations and will leveraged to acquire the related instances(see observe.ts).
 
   CONTEXT > INSTANCE > SCOPE
 
@@ -42,17 +57,18 @@ import * as fragment from '../observe/fragment';
   can re-connect events and updates nodes in the most effecient manner possible, without having to walk the
   entire tree. We use data-spx attributes specifically because our snapshots are DOM strings which we active with
   DOM Parser when visiting new pages. The reference allow us to persist across visits in the session.
+
 */
 
 export interface Context {
   /**
    * Alias Maps
    */
-  $aliases: { [alias: string]: string; }
+  $aliases: { [alias: string]: string; };
   /**
    * Component Scopes
    */
-  $scopes: { [component: string]: Scope[]; }
+  $scopes: { [component: string]: Scope[]; };
   /**
    * Holds a temporary storage of HTML Elements that have been marked with
    * a reference dataset value. The entries will be used to align snapshots.
@@ -369,7 +385,7 @@ export function setNodes (node: HTMLElement, value: string, context: Context) {
       keyProp,
       dom: context.$element,
       schema: `${keyProp}Node`,
-      isChild: scope.mounted === Hooks.MOUNT
+      isChild: scope.mounted === Hooks.MOUNT || scope.mounted === Hooks.MOUNTED
     });
 
   }
@@ -395,7 +411,7 @@ export function setBinds (node: HTMLElement, value: string, context: Context) {
       dom: context.$element,
       stateAttr: `${$.config.schema}${instanceOf}:${stateKey}`,
       selector: `[${$.qs.$ref}*=${u.escSelector(key)}]`,
-      isChild: scope.mounted === Hooks.MOUNT
+      isChild: scope.mounted === Hooks.MOUNT || scope.mounted === Hooks.MOUNTED
     });
 
   }
