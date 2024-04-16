@@ -96,7 +96,7 @@ export const Component = class {
     this.state = new Proxy(o(), {
       set: (target, key: string, value) => {
 
-        const preset = scope.static.state[key];
+        const preset = scope.define.state[key];
         const domValue = typeof value === 'object' || isArray(value) ? JSON.stringify(value) : `${value}`;
 
         if (typeof preset === 'object' && hasProp(preset, 'persist') && preset.persist) {
@@ -136,17 +136,17 @@ export const Component = class {
 
     if (isEmpty(scope.state)) {
 
-      for (const prop in scope.static.state) {
+      for (const prop in scope.define.state) {
 
         /**
          * The `static` state value
          */
-        const attr = scope.static.state[prop];
+        const attr = scope.define.state[prop];
 
         /**
          * The `static` state type contructor value
          */
-        let type: ValueOf<typeof scope.static.state>;
+        let type: ValueOf<typeof scope.define.state>;
 
         /**
          * The `static` state type converted value
@@ -163,7 +163,7 @@ export const Component = class {
         if (type === String) {
           this.state[prop] = value || nil;
         } else if (type === Boolean) {
-          this.state[prop] = value || false;
+          this.state[prop] = typeof value === 'boolean' ? value : value === 'true' || false;
         } else if (type === Number) {
           this.state[prop] = value ? +value : 0;
         } else if (type === Array) {
@@ -178,13 +178,13 @@ export const Component = class {
 
     } else {
 
-      for (const prop in scope.static.state) {
+      for (const prop in scope.define.state) {
 
         if (!(prop in scope.state)) {
-          if (typeof scope.static.state[prop] === 'object') {
-            scope.state[prop] = scope.static.state[prop].default;
+          if (typeof scope.define.state[prop] === 'object') {
+            scope.state[prop] = scope.define.state[prop].default;
           } else {
-            switch (scope.static.state[prop]) {
+            switch (scope.define.state[prop]) {
               case String: scope.state[prop] = nil; break;
               case Boolean: scope.state[prop] = false; break;
               case Number: scope.state[prop] = 0; break;
@@ -197,7 +197,7 @@ export const Component = class {
         /**
          * The `static` state value
          */
-        const attr = scope.static.state[prop];
+        const attr = scope.define.state[prop];
 
         /**
          * The converted attribute name
@@ -207,7 +207,7 @@ export const Component = class {
         /**
        * The `static` state type contructor value
        */
-        let type: ValueOf<typeof scope.static.state>;
+        let type: ValueOf<typeof scope.define.state>;
 
         /**
          * The `static` state type converted value
@@ -245,7 +245,7 @@ export const Component = class {
         } else if (type === String) {
           this.state[prop] = value || nil;
         } else if (type === Boolean) {
-          this.state[prop] = value || false;
+          this.state[prop] = typeof value === 'boolean' ? value : value === 'true' || false;
         } else if (type === Number) {
           this.state[prop] = value ? +value : 0;
         } else if (type === Array) {
