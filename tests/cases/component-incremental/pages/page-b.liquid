@@ -7,7 +7,7 @@ base: /components/incremental/
 ---
 
 {% include 'header', title: 'Incremental - Page B' %}
-{% include 'pages', type: 'incremental', target: 'section' %}
+{% include 'pages', type: 'incremental' %}
 {% include 'incremental' %}
 
 <section class="row bt mt-4 ml-1 py-3">
@@ -23,7 +23,7 @@ base: /components/incremental/
     type="button"
     class="col-auto ml-3"
     spx@click="incremental.labelValue"
-    spx-update:text="Example Value!">
+    spx-incremental:text="Example Value!">
     Update Label
   </button>
 

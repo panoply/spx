@@ -7,7 +7,7 @@ export class Async extends spx.Component<typeof Async.define> {
   }
 
   static define = {
-    id: 'async',
+    name: 'async',
     state: {
       noDelay: Boolean,
       initDelay: Number,

@@ -3,6 +3,7 @@ import spx, { SPX } from 'spx';
 export class Incremental extends spx.Component<typeof Incremental.define> {
 
   static define = {
+    name: 'incremental',
     state: {
       label: String,
       color: String,
