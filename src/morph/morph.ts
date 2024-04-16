@@ -225,7 +225,7 @@ function morphChildren (curElement: Element, newElement: Element, context: Morph
               //
               if ((curMatch = context.$lookup.get(newKey) as Element)) {
 
-                if (curNextSibling.isEqualNode(curMatch)) {
+                if (curNextSibling && curNextSibling.isEqualNode(curMatch)) {
 
                   // Special case for single element removals. To avoid removing the original
                   // DOM node out of the tree (since that can break CSS transitions, etc.),
