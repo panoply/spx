@@ -200,7 +200,6 @@ function getPath (url: string, protocol: number) {
   if (path > protocol) {
 
     const hash = url.indexOf('#', path);
-
     return hash < 0 ? url.slice(path) : url.slice(path, hash);
   }
 

@@ -139,7 +139,7 @@ export enum Hooks {
    */
   UNMOUNT = 4,
   /**
-   * Indicates the the component is unmounted and no present in the DOM.
+   * Indicates the component is unmounted and not present in the DOM.
    */
   UNMOUNTED = 5
 }

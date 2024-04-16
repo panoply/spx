@@ -192,12 +192,11 @@ function morphNodes (page: Page, snapDom: Document) {
       morph(curNode, newNode);
 
       if (context && context.$nodes.length > 0) {
-        onNextTick(() => {
-          morphSnap(newNode, context.$nodes);
-          patchPage('type', VisitType.VISIT);
-        });
+        onNextTick(() => morphSnap(newNode, context.$nodes));
       }
     }
+
+    patchPage('type', VisitType.VISIT);
 
   }
 
