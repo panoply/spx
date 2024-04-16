@@ -4,7 +4,14 @@ import { Incremental } from './bundle/incremental';
 import { Lifecycle } from './bundle/lifecycle';
 import { Async, Async2, AsyncFetch } from './bundle/async';
 
-spx.register(Basic, Incremental, Lifecycle, Async, Async2, AsyncFetch);
+spx.register(
+  Basic,
+  Incremental,
+  Lifecycle,
+  Async,
+  Async2,
+  AsyncFetch
+);
 
 spx.connect(
   {
