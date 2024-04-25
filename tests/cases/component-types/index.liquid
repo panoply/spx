@@ -1,0 +1,65 @@
+---
+title: 'Types'
+layout: index.liquid
+group: 'directive'
+permalink: '/components/types/index.html'
+---
+
+{% assign types = 'string,number,boolean,object,array' | split: ',' %}
+
+<div id="example">
+
+  <h4 class="fw-bold pb-3 mb-4 bb">
+    Type Tests
+  </h4>
+  <p>
+    Validates component
+    <code class="fs-md">{ define: { state: {} } }</code>
+    defined state types. This ensures that component type conversion is handled correctly.
+  </p>
+  <div
+    class="row"
+    spx-component="types"
+    spx-types:string="lorem ipsum"
+    spx-types:number="5000"
+    spx-types:boolean="true"
+    spx-types:object="{ a: 100, b: 'xxx', c: false }"
+    spx-types:array="['hello', 'world']">
+    <div class="col-7 mb-5">
+      {% for type in types %}
+        <div class="row py-2 bb">
+          <div class="col-4 fs-md fw-bold">
+            {{ type | capitalize }}
+          </div>
+          <div
+            class="col-8"
+            spx-node="types.{{ type | prepend: 'u' }}"></div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="col-7 mb-5">
+      {% for type in types %}
+        <div class="row py-2 bb">
+          <div class="col-4 fs-md fw-bold">
+            Defined {{ type | capitalize }}
+          </div>
+          <div
+            class="col-8"
+            spx-node="types.{{ type }}"></div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="col-7">
+      {% for type in types %}
+        <div class="row py-2 bb">
+          <div class="col-4 fs-md fw-bold">
+            Default {{ type | capitalize }}
+          </div>
+          <div
+            class="col-8"
+            spx-node="types.{{ type | prepend: 'd' }}"></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

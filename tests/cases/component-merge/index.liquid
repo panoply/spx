@@ -1,0 +1,60 @@
+---
+title: 'Merge'
+layout: index.liquid
+group: 'directive'
+permalink: '/components/merge/index.html'
+---
+
+<div id="example">
+
+  <h4 class="fw-bold pb-3 mb-4 bb">
+    Merge Tests
+  </h4>
+
+  <p>
+    The component augments the DOM after mounting. The static
+    <code class="fs-md">{ define: { merge: true } }</code>
+    is passed, so the snapshot will be saved in its current state. The snapshot will reflect the augmentations applied.
+  </p>
+
+  <div class="row ai-center jc-start my-5">
+    <div class="col-6">
+      <section
+        class="accordion"
+        spx-component="merge">
+        <details open>
+          <summary class="accordion-btn py-2 px-4">Foo</summary>
+          <div>
+            <p class="p-4">
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quo voluptatem cum error quidem necessitatibus, doloribus suscipit esse quasi nihil nemo laudantium, voluptatum eius magnam? Harum quis repellendus explicabo nobis. Officia?
+            </p>
+          </div>
+        </details>
+        <details>
+          <summary class="accordion-btn py-2 px-4">Bar</summary>
+          <div>
+            <p class="p-4">
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quo voluptatem cum error quidem necessitatibus, doloribus suscipit esse quasi nihil nemo laudantium, voluptatum eius magnam? Harum quis repellendus explicabo nobis. Officia?
+            </p>
+          </div>
+        </details>
+        <details>
+          <summary class="accordion-btn py-2 px-4">Baz</summary>
+          <div>
+            <p class="p-4">
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quo voluptatem cum error quidem necessitatibus, doloribus suscipit esse quasi nihil nemo laudantium, voluptatum eius magnam? Harum quis repellendus explicabo nobis. Officia?
+            </p>
+          </div>
+        </details>
+        <details>
+          <summary class="accordion-btn py-2 px-4">Qux</summary>
+          <div>
+            <p class="p-4">
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quo voluptatem cum error quidem necessitatibus, doloribus suscipit esse quasi nihil nemo laudantium, voluptatum eius magnam? Harum quis repellendus explicabo nobis. Officia?
+            </p>
+          </div>
+        </details>
+      </section>
+    </div>
+  </div>
+</div>
