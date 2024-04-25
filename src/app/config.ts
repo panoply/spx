@@ -132,9 +132,9 @@ function fragments (options: Options) {
         continue;
 
       } else if (charCode === CharCode.HSH) { // hash selectors will augment, eg: #foo > foo
-        elements.push(fragment.slice(1).trim());
-      } else {
         elements.push(fragment.trim());
+      } else {
+        elements.push(`#${fragment.trim()}`);
       }
     }
   } else {
@@ -217,6 +217,8 @@ export function configure (options: Options = o()) {
     $find: new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i'),
     $param: new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i'),
     $target: `${attr}target`,
+    $fragment: `${attr}fragment`,
+    $fragments: `[${attr}fragment]`,
     $targets: `[${attr}target]:not([${attr}target=false])`,
     $morph: `${attr}morph`,
     $eval: `${attr}eval`,
