@@ -183,7 +183,7 @@ function morphNodes (page: Page, snapDom: Document) {
     for (const id of page.fragments) {
 
       const curNode = $.fragments.get(id);
-      const newNode = snapDom.getElementById(id);
+      const newNode = snapDom.body.querySelector<HTMLElement>(id);
 
       if (!newNode || !curNode) continue;
       if (!emit('render', curNode, newNode)) continue;

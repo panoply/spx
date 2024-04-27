@@ -250,7 +250,8 @@ export function setScope (instanceOf: string, dom?: HTMLElement, context?: Conte
   const scope: Scope = o<Partial<Scope>>({
     key,
     mounted: Hooks.UNMOUNTED,
-    connect: false,
+    connected: false,
+    snapshot: null,
     ref: `c.${key}`,
     state: o(),
     nodes: o(),

@@ -31,6 +31,7 @@ export function getTitle (dom: string) {
   const title = dom.indexOf('<title');
 
   if (title === -1) return nil;
+  if (dom.slice(0, title).indexOf('<svg') > -1) return nil;
 
   const start = dom.indexOf('>', title) + 1;
   const end = dom.indexOf('</title', start);

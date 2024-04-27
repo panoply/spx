@@ -163,13 +163,13 @@ export function set (state: Page, snapshot: string): Page {
   // If cache is disabled or the lifecycle event
   // returned a boolean false values we will return the record
   if (!$.config.cache || event === false) return state;
-  if (!('snap' in state)) return update(state, dom);
+  if (state.type !== VisitType.INITIAL && !('snap' in state)) return update(state, dom);
 
   // Lets assign this record to the session store
   $.pages[state.key] = state;
   $.snaps[state.snap] = dom;
 
-  fragments.snapshots(state);
+  fragments.setFragmentElements(state);
 
   emit('after:cache', state);
 
@@ -205,6 +205,15 @@ export function update (page: Page, snapshot?: string): Page {
 
 }
 
+/**
+ * Set Snapshot
+ *
+ * Replaces an exisiting snapshot DOM String with the provided `snapshot`
+ * value. This function is used to align marked snapshots, wherein elements
+ * are updated with identifier references such as `t.a1b2c4` (targets) or `f.a1b2c3`
+ * (fragments) etc etc. Call to this function are typically occurring outside the
+ * event loop.
+ */
 export function setSnap (snapshot: string, key?: string) {
 
   const snap = key = key

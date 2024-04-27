@@ -8,7 +8,7 @@ import { LogType, VisitType } from './shared/enums';
 import { assign, d, defineProps, isArray, isBrowser, o, origin } from './shared/native';
 import { initialize, disconnect, observe } from './app/controller';
 import { clear } from './app/queries';
-import { on, off } from './app/events';
+import { on, off, emit } from './app/events';
 import { morph } from './morph/morph';
 import { Component } from './components/extends';
 import { registerComponents, getComponentId } from './components/register';
@@ -21,7 +21,7 @@ import * as history from './observe/history';
 import * as components from './observe/components';
 
 const spx = o({
-  $,
+  get $ () { return $; },
   Component,
   on,
   off,
@@ -150,6 +150,7 @@ function register (...classes: any[]) {
     on('x', function run () {
       components.connect();
       off('x', run);
+      emit('connected');
     });
   } else {
     components.connect();
@@ -181,6 +182,27 @@ function session () {
   });
 
 }
+
+// function global (model?: { [key: string]: any }) {
+
+//   if (isEmpty($.global)) {
+//     if (model) {
+//       assign($.global, model);
+//       if ($.logLevel === LogLevel.INFO) {
+//         log(LogType.INFO, 'Global has been defined');
+//       } else if ($.logLevel === LogLevel.VERBOSE) {
+//         log(LogType.VERBOSE, 'Global has been defined: ', $.global);
+//       }
+//     }
+//   } else {
+//     if (model) {
+//       log(LogType.WARN, 'You cannot re-define global data within an SPX session');
+//     }
+//   }
+
+//   return $.global;
+
+// }
 
 /**
  * Reload

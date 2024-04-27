@@ -101,9 +101,7 @@ export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
 
   api.replaceState(state, state.title, state.key);
 
-  if ($.logLevel === LogType.VERBOSE) {
-    log(LogType.VERBOSE, `History replaceState: ${api.state.key}`);
-  }
+  log(LogType.VERBOSE, `History replaceState: ${api.state.key}`);
 
   return api.state;
 
@@ -127,9 +125,7 @@ export function push ({ key, rev, title, location }: Page) {
 
   api.pushState(state, state.title, path);
 
-  if ($.logLevel === LogType.VERBOSE) {
-    log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
-  }
+  log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
 
   return api.state;
 
@@ -152,17 +148,24 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
     // We will carry on as normal
 
     if (!q.has(event.state.rev) && event.state.rev !== event.state.key) {
+
       request.reverse(event.state.rev);
+
+    } else {
+
+      $.pages[event.state.rev].scrollX = window.scrollX;
+      $.pages[event.state.rev].scrollY = window.scrollY;
+
     }
+
+    console.log(window.scrollY);
 
     const page = $.pages[event.state.key];
 
-    if ($.logLevel === LogType.VERBOSE) {
-      if (page.type === VisitType.REVERSE) {
-        log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
-      } else {
-        log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
-      }
+    if (page.type === VisitType.REVERSE) {
+      log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
+    } else {
+      log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
     }
 
     q.patchPage('type', VisitType.POPSTATE);

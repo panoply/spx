@@ -8,7 +8,7 @@ import { context, resetContext } from '../components/observe';
 import { Hooks, LogType, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
 import { assign, o, toArray } from '../shared/native';
-import { getSnapDom, patchPage } from '../app/queries';
+import { getSnapDom, patchPage, setSnap } from '../app/queries';
 import { onNextTick, promiseResolve } from '../shared/utils';
 
 export type Lifecycle = (
@@ -65,20 +65,28 @@ export function mount (promises: LifecycleHooks) {
 
       try {
 
-        if (!scope.connect && nextHook && scope.mounted === Hooks.CONNNECT) {
+        if (!scope.connected && nextHook && scope.mounted === Hooks.CONNNECT) {
 
           await instance[firstHook](params);
           await instance[nextHook](params);
 
-          scope.connect = true; // updates scope.connect, ensures it triggers once
+          scope.connected = true; // updates scope.connect, ensures it triggers once
 
         } else {
 
           await instance[firstHook](params);
 
+          if (scope.mounted === Hooks.UNMOUNT) {
+            if (scope.define.merge) {
+              const snap = getSnapDom($.page.rev);
+              snap.querySelector(`[${$.qs.$ref}="${scope.ref}"]`).outerHTML = scope.snapshot;
+              setSnap(snap.documentElement.outerHTML, $.page.rev);
+            }
+          }
+
         }
 
-        instance.scope.mounted = instance.scope.mounted === Hooks.UNMOUNT
+        instance.scope.mounted = scope.mounted === Hooks.UNMOUNT
           ? Hooks.UNMOUNTED
           : Hooks.MOUNTED;
 
@@ -86,7 +94,7 @@ export function mount (promises: LifecycleHooks) {
 
       } catch (_) { /* Fall through and reject outside of catch */ }
 
-      log(LogType.WARN, `Component to failed to ${MOUNT}: ${instance.scope.instanceOf} (${scopeKey})`);
+      log(LogType.WARN, `Component to failed to ${MOUNT}: ${scope.instanceOf} (${scopeKey})`);
 
       return Promise.reject<string>(scopeKey);
 
@@ -114,7 +122,7 @@ export function hook () {
     const event = scope.mounted === Hooks.UNMOUNT ? 'unmount' : 'onmount';
 
     if (instance && event in instance) {
-      if (event === 'onmount' && 'connect' in instance && scope.connect === false) {
+      if (event === 'onmount' && 'connect' in instance && scope.connected === false) {
         promises.push([
           scopeKey,
           'connect',

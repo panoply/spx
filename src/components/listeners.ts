@@ -67,12 +67,10 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
 
   $.components.$elements.delete(event.dom);
 
-  if ($.logLevel === LogType.VERBOSE) {
-    log(LogType.VERBOSE, [
-      `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
-      `${instance.scope.define.name}: ${instance.scope.key}`
-    ]);
-  }
+  log(LogType.VERBOSE, [
+    `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
+    `${instance.scope.define.name}: ${instance.scope.key}`
+  ]);
 
 }
 
@@ -106,11 +104,9 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
 
   event.attached = true;
 
-  if ($.logLevel === LogType.VERBOSE) {
-    log(LogType.VERBOSE, [
-      `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
-      `${instance.scope.define.name}: ${instance.scope.key}`
-    ]);
-  }
+  log(LogType.VERBOSE, [
+    `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
+    `${instance.scope.define.name}: ${instance.scope.key}`
+  ]);
 
 }

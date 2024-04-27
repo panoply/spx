@@ -148,7 +148,7 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
 
         scope.key = instance.scope.key;
         scope.ref = instance.scope.ref;
-        scope.connect = instance.scope.connect;
+        scope.connected = instance.scope.connected;
         scope.mounted = instance.scope.mounted = Hooks.MOUNTED;
 
       } else {
@@ -211,10 +211,7 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
 
         if ('connect' in instance) {
 
-          promises.push([
-            scope.key,
-            'connect'
-          ]);
+          promises.push([ scope.key, 'connect' ]);
 
           if (isInitial) {
             instance.scope.mounted = Hooks.CONNNECT;

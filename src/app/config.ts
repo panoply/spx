@@ -138,7 +138,9 @@ function fragments (options: Options) {
       }
     }
   } else {
+
     return [ 'body' ];
+
   }
 
   return elements;

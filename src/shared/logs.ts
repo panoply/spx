@@ -2,6 +2,8 @@ import { $ } from '../app/session';
 import { Colors, LogLevel, LogType } from './enums';
 import { isArray, info, warn, error } from './native';
 
+const PREFIX = '\x1b[96mSPX\x1b[0m ';
+
 /**
  * Type Error
  *
@@ -11,7 +13,8 @@ import { isArray, info, warn, error } from './native';
 export function log (type: LogType, message: string | string[], context?: any) {
 
   const LEVEL = $.logLevel;
-  const PREFIX = '\x1b[96mSPX\x1b[0m ';
+
+  if (LEVEL > LogType.INFO && type <= LogType.INFO) return;
 
   if (isArray(message)) message = message.join(' ');
 

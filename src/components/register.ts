@@ -1,8 +1,9 @@
 import type { ComponentRegister, Merge } from 'types';
 import { $ } from '../app/session';
-import { camelCase, downcase, hasProp, hasProps } from '../shared/utils';
+import { camelCase, downcase } from '../shared/utils';
 import { Colors, LogType } from '../shared/enums';
 import { log } from '../shared/logs';
+import { assign } from '../shared/native';
 
 type Register = Merge<ComponentRegister, {
   /**
@@ -28,19 +29,13 @@ export function getComponentId (instance: Register, identifier?: string) {
 
   identifier = downcase(identifier || name);
 
-  if (!hasProp(instance, 'define')) {
-    instance.define = {
-      name: identifier,
-      state: {},
-      nodes: []
-    };
-  }
+  instance.define = assign({
+    name: identifier,
+    merge: false,
+    state: {},
+    nodes: []
+  }, instance.define);
 
-  const has = hasProps(instance.define);
-
-  if (!has('state')) instance.define.state = {};
-  if (!has('nodes')) instance.define.nodes = [];
-  if (!has('name')) instance.define.name = identifier;
   if (identifier !== instance.define.name) identifier = camelCase(instance.define.name);
 
   if (name !== original && /^[A-Z]|[_-]/.test(instance.define.name)) {

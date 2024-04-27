@@ -91,6 +91,11 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
       $connected.delete(id);
       $elements.delete(instance.scope.dom);
 
+      if (scope.define.merge) {
+        scope.snapshot = curNode.outerHTML;
+        log(LogType.VERBOSE, `Component ${scope.define.name} snapshot: ${scope.key}`, Colors.GRAY);
+      }
+
       for (const key in scope.nodes) {
         $elements.delete(scope.nodes[key].dom);
       }
@@ -187,6 +192,7 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
 
   if (cRef && nRef) {
 
+    console.log(curNode, newNode);
     disconnect(curNode, cRef);
     connect(curNode, nRef);
 

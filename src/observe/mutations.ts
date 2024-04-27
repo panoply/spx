@@ -57,8 +57,14 @@ export function connect () {
 
   if (!$.observe.mutations) return;
 
-  resources.observe(document.head, { childList: true });
-  resources.observe(d(), { childList: true, subtree: true });
+  resources.observe(document.head, {
+    childList: true
+  });
+
+  resources.observe(d(), {
+    childList: true,
+    subtree: true
+  });
 
   $.observe.mutations = true;
 

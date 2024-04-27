@@ -1,9 +1,10 @@
 import type { Page } from 'types';
 import { $ } from '../app/session';
 import { getSnapDom, patchPage, setSnap } from '../app/queries';
-import { VisitType } from '../shared/enums';
-import { d } from '../shared/native';
+import { LogType, VisitType } from '../shared/enums';
+import { d, nil, toArray } from '../shared/native';
 import { forNode, onNextTick, uuid } from '../shared/utils';
+import { log } from '../shared/logs';
 
 /**
  * Connect Fragments
@@ -13,60 +14,75 @@ import { forNode, onNextTick, uuid } from '../shared/utils';
  */
 export function connect () {
 
-  const fragments = [];
+  const fragment = $.config.fragments;
 
-  for (const id of $.page.fragments) {
-    const element = document.getElementById(id);
-    if (element) {
-      $.fragments.set(id, element);
-      fragments.push(id);
+  const selector = fragment.length === 1 && fragment[0] === 'body'
+    ? $.qs.$fragments
+    : `${fragment.join()},${$.qs.$fragments}`;
+
+  d().querySelectorAll<HTMLElement>(selector).forEach(node => {
+
+    let dynamic: string = node.getAttribute($.qs.$fragment);
+
+    if (dynamic !== null) {
+
+      dynamic = dynamic.trim();
+
+      if (node.id !== nil && (dynamic === 'true' || dynamic === nil)) {
+        $.fragments.set(`#${node.id}`, node);
+      } else {
+        $.fragments.set(`${node.nodeName.toLowerCase()}[${$.qs.$fragment}="${dynamic}"]`, node);
+      }
+
     } else {
-      $.fragments.delete(id);
+      $.fragments.set(`#${node.id}`, node);
     }
-  }
 
-  patchPage('fragments', fragments);
+  });
+
+  patchPage('fragments', toArray($.fragments.keys()));
 
 }
 
 /**
- * Snapshot Fragments
+ * Set Fragment elements
  *
  * Checks snapshots outside the event loop for fragment targets
  * and marks them accordingly.
  */
-export function snapshots (page: Page) {
+export function setFragmentElements (page: Page) {
 
   if (page.type !== VisitType.VISIT) {
+
+    if (page.selector === 'body' || page.selector === null) return;
 
     onNextTick(() => {
 
       const snapDom = getSnapDom(page.snap);
-      const selector = page.selector !== 'body' && page.selector !== null
-        ? `${$.qs.$targets}`
-        : $.qs.$targets;
-
-      const targets = snapDom.body.querySelectorAll<HTMLElement>(selector);
-      const domNode = page.type === VisitType.INITIAL
-        ? d().querySelectorAll<HTMLElement>(selector)
-        : null;
+      const targets = snapDom.body.querySelectorAll<HTMLElement>($.qs.$targets);
+      const domNode = d().querySelectorAll<HTMLElement>($.qs.$targets);
 
       // console.log(targets, domNode);
 
       forNode(targets, (node, index) => {
 
-        // SKIP <a href></a> ELEMENTS
-        // NOTE: Added during slotenmaker build, might break something, check at later time
-        if (node.nodeName === 'A') return;
-        if (contains(node)) return;
+        if (contains(node)) {
+
+          log(
+            LogType.WARN,
+            'The fragment or target is a decedent of an element which morphs',
+            node
+          );
+
+          return;
+
+        }
 
         if (!node.hasAttribute('id')) {
 
           node.setAttribute('id', `t.${uuid()}`);
 
-          if (domNode !== null) {
-            domNode[index].setAttribute('id', `t.${uuid()}`);
-          }
+          if (domNode !== null) domNode[index].setAttribute('id', `t.${uuid()}`);
 
         } else {
 

@@ -65,7 +65,7 @@ export const Component = class {
    *
    * Holds a reference to the DOM Document element `<html>` node.
    */
-  get html () { return this.dom.closest('html'); };
+  get html () { return document.documentElement; };
 
   /**
    * Constructor
@@ -97,7 +97,9 @@ export const Component = class {
       set: (target, key: string, value) => {
 
         const preset = scope.define.state[key];
-        const domValue = typeof value === 'object' || isArray(value) ? JSON.stringify(value) : `${value}`;
+        const domValue = typeof value === 'object' || isArray(value)
+          ? JSON.stringify(value)
+          : `${value}`;
 
         if (typeof preset === 'object' && hasProp(preset, 'persist') && preset.persist) {
           target[key] = scope.state[key] = value;
@@ -122,7 +124,9 @@ export const Component = class {
           const { binds } = scope;
 
           for (const id in binds[key]) {
+
             binds[key][id].value = domValue;
+
             if ($elements.has(binds[key][id].dom)) {
               $elements.get(binds[key][id].dom).innerText = domValue;
             }
@@ -217,13 +221,13 @@ export const Component = class {
           : this.dom.getAttribute(`${prefix}:${prop}`);
 
         /**
-       * The JSON value defintion
-       */
+         * The JSON value defintion
+         */
         let json: boolean;
 
         /**
-       * Whether or not dom state reference exists
-       */
+         * Whether or not dom state reference exists
+         */
         const defined = value !== null && value !== nil;
 
         if (typeof attr === 'object') {
