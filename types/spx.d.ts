@@ -96,7 +96,9 @@ export const $: Session;
  * })
  * ```
  */
-export function connect(options?: Options): ((callback: (state?: Page) => void) => Promise<void>);
+export function connect<T = {}>(options?: Options): ((callback: (state?: Page & {
+  readonly global: T
+}) => void) => Promise<void>);
 
 /**
  * #### Component
@@ -108,12 +110,49 @@ export function connect(options?: Options): ((callback: (state?: Page) => void) 
  * #### Example
  *
  * ```js
-* import spx from 'spx';
-*
-* spx.component('identifier')
-* ```
-*/
+ * import spx from 'spx';
+ *
+ * spx.component('identifier')
+ * ```
+ */
 export function component(identifer: string): Class;
+
+/**
+ * #### Globals
+ *
+ * Define global dataset to be exposed within hooks and lifecycle events. You'd typically leverage
+ * this within a `<script>` tag when you need context of data. Global data is **READ ONLY** and once
+ * defined it cannot be overwritten.
+ *
+ * ---
+ *
+ * #### Example
+ *
+ * Use the `global` within a `<script>` tag.
+ *
+ * ```html
+ * <script>
+ *   spx.global({
+ *    foo: 'string',
+ *    bar: true,
+ *    baz: {
+ *      qux: 100
+ *    }
+ *   })
+ * </script>
+ * ```
+ *
+ * Whenever we trigger a hook, the global data is made available.
+ *
+ * ```js
+ * spx.on('load', function({ global }) {
+ *
+ *    console.log(global.baz) // logs { qux: 100 }
+ *
+ * })
+ * ```
+ */
+export function global(model?: { [key: string]: any }): Class;
 
 /**
  * #### Session

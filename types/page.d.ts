@@ -223,10 +223,10 @@ export interface Page<T = any> {
   target: string[];
 
   /**
-   * List of fragment identifiers and `spx-target` references.
+   * List of fragment identifier as per connection `fragments` option reference.
    *
    * @example
-   * ['foo', 'bar' , 't.a2ks1']
+   * ['#foo', '#bar']
    */
   fragments: string[];
 

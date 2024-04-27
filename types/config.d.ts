@@ -160,6 +160,22 @@ export interface Selectors {
    */
   $targets?: string;
   /**
+   * The `spx-fragment` attribute annotation
+   *
+   * ```js
+   * 'spx-fragment'
+   * ```
+   */
+  $fragment?: string;
+  /**
+   * The `spx-fragment` attribute annotation
+   *
+   * ```js
+   * '[spx-fragment]'
+   * ```
+   */
+  $fragments?: string;
+  /**
    * The `spx-target` attribute annotation
    *
    * ```js

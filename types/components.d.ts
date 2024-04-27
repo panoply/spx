@@ -287,6 +287,12 @@ export interface Scope {
    */
   define: SPX.Define;
   /**
+   * DOM string snapshot of the component to be merged.
+   *
+   * @default null
+   */
+  snapshot: string;
+  /**
    * The element reference key/s
    */
   dom: string
@@ -316,7 +322,7 @@ export interface Scope {
    * has been triggered, whereas a value of `false` indicates that `connect()` has yet to be
    * called.
    */
-  connect: boolean;
+  connected: boolean;
   /**
    * The current mount status of the component. This is an `enum` value which will signal
    * how observer connection and disconnection actions will proceed.

@@ -398,18 +398,13 @@ export interface Options extends IObserverOptions {
   /**
    * #### SPX Fragments
    *
-   * Define a set of `id=""` annotated elements that are expected to change between navigations.
-   * By default, SPX will swap the entire `<body>` fragment, but it is **highly recommended**
-   * that you define fragment ids.
-   *
-   * > **Please Note**
-   * >
-   * > Fragments **MUST** must be identifier values. Only elements which contain an `id=""` attribute
-   * > are considered fragments.
+   * Define element selectors that are expected to change between navigations. By default,
+   * SPX will swap the entire `<body>` fragment, but it is **highly recommended**
+   * that you define targets.
    *
    * ---
    *
-   * @default []
+   * @default ['body']
    */
   fragments?: string[];
   /**

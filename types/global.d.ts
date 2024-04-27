@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 /* eslint-disable no-unused-vars */
 
 import type { HistoryAPI } from './config';

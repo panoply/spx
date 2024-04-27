@@ -201,6 +201,10 @@ export namespace SPX {
      */
     name?: string;
     /**
+     * Whether or not to merge on mount
+     */
+    merge?: boolean;
+    /**
      * **State Interface**
      *
      * Attribute state references used to connect DOM states with component `this.state`.
