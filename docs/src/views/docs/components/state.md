@@ -6,7 +6,7 @@ title: Component States
 
 # State
 
-Component state is stored in the DOM, and bindings are established in mounted components. State references necessitate the definition of an interface model via the static `connect.state` object within components, supporting various definition structures.
+Component state is stored in the DOM, and bindings are established in mounted components. State references necessitate the definition of an interface model via the static `define.state` object within components, supporting various definition structures.
 
 <br>
 

@@ -3,23 +3,25 @@ title: 'spx-data'
 layout: base.liquid
 group: 'directive'
 permalink: '/directives/spx-data/index.html'
-prev:
-  label: 'Installation'
-  uri: '/usage/installation'
-next:
-  label: 'Options'
-  uri: '/usage/options/'
 ---
 
 # spx-data
 
 The `spx-data` attribute is a **special** attribute that can be used to pass data references to page states. The attribute uses an XML type syntactical structure and will parse the provided values into an object which will be made available in SPX events and session state.
 
-### Example
+<br>
+
+### Use Case
+
+The `spx-data` directive is ideal for usage with third-party integrated solutions like analytics. A good appropriation use-case would be integrating something like a meta tracking pixel, wherein you'd use the `spx-data` structure to pass references to the pixel without needing to re-evaluate injected scripts.
+
+---
+
+# Example
 
 The `spx-data` attribute can be annotated on `<a>` link elements and uses a colon notation structure:
 
-```xml
+```html
 <a
   href="*"
   spx-data:some-string="foo"
@@ -27,7 +29,7 @@ The `spx-data` attribute can be annotated on `<a>` link elements and uses a colo
   spx-data:nice-boolean="true"
   spx-data:list-array="[ 'string' ]"
   spx-data:test-object="{ prop: 'value', digit: 200, list: [] }"
->
+></a>
 ```
 
 The above code sample would result be converted from `kebab-case` to `camelCase`
@@ -43,12 +45,13 @@ The above code sample would result be converted from `kebab-case` to `camelCase`
     "prop": "value",
     "digit": 200,
     "list": []
-  },
-
+  }
 }
 ```
 
-### Usage
+<br>
+
+# Usage
 
 Each event will pass the data values in page state.
 

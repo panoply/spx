@@ -32,7 +32,7 @@ The `spx.connect` (see [connection](/usage/connection)) method is the gateway to
 import spx from 'spx'
 
 spx.connect({
-  fragments: [],             // Element selectors that will change
+  fragments: [],             // Element (id="") values that are dynamic
   timeout: 30000,            // Request Timeout limit
   logLevel: 2,               // Console Log level
   schema: 'spx',             // The data-attribute schema
@@ -56,7 +56,9 @@ spx.connect({
 
 ## fragments
 
-The `fragments[]` option in SPX allows you to specify a list of element `id` attribute values that persist across various pages of your website. These fragments act as the dynamic components of your web application, with their descendant elements undergoing changes between page visits. It's important to note that the `fragments[]` option does not support class, element, or attribute-like selectors; only the value of an `id` attribute or a hash `#` prefixed identifier will be accepted.
+The `fragments[]` option in SPX allows you to specify a list of element `id` attribute values that persist across various pages of your website. These fragments act as the dynamic regions of your web application, wherein their descendant elements undergo changes between page visits. It's important to note that the `fragments[]` option does not support class, element, or attribute-like selectors; only the value of an `id` attribute or a hash `#` prefixed identifier will be accepted.
+
+The `spx-fragment` directive can be used to extend the connection presets in the dom.
 
 ```js
 import spx from 'spx';

@@ -183,6 +183,10 @@
           "url": "/directives/spx-target/"
         },
         {
+          "title": "spx-fragment",
+          "url": "/directives/spx-fragment/"
+        },
+        {
           "title": "spx-morph",
           "url": "/directives/spx-morph/"
         },

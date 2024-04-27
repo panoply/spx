@@ -1,6 +1,6 @@
 # Algorithm
 
-The SPX Component algorithm (or pattern) works in a progressive manner. This page intends to describe the internal logic applied to component handling and how things work under the hood.
+The SPX Component algorithm (or pattern) works in a progressive manner. This page intends to describe the internal logic applied to component handling and how things work under the hood, while also informing of common or potential "gotcha" cases and situations wherein consideration should be had.
 
 # Operations
 

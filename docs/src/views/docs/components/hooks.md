@@ -16,7 +16,7 @@ Hooks are fired outside the event-loop so as negate any potential blocking or ex
 
 ---
 
-# Connect
+# connect
 
 The `connect` lifecycle callback hook is an initializer that executes first and will fire be invoked when a new instance was established. New instances are determined by the presence of an element in DOM annotated with a `spx-component` attribute who's value matches the component identifier (see [definitions](/components/defintions/)). Because component instances persist throughout a session in SPX, this hook will only ever fire **one** time for each component occurrence and never again after that.
 
@@ -38,7 +38,7 @@ export class Example extends spx.Component {
 
 <br>
 
-# Onmount
+# onmount
 
 The `onmount` lifecycle callback hook will trigger after the component has been mounted in the DOM. The hook is the equivalent of `DOMContentLoaded` and will fire each time an component with an established (existing) instance is rendered to the DOM. The difference between `connect` and `onmount` is that `connect` will trigger once upon initial visit whereas `onmount` triggers both upon initial visit (following `connect`) and in all subsequent visits to a location where the component exists.
 
@@ -60,9 +60,9 @@ export class Example extends spx.Component {
 
 <br>
 
-# Unmount
+# unmount
 
-The `unmount` lifecycle callback hook will trigger whenever the component is removed from the DOM. The hook will signal before a DOM morph occurs and can be used to teardown or clean-up logic between page visits.
+The `unmount` lifecycle callback hook will trigger whenever the component is removed from the DOM. The hook will signal before a DOM morph occurs and can be used to teardown or clean-up logic between page visits. SPX will determine an unmount only when the component (element) is completely removed and in cases where the component morphs, unmount will not trigger.
 
 <!-- prettier-ignore-->
 ```ts
