@@ -192,7 +192,6 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
 
   if (cRef && nRef) {
 
-    console.log(curNode, newNode);
     disconnect(curNode, cRef);
     connect(curNode, nRef);
 

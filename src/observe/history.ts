@@ -158,8 +158,6 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
 
     }
 
-    console.log(window.scrollY);
-
     const page = $.pages[event.state.key];
 
     if (page.type === VisitType.REVERSE) {
