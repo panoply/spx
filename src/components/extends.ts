@@ -18,7 +18,8 @@ export const Component = class {
    * Component Scopes
    *
    * Isolated store of all component instance scopes. Available to component instances
-   * via the getter `scope` property.
+   * via the getter `scope` property. This reference acts as the generation guideline
+   * for component instances.
    */
   static scopes: Map<string, Scope> = m();
 
@@ -84,6 +85,7 @@ export const Component = class {
       }
     });
 
+    const { define } = scope;
     const prefix = `${$.config.schema}${scope.instanceOf}`;
 
     // console.log(scope);
@@ -96,7 +98,7 @@ export const Component = class {
     this.state = new Proxy(o(), {
       set: (target, key: string, value) => {
 
-        const preset = scope.define.state[key];
+        const preset = define.state[key];
         const domValue = typeof value === 'object' || isArray(value)
           ? JSON.stringify(value)
           : `${value}`;
@@ -124,9 +126,7 @@ export const Component = class {
           const { binds } = scope;
 
           for (const id in binds[key]) {
-
             binds[key][id].value = domValue;
-
             if ($elements.has(binds[key][id].dom)) {
               $elements.get(binds[key][id].dom).innerText = domValue;
             }
@@ -140,17 +140,17 @@ export const Component = class {
 
     if (isEmpty(scope.state)) {
 
-      for (const prop in scope.define.state) {
+      for (const prop in define.state) {
 
         /**
          * The `static` state value
          */
-        const attr = scope.define.state[prop];
+        const attr = define.state[prop];
 
         /**
          * The `static` state type contructor value
          */
-        let type: ValueOf<typeof scope.define.state>;
+        let type: ValueOf<typeof define.state>;
 
         /**
          * The `static` state type converted value
@@ -171,9 +171,9 @@ export const Component = class {
         } else if (type === Number) {
           this.state[prop] = value ? Number(value) : 0;
         } else if (type === Array) {
-          this.state[prop] = value || [];
+          this.state[prop] = isArray(value) ? value : [];
         } else if (type === Object) {
-          this.state[prop] = value || {};
+          this.state[prop] = typeof value === 'object' ? value : {};
         }
 
         scope.state[prop] = this.state[prop];
@@ -182,13 +182,13 @@ export const Component = class {
 
     } else {
 
-      for (const prop in scope.define.state) {
+      for (const prop in define.state) {
 
         if (!(prop in scope.state)) {
-          if (typeof scope.define.state[prop] === 'object') {
-            scope.state[prop] = scope.define.state[prop].default;
+          if (typeof define.state[prop] === 'object') {
+            scope.state[prop] = define.state[prop].default;
           } else {
-            switch (scope.define.state[prop]) {
+            switch (define.state[prop]) {
               case String: scope.state[prop] = nil; break;
               case Boolean: scope.state[prop] = false; break;
               case Number: scope.state[prop] = 0; break;
@@ -201,7 +201,7 @@ export const Component = class {
         /**
          * The `static` state value
          */
-        const attr = scope.define.state[prop];
+        const attr = define.state[prop];
 
         /**
          * The converted attribute name
@@ -211,7 +211,7 @@ export const Component = class {
         /**
        * The `static` state type contructor value
        */
-        let type: ValueOf<typeof scope.define.state>;
+        let type: ValueOf<typeof define.state>;
 
         /**
          * The `static` state type converted value
@@ -221,18 +221,12 @@ export const Component = class {
           : this.dom.getAttribute(`${prefix}:${prop}`);
 
         /**
-         * The JSON value defintion
-         */
-        let json: boolean;
-
-        /**
          * Whether or not dom state reference exists
          */
         const defined = value !== null && value !== nil;
 
         if (typeof attr === 'object') {
           type = attr.typeof;
-          json = defined;
           if (!defined) value = attr.default;
         } else {
           type = attr;
@@ -253,9 +247,9 @@ export const Component = class {
         } else if (type === Number) {
           this.state[prop] = value ? Number(value) : 0;
         } else if (type === Array) {
-          this.state[prop] = defined ? attrJSON(value) : json ? value : [];
+          this.state[prop] = defined ? attrJSON(value) : value || [];
         } else if (type === Object) {
-          this.state[prop] = defined ? attrJSON(value) : json ? value : {};
+          this.state[prop] = defined ? attrJSON(value) : value || {};
         }
 
         scope.state[prop] = this.state[prop];

@@ -6,7 +6,6 @@ import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector } from '
 import { assign, o, isArray, defineProps } from '../shared/native';
 import { LogType, VisitType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
-import * as history from '../observe/history';
 import * as fragments from '../observe/fragment';
 
 /**
@@ -28,15 +27,9 @@ export function create (page: Page): Page {
 
   page.ts = ts();
   page.target = targets(page);
+  page.selector = selector(page.target);
 
   // assign the selector reference if it is undefined
-  if (!has('selector')) {
-    if (page.target[0] === 'body') {
-      page.selector = 'body';
-    } else {
-      page.selector = selector(page.target);
-    }
-  }
 
   if ($.config.cache) {
     if (!has('cache')) page.cache = $.config.cache;
@@ -113,24 +106,16 @@ export function newPage (page: Page) {
  * Updates a page record, applies an augmentation to the **current** page by default
  * looking up the key with the `history.state` reference.
  */
-export function patchPage <T extends keyof Page> (
-  prop: T,
-  value: T extends 'components' ? string[] : Page[T],
-  key = history.api.state.key
-) {
+export function patch <T extends keyof Page> (prop: T, value: Page[T], key = $.history.key) {
 
   if (prop === 'location') {
-    $.pages[key][prop] = assign($.pages[key][prop], value);
+    $.pages[key][prop] = assign($.pages[prop][key], value);
   } else if (prop === 'target') {
     $.pages[key].target = targets(value);
     $.pages[key].selector = selector($.pages[key].target);
-  } else if (prop === 'components') {
-    $.pages[key].components = value;
   } else {
     $.pages[key][prop] = value;
   }
-
-  return $.pages[key];
 
 }
 
@@ -241,12 +226,12 @@ export function setSnap (snapshot: string, key?: string) {
 export function get (key?: string): { page: Page, dom: Document } {
 
   if (!key) {
-    if (history.api.state === null) {
+    if ($.history === null) {
       log(LogType.WARN, 'Missing history state reference, page cannot be returned');
       return;
     }
 
-    key = history.api.state.key;
+    key = $.history.key;
 
   }
 
@@ -288,7 +273,7 @@ export function getSnapDom (key?: string): Document {
  * Returns an array list of component intances which are currently
  * mounted (active) on the page.
  */
-export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: Class[] } {
+export function mounted ({ mounted = null } = {}): { [instanceOf: string]: Class[] } {
 
   const mounts: { [instanceOf: string]: Class[] } = o();
   const { $instances, $connected } = $.components;
@@ -298,17 +283,17 @@ export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: Cl
     const { scope } = instance;
 
     if (!$connected.has(scope.key)) continue;
-    if (mounted !== null && scope.mounted === mounted) continue;
+    if (mounted !== null && scope.status === mounted) continue;
     if (scope.alias !== null && !(scope.alias in mounts)) {
 
       mounts[scope.alias] = [ instance ];
 
+    }
+
+    if (!(scope.instanceOf in mounts)) {
+      mounts[scope.instanceOf] = [ instance ];
     } else {
-      if (!(scope.instanceOf in mounts)) {
-        mounts[scope.instanceOf] = [ instance ];
-      } else {
-        mounts[scope.instanceOf].push(instance);
-      }
+      mounts[scope.instanceOf].push(instance);
     }
 
   }
@@ -326,12 +311,12 @@ export function getMounted ({ mounted = null } = {}): { [instanceOf: string]: Cl
 export function getPage (key?: string): Page {
 
   if (!key) {
-    if (history.api.state === null) {
+    if ($.history === null) {
       log(LogType.WARN, 'Missing history state reference, page cannot be returned');
       return;
     }
 
-    key = history.api.state.key;
+    key = $.history.key;
   }
 
   if (key in $.pages) return $.pages[key];

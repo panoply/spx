@@ -1,8 +1,9 @@
-import type { ComponentBinds } from 'types';
+import type { ComponentBinds, Scope } from 'types';
 import { $ } from '../app/session';
 import { isDirective } from '../components/context';
 import { log } from '../shared/logs';
 import { LogType } from '../shared/enums';
+import { onNextTick } from '../shared/utils';
 import { walkElements } from './walk';
 import * as q from '../app/queries';
 
@@ -65,13 +66,17 @@ import * as q from '../app/queries';
 export function morphBinds (cRef: string, bind: ComponentBinds, value: string) {
 
   const { page, dom } = q.get();
-  const { body } = dom;
+  const elem = dom.body.querySelector<HTMLElement>(bind.selector);
 
-  body.querySelector<HTMLElement>(bind.selector).innerText = value;
+  if (elem) {
 
-  log(LogType.VERBOSE, `Binding node in snapshot was updated: ${value}`);
+    elem.innerText = value;
+    q.setSnap(elem.ownerDocument.documentElement.outerHTML, page.snap);
+    log(LogType.VERBOSE, `Components binded node in snapshot was updated: ${value}`);
 
-  $.snaps[page.snap] = dom.documentElement.outerHTML;
+  } else {
+    // TODO: FAILED
+  }
 
 }
 
@@ -117,9 +122,34 @@ export function patchSnap (snapNode: Element, pageNode: Element, nodes: string[]
 };
 
 /**
+ * Snapshot Component Merge
+ *
+ * Updates the component snapshot innerHTML. This will apply when a components `{ define: merge }`
+ * is set to `true` and executes outside the event-loop either after the component `unmount()` hook
+ * has fired or if no lifecycle hook is defined within a component, it will fire when resetting
+ * the `mounted` enum within the component scope reference.
+ */
+export function patchComponentSnap (scope: Scope, scopeKey: string) {
+
+  onNextTick(() => {
+
+    const snap = q.getSnapDom(scope.snap);
+    const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
+
+    if (elem) {
+      elem.innerHTML = scope.snapshot;
+      q.setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
+    } else {
+      log(LogType.WARN, `Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
+    }
+
+  });
+}
+
+/**
  * Morph Snapshot
  *
- * Walks the snapshot and update DOM Elements with reference datasets.
+ * Walks the snapshot and updates DOM Elements with reference datasets.
  */
 export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) {
 
@@ -140,11 +170,10 @@ export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) 
 
       if ($elements.has(nodeRef)) {
 
-        const snapAttr = node.getAttribute($.qs.$ref);
         const domNode = $elements.get(nodeRef);
         const domAttr = domNode.getAttribute($.qs.$ref);
 
-        if (snapAttr !== domAttr) {
+        if (node.getAttribute($.qs.$ref) !== domAttr) {
           node.setAttribute($.qs.$ref, domAttr);
         }
 

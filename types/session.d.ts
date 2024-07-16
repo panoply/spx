@@ -1,5 +1,5 @@
 import type { Merge } from 'type-fest';
-import type { Config, Page, Observers, Memory, Selectors } from './global';
+import type { Config, Page, Observers, Memory, Selectors, HistoryState } from './global';
 import type { ComponentSession } from './components';
 
 export interface Session {
@@ -7,6 +7,10 @@ export interface Session {
    * Getter value which reflects `document.readyState` and matches against `complete`
    */
   readonly ready?: boolean;
+  /**
+   * Returns HistoryState `spx` value.
+   */
+  readonly history?: HistoryState;
   /**
    * Whether or not page has loaded, used in history operations
    */

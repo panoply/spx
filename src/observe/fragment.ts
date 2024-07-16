@@ -1,10 +1,12 @@
 import type { Page } from 'types';
 import { $ } from '../app/session';
-import { getSnapDom, patchPage, setSnap } from '../app/queries';
+import { getSnapDom, patch, setSnap } from '../app/queries';
 import { LogType, VisitType } from '../shared/enums';
 import { d, nil, toArray } from '../shared/native';
-import { forNode, onNextTick, uuid } from '../shared/utils';
+import { forNode, nodeSet, onNextTick, uuid } from '../shared/utils';
 import { log } from '../shared/logs';
+import { getSelector } from 'src/components/context';
+import { mark } from '../components/observe';
 
 /**
  * Connect Fragments
@@ -14,33 +16,71 @@ import { log } from '../shared/logs';
  */
 export function connect () {
 
-  const fragment = $.config.fragments;
+  let selector: string;
+  let directive: string;
+  let aliases: Set<HTMLElement>;
 
-  const selector = fragment.length === 1 && fragment[0] === 'body'
-    ? $.qs.$fragments
-    : `${fragment.join()},${$.qs.$fragments}`;
+  const pageDom = d();
 
-  d().querySelectorAll<HTMLElement>(selector).forEach(node => {
+  $.fragments.clear();
 
-    let dynamic: string = node.getAttribute($.qs.$fragment);
+  if ($.page.target.length > 0) {
 
-    if (dynamic !== null) {
+    directive = $.qs.$target;
+    selector = $.page.target.join(',');
+    aliases = nodeSet(pageDom.querySelectorAll<HTMLElement>(`[id][${$.qs.$component}]`));
 
-      dynamic = dynamic.trim();
+  } else {
 
-      if (node.id !== nil && (dynamic === 'true' || dynamic === nil)) {
+    const fragment = $.config.fragments;
+    directive = $.qs.$fragment;
+    selector = fragment.length === 1 && fragment[0] === 'body'
+      ? $.qs.$fragments
+      : `${fragment.join()},${$.qs.$fragments}`;
+  }
+
+  forNode(selector, node => {
+
+    if (aliases) {
+      for (const alias of aliases) {
+        if (node.contains(alias)) {
+          aliases.delete(alias);
+          break;
+        }
+      }
+    }
+
+    if (node.hasAttribute(directive)) {
+
+      const id = node.getAttribute(directive).trim();
+
+      if (node.id !== nil && (id === 'true' || id === nil)) {
         $.fragments.set(`#${node.id}`, node);
       } else {
-        $.fragments.set(`${node.nodeName.toLowerCase()}[${$.qs.$fragment}="${dynamic}"]`, node);
+        $.fragments.set(getSelector(node, directive, id), node);
       }
 
     } else {
+
       $.fragments.set(`#${node.id}`, node);
+
     }
 
   });
 
-  patchPage('fragments', toArray($.fragments.keys()));
+  if (aliases && aliases.size > 0) {
+
+    for (const child of aliases) {
+      $.fragments.set(`#${child.id}`, child);
+      $.page.target.push(`#${child.id}`);
+      mark.add(child.id);
+    }
+
+    aliases.clear();
+
+  }
+
+  patch('fragments', toArray($.fragments.keys()));
 
 }
 
@@ -61,8 +101,6 @@ export function setFragmentElements (page: Page) {
       const snapDom = getSnapDom(page.snap);
       const targets = snapDom.body.querySelectorAll<HTMLElement>($.qs.$targets);
       const domNode = d().querySelectorAll<HTMLElement>($.qs.$targets);
-
-      // console.log(targets, domNode);
 
       forNode(targets, (node, index) => {
 
@@ -90,7 +128,7 @@ export function setFragmentElements (page: Page) {
 
         }
 
-        page.fragments.push(node.id);
+        page.target.push(node.id);
 
       });
 

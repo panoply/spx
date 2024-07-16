@@ -1,5 +1,5 @@
 /* eslint-disable n/no-callback-literal */
-import type { Page, Key } from 'types';
+import type { Page, Key, HistoryState } from 'types';
 import { $ } from './session';
 import { emit } from './events';
 import { log } from '../shared/logs';
@@ -52,7 +52,7 @@ export function request <T> (key: string, {
 
     xhr.key = key;
     xhr.responseType = type;
-    xhr.open(method, key);
+    xhr.open(method, key, true);
     xhr.setRequestHeader('spx-request', 'true');
 
     if (headers !== null) {
@@ -202,7 +202,7 @@ export function preload (state: Page) {
  * dispatched at different points, like (for example) in
  * popstate operations or at initial load.
  */
-export async function reverse (state: Page): Promise<void> {
+export async function reverse (state: Page | HistoryState): Promise<void> {
 
   if (state.rev === state.key) return;
 
@@ -241,7 +241,7 @@ export async function wait (state: Page): Promise<Page> {
  * from being dispatched when an indentical fetch is inFlight.
  * Page state is returned and the session is update success.
  */
-export async function fetch (state: Page): Promise<false|Page> {
+export async function fetch <T extends Page> (state: T): Promise<false|Page> {
 
   if (XHR.$request.has(state.key)) {
     if (state.type !== VisitType.HYDRATE) {

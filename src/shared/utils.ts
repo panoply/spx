@@ -153,7 +153,7 @@ export function escSelector (input: string) {
  */
 export function attrValueNotation (input: string) {
 
-  return equalizeWS(input.replace(/[\s .]+/g, '.'))
+  return equalizeWS(input.replace(/\s \./g, '.'))
     .replace(/\s+/g, ' ')
     .trim()
     .split(/[ ,]/);
@@ -194,9 +194,9 @@ export function onNextTickResolve () {
  *
  * Executes the provided `callback()` parameter outside of the event loop.
  */
-export function onNextTick (callback: () => void) {
+export function onNextTick (callback: () => void, timeout = 1, bind?: any) {
 
-  return setTimeout(() => callback(), 1);
+  return setTimeout(() => bind ? callback.bind(bind)() : callback(), timeout);
 
 }
 
@@ -296,7 +296,11 @@ export function defineGetter <T> (
 
   if (name !== undefined) {
 
-    defineProp(object, name, { get: () => value });
+    if (!hasProp<any>(object, name)) {
+
+      defineProp(object, name, { get: () => value });
+
+    }
 
     return object;
 
@@ -330,8 +334,12 @@ export function targets (page: Page) {
 
     if (page.target.length === 1 && page.target[0] === 'body') return page.target;
 
+    if (page.target.includes('body')) {
+      log(LogType.WARN, `The body selector passed via ${$.qs.$target} will override`);
+      return [ 'body' ];
+    }
+
     return page.target.filter((v, i, a) => (
-      v !== 'body' &&
       v !== nil &&
       v.indexOf(',') === -1 ? a.indexOf(v) === i : false
     ));
@@ -513,6 +521,12 @@ export function camelCase (input: string) {
   return /[_-]/.test(downcase(input))
     ? input.replace(/([_-]+).{1}/g, (x, k) => x[k.length].toUpperCase())
     : input;
+}
+
+export function nodeSet <T extends HTMLElement> (nodes: NodeListOf<T>): Set<T> {
+
+  return s([].slice.call(nodes));
+
 }
 
 /**

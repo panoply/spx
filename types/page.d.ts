@@ -103,7 +103,7 @@ export interface Page<T = any> {
   visits: number;
 
   /**
-   * The fetched  timestamp in milliseconds since Unix [epoch](https://en.wikipedia.org/wiki/Unix_time).
+   * The fetched timestamp in milliseconds since Unix [epoch](https://en.wikipedia.org/wiki/Unix_time).
    * This is applied directly after a fetch concludes.
    *
    * @example
@@ -212,10 +212,8 @@ export interface Page<T = any> {
   cache: boolean | 'reset' | 'clear' | 'restore' | 'update';
 
   /**
-   * List of additional fragment element selectors to target in the
-   * render cycle. Accepts any valid `querySelector()` string.
-   * The selectors defined here will be merged with the defined
-   * `targets` set in connection.
+   * List of additional fragment element selectors to target in the render cycle.
+   * Accepts any valid `querySelector()` string.
    *
    * @example
    * ['#main', '.header', '[data-attr]', 'header']
@@ -229,6 +227,11 @@ export interface Page<T = any> {
    * ['#foo', '#bar']
    */
   fragments: string[];
+
+  /**
+   * Component instances which belong to this page.
+   */
+  components?: string[];
 
   /**
    * The element selector to use when targeting fragments between page visits.
@@ -294,9 +297,4 @@ export interface Page<T = any> {
    * @default 75
    */
   proximity?: number;
-
-  /**
-   * Component instances which belong to this page.
-   */
-  components?: string[];
 }

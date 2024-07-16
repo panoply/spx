@@ -123,7 +123,12 @@ export function morphAttributes (curNode: HTMLElement, newNode: HTMLElement) {
   }
 
   if (cRef || nRef || attrDirective) {
-    observe.updateNode(curNode, newNode, cRef, nRef);
+    observe.updateNode(
+      curNode,
+      newNode,
+      cRef,
+      nRef
+    );
   }
 
 }

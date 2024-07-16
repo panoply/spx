@@ -2,10 +2,11 @@ import type { Class } from 'types';
 import type { Context } from './context';
 import { $ } from '../app/session';
 import { Colors, Hooks, LogType, Nodes, Refs } from '../shared/enums';
-import { getContext, walkNode, isDirective, setRefs } from './context';
+import { getContext, walkNode, isDirective, setDomRef } from './context';
 import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
 import { onNextTick } from '../shared/utils';
+import { s } from 'src/shared/native';
 
 /**
  * Context Model
@@ -13,6 +14,8 @@ import { onNextTick } from '../shared/utils';
  * Contructed when nodes are traversed pertaining to components.
  */
 export let context: Context;
+
+export const mark: Set<string> = s();
 
 /**
  * Context Reset
@@ -43,11 +46,9 @@ function connect (node: HTMLElement, refs: string[]) {
       $connected.add(scope.key);
       $elements.set(scope.dom, node);
 
-      scope.mounted = Hooks.MOUNT;
+      scope.status = Hooks.MOUNT;
 
-      if ($.logLevel === LogType.VERBOSE) {
-        log(LogType.VERBOSE, `Component ${scope.define.name} mounted: ${scope.key}`, Colors.GREEN);
-      }
+      log(LogType.VERBOSE, `Component ${scope.define.id} mounted: ${scope.key}`, Colors.GREEN);
 
     } else if (ref === Refs.EVENT) {
 
@@ -92,8 +93,8 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
       $elements.delete(instance.scope.dom);
 
       if (scope.define.merge) {
-        scope.snapshot = curNode.outerHTML;
-        log(LogType.VERBOSE, `Component ${scope.define.name} snapshot: ${scope.key}`, Colors.GRAY);
+        scope.snapshot = curNode.innerHTML;
+        log(LogType.VERBOSE, `Component ${scope.define.id} snapshot: ${scope.key}`, Colors.GRAY);
       }
 
       for (const key in scope.nodes) {
@@ -110,11 +111,9 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
         removeEvent(instance, scope.events[key]);
       }
 
-      if ($.logLevel === LogType.VERBOSE) {
-        log(LogType.VERBOSE, `Component ${scope.define.name} unmounted: ${scope.key}`, Colors.PURPLE);
-      }
+      scope.status = Hooks.UNMOUNT;
 
-      scope.mounted = Hooks.UNMOUNT;
+      log(LogType.VERBOSE, `Component ${scope.define.id} unmounted: ${scope.key}`, Colors.PURPLE);
 
     } else if (ref === Refs.EVENT) {
 
@@ -127,8 +126,7 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
       $elements.delete(node.dom);
 
       if (newNode && curNode.isEqualNode(newNode)) {
-        setRefs(curNode, scope.key, id);
-        context.$nodes.push(node.dom);
+        setDomRef(curNode, scope.key, id);
       }
 
     } else if (ref === Refs.BINDING) {
@@ -140,8 +138,7 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
           $elements.delete(scope.binds[key][id].dom);
 
           if (newNode && curNode.isEqualNode(newNode)) {
-            setRefs(curNode, scope.key, id);
-            context.$nodes.push(scope.binds[key][id].dom);
+            setDomRef(curNode, scope.key, id);
           }
 
           break;
@@ -172,7 +169,6 @@ export function addedNode (node: HTMLElement) {
   } else {
 
     if (isDirective(node.attributes)) {
-
       if (!context) {
         context = getContext(node);
       } else {
@@ -193,6 +189,7 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
   if (cRef && nRef) {
 
     disconnect(curNode, cRef);
+
     connect(curNode, nRef);
 
   } else if (!cRef && nRef) {
@@ -202,7 +199,7 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
   } else {
 
     if (!context) {
-      context = getContext(curNode);
+      context = getContext(curNode, newNode);
     } else {
       context.$morph = curNode;
     }

@@ -38,10 +38,10 @@ export function initialize (): Promise<Page> {
 
   defineProps($, {
     prev: {
-      get: () => $.pages[history.api.state.rev]
+      get: () => $.pages[$.history.rev]
     },
     page: {
-      get: () => $.pages[history.api.state.key]
+      get: () => $.pages[$.history.key]
     },
     snapDom: {
       get: () => parse($.snaps[$.page.snap])
@@ -60,17 +60,14 @@ export function initialize (): Promise<Page> {
 
     hrefs.connect();
     fragment.connect();
-
-    if ($.config.manual === false) {
-      hover.connect();
-      intersect.connect();
-      proximity.connect();
-      components.connect();
-      mutations.connect();
-    }
+    hover.connect();
+    intersect.connect();
+    proximity.connect();
+    components.connect();
+    mutations.connect();
 
     onNextTick(() => {
-      q.patchPage('type', VisitType.VISIT);
+      q.patch('type', VisitType.VISIT);
       request.reverse(page);
       request.preload(page);
     });
@@ -85,9 +82,7 @@ export function initialize (): Promise<Page> {
 
     const { readyState } = document;
 
-    if (readyState === 'interactive' || readyState === 'complete') {
-      return resolve(DOMReady());
-    }
+    if (readyState === 'interactive' || readyState === 'complete') return resolve(DOMReady());
 
     // FALLBACK
     // Invoked if readyState is not matched, likely obsolete
@@ -95,25 +90,6 @@ export function initialize (): Promise<Page> {
     addEventListener('DOMContentLoaded', () => resolve(DOMReady()));
 
   });
-
-}
-
-export function observe () {
-
-  hover.disconnect();
-  hover.connect();
-
-  intersect.disconnect();
-  intersect.connect();
-
-  proximity.disconnect();
-  proximity.connect();
-
-  components.disconnect();
-  components.connect();
-
-  mutations.disconnect();
-  mutations.connect();
 
 }
 

@@ -125,8 +125,12 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
     $.pages[state.key].ts = ts();
     $.pages[state.key].visits = state.visits + 1;
+    $.pages[state.key].target = $.pages[state.rev].target = state.target;
+    $.pages[state.key].selector = $.pages[state.rev].selector = state.selector;
     $.pages[state.rev].scrollX = window.scrollX;
     $.pages[state.rev].scrollY = window.scrollY;
+
+    // console.log(state.selector);
 
     if (isRoute) {
 

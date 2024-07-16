@@ -59,11 +59,11 @@ export function getAttributes (element: Element, page?: Page): Page {
       // KEY REFERENCE
       if (nodeName === 'href') {
 
-        state.rev = location.pathname + location.search;
+        state.rev = getKey(location);
 
         if (!page) {
           state.location = getLocation(nodeValue);
-          state.key = state.location.pathname + state.location.search;
+          state.key = getKey(state.location);
         }
 
       } else {
@@ -453,6 +453,12 @@ export function getRoute <
     $.index = state.key;
 
   } else if (type === VisitType.HYDRATE) {
+
+    state.location = getLocation(link);
+    state.key = state.rev = getKey(state.location);
+    state.type = type;
+
+  } else if (type === VisitType.REVERSE) {
 
     state.location = getLocation(link);
     state.key = state.rev = getKey(state.location);

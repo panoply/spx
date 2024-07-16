@@ -69,7 +69,7 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
 
   log(LogType.VERBOSE, [
     `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
-    `${instance.scope.define.name}: ${instance.scope.key}`
+    `${instance.scope.define.id}: ${instance.scope.key}`
   ]);
 
 }
@@ -85,7 +85,7 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
   if (event.attached) return;
 
   if (!(event.method in instance)) {
-    log(LogType.WARN, `Undefined callback method: ${instance.scope.define.name}.${event.method}()`);
+    log(LogType.WARN, `Undefined callback method: ${instance.scope.define.id}.${event.method}()`);
     return;
   }
 
@@ -106,7 +106,7 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
 
   log(LogType.VERBOSE, [
     `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
-    `${instance.scope.define.name}: ${instance.scope.key}`
+    `${instance.scope.define.id}: ${instance.scope.key}`
   ]);
 
 }

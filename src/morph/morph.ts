@@ -433,9 +433,7 @@ function morphElement (curElement: any, newElement: Element, context: MorphConte
   // If an element with an ID is being morphed then it will be in the final
   // DOM so clear it out of the saved elements collection
   //
-  if (newKey) {
-    context.$lookup.delete(newKey);
-  }
+  if (newKey) context.$lookup.delete(newKey);
 
   if (curElement.isEqualNode(newElement)) return; // spec - https://dom.spec.whatwg.org/#concept-node-equals
 
@@ -710,11 +708,12 @@ export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
             newNode.namespaceURI
           )
         );
-
       }
 
     } else {
+
       morphedNode = newNode;
+
     }
 
   } else if (curNodeType === Nodes.TEXT_NODE || curNodeType === Nodes.COMMENT_NODE) {
@@ -743,7 +742,7 @@ export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
   } else {
 
     // We use isEqualNode instead of isSameNode because
-    // no fucks are given in SPX about "this" scopes
+    // no fucks are given in SPX about "this" scope of nodes
     //
     if (newNode.isEqualNode(morphedNode)) return morphedNode;
 
@@ -787,10 +786,7 @@ export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
     // replace the old DOM node in the original DOM tree. This is only
     // possible if the original DOM node was part of a DOM tree which
     // we know is the case if it has a parent node.
-    curNode.parentNode.replaceChild(
-      morphedNode,
-      curNode
-    );
+    curNode.parentNode.replaceChild(morphedNode, curNode);
 
   }
 

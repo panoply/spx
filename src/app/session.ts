@@ -13,7 +13,6 @@ export const $: Session = o<Session>({
     timeout: 30000,
     globalThis: true,
     schema: 'spx-',
-    manual: false,
     logLevel: 2,
     cache: true,
     components: null,
@@ -57,7 +56,7 @@ export const $: Session = o<Session>({
     $instances: m(),
     $connected: s(),
     $elements: m(),
-    $cached: m(),
+    $mounted: m(),
     $reference: p({ get: (target, key: string) => $.components.$instances.get(target[key]) })
   }),
   events: o(),

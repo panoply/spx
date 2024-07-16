@@ -199,7 +199,7 @@ export namespace SPX {
     /**
      * Identifier Name
      */
-    name?: string;
+    id?: string;
     /**
      * Whether or not to merge on mount
      */

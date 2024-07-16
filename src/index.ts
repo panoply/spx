@@ -6,7 +6,7 @@ import { configure } from './app/config';
 import { getRoute } from './app/location';
 import { LogType, VisitType } from './shared/enums';
 import { assign, d, defineProps, isArray, isBrowser, o, origin } from './shared/native';
-import { initialize, disconnect, observe } from './app/controller';
+import { initialize, disconnect } from './app/controller';
 import { clear } from './app/queries';
 import { on, off, emit } from './app/events';
 import { morph } from './morph/morph';
@@ -25,7 +25,6 @@ const spx = o({
   Component,
   on,
   off,
-  observe,
   connect,
   component,
   capture,
@@ -49,7 +48,7 @@ const spx = o({
     window.Proxy
   ),
   history: o({
-    get state () { return history.api.state; },
+    get state () { return $.history; },
     api: history.api,
     push: history.push,
     replace: history.replace,
@@ -105,7 +104,7 @@ function connect (options: Config = {}) {
 
 function component (identifer: string) {
 
-  const mounts = q.getMounted();
+  const mounts = q.mounted();
 
   return mounts[identifer][0];
 
@@ -211,9 +210,8 @@ function session () {
  */
 async function reload () {
 
-  const state = $.pages[history.api.state.key];
-  state.type = VisitType.RELOAD;
-  const page = await request.fetch(state);
+  $.page.type = VisitType.RELOAD;
+  const page = await request.fetch($.page);
 
   if (page) {
     log(LogType.INFO, 'Triggered reload, page was re-cached');
@@ -222,7 +220,7 @@ async function reload () {
 
   log(LogType.WARN, 'Reload failed, triggering refresh (cache will purge)');
 
-  return location.assign(state.key);
+  return location.assign($.page.key);
 
 };
 
@@ -375,7 +373,7 @@ async function hydrate (link: string, nodes?: string[]): Promise<Document> {
 
   if (page) {
 
-    const { key } = history.api.state;
+    const { key } = $.history;
 
     history.replace(page);
     renderer.update(page);

@@ -1,15 +1,15 @@
 import type { ComponentEvent, Scope, ComponentSession, ComponentNodes, Class } from 'types';
-import type { Context } from './context';
+import { type Context } from './context';
 import { $ } from '../app/session';
 import { Colors, Hooks, LogType, VisitType } from '../shared/enums';
-import { defineProp, defineProps, o, toArray } from '../shared/native';
+import { defineProp, defineProps, o } from '../shared/native';
 import { addEvent } from './listeners';
 import { Component as Extended } from './extends';
-import { morphSnap } from '../morph/snapshot';
 import { log } from '../shared/logs';
-import { getMounted, patchPage } from '../app/queries';
 import { mount } from '../observe/components';
 import * as u from '../shared/utils';
+import * as q from '../app/queries';
+import { snap } from './snapshot';
 
 /**
  * Define Nodes
@@ -19,7 +19,8 @@ import * as u from '../shared/utils';
  * {@link ComponentSession} (`$elements`) Map which contains the HTMLElements.
  *
  * Each entry in the {@link ComponentNodes} scope model contains a UUID reference
- * named `dom` and the value of `dom` will be the `key` property within `$elements`.
+ * named `dom` and the value of `dom` will be the `key` property within `$elements`
+ * storage Map.
  */
 function defineNodes (instance: Class, nodes: { [key: string]: ComponentNodes }) {
 
@@ -48,6 +49,7 @@ function defineNodes (instance: Class, nodes: { [key: string]: ComponentNodes })
     let entires = model[prop];
 
     if (entires.length > 1) {
+
       defineProps(instance, {
         [prop]: {
           get: () => $elements.get(entires[0]),
@@ -57,11 +59,14 @@ function defineNodes (instance: Class, nodes: { [key: string]: ComponentNodes })
           get: () => entires.map(id => $elements.get(id))
         }
       });
+
     } else {
+
       defineProp(instance, prop, {
         get: () => $elements.get(entires[0]),
         set (id) { entires = id; }
       });
+
     }
   }
 }
@@ -73,31 +78,41 @@ function defineNodes (instance: Class, nodes: { [key: string]: ComponentNodes })
  * instance of a component or update an existing instance. We determine instance
  * upates based on the {@link Context} (`mounted`) value, when `mounted` is `true`
  * there was an `spx-component` defined element during context operations, when
- * `spx-component` is `false` it infers an incremental context operations, wherein
- * either an element `event`, `bind` or `node` was detected.
+ * `spx-component` is `false` it signals an incremental context operation, wherein
+ * either an element `event`, `bind` or `node` was detected, but no associated `spx-component`.
  *
  * The function will return a Promise resolver, to ensure that asynchronous methods
  * `connect` and/or `onmount` of component classes are gracefully handled. The components
  * observer applies a `thenable` call from which this function has resolved.
  */
-export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
+export function setInstances ({
+  $scopes,
+  $aliases,
+  $morph
+}: Context, snapshot?: HTMLElement) {
 
+  const mounted = q.mounted();
   const isReverse = $.page.type === VisitType.REVERSE;
-  const isInitial = !isReverse || $.page.type === VisitType.INITIAL;
-  const promises: [
-    scopeKey: string,
-    firstHook: string,
-    nextHook?: string
-  ][] = [];
-
-  const { $elements, $connected, $instances, $registry, $reference } = <ComponentSession>$.components;
+  const promises: [ scopeKey: string, firstHook: string, nextHook?: string][] = [];
+  const {
+    $elements,
+    $connected,
+    $instances,
+    $registry,
+    $reference
+  } = <ComponentSession>$.components;
 
   for (const instanceOf in $scopes) {
+
     for (const scope of $scopes[instanceOf]) {
+
+      // console.log(scope, $aliases, instanceOf, mounted);
 
       if (scope.instanceOf === null) {
         if (instanceOf in $aliases) {
           scope.instanceOf = $aliases[instanceOf];
+        } else if (instanceOf in mounted) {
+          scope.instanceOf = mounted[instanceOf][0].scope.instanceOf;
         } else {
           continue;
         }
@@ -110,26 +125,35 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
       let Component: any;
       let instance: Class;
 
-      if (scope.mounted === Hooks.UNMOUNTED && ($morph !== null || isReverse)) {
+      if (scope.status === Hooks.UNMOUNTED && ($morph !== null || isReverse)) {
 
-        const mounted = getMounted();
+        if (scope.alias !== null) {
 
-        if (scope.alias !== null && scope.alias in mounted) {
-
-          instance = mounted[scope.alias][0];
-          Component = instance.scope.define;
+          if (scope.alias in mounted) {
+            instance = mounted[scope.alias][0];
+            Component = instance.scope.define;
+          }
 
         } else {
 
           if (scope.instanceOf in mounted) {
+
             if (mounted[scope.instanceOf].length === 1) {
 
               instance = mounted[scope.instanceOf][0];
-              Component = instance.scope.define;
+              Component = scope.define;
+
+              log(LogType.WARN, [
+                'Extending a mounted component without an alias id="" value is not recommended.',
+                `Consider using an id attribute value: ${scope.instanceOf}`
+              ]);
 
             } else {
 
-              // TODO: ERROR - MORE THAN 1 INSTANCE
+              log(LogType.ERROR, [
+                'Incremental component update failed because more than 1 instance exists.',
+                `Provide an an alias identifer (id="") on: ${scope.instanceOf}`
+              ]);
 
             }
 
@@ -142,14 +166,15 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
         }
 
         if (!instance) {
-          log(LogType.WARN, 'Increment component instance failed as instance was undefined', scope);
+          log(LogType.ERROR, 'Incremental component update failed as instance was undefined', scope);
           continue;
         }
 
         scope.key = instance.scope.key;
         scope.ref = instance.scope.ref;
+        scope.selector = instance.scope.selector;
         scope.connected = instance.scope.connected;
-        scope.mounted = instance.scope.mounted = Hooks.MOUNTED;
+        scope.status = instance.scope.status = Hooks.MOUNTED;
 
       } else {
 
@@ -182,7 +207,7 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
 
         let event: ComponentEvent;
 
-        if ($morph !== null && scope.mounted === Hooks.MOUNTED) {
+        if ($morph !== null && scope.status === Hooks.MOUNTED) {
           event = instance.scope.events[key] = scope.events[key];
           $reference[key] = scope.key;
         } else {
@@ -193,14 +218,12 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
 
       }
 
-      if ($morph === null || (($morph !== null || isReverse) && scope.mounted === Hooks.MOUNT)) {
+      if ($morph === null || (($morph !== null || isReverse) && scope.status === Hooks.MOUNT)) {
 
         $connected.add(scope.key);
         $instances.set(scope.key, instance);
 
-        if ($.logLevel === LogType.VERBOSE) {
-          log(LogType.VERBOSE, `Component ${scope.define.name} (connect) mounted: ${scope.key}`, Colors.GREEN);
-        }
+        log(LogType.VERBOSE, `Component ${scope.define.id} (connect) mounted: ${scope.key}`, Colors.GREEN);
 
         // This reference is used for onmount hook sequence
         // When initial run, onmount hook will run AFTER connect hook
@@ -209,14 +232,12 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
         // when the connect hook is async and onmount is syn
         let idx: number = -1;
 
-        if ('connect' in instance) {
+        if ('connect' in instance && !scope.connected) {
 
           promises.push([ scope.key, 'connect' ]);
+          instance.scope.status = Hooks.CONNNECT;
+          idx = promises.length - 1;
 
-          if (isInitial) {
-            instance.scope.mounted = Hooks.CONNNECT;
-            idx = promises.length - 1;
-          }
         }
 
         if ('onmount' in instance) {
@@ -234,9 +255,12 @@ export function setInstances ({ $scopes, $aliases, $nodes, $morph }: Context) {
   // Mark Snapshot
   // Intial visits will apply adjustments to snapshot
   //
-  if (isInitial && $nodes.length > 0) {
-    patchPage('components', toArray($connected));
-    u.onNextTick(() => morphSnap($.snapDom.body, $nodes));
+  if ($.page.type === VisitType.INITIAL) {
+
+    snap.sync(snapshot);
+    // q.patch('components', toArray($connected));
+    // u.onNextTick(() => morphSnap($.snapDom.body, $nodes));
+
   }
 
   // Mount the instance, when promises is populated with entries

@@ -422,7 +422,21 @@ type HistoryState = Pick<Page, (
   | 'scrollX'
   | 'scrollY'
   | 'title'
+  | 'target'
 )>
+
+/**
+ * History State SPX
+ *
+ * Assigned to history state
+ */
+interface HistoryStateSPX {
+  /**
+   * SPX History State
+   */
+  spx: HistoryState;
+
+}
 
 /**
  * History API
@@ -446,7 +460,7 @@ export type HistoryAPI = {
    * Returns an any value representing the state at the top of the history stack.
    * This is a way to look at the state without having to wait for a popstate event.
    */
-  state: HistoryState;
+  state: HistoryStateSPX
   /**
    * This asynchronous method goes to the previous page in session history, the
    * same action as when the user clicks the browser's Back button. Equivalent to
@@ -479,7 +493,7 @@ export type HistoryAPI = {
    *
    * - [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API/Working_with_the_History_API).
    */
-  pushState(data: HistoryState, unused: string, url?: string | URL | null): void;
+  pushState(data: HistoryStateSPX, unused: string, url?: string | URL | null): void;
   /**
    * Updates the most recent entry on the history stack to have the specified data, title, and, if provided,
    * URL. The data is treated as opaque by the DOM; you may specify any JavaScript object that can be
@@ -487,5 +501,5 @@ export type HistoryAPI = {
    *
    * - [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API/Working_with_the_History_API).
    */
-  replaceState(data: HistoryState, unused: string, url?: string | URL | null): void;
+  replaceState(data: HistoryStateSPX, unused: string, url?: string | URL | null): void;
 };

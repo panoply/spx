@@ -31,6 +31,8 @@ export function getTitle (dom: string) {
   const title = dom.indexOf('<title');
 
   if (title === -1) return nil;
+
+  // Ensure we are not within an SVG
   if (dom.slice(0, title).indexOf('<svg') > -1) return nil;
 
   const start = dom.indexOf('>', title) + 1;

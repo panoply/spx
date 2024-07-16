@@ -6,7 +6,7 @@
     "types/*.ts",
     "src/**/*.ts",
     "docs/src/app/**/*.ts",
-    "tests/**/*.ts",
+    "test/**/*.ts",
   ],
   "typeAcquisition": {
     "enable": true,

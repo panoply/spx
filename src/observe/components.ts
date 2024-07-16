@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import type { Class, SPX } from 'types';
+import type { Class, Scope, SPX } from 'types';
 import { $ } from '../app/session';
 import { getComponents } from '../components/context';
 import { setInstances } from '../components/instances';
@@ -8,7 +8,7 @@ import { context, resetContext } from '../components/observe';
 import { Hooks, LogType, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
 import { assign, o, toArray } from '../shared/native';
-import { getSnapDom, patchPage, setSnap } from '../app/queries';
+import { patchComponentSnap } from '../morph/snapshot';
 import { onNextTick, promiseResolve } from '../shared/utils';
 
 export type Lifecycle = (
@@ -59,13 +59,22 @@ export function mount (promises: LifecycleHooks) {
 
     const instance = $instances.get(scopeKey);
     const { scope } = instance;
-    const MOUNT: string = scope.mounted === Hooks.UNMOUNT ? 'unmount' : 'mount';
+    let MOUNT: string;
+
+    if (scope.status === Hooks.UNMOUNT) {
+      MOUNT = 'unmount';
+    } else {
+      MOUNT = 'mount';
+      if (!scope.snap) scope.snap = $.page.snap;
+    }
 
     const seq = async () => {
 
+      let e: any;
+
       try {
 
-        if (!scope.connected && nextHook && scope.mounted === Hooks.CONNNECT) {
+        if (!scope.connected && nextHook && scope.status === Hooks.CONNNECT) {
 
           await instance[firstHook](params);
           await instance[nextHook](params);
@@ -76,27 +85,29 @@ export function mount (promises: LifecycleHooks) {
 
           await instance[firstHook](params);
 
-          if (scope.mounted === Hooks.UNMOUNT) {
-            if (scope.define.merge) {
-              const snap = getSnapDom($.page.rev);
-              snap.querySelector(`[${$.qs.$ref}="${scope.ref}"]`).outerHTML = scope.snapshot;
-              setSnap(snap.documentElement.outerHTML, $.page.rev);
-            }
+          if (scope.status === Hooks.UNMOUNT && scope.define.merge) {
+            patchComponentSnap(scope, scopeKey);
           }
 
         }
 
-        instance.scope.mounted = scope.mounted === Hooks.UNMOUNT
+        scope.status = scope.status === Hooks.UNMOUNT
           ? Hooks.UNMOUNTED
           : Hooks.MOUNTED;
 
-        return;
+      } catch (error) {
 
-      } catch (_) { /* Fall through and reject outside of catch */ }
+        /* Fall through and reject outside of catch */
 
-      log(LogType.WARN, `Component to failed to ${MOUNT}: ${scope.instanceOf} (${scopeKey})`);
+        log(
+          LogType.WARN,
+          `Component to failed to ${MOUNT}: ${scope.instanceOf} (${scopeKey})`,
+          e
+        );
 
-      return Promise.reject<string>(scopeKey);
+        return Promise.reject<string>(scopeKey);
+
+      }
 
     };
 
@@ -108,41 +119,65 @@ export function mount (promises: LifecycleHooks) {
 
 }
 
+/**
+ * Component Hooks
+ *
+ * This function willfire off component lifecycle hooks. The component `scope.status`
+ * key is imperative to hook execution and will be used to determine which hooks trigger.
+ *
+ * @todo
+ * There is no logic (currently) for handling components without hooks. Some consideration
+ * needs to be had here, in situations where a component has declared `merge` but does not
+ * apply hooks. In addition, handling cases where `connect()` hook has not been defined but
+ * `onmount()` has been, leaving the `scope.connected` reference as `false` and this might be
+ * problematic at some point, depending on how i wrote the code.
+ */
 export function hook () {
 
   const { $connected, $instances } = $.components;
   const promises: LifecycleHooks = [];
 
-  // patchPage('components', toArray($connected));
-
   for (const scopeKey of $connected) {
+
+    if (!$instances.has(scopeKey)) continue;
 
     const instance = $instances.get(scopeKey);
     const { scope } = instance;
-    const event = scope.mounted === Hooks.UNMOUNT ? 'unmount' : 'onmount';
 
-    if (instance && event in instance) {
-      if (event === 'onmount' && 'connect' in instance && scope.connected === false) {
-        promises.push([
-          scopeKey,
-          'connect',
-          event
-        ]);
-      } else {
-        if (scope.mounted !== Hooks.MOUNTED && scope.mounted !== Hooks.UNMOUNTED) {
-          promises.push([
-            scopeKey,
-            event
-          ]);
+    if (scope.status !== Hooks.MOUNTED && scope.status !== Hooks.UNMOUNTED) {
+
+      const unmount = scope.status === Hooks.UNMOUNT;
+      const connect = unmount ? false : scope.connected;
+      const event = unmount ? 'unmount' : 'onmount';
+
+      if (event in instance) {
+
+        if (event === 'onmount' && 'connect' in instance && scope.connected === false) {
+          promises.push([ scopeKey, 'connect', event ]);
+        } else {
+          promises.push([ scopeKey, event ]);
         }
+
+      } else if (unmount) {
+
+        if (scope.define.merge) {
+
+          patchComponentSnap(scope, scopeKey);
+
+          scope.status = Hooks.UNMOUNTED;
+
+        }
+
       }
+
     }
+
   }
 
   if (promises.length > 0) {
     mount(promises).catch((scopeKey) => {
       const instance = $instances.get(scopeKey);
-      instance.scope.mounted = Hooks.UNMOUNTED;
+      instance.scope.status = Hooks.UNMOUNTED;
       $connected.delete(scopeKey);
     });
   }
@@ -150,8 +185,7 @@ export function hook () {
 
 export function connect () {
 
-  if (!$.config.components) return;
-  if ($.observe.components) return;
+  if (!$.config.components || $.observe.components) return;
 
   if ($.page.type === VisitType.INITIAL) {
 
@@ -160,6 +194,8 @@ export function connect () {
   } else {
 
     if (context) {
+
+      console.log(context);
 
       setInstances(context)
         .then(hook)

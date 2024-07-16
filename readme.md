@@ -7,7 +7,7 @@ width="160px">
 </p>
 <h1></h1>
 
-Single Page XHR - The essential enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (15kb gzip) over the wire (push~state) solution that employs an incremental (snapshot) morphing tactic with DOM driven component capabilities integrated at the core.
+Single Page XHR - The essential dom enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (15kb gzip) over the wire (push~state) solution that employs an incremental (snapshot) morphing tactic with DOM driven component capabilities integrated at the core.
 
 ### Documentation
 
@@ -24,6 +24,8 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 - Attribute driven programmatic control.
 
 # Installation
+
+SPX is available for download on the [NPM](https://www.npmjs.com/package/spx) registry.
 
 ###### PNPM
 
@@ -51,7 +53,7 @@ https://unpkg.com/spx
 
 # Usage
 
-SPX is distributed as an ESM module and designed for usage in browser. You need to establish a connection to invoke the module.
+SPX is distributed as an ESM module and designed for usage in browser. You need to establish a connection to invoke the module, this can be done by calling the `spx.connect()` method.
 
 <!--prettier-ignore-->
 ```ts
@@ -119,9 +121,10 @@ Connect the component to DOM elements, add the following to a defined `fragment`
 
   Clicked: <span spx-node="counter.count">0</span>
 
-  <button type="button" spx@click="counter.increment">
-    Increment
-  </button>
+  <button
+   type="button"
+   spx@click="counter.increment"> Increment </button>
+
 </section>
 ```
 
@@ -137,7 +140,7 @@ Contributions are welcome! This project uses [pnpm](https://pnpm.js.org/en/cli/i
 
 ### Developing
 
-The project uses [tsup](https://tsup.egoist.sh) for producing the distributed bundle. The [test](/test/) directory contains real-world web application that is spun up within via 11ty.
+The project uses [tsup](https://tsup.egoist.sh) for producing the distributed bundle.
 
 ```bash
 pnpm dev         # Development in watch mode
@@ -145,6 +148,35 @@ pnpm build       # Bundle distribution builds for production
 pnpm docs        # Documentation development environment
 pnpm test        # Spins up the testing web application
 ```
+
+# Testing
+
+The [tests](/tests/) directory contains a runtime for testing SPX. Given that SPX often involves actions that typical testing tools don't handle well, a custom test suite that performs e2e (end-to-end) testing is leveraged.
+
+### How It Works
+
+We generate a static site using [11ty](https://www.11ty.dev/) and serve it locally. Each test case is written and then executed in the browser. We rely on good old-fashioned debugging techniques, such as using developer tools and monitoring the console, to ensure that features work as intended without errors.
+
+### Writing Tests
+
+In the [cases](/tests/cases/) directory, you'll find sub-directories named after individual test cases. Each sub-directory follows a common file-pattern structure:
+
+```bash
+├── readme.md            # Information about the test to be injected into index.liquid
+├── index.liquid         # Markup for the test or a starting page
+├── index.test.ts        # Entry point script for the test (optional)
+├── include
+│   └──  file.liquid     # Optional include files used by the test case
+├── pages
+│   ├── page-a.liquid    # Optional page A for testing navigation
+│   ├── page-b.liquid    # Optional page B for testing navigation
+│   └── page-c.liquid    # Optional page C for testing navigation
+├── tests
+│   ├── foo.liquid       # Specific test-case or related content (optional)
+│   └── foo.test.ts      # Specific script for the test (optional)
+```
+
+While this structure is recommended for consistency, all items labeled as **optional** can be omitted. The structure is flexible, allowing you to adapt it to your preferences and requirements.
 
 # License
 

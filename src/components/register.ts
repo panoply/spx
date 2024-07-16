@@ -30,17 +30,17 @@ export function getComponentId (instance: Register, identifier?: string) {
   identifier = downcase(identifier || name);
 
   instance.define = assign({
-    name: identifier,
+    id: identifier,
     merge: false,
     state: {},
     nodes: []
   }, instance.define);
 
-  if (identifier !== instance.define.name) identifier = camelCase(instance.define.name);
+  if (identifier !== instance.define.id) identifier = camelCase(instance.define.id);
 
-  if (name !== original && /^[A-Z]|[_-]/.test(instance.define.name)) {
+  if (name !== original && /^[A-Z]|[_-]/.test(instance.define.id)) {
     log(LogType.WARN, [
-      `Component identifer name "${instance.define.name}" must use camelCase format.`,
+      `Component identifer id "${instance.define.id}" must use camelCase format.`,
       `The identifer has been converted to "${identifier}"`
     ]);
   }
@@ -63,12 +63,12 @@ export function registerComponents (components: { [id: string]: Register }, isVa
   const { $registry } = $.components;
 
   for (const id in components) {
+
     const instance = components[id];
     const identifier = isValidID ? id : getComponentId(instance, id);
+
     if (!$registry.has(identifier)) {
-
       $registry.set(identifier, instance);
-
       log(
         LogType.VERBOSE,
         `Component ${instance.name} registered using id: ${identifier}`,

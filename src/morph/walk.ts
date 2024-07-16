@@ -10,7 +10,12 @@
  */
 export function walkElements <T extends Element> (node: T, callback: (node: T) => any) {
 
-  if (callback(node) === false) return;
+  const cb = callback(node);
+
+  if (cb === false) return;
+
+  // @ts-expect-error
+  if (cb === 1) node = node.nextSibling;
 
   let e: Element;
   let i: number;
@@ -21,11 +26,8 @@ export function walkElements <T extends Element> (node: T, callback: (node: T) =
   }
 
   while (e) {
-
     if (e) walkElements(e, callback);
-
     e = node.children[++i];
-
   }
 
 };

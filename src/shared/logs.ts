@@ -2,7 +2,7 @@ import { $ } from '../app/session';
 import { Colors, LogLevel, LogType } from './enums';
 import { isArray, info, warn, error } from './native';
 
-const PREFIX = '\x1b[96mSPX\x1b[0m ';
+const PREFIX = 'SPX ';
 
 /**
  * Type Error
@@ -29,8 +29,8 @@ export function log (type: LogType, message: string | string[], context?: any) {
     info(`${PREFIX}%c${message}`, `color: ${context || Colors.GRAY};`);
 
   } else if (
-    type <= LogType.WARN &&
-    LEVEL === LogLevel.WARN
+    type === LogType.WARN &&
+    LEVEL <= LogLevel.WARN
   ) {
 
     if (context) {

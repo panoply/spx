@@ -373,21 +373,6 @@ export interface Options extends IObserverOptions {
    */
   logLevel?: 1 | 2 | 3 | 4;
   /**
-   * #### SPX Manual
-   *
-   * Whether or not you want to manually invoke observers. This defaults
-   * to `false` resulting in all pre-fetch and related interception observers
-   * running upon connection. When disabled (i.e: `false`) then invocation is
-   * left up to you.
-   *
-   * Use the `spx.observe()` method to enable observers.
-   *
-   * ---
-   *
-   * @default false
-   */
-  manual?: boolean;
-  /**
    * #### SPX Resource Evaluations
    *
    * Control evaluation of specific tags which either refer to resources or

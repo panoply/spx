@@ -8,6 +8,7 @@ import { log } from '../shared/logs';
 import { hasProp } from '../shared/utils';
 import { progress } from './progress';
 import { registerComponents } from '../components/register';
+import { api } from '../observe/history';
 
 /**
  * Observe Options
@@ -165,6 +166,9 @@ export function configure (options: Options = o()) {
   patchSetAttribute();
 
   defineProps($, {
+    history: {
+      get: () => typeof api.state === 'object' && 'spx' in api.state ? api.state.spx : null
+    },
     ready: {
       get: () => document.readyState === 'complete'
     },
@@ -221,7 +225,7 @@ export function configure (options: Options = o()) {
     $target: `${attr}target`,
     $fragment: `${attr}fragment`,
     $fragments: `[${attr}fragment]`,
-    $targets: `[${attr}target]:not([${attr}target=false])`,
+    $targets: `[${attr}target]:not(a[spx-target]):not([${attr}target=false])`,
     $morph: `${attr}morph`,
     $eval: `${attr}eval`,
     $intersector: `[${attr}intersect]${not(attr, 'intersect')}`,

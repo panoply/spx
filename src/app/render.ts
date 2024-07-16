@@ -3,19 +3,21 @@ import { $ } from './session';
 import { emit } from './events';
 import { LogType, VisitType } from '../shared/enums';
 import { d, h, s } from '../shared/native';
-import { hasProp, onNextTick } from '../shared/utils';
+import { hasProp } from '../shared/utils';
 import { progress } from './progress';
-import { context } from '../components/observe';
-import { getSnapDom, patchPage } from './queries';
+import { context, mark } from '../components/observe';
+import { getSnapDom, patch } from './queries';
 import { morph } from '../morph/morph';
-import { morphSnap, patchSnap } from '../morph/snapshot';
 import { log } from '../shared/logs';
+import { snap } from '../components/snapshot';
 import * as hover from '../observe/hovers';
 import * as intersect from '../observe/intersect';
 import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as proximity from '../observe/proximity';
 import * as fragment from '../observe/fragment';
+import { walkElements } from 'src/morph/walk';
+import { getSelector } from 'src/components/context';
 
 /**
  * Tracked Nodes
@@ -113,9 +115,7 @@ async function morphHead (head: HTMLHeadElement, target: HTMLCollection): Promis
 
   }
 
-  for (let i = 0, s = remove.length; i < s; i++) {
-    head.removeChild(remove[i]);
-  }
+  for (let i = 0, s = remove.length; i < s; i++) head.removeChild(remove[i]);
 
   await Promise.all<void>(promises);
 
@@ -135,18 +135,48 @@ function morphNodes (page: Page, snapDom: Document) {
 
   if (page.selector === 'body' || page.fragments.length === 0) {
 
-    const newDom = snapDom.body;
+    morph(pageDom, snapDom.body);
 
-    morph(pageDom, newDom);
+  } else {
 
-    if (context && context.$nodes.length > 0) {
-      onNextTick(() => {
-        morphSnap(newDom, context.$nodes);
-        patchPage('type', VisitType.VISIT);
-      });
+    const elements = page.target.length > 0 ? $.fragments.keys() : page.fragments;
+
+    for (const id of elements) {
+
+      const domNode = $.fragments.get(id);
+      const newNode = snapDom.body.querySelector<HTMLElement>(id);
+
+      if (!newNode || !domNode) continue;
+      if (!emit('render', domNode, newNode)) continue;
+
+      if (mark.has(newNode.id)) {
+        newNode.setAttribute($.qs.$ref, domNode.getAttribute($.qs.$ref));
+      } else {
+        if (domNode.isEqualNode(newNode)) continue;
+        snap.set(newNode);
+        morph(domNode, newNode);
+      }
     }
 
-  } else if (page.selector !== null) {
+  }
+
+  if (context) snap.sync(snapDom.body);
+  if (page.type !== VisitType.VISIT) patch('type', VisitType.VISIT);
+
+  // Lets check whether or not location points to an anchor.
+  // When page hash has a value, we will scroll to the point of the page.
+  if (page.location.hash) {
+    const anchor = pageDom.querySelector(page.location.hash);
+    if (anchor) {
+      anchor.scrollIntoView();
+      return;
+    }
+  }
+
+  scrollTo(page.scrollX, page.scrollY);
+
+  /*
+  else if (page.selector !== null) {
 
     const pageNodes = pageDom.querySelectorAll<HTMLElement>(page.selector);
     const snapNodes = snapDom.body.querySelectorAll<HTMLElement>(page.selector);
@@ -167,108 +197,19 @@ function morphNodes (page: Page, snapDom: Document) {
           newNode
         )
       );
-
     }
 
     if (page.type !== VisitType.VISIT && context && context.$nodes.length > 0) {
       onNextTick(() => {
         patchSnap(snapDom.body, pageDom, context.$nodes, nodeMorph);
-        patchPage('type', VisitType.VISIT);
+        patch('type', VisitType.VISIT);
         nodeMorph.clear();
       });
     }
 
-  } else {
-
-    for (const id of page.fragments) {
-
-      const curNode = $.fragments.get(id);
-      const newNode = snapDom.body.querySelector<HTMLElement>(id);
-
-      if (!newNode || !curNode) continue;
-      if (!emit('render', curNode, newNode)) continue;
-      if (curNode.isEqualNode(newNode)) continue;
-
-      morph(curNode, newNode);
-
-      if (context && context.$nodes.length > 0) {
-        onNextTick(() => morphSnap(newNode, context.$nodes));
-      }
-    }
-
-    patchPage('type', VisitType.VISIT);
-
   }
 
-}
-
-/**
- * Node Hydration
- *
- * Executes node replacements hydrating the DOM with
- * the fetched target. All nodes provided with `spx-hydrate`
- * or via the `visit.hydrate[]` method are replaced. TextNode types
- * will be swapped out via `innerHTML` to prevent missing replacements
- * for occuring.
- */
-function morphHydrate (state: Page, target: Document): void {
-
-  const nodes = state.hydrate;
-
-  if (nodes.length === 1 && nodes[0] === 'body') {
-    morph(d(), target.body);
-    return;
-  }
-
-  const selector = nodes.join(',');
-  const domNodes = d().querySelectorAll<HTMLElement>(selector);
-  const preserve = state.preserve && state.preserve.length > 0 ? state.preserve.join(',') : null;
-  const skipped: HTMLElement[] = [];
-
-  if (preserve) {
-
-    const skipNodes = d().querySelectorAll<HTMLElement>(preserve);
-
-    for (let i = 0, s = skipNodes.length; i < s; i++) {
-      const skipNode = skipNodes[i];
-      skipNode.setAttribute($.qs.$morph, 'false');
-      skipped.push(skipNode);
-    }
-
-  }
-
-  if (domNodes.length > 0) {
-
-    const newNodes = target.body.querySelectorAll<HTMLElement>(selector);
-
-    for (let i = 0, s = domNodes.length; i < s; i++) {
-
-      const oldNode = domNodes[i];
-      const newNode = newNodes[i];
-
-      if (newNodes[i] instanceof HTMLElement) {
-        if (!emit('hydrate', oldNode, newNode)) continue;
-        morph(newNode, newNode);
-      }
-    }
-
-  }
-
-  if (preserve) {
-    for (const node of skipped) {
-      node.removeAttribute('spx-morph');
-    }
-  }
-
-  // scriptNodes(target, VisitType.HYDRATE);
-
-  state.hydrate = undefined;
-  state.preserve = undefined;
-  state.type = VisitType.VISIT;
-
-  update(state);
-
-  // q.purge(state.key);
+  */
 
 }
 
@@ -290,23 +231,16 @@ export function update (page: Page): Page {
 
   const snapDom = getSnapDom(page.snap);
 
-  if (page.type === VisitType.HYDRATE) {
-    morphHydrate(page, snapDom);
-  } else {
-    morphHead(h(), snapDom.head.children);
-    morphNodes(page, snapDom);
-    scrollTo(page.scrollX, page.scrollY);
-  }
+  morphHead(h(), snapDom.head.children);
+  morphNodes(page, snapDom);
 
   progress.done();
 
-  onNextTick(() => {
-    hover.connect();
-    intersect.connect();
-    proximity.connect();
-    components.connect();
-    mutations.connect();
-  });
+  hover.connect();
+  intersect.connect();
+  proximity.connect();
+  components.connect();
+  mutations.connect();
 
   emit('load', page);
 

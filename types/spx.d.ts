@@ -115,7 +115,7 @@ export function connect<T = {}>(options?: Options): ((callback: (state?: Page & 
  * spx.component('identifier')
  * ```
  */
-export function component(identifer: string): Class;
+export function component<T = Class>(identifer: string): T;
 
 /**
  * #### Globals

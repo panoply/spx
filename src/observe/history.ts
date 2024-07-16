@@ -1,14 +1,14 @@
-import type { HistoryState, HistoryAPI, Page } from 'types';
+import type { HistoryState, HistoryAPI, Page, HistoryStateSPX } from 'types';
 import { $ } from '../app/session';
-import { assign } from '../shared/native';
+import { assign, o } from '../shared/native';
 import { hasProps, promiseResolve } from '../shared/utils';
 import { log } from '../shared/logs';
-import { LogType, VisitType } from '../shared/enums';
+import { Colors, LogType, VisitType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
-// import { teardown } from './components';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as q from '../app/queries';
+import { Merge } from 'type-fest';
 
 /**
  * History API `window.history`
@@ -24,8 +24,9 @@ export function reverse (): boolean {
 
   return (
     api.state !== null &&
-    'rev' in api.state &&
-    api.state.key !== api.state.rev
+    'spx' in api.state &&
+    'rev' in api.state.spx &&
+    api.state.spx.key !== api.state.spx.rev
   );
 
 }
@@ -40,16 +41,18 @@ export function has (key?: string): boolean {
 
   if (api.state == null) return false;
   if (typeof api.state !== 'object') return false;
+  if (!('spx' in api.state)) return false;
 
-  const match = hasProps(api.state)([
+  const match = hasProps(api.state.spx)([
     'key',
     'rev',
     'scrollX',
     'scrollY',
-    'title'
+    'title',
+    'target'
   ]);
 
-  return typeof key === 'string' ? match && api.state.key === key : match;
+  return typeof key === 'string' ? match && api.state.spx.key === key : match;
 
 }
 
@@ -74,8 +77,8 @@ export async function load () {
 export function initialize (page: Page) {
 
   if (has(page.key)) {
-    scrollTo(api.state.scrollX, api.state.scrollY);
-    assign(page, api.state);
+    scrollTo(api.state.spx.scrollX, api.state.spx.scrollY);
+    assign(page, api.state.spx);
   } else {
     replace(page as unknown as HistoryState);
   }
@@ -89,21 +92,31 @@ export function initialize (page: Page) {
  *
  * Applied `history.replaceState` reference update.
  */
-export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
+export function replace ({
+  key,
+  rev,
+  title,
+  scrollX,
+  scrollY,
+  target
+}: HistoryState) {
 
-  const state: Omit<HistoryState, 'location'> = {
-    key,
-    rev,
-    scrollX,
-    scrollY,
-    title: title || document.title
+  const state: HistoryStateSPX = {
+    spx: o<HistoryState>({
+      key,
+      rev,
+      scrollX,
+      scrollY,
+      target,
+      title: title || document.title
+    })
   };
 
-  api.replaceState(state, state.title, state.key);
+  api.replaceState(state, state.spx.title, state.spx.key);
 
-  log(LogType.VERBOSE, `History replaceState: ${api.state.key}`);
+  log(LogType.VERBOSE, `History replaceState: ${state.spx.key}`);
 
-  return api.state;
+  return api.state.spx;
 
 }
 
@@ -112,22 +125,33 @@ export function replace ({ key, rev, title, scrollX, scrollY }: HistoryState) {
  *
  * Applied `history.pushState` and passes SPX references.
  */
-export function push ({ key, rev, title, location }: Page) {
+export function push ({
+  key,
+  rev,
+  title,
+  location,
+  scrollX,
+  scrollY,
+  target
+}: Page) {
 
   const path = location.pathname + location.search;
-  const state: Omit<HistoryState, 'location'> = {
-    key,
-    rev,
-    title,
-    scrollY: 0,
-    scrollX: 0
+  const state: HistoryStateSPX = {
+    spx: o<HistoryState>({
+      key,
+      rev,
+      scrollX,
+      scrollY,
+      target,
+      title: title || document.title
+    })
   };
 
-  api.pushState(state, state.title, path);
+  api.pushState(state, state.spx.title, path);
 
-  log(LogType.VERBOSE, `History pushState: ${api.state.key}`);
+  log(LogType.VERBOSE, `History pushState: ${state.spx.key}`);
 
-  return api.state;
+  return api.state.spx;
 
 }
 
@@ -136,29 +160,32 @@ export function push ({ key, rev, title, location }: Page) {
  *
  * Fires popstate navigation request
  */
-async function pop (event: PopStateEvent & { state: HistoryState }) {
+async function pop (event: Merge<PopStateEvent, {
+  state: {
+    spx: Merge<HistoryState, {
+      type?: VisitType
+    }>
+  }
+}>) {
 
-  // console.log('POP', event.state.key, event.state.position);
+  // console.log('POP', spx.key, event.state.position);
 
-  if (event.state === null) return;
+  if (event.state === null || !('spx' in event.state)) return;
 
-  if (q.has(event.state.key)) {
+  const { spx } = event.state;
+
+  if (q.has(spx.key)) {
 
     // Popstate incurred on a snapshot and previously visited page
     // We will carry on as normal
 
-    if (!q.has(event.state.rev) && event.state.rev !== event.state.key) {
-
-      request.reverse(event.state.rev);
-
-    } else {
-
-      $.pages[event.state.rev].scrollX = window.scrollX;
-      $.pages[event.state.rev].scrollY = window.scrollY;
-
+    if (!q.has(spx.rev) && spx.rev !== spx.key) {
+      request.reverse(spx);
     }
 
-    const page = $.pages[event.state.key];
+    $.pages[spx.key].type = VisitType.POPSTATE;
+
+    const page = $.pages[spx.key];
 
     if (page.type === VisitType.REVERSE) {
       log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
@@ -166,31 +193,30 @@ async function pop (event: PopStateEvent & { state: HistoryState }) {
       log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
     }
 
-    q.patchPage('type', VisitType.POPSTATE);
-
     render.update(page);
 
   } else {
 
-    if ($.logLevel === LogType.VERBOSE) {
-      log(LogType.VERBOSE, `History popState fetch: ${event.state.key}`);
-    }
+    log(LogType.VERBOSE, `History popState fetch: ${spx.key}`);
 
-    //  teardown();
-
-    event.state.type = VisitType.POPSTATE;
-    const page = await request.fetch(event.state);
+    spx.type = VisitType.POPSTATE;
+    const page = await request.fetch(spx as Page);
 
     // No page, infers we have no record available
     // we apply an assign fallback
 
-    if (!page) return location.assign(event.state.key);
+    if (!page) return location.assign(spx.key);
 
     const key = getKey(location);
 
     if (page.key === key) {
 
       // Let's proceed as normal, our snapshot is ready.
+
+      log(LogType.VERBOSE, `History popState fetch Complete: ${spx.key}`, Colors.CYAN);
+
+      page.target = [];
+      page.selector = null;
 
       render.update(page);
 

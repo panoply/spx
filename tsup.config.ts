@@ -25,10 +25,16 @@ export default defineConfig({
   },
   async onSuccess () {
     if (!PROD) {
+
       const time = new Date();
-      await utimes('./docs/src/app/index.ts', time, time);
-      await utimes('./tests/bundle.ts', time, time);
-      await utimes('./tests/cases/_layouts/index.liquid', time, time);
+
+      await Promise.all([
+        utimes('./docs/src/app/bundle.ts', time, time),
+        utimes('./docs/src/app/iframe.ts', time, time),
+        utimes('./test/asset/suite.ts', time, time),
+        utimes('./test/views/index.liquid', time, time)
+      ]);
+
     }
   }
 });
