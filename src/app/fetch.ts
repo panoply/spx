@@ -5,7 +5,7 @@ import { emit } from './events';
 import { log } from '../shared/logs';
 import { hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
-import { XHR, isArray } from '../shared/native';
+import { XHR, isArray, toArray } from '../shared/native';
 import { LogType, VisitType } from '../shared/enums';
 import * as q from './queries';
 
@@ -37,6 +37,20 @@ interface RequestParams {
 }
 
 /**
+ * Returns specific element/s from over the wire
+ */
+export async function element <T extends HTMLElement> (key: string, ...elements: string[]): Promise<T[]> {
+
+  const dom = await request(key, { type: 'document' });
+  const elm = dom.querySelectorAll<T>(elements.join());
+
+  if (!elm) return null;
+
+  return toArray(elm);
+
+}
+
+/**
  * Fetch XHR Request wrapper function
  */
 export function request <T> (key: string, {
@@ -62,7 +76,9 @@ export function request <T> (key: string, {
     }
 
     xhr.onloadstart = function (this: XHR) {
+
       XHR.$request.set(this.key, xhr);
+
     };
 
     xhr.onload = function (this: XHR) {
@@ -72,13 +88,17 @@ export function request <T> (key: string, {
     };
 
     xhr.onerror = function (this: XHR) {
+
       reject(this.statusText);
+
     };
 
     xhr.onabort = function (this: XHR) {
+
       delete XHR.$timeout[this.key];
       XHR.$transit.delete(this.key);
       XHR.$request.delete(this.key);
+
     };
 
     xhr.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {

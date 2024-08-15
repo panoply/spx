@@ -82,12 +82,6 @@ The generated output result in `.html` files:
 </div>
 ```
 
-# Versions
-
-Version copies are generated automatically for documentation based on SPX versions. Generation happens in the TSUP (TypeScript → JavaScript) bundle process. When SPX versions increment and documentation differs then the previous version will be added to the distributed output (`public/v`). The `.eleventy.js` configuration file provides a Liquid short code for versions made available via `{% versions %}` tag.
-
-The [version](/docs/version/) directory contains `.zip` files of previously generated documentation in accordance with SPX versions. Running a **production** build (i.e: `pnpm build`) will automatically create an archive of distributed docs and add the `.zip` copy within this directory. The production build will extract contained documentation versions and add them to the `public/v` directory upon deployment.
-
 # License
 
 Licensed under **[MIT](#LICENSE)**

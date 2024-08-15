@@ -1,0 +1,43 @@
+{%
+  liquid
+  assign pages = 'Page Æ,Page A,Page B' | split: ','
+%}
+
+<div class="row ml-1 br pr-3 py-4">
+  <div class="col-12 py-3 px-4 bg-ivory rd my-4 bd">
+    <div class="row jc-between">
+      <div class="col-auto">
+        <ul class="jc-start">
+
+          {% for link in pages %}
+
+            {%
+              liquid
+              assign slug = link | slugify
+              if link == 'Page Æ'
+                assign url = '/components/refs/'
+              else
+                assign url = link | slugify | prepend: '/components/refs/' | append: '/'
+              endif
+              assign hasTarget = target | slice: 0, 1
+            %}
+
+            <li class="{% unless forloop.last %}mb-2{% endunless %}">
+              <a
+                href="{{ url }}"
+                {% if page.url == url %}
+                  class="fw-bold"
+                {% endif %}>
+                {{ link }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+  </div>
+  <p class="fs-xs mt-0 tc">
+    Navigate between pages. The components will be indentical to test re-connect
+  </p>
+</div>

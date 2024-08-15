@@ -51,7 +51,7 @@ export function teardown () {
 
 export function mount (promises: LifecycleHooks) {
 
-  const { $instances } = $.components;
+  const { $instances, $elements } = $.components;
   const params = hookArguments();
   const promise: any[] = [];
 
@@ -70,8 +70,6 @@ export function mount (promises: LifecycleHooks) {
 
     const seq = async () => {
 
-      let e: any;
-
       try {
 
         if (!scope.connected && nextHook && scope.status === Hooks.CONNNECT) {
@@ -83,10 +81,12 @@ export function mount (promises: LifecycleHooks) {
 
         } else {
 
-          await instance[firstHook](params);
-
-          if (scope.status === Hooks.UNMOUNT && scope.define.merge) {
-            patchComponentSnap(scope, scopeKey);
+          if (scope.status === Hooks.UNMOUNT) {
+            if (scope.define.merge) {
+              patchComponentSnap(scope, scopeKey);
+            }
+          } else {
+            await instance[firstHook](params);
           }
 
         }
@@ -102,7 +102,7 @@ export function mount (promises: LifecycleHooks) {
         log(
           LogType.WARN,
           `Component to failed to ${MOUNT}: ${scope.instanceOf} (${scopeKey})`,
-          e
+          error
         );
 
         return Promise.reject<string>(scopeKey);
@@ -115,7 +115,7 @@ export function mount (promises: LifecycleHooks) {
 
   }
 
-  return Promise.race(promise);
+  return Promise.allSettled(promise);
 
 }
 
@@ -134,7 +134,12 @@ export function mount (promises: LifecycleHooks) {
  */
 export function hook () {
 
-  const { $connected, $instances } = $.components;
+  const { $connected, $instances, $registry, $elements } = $.components;
+
+  if ($connected.size === 0 && $instances.size === 0 && $elements.size === 0 && $registry.size > 0) {
+    return getComponents();
+  }
+
   const promises: LifecycleHooks = [];
 
   for (const scopeKey of $connected) {
@@ -161,12 +166,10 @@ export function hook () {
       } else if (unmount) {
 
         if (scope.define.merge) {
-
           patchComponentSnap(scope, scopeKey);
-
-          scope.status = Hooks.UNMOUNTED;
-
         }
+
+        scope.status = Hooks.UNMOUNTED;
 
       }
 
@@ -194,8 +197,6 @@ export function connect () {
   } else {
 
     if (context) {
-
-      console.log(context);
 
       setInstances(context)
         .then(hook)

@@ -1,0 +1,81 @@
+---
+layout: views/index.liquid
+---
+
+<div class="row pt-4 g-0">
+  <div class="col-12 mb-4">
+    {{
+      content
+    }}
+  </div>
+</div>
+<div class="row mx-1">
+  <div
+    class="col-7 pr-1"
+    spx-component="lifecycle"
+    spx-lifecycle:connect="0"
+    spx-lifecycle:onmount="0"
+    spx-lifecycle:unmount="0">
+
+    <div class="row jc-start bb pb-4">
+      <div class="col-auto h6 fc-gray">
+        connect count:
+      </div>
+      <div class="col-8 h6">
+        <code spx-bind="lifecycle.connect"></code>
+      </div>
+      <div class="col-auto h6 fc-gray">
+        onmount count:
+      </div>
+      <div class="col-8 h6">
+        <code spx-bind="lifecycle.onmount"></code>
+      </div>
+      <div class="col-auto h6 fc-gray">
+        unmount count:
+      </div>
+      <div class="col-8 h6">
+        <code spx-bind="lifecycle.unmount"></code>
+      </div>
+    </div>
+
+    <div
+      class="row mt-4"
+      id="lifecycle">
+
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Foo Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.foo"></span>
+      </div>
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Bar Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.bar"></span>
+      </div>
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Bax Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.baz"></span>
+      </div>
+      <div class="col tc py-3 bd rd mr-0">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Qux Node:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="lifecycle.qux"></span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

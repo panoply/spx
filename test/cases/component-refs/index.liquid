@@ -1,0 +1,14 @@
+---
+layout: views/index.liquid
+---
+
+{{ content }}
+
+<div class="row">
+  <div class="col-3">
+    {% include 'cases/component-refs/include/pages' %}
+  </div>
+  <div class="col">
+    {% include 'cases/component-refs/include/demo', id: 'First' %}
+  </div>
+</div>

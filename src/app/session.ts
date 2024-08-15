@@ -51,14 +51,14 @@ export const $: Session = o<Session>({
     })
   }),
   fragments: m(),
-  components: o<ComponentSession>({
+  components: {
     $registry: m(),
     $instances: m(),
     $connected: s(),
     $elements: m(),
     $mounted: m(),
     $reference: p({ get: (target, key: string) => $.components.$instances.get(target[key]) })
-  }),
+  },
   events: o(),
   observe: o(),
   memory: o(),

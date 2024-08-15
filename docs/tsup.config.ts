@@ -3,20 +3,16 @@ import { defineConfig } from 'tsup';
 export default defineConfig(
   {
     entry: {
-      'bundle.min': './src/app/index.ts',
-      'spx.min': './src/app/spx.ts'
+      'bundle.min': './src/app/bundle.ts',
+      'iframe.min': './src/app/iframe.ts'
     },
     outDir: './public',
-    outExtension: () => ({
-      js: '.js'
-    }),
+    outExtension: () => ({ js: '.js' }),
     clean: false,
     treeshake: false,
     splitting: false,
-    minify: false,
-    minifyIdentifiers: false,
-    minifyWhitespace: false,
-    minifySyntax: false,
+    minify: true,
+    target: 'es2017',
     platform: 'browser',
     format: [
       'iife'

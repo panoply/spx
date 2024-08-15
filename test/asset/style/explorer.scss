@@ -1,0 +1,85 @@
+.explorer {
+  color: $white;
+  font-size: 1rem;
+  min-width: 465px;
+
+  .bg-foreground {
+    background-color: #1c2028;
+  }
+  .bg-darker {
+    background-color: #0e1012;
+  }
+
+  .btn-tab {
+    background-color: transparent;
+    border: none;
+    color: $gray-700;
+    padding: 8px 0px;
+    font-size: 0.85rem;
+
+    &:hover {
+      color: $white;
+    }
+
+    &.active {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+
+  .node-accordion > details > summary {
+    padding: 5px 10px;
+    border-bottom: 0.01rem solid $papyrus-complete-border-color;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    list-style: none;
+  }
+
+  .node-accordion > details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .node-accordion > details > summary::after {
+    content: '+';
+  }
+
+  .node-accordion > details[open] > summary::after {
+    content: '–';
+  }
+
+  &-accordion > details > summary {
+    padding: 5px 10px;
+    border-bottom: 1px solid $papyrus-complete-border-color;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    list-style: none;
+  }
+
+  &-accordion > details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  &-accordion > details > summary::after {
+    content: '+';
+  }
+
+  &-accordion > details[open] > summary::after {
+    content: '–';
+  }
+
+  &-accordion > details:last-of-type > summary {
+    border-bottom: none;
+  }
+
+  .string {
+    color: $papyrus-js-string;
+  }
+  .boolean {
+    color: $papyrus-js-boolean;
+  }
+  .number {
+    color: $papyrus-js-number;
+  }
+}

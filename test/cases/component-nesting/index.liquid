@@ -1,0 +1,106 @@
+---
+layout: views/index.liquid
+aliases:
+  - foo
+  - bar
+  - baz
+---
+
+<div class="row">
+  <div class="col-8">
+    {{
+      content
+    }}
+  </div>
+</div>
+
+<div class="row">
+
+  <div class="col-8 mb-5">
+    <div class="row gx-0">
+      <div class="col-auto ml-0">
+        <button
+          class="btn bc-black bg-white bd bd-3 fs-sm upper fw-bold p-1 px-2 mr-3"
+          type="button"
+          spx@click="n1.onClick">Target (N1)</button>
+      </div>
+      <div class="col-auto ml-0">
+        <button
+          class="btn bc-black bg-white bd bd-3 fs-sm upper fw-bold p-1 px-2 mr-3"
+          type="button"
+          spx@click="n2.onClick">Target (N2)</button>
+      </div>
+      <div class="col-auto ml-0">
+        <button
+          class="btn bc-black bg-white bd bd-3 fs-sm upper fw-bold p-1 px-2"
+          type="button"
+          spx@click="n3.onClick">Target (N3)</button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="col-8"
+    id="n1"
+    spx-component="nesting">
+    <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 1 (N1)</h2>
+    <div class="row ai-center mb-3">
+      <button
+        class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
+        type="button"
+        spx@click="n1.onClick">Click Me (N1)</button>
+      <code
+        class="col-auto fs-lg"
+        spx-bind="n1.count">0</code>
+    </div>
+    <button
+      class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1 mb-3"
+      type="button"
+      spx@click="n1.onClick">Click Me (N1)</button>
+
+    <hr>
+
+    <div
+      class="col-11 offset-1"
+      id="n2"
+      spx-component="nesting">
+      <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 2 (N2)</h2>
+      <div class="row ai-center mb-3">
+        <button
+          class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
+          type="button"
+          spx@click="nesting.onClick">Click Me (N2)</button>
+        <code
+          class="col-auto fs-lg"
+          spx-bind="nesting.count">0</code>
+      </div>
+      <button
+        class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1 mb-3"
+        type="button"
+        spx@click="nesting.onClick">Click Me (N2)</button>
+
+      <hr>
+
+      <div class="col-10 offset-2">
+        <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 3 (N3)</h2>
+        <div
+          class="row ai-center mb-3"
+          id="n3"
+          spx-component="nesting">
+          <button
+            class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
+            type="button"
+            spx@click="nesting.onClick">Click Me (N3)</button>
+          <code
+            class="col-auto fs-lg"
+            spx-bind="nesting.count">0</code>
+        </div>
+        <button
+          class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1"
+          type="button"
+          spx@click="nesting.onClick">Click Me (N3)</button>
+      </div>
+    </div>
+
+  </div>
+</div>

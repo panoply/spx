@@ -1,9 +1,122 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import type { LiteralUnion, Merge } from 'type-fest';
+import type { CamelCase, LiteralUnion, Merge } from 'type-fest';
 import type { Page } from './page';
-import type { SPX, TypeState } from './namespace';
 import { Hooks } from 'src/shared/enums';
+import { SPX } from './global';
+
+/**
+ * Type Constructors
+ *
+ * Used for the `static attrs = {}` state interface of custom components
+ */
+export type TypeConstructors = (
+  | StringConstructor
+  | BooleanConstructor
+  | ObjectConstructor
+  | NumberConstructor
+  | ArrayConstructor
+)
+
+export type TypeOf<T extends TypeConstructors> = (
+  T extends BooleanConstructor ? boolean :
+  T extends StringConstructor ? string :
+  T extends NumberConstructor ? number :
+  T extends ArrayConstructor ? T :
+  T extends ObjectConstructor ? { [key: string]: unknown } : never
+)
+
+/**
+ * **SPX State Interface**
+ *
+ * Type represents the static `connect.define` structure of type contstructors
+ */
+export type Types = {
+  [key: string]:
+  | StringConstructor
+  | BooleanConstructor
+  | ObjectConstructor
+  | NumberConstructor
+  | ArrayConstructor
+  | TypeOf<BooleanConstructor>
+  | TypeOf<StringConstructor>
+  | TypeOf<NumberConstructor>
+  | TypeOf<ArrayConstructor>
+  | TypeOf<ObjectConstructor>
+}
+
+export type TypeState<T extends TypeConstructors> = {
+  /**
+   * The state type
+   */
+  typeof: T;
+  /**
+   * Default value to use
+   */
+  default: TypeOf<T>;
+} | {
+  /**
+   * The state type
+   */
+  typeof: T;
+  /**
+   * Default value to use
+   */
+  default?: TypeOf<T>;
+  /**
+   * Whether or not to persist this state reference
+   */
+  persist?: boolean;
+}
+
+export type TypePersist<T extends TypeConstructors> = {
+  /**
+   * The state type
+   */
+  typeof: T;
+  /**
+   * Default value to use
+   */
+  default?: TypeOf<T>;
+  /**
+   * Whether or not to persist this state reference
+   */
+  persist: boolean;
+}
+
+export type TypeEvent<E, T, A> = Merge<E, {
+  /**
+   * Event Target
+   */
+  target: T;
+  /**
+   * **SPX Event Attrs**
+   *
+   * Parameter values passed on event annotated elements.
+   */
+  attrs: A;
+}>
+
+interface DOMEvents {
+  Event: Event;
+  InputEvent: InputEvent;
+  KeyboardEvent: KeyboardEvent;
+  TouchEvent: TouchEvent;
+  PointerEvent: PointerEvent;
+  DragEvent: DragEvent;
+  FocusEvent: FocusEvent;
+  MouseEvent: MouseEvent;
+  AnimationEvent: AnimationEvent;
+  WheelEvent: WheelEvent;
+  SubmitEvent: SubmitEvent
+  ToggleEvent: ToggleEvent;
+  FormDataEvent: FormDataEvent;
+}
+
+type Attrs = { [key: string]: unknown; }
+type Selector<T extends SPX.Define> = { [K in T['nodes'][number]]: HTMLElement }
+type HasNode<E extends SPX.Define> = { [K in E['nodes'][number] as K extends string ? K : never]?: boolean; }
+type GetNode<T extends SPX.Define> = T['nodes'][number] extends string ? T['nodes'][number] : string;
 
 /**
  * **SPX Component State**
@@ -15,9 +128,9 @@ import { Hooks } from 'src/shared/enums';
  *
  * class Example extends spx.Component {
  *
- *    public state: SPX.State<typeof Example.connect>;
+ *    public state: SPX.State<typeof Example.define>;
  *
- *    static connect = {}
+ *    static define = {}
  *
  * }
  * ```
@@ -25,25 +138,48 @@ import { Hooks } from 'src/shared/enums';
 export type State<T extends SPX.Define> = Merge<{
   [K in keyof T['state']]?:
   T['state'][K] extends BooleanConstructor ? boolean :
-  T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
-  T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
+  T['state'][K] extends StringConstructor ? string :
   T['state'][K] extends NumberConstructor ? number :
+  T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
   T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
   T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
-  T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
+  T['state'][K] extends TypeState<StringConstructor> ? LiteralUnion<T['state'][K]['default'], string> :
   T['state'][K] extends TypeState<NumberConstructor> ? number :
   T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
-  T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> : never
+  T['state'][K] extends TypeState<ObjectConstructor> ? T['state'][K]['default'] : never
 }, {
   /**
-  * **Has Reference**
-  *
-  * Whether or not the state reference exists on the component template.
-  */
+   * **Has Reference**
+   *
+   * Whether or not the state reference exists on the component template.
+   */
   [K in keyof T['state'] as K extends string ? `has${Capitalize<K>}` : never]: boolean;
 }>
 
-export abstract class Class<T = SPX.Define> {
+type DOM<T extends ReadonlyArray<string> = ReadonlyArray<string>> = {
+  /**
+   * Dom Element/s
+   *
+   * As per the static **define** `nodes` method.
+   */
+  [K in T[number]]?: HTMLElement
+}
+
+export declare class Class<T extends SPX.Define = SPX.Define> {
+
+  /**
+   * **Node**
+   *
+   * Returns a node
+   */
+  readonly [node: `${Lowercase<string>}Node`]: HTMLElement;
+
+  /**
+   * **Node**
+   *
+   * Returns a node
+   */
+  readonly [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
 
   /**
    * **Node Exists**
@@ -51,8 +187,6 @@ export abstract class Class<T = SPX.Define> {
    * Whether or not a node exists in the DOM
    */
   readonly [hasNode: `has${Capitalize<string>}Node`]: boolean;
-  [node: `${Lowercase<string>}Node`]: HTMLElement;
-  [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
 
   /**
    * **SPX Scope**
@@ -81,7 +215,7 @@ export abstract class Class<T = SPX.Define> {
    *
    * Holds a reference to the SPX Element annotated with `spx-component`.
    */
-  public dom: HTMLElement;
+  public readonly dom: HTMLElement;
 
   /**
    * **SPX Document Element**
@@ -96,20 +230,20 @@ export abstract class Class<T = SPX.Define> {
    * An SPX component lifecycle callback that will be triggered on component register.
    * This event will on fire once for each instance occurance throughout an SPX session.
    */
-  connect(session?: { page?: Page }): any;
+  connect(session: { page: Page }): any;
   /**
    * **SPX `onmount`**
    *
    * SPX lifecycle hook triggered each time the component is present in the DOM.
    */
-  onmount(session?: { page?: Page }): any;
+  onmount(session: { page: Page }): any;
   /**
    * **SPX `unmount`**
    *
    * SPX lifecycle hook that executes when a component is removed from the DOM.
    *
    */
-  unmount(session?: { page?: Page }): any;
+  unmount(session: { page: Page }): any;
 
 }
 

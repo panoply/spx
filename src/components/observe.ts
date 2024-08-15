@@ -5,7 +5,7 @@ import { Colors, Hooks, LogType, Nodes, Refs } from '../shared/enums';
 import { getContext, walkNode, isDirective, setDomRef } from './context';
 import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
-import { onNextTick } from '../shared/utils';
+import { hasProp, onNextTick } from '../shared/utils';
 import { s } from 'src/shared/native';
 
 /**
@@ -89,6 +89,8 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
 
     if (ref === Refs.COMPONENT) {
 
+      if (hasProp(instance, 'unmount')) instance.unmount({});
+
       $connected.delete(id);
       $elements.delete(instance.scope.dom);
 
@@ -121,9 +123,7 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
 
     } else if (ref === Refs.NODE) {
 
-      const node = scope.nodes[id];
-
-      $elements.delete(node.dom);
+      $elements.delete(scope.nodes[id].dom);
 
       if (newNode && curNode.isEqualNode(newNode)) {
         setDomRef(curNode, scope.key, id);

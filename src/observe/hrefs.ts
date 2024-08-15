@@ -217,8 +217,15 @@ export async function visit (state: Page) {
 
   if (page) {
 
+    if (page.history === 'replace') {
+
+      // Push history into stack
+      history.replace(page);
+
+    } else {
     // Push history into stack
-    history.push(page);
+      history.push(page);
+    }
 
     // Let's begin the rendering cylce
     render.update(page);

@@ -1,0 +1,34 @@
+---
+title: 'Incremental - Page B'
+layout: views/index.liquid
+permalink: '/components/incremental/page-b/index.html'
+base: /components/incremental/
+---
+
+<h1 id="title">Incremental - Page B</h1>
+
+{{ content }}
+
+{% include 'cases/component-incremental/include/pages' %}
+{% include 'cases/component-incremental/include/target' %}
+
+<section
+  class="row bt mt-4 ml-1 py-3"
+  id="content">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="increment.decrement">
+    Decrement
+  </button>
+
+  <button
+    type="button"
+    class="col-auto ml-3"
+    spx@click="increment.labelValue"
+    spx-incremental:text="Example Value!">
+    Update Label
+  </button>
+
+</section>

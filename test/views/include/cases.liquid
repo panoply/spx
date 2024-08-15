@@ -1,0 +1,28 @@
+<aside
+  class="col-auto vh-100 br abs pt-5 px-5"
+  id="sidebar">
+  <div
+    class=" sticky"
+    style="top: 20px">
+    {% for item in menu %}
+      <strong class="upper">
+        {{ item.title }}
+      </strong>
+      <ul class="list-dash my-3">
+        {% for link in item.links %}
+          <li>
+            <a
+              href="{{ link.url }}"
+              {% if page.url == link.url or link.url == base %}
+                class="fw-bold"
+              {% else %}
+                class="fc-dark-gray"
+              {% endif %}>
+              {{ link.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </div>
+</aside>

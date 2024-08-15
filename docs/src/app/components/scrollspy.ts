@@ -3,6 +3,7 @@ import spx from 'spx';
 export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
   static define = {
+    id: 'scrollspy',
     state: {
       threshold: Number,
       rootMargin: {
@@ -11,6 +12,7 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
       }
     },
     nodes: <const>[
+      'href',
       'anchor'
     ]
   };
@@ -19,11 +21,13 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    * Stimulus: Initialize
    */
   connect () {
+
     this.anchors = [];
     this.options = {
-      rootMargin: this.rootMarginValue,
-      threshold: this.thresholdValue
+      rootMargin: this.state.rootMargin,
+      threshold: this.state.threshold
     };
+
   }
 
   /**
@@ -31,25 +35,20 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    */
   onmount () {
 
-    for (const a of this.anchorTargets) {
-      const anchor = a.href.slice(a.href.lastIndexOf('#'));
-      const element = this.dom.querySelector(anchor) as HTMLHeadingElement;
-      if (this.dom.contains(element)) {
-        this.anchors.push(element);
-        a.onclick = () => {
-          setTimeout(() => {
-            this.anchorTargets.forEach(j => j.classList.remove(this.activeClass));
-            a.classList.add(this.activeClass);
-          }, 300);
-        };
-      }
+    this.hrefNode.classList.add('fc-blue');
+
+    for (const a of this.hrefNodes) {
+      this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
+      a.onclick = () => {
+        setTimeout(() => {
+          this.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+          a.classList.add('fc-blue');
+        }, 300);
+      };
+
     }
 
-    if (window.scrollY < 10) {
-      this.anchorTargets[0]?.classList.add(this.activeClass);
-    } else {
-      this.onScroll();
-    }
+    this.onScroll();
 
     window.onscroll = this.onScroll;
   }
@@ -65,13 +64,19 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
   onScroll = () => {
 
-    this.anchors.forEach((v, i) => {
+    this.anchorNodes.filter(a => {
+      return this.anchors.includes(a.id);
+    }).forEach((v, i) => {
 
-      const next = v.getBoundingClientRect().y - 50;
+      v.style.paddingTop = '50px';
 
-      if (next < window.screenY) {
-        this.anchorTargets.forEach(j => j.classList.remove(this.activeClass));
-        this.anchorTargets[i].classList.add(this.activeClass);
+      const next = v.getBoundingClientRect().top;
+
+      if (next < window.screenY && this.hrefNodes[i]) {
+
+        this.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+        this.hrefNodes[i].classList.add('fc-blue');
+
       }
     });
   };
@@ -80,45 +85,10 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
   /* TYPE VALUES                                  */
   /* -------------------------------------------- */
 
-  active: HTMLHeadingElement;
-  anchors: HTMLHeadingElement[];
-  /**
-   * Intersection Observer
-   */
+  anchors: string[];
   observer: IntersectionObserver;
-  /**
-   * Itersection Observer Options
-   */
   options: IntersectionObserverInit;
-  /**
-   * Stimulus: The Intersection Observer root margin value
-   */
-  rootMarginValue: string;
-  /**
-   * Stimulus: The intersection Observer threshold value
-   */
-  thresholdValue: number;
-
-  /* -------------------------------------------- */
-  /* TARGETS                                      */
-  /* -------------------------------------------- */
-
-  /**
-   * Stimulus: The first matching viewport target
-   */
-  headings: HTMLHeadingElement[];
-  /**
-   * Stimulus: All viewport targets
-   */
-  anchorTargets: HTMLLinkElement[];
-
-  /* -------------------------------------------- */
-  /* TYPE CLASSES                                 */
-  /* -------------------------------------------- */
-
-  /**
-   * Stimulus: The url anchor class to apply when intersecting
-   */
-  activeClass: string;
+  anchorNodes: HTMLLinkElement[];
+  hrefNodes: HTMLLinkElement[];
 
 }

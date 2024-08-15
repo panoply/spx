@@ -1,0 +1,41 @@
+<div class="row mx-1">
+  <div class="col-7">
+    <div
+      class="row mt-b"
+      id="increment"
+      spx-component="incremental"
+      spx-incremental:count="0"
+      spx-incremental:color="aquamarie"
+      spx-incremental:label="{{ title }}">
+
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Label:
+        </h6>
+        <span spx-node="incremental.label">
+          {{ title }}
+        </span>
+      </div>
+
+      <div class="col tc py-3 bd rd mr-3">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Counter:
+        </h6>
+        <code
+          class="fs-lg"
+          spx-bind="incremental.count">0</code>
+      </div>
+
+      <div class="col tc py-3 bd rd">
+        <h6 class="fw-bold fc-gray fs-sm mb-3">
+          Color:
+        </h6>
+        <span
+          class="py-2 px-4 bd"
+          spx-node="incremental.color"
+          style="background-color: aquamarine;"></span>
+      </div>
+
+    </div>
+  </div>
+</div>

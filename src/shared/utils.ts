@@ -212,6 +212,12 @@ export function promiseResolve () {
 
 }
 
+export function scriptTag (script: string) {
+
+  return script.slice(0, script.indexOf('>', 1) + 1);
+
+}
+
 /**
  * Delay
  *

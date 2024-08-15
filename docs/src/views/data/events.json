@@ -1,0 +1,34 @@
+{
+  "attrs": [
+    {
+      "type": "string",
+      "input": "spx-ref:string=\"string\"",
+      "attrs": "event.attrs.string",
+      "output": "\"string\""
+    },
+    {
+      "type": "boolean",
+      "input": "spx-ref:boolean=\"true\"",
+      "attrs": "event.attrs.boolean",
+      "output": "true"
+    },
+    {
+      "type": "number",
+      "input": "spx-ref:number=\"100\"",
+      "attrs": "event.attrs.number",
+      "output": "100"
+    },
+    {
+      "type": "object",
+      "input": "spx-ref:object=\"{}\"",
+      "attrs": "event.attrs.object",
+      "output": "{}"
+    },
+    {
+      "type": "array",
+      "input": "spx-ref:array=\"[]\"",
+      "attrs": "event.attrs.array",
+      "output": "[]"
+    }
+  ]
+}

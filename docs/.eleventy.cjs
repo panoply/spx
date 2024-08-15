@@ -1,61 +1,21 @@
-const eleventy = require('@panoply/11ty');
-const papyrus = require('papyrus');
+const { eleventy, terser, sprite, markdown, util } = require('e11ty');
 const container = require('markdown-it-container');
 const attrs = require('markdown-it-attrs');
 const anchor = require('markdown-it-anchor');
-const { terser, sprite, versions, markdown } = require('@sissel/11ty');
 const { readFile, writeFile } = require('node:fs/promises');
 const { marked } = require('marked');
-const matter = require('gray-matter')
+const matter = require('gray-matter');
 
 /**
- * Papyrus Syntax
- *
- * Highlighting code blocks of markdown annotated regions of input.
+ * @param {string[]} tokens
+ * @param {number} index
+ * @returns
  */
-function syntax ({ raw, language }) {
+function tabs (tokens, index) {
 
-  if (language === 'bash') {
+  if (tokens[index].nesting === 1) {
 
-    return papyrus.static(raw, {
-      language,
-      editor: false,
-      showSpace: false,
-      showTab: false,
-      showCR: false,
-      showLF: false,
-      showCRLF: false,
-      lineNumbers: false
-    })
-
-  } else if (language === 'treeview') {
-
-    return papyrus.static(raw, {
-      language,
-      editor: false,
-      showSpace: false,
-      trimEnd: false,
-      trimStart: false
-    });
-
-  }
-
-  return papyrus.static(raw, {
-    language,
-    editor: false,
-    showSpace: false,
-    trimEnd: true,
-    trimStart: true
-  });
-
-};
-
-
-function tabs(md, tokens, idx) {
-
-  if(tokens[idx].nesting === 1) {
-
-    const col = tokens[idx].info.trim().match(/^tabs\s+(.*)$/);
+    const col = tokens[index].info.trim().match(/^tabs\s+(.*)$/);
 
     if (col !== null) {
 
@@ -95,23 +55,94 @@ function tabs(md, tokens, idx) {
               </button>
             </div>
           </div>
-          <div class="col-12 tab-content" spx-node="tabs.panel">
-        `,
+          <div
+            class="col-12 tab-content"
+            spx-node="tabs.panel">
+        `
       ].join('') : [
         /* html */`
-          <div class="col-12 tab-content d-none" spx-node="tabs.panel">
+          <div
+            class="col-12 tab-content d-none"
+            spx-node="tabs.panel">
         `
-      ].join('')
+      ].join('');
     }
-   }
+  }
 
-
-
-  return '</div>'
-
+  return '</div>';
 
 }
 
+/**
+ * @param {EleventyConfig} config
+ */
+function search (config) {
+
+  const page = [];
+
+  config.on('eleventy.after', async () => {
+    if (page.length > 0) {
+      const content = JSON.stringify(page, null, 2);
+      await writeFile('./public/spx.json', content);
+    }
+  });
+
+  return async function (content) {
+
+    let data;
+    let heading;
+    let anchor;
+
+    const records = new Map();
+    const read = await readFile(this.page.inputPath);
+    const parse = marked.lexer(read.toString());
+    const frontmatter = parse[0].type === 'hr'
+      ? parse.splice(0, 2).map(({ raw }) => raw).join('\n')
+      : null;
+
+    if (frontmatter !== null) {
+
+      data = matter(frontmatter).data;
+
+    }
+
+    parse.forEach(token => {
+
+      if (token.text && token.text.length > 0) {
+        if (token.type === 'heading') {
+
+          if (token.text.toLowerCase().includes('acknowledgements')) return;
+
+          heading = token.text.replace(/[`_*]/g, '');
+          anchor = util.slug(heading);
+
+          if (!records.has(heading)) records.set(heading, { anchor, content: '' });
+
+        } else if (token.type === 'paragraph') {
+
+          if (!/^({{|{%|<[a-z]|:::)/.test(token.text) && heading) {
+            records.get(heading).content = token.text
+              .replace(/[`_*]/g, '')
+              .replace(/\[([a-z].*?)\]\(.*?\)/g, '$1');
+          }
+
+        }
+      }
+
+    });
+
+    for (const [ heading, { anchor, content } ] of records) {
+      page.push({
+        title: data.title,
+        heading,
+        content,
+        url: heading ? `${this.page.url.slice(0, -1)}#${anchor}` : this.page.url
+      });
+    }
+
+  };
+
+}
 
 /**
  * Eleventy Build
@@ -120,84 +151,46 @@ function tabs(md, tokens, idx) {
  */
 module.exports = eleventy(function (config) {
 
-  markdown(config, {
-    syntax,
+  const md = markdown(config, {
+    papyrus: {
+      default: {
+        trimEnd: true,
+        trimStart: true
+      },
+      language: {
+        bash: {
+          lineNumbers: false
+        },
+        treeview: {
+          trimEnd: false,
+          trimStart: false
+        }
+      }
+    },
     options: {
       html: true,
       linkify: true,
       typographer: true,
       breaks: false
-    },
-   })
-  .use(anchor, { callback: token =>  token.attrs.push(['spx-node', 'scrollspy.anchor']) })
-  .use(container, 'tabs', { render: (tokens, idx) => tabs(markdown, tokens, idx) })
-  .use(attrs)
-  .disable("code");
-
-  let page = [];
-
-  config.addLiquidShortcode('search', async function(content) {
-
-    const read = await readFile(this.page.inputPath)
-    const parse = marked.lexer(read.toString())
-    const frontmatter = parse[0].type === 'hr'
-      ? parse.splice(0, 2).map(({ raw }) => raw).join('\n')
-      : null
-
-    let data;
-
-    if(frontmatter !== null) {
-     data = matter(frontmatter).data
     }
+  });
 
-    let heading = ''
+  md.use(anchor, {
+    slugify: util.slug,
+    callback: token => token.attrs.push([ 'spx-node', 'scrollspy.anchor' ])
+  });
 
-    const records = new Map();
+  md.use(container, 'tabs', { render: tabs });
+  md.use(attrs);
+  md.disable('code');
 
-    parse.forEach(token => {
-      if(token.text && token.text.length > 0) {
-        if(token.type === 'heading' ) {
-          if(token.text.toLowerCase().includes('acknowledgements')) return
-          heading = token.text.replace(/[`_*]/g, '')
-          if(!records.has(heading)) records.set(heading, [])
-        } else if (token.type === 'paragraph') {
-          if(!/^({{|{%|<[a-z]|:::)/.test(token.text) && heading) {
-            records.get(heading).push(
-              token.text
-              .replace(/[`_*]/g, '')
-              .replace(/\[([a-z].*?)\]\(.*?\)/g, '$1')
-            )
-          }
-        }
-      }
-    })
-
-    if(records.size > 0) {
-      for (const [ heading, content ] of records) {
-        page.push({
-          title: data.title,
-          heading,
-          content: content.join(' '),
-          url: this.page.url.slice(0, -1)
-        })
-      }
-    }
-  })
-
-  config.on('eleventy.after', async () => {
-    if(page.length > 0) {
-      const content = JSON.stringify(page, null, 2)
-      await writeFile('./public/spx.json', content)
-    }
-  })
-
+  config.addFilter('anchor', (value) => `#${util.slug(value)}`);
+  config.addLiquidShortcode('search', search(config));
+  config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
+  config.addPlugin(terser);
   config.addPassthroughCopy({
     'src/assets/flow.svg': 'assets/flow.svg'
-  })
-
-  config.addPlugin(sprite, { inputPath: './src/assets/svg', spriteShortCode: 'sprite' });
-  config.addPlugin(terser)
-
+  });
 
   return {
     htmlTemplateEngine: 'liquid',
@@ -211,11 +204,11 @@ module.exports = eleventy(function (config) {
       'yaml'
     ],
     dir: {
-      input: 'src',
+      input: 'src/views',
       output: 'public',
-      includes: 'views/include',
-      layouts: 'views/layout',
-      data: 'data',
-    },
+      includes: '',
+      layouts: '',
+      data: 'data'
+    }
   };
 });

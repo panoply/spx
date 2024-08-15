@@ -6,7 +6,7 @@ layout: base.liquid
 
 # Components
 
-SPX components serve as a fundamental DOM enhancement and enabling the creation of interactive logic within web applications. Below illustrates the basic context provided in an SPX component.
+SPX components serve as a fundamental DOM enhancement and enable the creation of interactive logic within web applications. Below illustrates the basic context provided in an SPX component.
 
 <!-- prettier-ignore -->
 ```ts
@@ -15,7 +15,8 @@ import spx from 'spx';
 export class Demo extends spx.Component {
 
   static define = {
-    named: '',              // Define an identifier (optional)
+    id: 'demo',             // Define an identifier (optional)
+    merge: false,           // Define whether component snapshot merges apply
     nodes: [],              // Define elements associated with components
     state: {}               // Define component state interface
   }
@@ -39,14 +40,13 @@ export class Demo extends spx.Component {
 
   }
 }
-
 ```
 
 ---
 
 # Markup
 
-SPX Components establish connections with DOM elements through attribute (directive) annotations. Assigning a component identifier name to the `spx-component` directive initializes a component instance which will persists throughout an SPX session. Defining component `state` using the DOM is achieved through [state directives](/components/state) and should be applied on the same element where `spx-component` is declared.
+SPX Components establish connections with DOM elements through attribute (directive) annotations. Assigning a component identifier name to the `spx-component` directive initializes a component instance which will persist throughout an SPX session. Defining component `state` using the DOM is achieved through [state directives](/components/state) and should be applied on the same element where an `spx-component` is declared.
 
 Component [nodes](/components/nodes) and [events](/components/events) can be defined anywhere in the DOM using the corresponding directive patterns provided by SPX as long as the component exists. The persisted nature of SPX Components allow for incremental node or event based attachments to occur across different pages when leveraging dynamically targeted [fragment](/key-concepts) rendering.
 

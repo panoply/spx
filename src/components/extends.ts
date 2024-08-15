@@ -4,7 +4,7 @@
 
 import type { Scope, ValueOf } from 'types';
 import { $ } from '../app/session';
-import { o, nil, isArray, defineProps, defineProp, m } from '../shared/native';
+import { nil, isArray, defineProps, defineProp, m } from '../shared/native';
 import { attrJSON, hasProp, isEmpty, kebabCase, upcase } from '../shared/utils';
 
 /**
@@ -59,7 +59,7 @@ export const Component = class {
      */
     [key: string]: any;
 
-  }> = o();
+  }> = {};
 
   /**
    * **SPX Document Element**
@@ -95,7 +95,7 @@ export const Component = class {
      *
      * Aligns the DOM attributes whenever a state change is applied.
      */
-    this.state = new Proxy(o(), {
+    this.state = new Proxy({}, {
       set: (target, key: string, value) => {
 
         const preset = define.state[key];
@@ -104,7 +104,8 @@ export const Component = class {
           : `${value}`;
 
         if (typeof preset === 'object' && hasProp(preset, 'persist') && preset.persist) {
-          target[key] = scope.state[key] = value;
+          scope.state[key] = value;
+          target[key] = scope.state[key];
         } else {
           target[key] = value;
         }

@@ -149,14 +149,14 @@ var $ = o({
     })
   }),
   fragments: m(),
-  components: o({
+  components: {
     $registry: m(),
     $instances: m(),
     $connected: s(),
     $elements: m(),
     $mounted: m(),
     $reference: p({ get: (target, key) => $.components.$instances.get(target[key]) })
-  }),
+  },
   events: o(),
   observe: o(),
   memory: o(),
@@ -276,6 +276,10 @@ function promiseResolve() {
   return Promise.resolve();
 }
 __name(promiseResolve, "promiseResolve");
+function scriptTag(script) {
+  return script.slice(0, script.indexOf(">", 1) + 1);
+}
+__name(scriptTag, "scriptTag");
 function decodeEntities(string) {
   const textarea2 = document.createElement("textarea");
   textarea2.innerHTML = string;
@@ -675,7 +679,7 @@ function off(name, callback) {
     } else {
       const live = [];
       if (events && callback) {
-        for (let i = 0, s2 = events.length; i < s2; i++) {
+        for (let i = 0, s3 = events.length; i < s3; i++) {
           if (events[i] !== callback) {
             live.push(events[i]);
           } else if (name !== "x") {
@@ -795,7 +799,7 @@ var Component = (_a = class {
      * The digested static `state` references of components that have
      * extended this base class.
      */
-    this.state = o();
+    this.state = {};
     const { $elements } = $.components;
     const { scope } = defineProps(this, {
       scope: {
@@ -807,12 +811,13 @@ var Component = (_a = class {
     });
     const { define } = scope;
     const prefix = `${$.config.schema}${scope.instanceOf}`;
-    this.state = new Proxy(o(), {
+    this.state = new Proxy({}, {
       set: (target, key2, value) => {
         const preset = define.state[key2];
         const domValue = typeof value === "object" || isArray(value) ? JSON.stringify(value) : `${value}`;
         if (typeof preset === "object" && hasProp(preset, "persist") && preset.persist) {
-          target[key2] = scope.state[key2] = value;
+          scope.state[key2] = value;
+          target[key2] = scope.state[key2];
         } else {
           target[key2] = value;
         }
@@ -995,6 +1000,8 @@ function disconnect(curNode, refs, newNode) {
     const ref = id.charCodeAt(0);
     const { scope } = instance;
     if (ref === 99 /* COMPONENT */) {
+      if (hasProp(instance, "unmount"))
+        instance.unmount({});
       $connected.delete(id);
       $elements.delete(instance.scope.dom);
       if (scope.define.merge) {
@@ -1017,8 +1024,7 @@ function disconnect(curNode, refs, newNode) {
     } else if (ref === 101 /* EVENT */) {
       removeEvent(instance, scope.events[id]);
     } else if (ref === 110 /* NODE */) {
-      const node = scope.nodes[id];
-      $elements.delete(node.dom);
+      $elements.delete(scope.nodes[id].dom);
       if (newNode && curNode.isEqualNode(newNode)) {
         setDomRef(curNode, scope.key, id);
       }
@@ -1088,6 +1094,7 @@ function patchComponentSnap(scope, scopeKey) {
   onNextTick(() => {
     const snap2 = getSnapDom(scope.snap);
     const elem = snap2.querySelector(`[${$.qs.$ref}="${scope.ref}"]`);
+    console.log(snap2, elem);
     if (elem) {
       elem.innerHTML = scope.snapshot;
       setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
@@ -1105,7 +1112,7 @@ function morphHead(method, newNode) {
     $.snaps[page.snap] = dom.documentElement.outerHTML;
     log(1 /* VERBOSE */, `Snapshot record was updated. Node ${operation} from <head>`, newNode);
   } else {
-    log(3 /* WARN */, "Node does not exists in snapshot record, no mutation applied", newNode);
+    log(3 /* WARN */, "Node does not exist in the snapshot record, no mutation applied", newNode);
   }
 }
 __name(morphHead, "morphHead");
@@ -1131,7 +1138,7 @@ function teardown() {
 }
 __name(teardown, "teardown");
 function mount(promises) {
-  const { $instances } = $.components;
+  const { $instances, $elements } = $.components;
   const params = hookArguments();
   const promise = [];
   for (const [scopeKey, firstHook, nextHook] of promises) {
@@ -1146,16 +1153,18 @@ function mount(promises) {
         scope.snap = $.page.snap;
     }
     const seq = /* @__PURE__ */ __name(async () => {
-      let e;
       try {
         if (!scope.connected && nextHook && scope.status === 1 /* CONNNECT */) {
           await instance[firstHook](params);
           await instance[nextHook](params);
           scope.connected = true;
         } else {
-          await instance[firstHook](params);
-          if (scope.status === 4 /* UNMOUNT */ && scope.define.merge) {
-            patchComponentSnap(scope, scopeKey);
+          if (scope.status === 4 /* UNMOUNT */) {
+            if (scope.define.merge) {
+              patchComponentSnap(scope, scopeKey);
+            }
+          } else {
+            await instance[firstHook](params);
           }
         }
         scope.status = scope.status === 4 /* UNMOUNT */ ? 5 /* UNMOUNTED */ : 3 /* MOUNTED */;
@@ -1163,18 +1172,21 @@ function mount(promises) {
         log(
           3 /* WARN */,
           `Component to failed to ${MOUNT}: ${scope.instanceOf} (${scopeKey})`,
-          e
+          error2
         );
         return Promise.reject(scopeKey);
       }
     }, "seq");
     promise.push(promiseResolve().then(seq));
   }
-  return Promise.race(promise);
+  return Promise.allSettled(promise);
 }
 __name(mount, "mount");
 function hook() {
-  const { $connected, $instances } = $.components;
+  const { $connected, $instances, $registry, $elements } = $.components;
+  if ($connected.size === 0 && $instances.size === 0 && $elements.size === 0 && $registry.size > 0) {
+    return getComponents();
+  }
   const promises = [];
   for (const scopeKey of $connected) {
     if (!$instances.has(scopeKey))
@@ -1194,8 +1206,8 @@ function hook() {
       } else if (unmount) {
         if (scope.define.merge) {
           patchComponentSnap(scope, scopeKey);
-          scope.status = 5 /* UNMOUNTED */;
         }
+        scope.status = 5 /* UNMOUNTED */;
       }
     }
   }
@@ -1215,7 +1227,6 @@ function connect2() {
     getComponents();
   } else {
     if (context) {
-      console.log(context);
       setInstances(context).then(hook).then(resetContext);
     } else {
       hook();
@@ -1275,41 +1286,32 @@ var snap = MarkSnapshots();
 
 // src/components/instances.ts
 function defineNodes(instance, nodes) {
-  const model = o();
+  const model = {};
   const { $elements } = $.components;
   for (const key in nodes) {
-    if (!(nodes[key].schema in model))
-      model[nodes[key].schema] = [];
-    model[nodes[key].schema].push(nodes[key].dom);
+    const { schema, dom } = nodes[key];
+    if (!(schema in model))
+      model[schema] = [];
+    model[schema].push(dom);
   }
   for (const prop in model) {
-    if (`${prop}s` in instance)
-      continue;
-    if (prop in instance) {
-      instance[prop] = model[prop];
+    const plural = `${prop}s`;
+    let entries4 = model[prop].map((id) => $elements.get(id));
+    if (plural in instance) {
+      instance[plural] = entries4;
       continue;
     }
-    let entires = model[prop];
-    if (entires.length > 1) {
-      defineProps(instance, {
-        [prop]: {
-          get: () => $elements.get(entires[0]),
-          set(id) {
-            entires = id;
-          }
-        },
-        [`${prop}s`]: {
-          get: () => entires.map((id) => $elements.get(id))
+    defineProps(instance, {
+      [`${prop}s`]: {
+        get: () => entries4,
+        set(elements) {
+          entries4 = elements;
         }
-      });
-    } else {
-      defineProp(instance, prop, {
-        get: () => $elements.get(entires[0]),
-        set(id) {
-          entires = id;
-        }
-      });
-    }
+      },
+      [prop]: {
+        get: () => instance[`${prop}s`][0]
+      }
+    });
   }
 }
 __name(defineNodes, "defineNodes");
@@ -1359,7 +1361,7 @@ function setInstances({
             } else {
               log(5 /* ERROR */, [
                 "Incremental component update failed because more than 1 instance exists.",
-                `Provide an an alias identifer (id="") on: ${scope.instanceOf}`
+                `Provide an an alias "id" identifer on component: ${scope.instanceOf} (alias: ${scope.alias})`
               ]);
             }
           }
@@ -1429,7 +1431,7 @@ function getComponentValues(input2) {
 }
 __name(getComponentValues, "getComponentValues");
 function getEventParams(attributes, event) {
-  for (let i = 0, s2 = attributes.length; i < s2; i++) {
+  for (let i = 0, s3 = attributes.length; i < s3; i++) {
     const { name, value } = attributes[i];
     if (!$.qs.$param.test(name) || name.startsWith($.qs.$data) || !value)
       continue;
@@ -2029,7 +2031,7 @@ var hostname = origin.replace(/(?:https?:)?(?:\/\/(?:www\.)?|(?:www\.))/, nil);
 function getAttributes(element, page) {
   const state = page ? newPage(page) : o();
   const attrs = element.getAttributeNames();
-  for (let i = 0, s2 = attrs.length; i < s2; i++) {
+  for (let i = 0, s3 = attrs.length; i < s3; i++) {
     const nodeName = attrs[i];
     if (nodeName.startsWith($.qs.$data)) {
       if (!hasProp(state, "data"))
@@ -2361,8 +2363,8 @@ function preload(state) {
   if ($.config.preload !== null) {
     if (isArray($.config.preload)) {
       const promises = $.config.preload.filter((path) => {
-        const route = getRoute(path, 3 /* PRELOAD */);
-        return route.key !== path ? fetch(create(route)) : false;
+        const route2 = getRoute(path, 3 /* PRELOAD */);
+        return route2.key !== path ? fetch(create(route2)) : false;
       });
       return Promise.allSettled(promises);
     } else if (typeof $.config.preload === "object") {
@@ -3017,19 +3019,19 @@ function onEnter(event) {
   const target = getLink(event.target, $.qs.$hover);
   if (!target)
     return;
-  const route = getRoute(target, 10 /* HOVER */);
-  if (has(route.key))
+  const route2 = getRoute(target, 10 /* HOVER */);
+  if (has(route2.key))
     return;
-  if (route.key in XHR.$timeout)
+  if (route2.key in XHR.$timeout)
     return;
   target.addEventListener(`${pointer}leave`, onLeave, { once: true });
-  const state = create(route);
+  const state = create(route2);
   const delay = state.threshold || $.config.hover.threshold;
-  throttle(route.key, function() {
-    if (!emit("prefetch", target, route))
+  throttle(route2.key, function() {
+    if (!emit("prefetch", target, route2))
       return;
     fetch(state).then(function() {
-      delete XHR.$timeout[route.key];
+      delete XHR.$timeout[route2.key];
       removeListener(target);
     });
   }, delay);
@@ -3070,14 +3072,14 @@ __name(disconnect3, "disconnect");
 var entries2;
 async function onIntersect(entry) {
   if (entry.isIntersecting) {
-    const route = getRoute(entry.target, 11 /* INTERSECT */);
-    if (!emit("prefetch", entry.target, route))
+    const route2 = getRoute(entry.target, 11 /* INTERSECT */);
+    if (!emit("prefetch", entry.target, route2))
       return entries2.unobserve(entry.target);
-    const response = await fetch(create(route));
+    const response = await fetch(create(route2));
     if (response) {
       entries2.unobserve(entry.target);
     } else {
-      log(3 /* WARN */, `Prefetch will retry at next intersect for: ${route.key}`);
+      log(3 /* WARN */, `Prefetch will retry at next intersect for: ${route2.key}`);
       entries2.observe(entry.target);
     }
   }
@@ -3134,7 +3136,7 @@ var resources = new MutationObserver(function([mutation]) {
 });
 function nodeOutsideTarget(node) {
   const targets2 = d().querySelectorAll(`${$.page.target.join(",")},[${$.qs.$target}]`);
-  for (let i = 0, s2 = targets2.length; i < s2; i++) {
+  for (let i = 0, s3 = targets2.length; i < s3; i++) {
     if (targets2[i].contains(node))
       return false;
   }
@@ -3238,60 +3240,78 @@ function disconnect6() {
 __name(disconnect6, "disconnect");
 
 // src/app/render.ts
-async function morphHead2(head, target) {
-  if (!$.eval || !head || !target)
+async function morphHead2(curHead, newHead) {
+  if (!$.eval || !curHead.children || !newHead.children)
     return;
-  const remove = [];
-  const nodes = s();
-  const { children } = head;
-  for (let i = 0, s2 = target.length; i < s2; i++) {
-    nodes.add(target[i].outerHTML);
-  }
-  for (let i = 0, s2 = children.length; i < s2; i++) {
-    const childNode = children[i];
-    const { nodeName, outerHTML } = childNode;
-    let evaluate = true;
-    if (nodeName === "SCRIPT") {
-      evaluate = childNode.matches($.qs.$script);
-    } else if (nodeName === "STYLE") {
-      evaluate = childNode.matches($.qs.$style);
-    } else if (nodeName === "META") {
-      evaluate = childNode.matches($.qs.$meta);
-    } else if (nodeName === "LINK") {
-      evaluate = childNode.matches($.qs.$link);
-    } else {
-      evaluate = head.getAttribute($.qs.$eval) !== "false";
+  const curHeadChildren = curHead.children;
+  const newHeadExternal = s();
+  const newHeadPreserve = m();
+  const newHeadChildren = newHead.children;
+  const newHeadRemovals = [];
+  for (let i = 0, s3 = newHeadChildren.length; i < s3; i++) {
+    const newHeadOuterHTML = newHeadChildren[i].outerHTML;
+    newHeadExternal.add(newHeadOuterHTML);
+    if (newHeadChildren[i].nodeName === "SCRIPT") {
+      newHeadPreserve.set(scriptTag(newHeadOuterHTML), newHeadOuterHTML);
     }
-    if (nodes.has(outerHTML)) {
+  }
+  for (let i = 0, s3 = curHeadChildren.length; i < s3; i++) {
+    const curHeadChildNode = curHeadChildren[i];
+    const curHeadOuterHTML = curHeadChildNode.outerHTML;
+    const curHeadNodeName = curHeadChildNode.nodeName;
+    let evaluate = true;
+    if (curHeadNodeName === "SCRIPT") {
+      evaluate = curHeadChildNode.matches($.qs.$script);
+    } else if (curHeadNodeName === "STYLE") {
+      evaluate = curHeadChildNode.matches($.qs.$style);
+    } else if (curHeadNodeName === "META") {
+      evaluate = curHeadChildNode.matches($.qs.$meta);
+    } else if (curHeadNodeName === "LINK") {
+      evaluate = curHeadChildNode.matches($.qs.$link);
+    } else {
+      evaluate = curHeadChildNode.getAttribute($.qs.$eval) !== "false";
+    }
+    if (newHeadExternal.has(curHeadOuterHTML)) {
       if (evaluate) {
-        remove.push(childNode);
+        newHeadRemovals.push(curHeadChildNode);
       } else {
-        nodes.delete(outerHTML);
+        newHeadExternal.delete(curHeadOuterHTML);
       }
     } else {
-      remove.push(childNode);
+      if (curHeadNodeName === "SCRIPT") {
+        const match = scriptTag(curHeadOuterHTML);
+        if (newHeadPreserve.has(match)) {
+          newHeadExternal.delete(newHeadPreserve.get(match));
+          newHeadPreserve.delete(match);
+          continue;
+        }
+      }
+      newHeadRemovals.push(curHeadChildNode);
     }
   }
   const promises = [];
   const range = document.createRange();
-  for (const outerHTML of nodes) {
+  for (const outerHTML of newHeadExternal) {
     const node = range.createContextualFragment(outerHTML).firstChild;
-    const link = hasProp(node, "href");
-    if (link || hasProp(node, "src")) {
+    console.log(node);
+    if (hasProp(node, "href") || hasProp(node, "src")) {
+      let success = null;
       const promise = new Promise(function(resolve) {
-        node.addEventListener("error", (e) => {
-          log(3 /* WARN */, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
-          resolve();
-        });
-        node.addEventListener("load", () => resolve());
+        success = resolve;
       });
+      node.addEventListener("error", (e) => {
+        log(3 /* WARN */, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
+        success();
+      });
+      node.addEventListener("load", () => success());
       promises.push(promise);
     }
-    head.appendChild(node);
-    nodes.delete(outerHTML);
+    curHead.appendChild(node);
+    newHeadExternal.delete(outerHTML);
   }
-  for (let i = 0, s2 = remove.length; i < s2; i++)
-    head.removeChild(remove[i]);
+  for (let i = 0, s3 = newHeadRemovals.length; i < s3; i++) {
+    curHead.removeChild(newHeadRemovals[i]);
+  }
   await Promise.all(promises);
 }
 __name(morphHead2, "morphHead");
@@ -3322,13 +3342,6 @@ function morphNodes(page, snapDom) {
     snap.sync(snapDom.body);
   if (page.type !== 6 /* VISIT */)
     patch("type", 6 /* VISIT */);
-  if (page.location.hash) {
-    const anchor = pageDom.querySelector(page.location.hash);
-    if (anchor) {
-      anchor.scrollIntoView();
-      return;
-    }
-  }
   scrollTo(page.scrollX, page.scrollY);
 }
 __name(morphNodes, "morphNodes");
@@ -3342,7 +3355,7 @@ function update2(page) {
   if (!$.eval)
     document.title = page.title;
   const snapDom = getSnapDom(page.snap);
-  morphHead2(h(), snapDom.head.children);
+  morphHead2(h(), snapDom.head);
   morphNodes(page, snapDom);
   progress.done();
   connect4();
@@ -3541,7 +3554,7 @@ function evaluators(options2, attr, disable) {
     if (options2.eval) {
       if (typeof options2.eval === "object") {
         const e = assign($.config.eval, options2.eval);
-        $.eval = !(!e.link && !e.meta && !e.script && !e.style);
+        $.eval = !(e.link === false && e.meta === false && e.script === false && e.style === false);
       }
     } else {
       $.eval = false;
@@ -3559,7 +3572,7 @@ function evaluators(options2, attr, disable) {
       return defaults;
     if (isArray($.config.eval[tag])) {
       if ($.config.eval[tag].length > 0) {
-        return $.config.eval[tag].map((s2) => `${s2}:${disable}`).join(",");
+        return $.config.eval[tag].map((s3) => `${s3}:${disable}`).join(",");
       } else {
         log(3 /* WARN */, `Missing eval ${tag} value, SPX will use defaults`);
         return defaults;
@@ -3755,7 +3768,11 @@ async function visit(state) {
     progress.start(state.progress);
   const page = await wait(state);
   if (page) {
-    push(page);
+    if (page.history === "replace") {
+      replace(page);
+    } else {
+      push(page);
+    }
     update2(page);
   } else {
     location.assign(state.key);
@@ -3812,18 +3829,12 @@ __name(disconnect8, "disconnect");
 
 // src/app/controller.ts
 function initialize2() {
-  const route = getRoute(0 /* INITIAL */);
-  const state = connect8(create(route));
+  const route2 = getRoute(0 /* INITIAL */);
+  const state = connect8(create(route2));
   defineProps($, {
-    prev: {
-      get: () => $.pages[$.history.rev]
-    },
-    page: {
-      get: () => $.pages[$.history.key]
-    },
-    snapDom: {
-      get: () => parse($.snaps[$.page.snap])
-    }
+    prev: { get: () => $.pages[$.history.rev] },
+    page: { get: () => $.pages[$.history.key] },
+    snapDom: { get: () => parse($.snaps[$.page.snap]) }
   });
   const DOMReady = /* @__PURE__ */ __name(() => {
     const page = set(state, takeSnapshot());
@@ -3838,7 +3849,7 @@ function initialize2() {
       patch("type", 6 /* VISIT */);
       reverse(page);
       preload(page);
-    });
+    }, 500);
     emit("x");
     return page;
   }, "DOMReady");
@@ -3846,7 +3857,7 @@ function initialize2() {
     const { readyState } = document;
     if (readyState === "interactive" || readyState === "complete")
       return resolve(DOMReady());
-    addEventListener("DOMContentLoaded", () => resolve(DOMReady()));
+    document.addEventListener("DOMContentLoaded", () => resolve(DOMReady()));
   });
 }
 __name(initialize2, "initialize");
@@ -3870,43 +3881,7 @@ function disconnect9() {
 __name(disconnect9, "disconnect");
 
 // src/index.ts
-var spx = o({
-  get $() {
-    return $;
-  },
-  Component,
-  on,
-  off,
-  connect: connect10,
-  component,
-  capture,
-  form,
-  render,
-  session,
-  reload,
-  fetch: fetch2,
-  clear,
-  hydrate,
-  prefetch,
-  visit: visit2,
-  disconnect: disconnect9,
-  register,
-  get config() {
-    return $.config;
-  },
-  supported: !!(isBrowser && window.history.pushState && window.requestAnimationFrame && window.DOMParser && window.Proxy),
-  history: o({
-    get state() {
-      return $.history;
-    },
-    api,
-    push,
-    replace,
-    has: has2,
-    reverse: reverse2
-  })
-});
-function connect10(options2 = {}) {
+function spx(options2 = {}) {
   if (isBrowser === false) {
     return log(5 /* ERROR */, "Invalid runtime environment: window is undefined.");
   }
@@ -3935,7 +3910,45 @@ function connect10(options2 = {}) {
     log(2 /* INFO */, "Connection Established");
   };
 }
-__name(connect10, "connect");
+__name(spx, "spx");
+spx.Component = Component;
+spx.on = on;
+spx.off = off;
+spx.component = component;
+spx.registed = register;
+spx.component = component;
+spx.capture = capture;
+spx.form = form;
+spx.render = render;
+spx.session = session;
+spx.reload = reload;
+spx.fetch = fetch2;
+spx.clear = clear;
+spx.hydrate = hydrate;
+spx.prefetch = prefetch;
+spx.route = route;
+spx.disconnect = disconnect9;
+spx.register = register;
+spx.supported = supported();
+defineProps(spx, {
+  $: { get: () => $ },
+  history: {
+    value: {
+      get state() {
+        return $.history;
+      },
+      api,
+      push,
+      replace,
+      has: has2,
+      reverse: reverse2
+    }
+  }
+});
+function supported() {
+  return !!(isBrowser && window.history.pushState && window.requestAnimationFrame && window.DOMParser && window.Proxy);
+}
+__name(supported, "supported");
 function component(identifer) {
   const mounts = mounted();
   return mounts[identifer][0];
@@ -3961,10 +3974,9 @@ function register(...classes) {
           }
         }
       } else {
-        const type = typeof component2;
-        if (type === "function") {
+        if (typeof component2 === "function") {
           registerComponents({ [getComponentId(component2)]: component2 }, true);
-        } else if (type === "object") {
+        } else if (typeof component2 === "object") {
           registerComponents(component2);
         }
       }
@@ -4022,20 +4034,20 @@ async function fetch2(url) {
 __name(fetch2, "fetch");
 async function render(url, pushState, fn) {
   const page = $.page;
-  const route = getRoute(url);
-  if (route.location.origin !== origin)
+  const route2 = getRoute(url);
+  if (route2.location.origin !== origin)
     log(5 /* ERROR */, "Cross origin fetches are not allowed");
-  const dom = await request(route.key, { type: "document" });
+  const dom = await request(route2.key, { type: "document" });
   if (!dom)
-    log(5 /* ERROR */, `Fetch failed for: ${route.key}`, dom);
+    log(5 /* ERROR */, `Fetch failed for: ${route2.key}`, dom);
   await fn.call(page, dom);
   if (pushState === "replace") {
     page.title = dom.title;
-    const state = update(assign(page, route), takeSnapshot(dom));
+    const state = update(assign(page, route2), takeSnapshot(dom));
     replace(state);
     return state;
   } else {
-    return update2(set(route, takeSnapshot(dom)));
+    return update2(set(route2, takeSnapshot(dom)));
   }
 }
 __name(render, "render");
@@ -4083,32 +4095,32 @@ async function form(action, options2) {
 }
 __name(form, "form");
 async function hydrate(link, nodes) {
-  const route = getRoute(link, 7 /* HYDRATE */);
-  fetch(route);
+  const route2 = getRoute(link, 7 /* HYDRATE */);
+  fetch(route2);
   if (isArray(nodes)) {
-    route.hydrate = [];
-    route.preserve = [];
+    route2.hydrate = [];
+    route2.preserve = [];
     for (const node of nodes) {
       if (node.charCodeAt(0) === 33) {
-        route.preserve.push(node.slice(1));
+        route2.preserve.push(node.slice(1));
       } else {
-        route.hydrate.push(node);
+        route2.hydrate.push(node);
       }
     }
   } else {
-    route.hydrate = $.config.fragments;
+    route2.hydrate = $.config.fragments;
   }
-  const page = await wait(route);
+  const page = await wait(route2);
   if (page) {
     const { key } = $.history;
     replace(page);
     update2(page);
-    if (route.key !== key) {
+    if (route2.key !== key) {
       if ($.index === key)
-        $.index = route.key;
+        $.index = route2.key;
       for (const p2 in $.pages) {
         if ($.pages[p2].rev === key) {
-          $.pages[p2].rev = route.key;
+          $.pages[p2].rev = route2.key;
         }
       }
       clear(key);
@@ -4117,12 +4129,11 @@ async function hydrate(link, nodes) {
   return getSnapDom(page.key);
 }
 __name(hydrate, "hydrate");
-async function visit2(link, options2) {
-  const route = getRoute(link);
-  const merge = typeof options2 === "object" ? assign(route, options2) : route;
-  return has(route.key) ? navigate(route.key, update(merge)) : navigate(route.key, create(merge));
+async function route(uri, options2) {
+  const goto = getRoute(uri);
+  const merge = typeof options2 === "object" ? assign(goto, options2) : goto;
+  return has(goto.key) ? navigate(goto.key, update(merge)) : navigate(goto.key, create(merge));
 }
-__name(visit2, "visit");
-var src_default = spx;
+__name(route, "route");
 
-export { src_default as default };
+export { spx as default };

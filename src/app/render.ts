@@ -2,8 +2,8 @@ import type { Page } from 'types';
 import { $ } from './session';
 import { emit } from './events';
 import { LogType, VisitType } from '../shared/enums';
-import { d, h, s } from '../shared/native';
-import { hasProp } from '../shared/utils';
+import { d, h, m, s } from '../shared/native';
+import { scriptTag, hasProp } from '../shared/utils';
 import { progress } from './progress';
 import { context, mark } from '../components/observe';
 import { getSnapDom, patch } from './queries';
@@ -43,79 +43,118 @@ import { getSelector } from 'src/components/context';
 
 // }
 
-async function morphHead (head: HTMLHeadElement, target: HTMLCollection): Promise<PromiseSettledResult<void>[]> {
+async function morphHead (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Promise<PromiseSettledResult<void>[]> {
 
-  if (!$.eval || !head || !target) return;
+  if (!$.eval || !curHead.children || !newHead.children) return;
 
-  const remove: Element[] = [];
-  const nodes = s<string>();
-  const { children } = head;
+  const curHeadChildren = curHead.children;
+  const newHeadExternal = s<string>();
+  const newHeadPreserve = m<string, string>();
+  const newHeadChildren = newHead.children;
+  const newHeadRemovals: Element[] = [];
 
-  for (let i = 0, s = target.length; i < s; i++) {
-    nodes.add(target[i].outerHTML);
+  for (let i = 0, s = newHeadChildren.length; i < s; i++) {
+
+    const newHeadOuterHTML = newHeadChildren[i].outerHTML;
+
+    newHeadExternal.add(newHeadOuterHTML);
+
+    // This is mainly for Shopify, because they try their hardest
+    // to manipulate the CFH so we can't augment logic, however they
+    // mark the scripts with ids or classes because they're fucking daft.
+    if (newHeadChildren[i].nodeName === 'SCRIPT') {
+
+      // Here we simply capture the script reference
+      //
+      newHeadPreserve.set(scriptTag(newHeadOuterHTML), newHeadOuterHTML);
+
+    }
   }
 
-  for (let i = 0, s = children.length; i < s; i++) {
+  for (let i = 0, s = curHeadChildren.length; i < s; i++) {
 
-    const childNode = children[i];
-    const { nodeName, outerHTML } = childNode;
+    const curHeadChildNode = curHeadChildren[i];
+    const curHeadOuterHTML = curHeadChildNode.outerHTML;
+    const curHeadNodeName = curHeadChildNode.nodeName;
 
     let evaluate: boolean = true;
 
-    if (nodeName === 'SCRIPT') {
-      evaluate = childNode.matches($.qs.$script);
-    } else if (nodeName === 'STYLE') {
-      evaluate = childNode.matches($.qs.$style);
-    } else if (nodeName === 'META') {
-      evaluate = childNode.matches($.qs.$meta);
-    } else if (nodeName === 'LINK') {
-      evaluate = childNode.matches($.qs.$link);
+    if (curHeadNodeName === 'SCRIPT') {
+      evaluate = curHeadChildNode.matches($.qs.$script);
+    } else if (curHeadNodeName === 'STYLE') {
+      evaluate = curHeadChildNode.matches($.qs.$style);
+    } else if (curHeadNodeName === 'META') {
+      evaluate = curHeadChildNode.matches($.qs.$meta);
+    } else if (curHeadNodeName === 'LINK') {
+      evaluate = curHeadChildNode.matches($.qs.$link);
     } else {
-      evaluate = head.getAttribute($.qs.$eval) !== 'false';
+      evaluate = curHeadChildNode.getAttribute($.qs.$eval) !== 'false';
     }
 
-    if (nodes.has(outerHTML)) {
+    if (newHeadExternal.has(curHeadOuterHTML)) {
+
       if (evaluate) {
-        remove.push(childNode);
+        newHeadRemovals.push(curHeadChildNode);
       } else {
-        nodes.delete(outerHTML);
+        newHeadExternal.delete(curHeadOuterHTML);
       }
+
     } else {
-      remove.push(childNode);
+
+      if (curHeadNodeName === 'SCRIPT') {
+
+        const match = scriptTag(curHeadOuterHTML);
+
+        if (newHeadPreserve.has(match)) {
+          newHeadExternal.delete(newHeadPreserve.get(match));
+          newHeadPreserve.delete(match);
+          continue;
+        }
+
+      }
+
+      newHeadRemovals.push(curHeadChildNode);
+
     }
   }
 
   const promises: Promise<void>[] = [];
   const range = document.createRange();
 
-  for (const outerHTML of nodes) {
+  for (const outerHTML of newHeadExternal) {
 
     const node = range.createContextualFragment(outerHTML).firstChild;
-    const link: boolean = hasProp(node, 'href');
 
-    if (link || hasProp(node, 'src')) {
+    console.log(node);
 
-      const promise = new Promise<void>(function (resolve) {
+    if (hasProp(node, 'href') || hasProp(node, 'src')) {
 
-        node.addEventListener('error', (e) => {
-          log(LogType.WARN, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
-          resolve();
-        });
+      let success = null;
 
-        node.addEventListener('load', () => resolve());
+      const promise = new Promise<void>(function (resolve) { success = resolve; });
 
+      node.addEventListener('error', (e) => {
+        log(LogType.WARN, `Resource <${node.nodeName.toLowerCase()}> failed:`, node);
+        success();
       });
+
+      node.addEventListener('load', () => success());
 
       promises.push(promise);
 
     }
 
-    head.appendChild(node);
-    nodes.delete(outerHTML);
+    curHead.appendChild(node);
+
+    newHeadExternal.delete(outerHTML);
 
   }
 
-  for (let i = 0, s = remove.length; i < s; i++) head.removeChild(remove[i]);
+  for (let i = 0, s = newHeadRemovals.length; i < s; i++) {
+
+    curHead.removeChild(newHeadRemovals[i]);
+
+  }
 
   await Promise.all<void>(promises);
 
@@ -165,13 +204,13 @@ function morphNodes (page: Page, snapDom: Document) {
 
   // Lets check whether or not location points to an anchor.
   // When page hash has a value, we will scroll to the point of the page.
-  if (page.location.hash) {
-    const anchor = pageDom.querySelector(page.location.hash);
-    if (anchor) {
-      anchor.scrollIntoView();
-      return;
-    }
-  }
+  // if ('hash' in page.location && page.location.hash) {
+  //   const anchor = pageDom.querySelector(page.location.hash);
+  //   if (anchor) {
+  //     anchor.scrollIntoView();
+  //     return;
+  //   }
+  // }
 
   scrollTo(page.scrollX, page.scrollY);
 
@@ -231,7 +270,7 @@ export function update (page: Page): Page {
 
   const snapDom = getSnapDom(page.snap);
 
-  morphHead(h(), snapDom.head.children);
+  morphHead(h(), snapDom.head);
   morphNodes(page, snapDom);
 
   progress.done();

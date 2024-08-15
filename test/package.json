@@ -1,0 +1,52 @@
+{
+  "name": "@spx/test",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "rm -rf public && concurrently \"pnpm run e2e\" \"pnpm run tsup\" \"pnpm run sass\"",
+    "tsup": "tsup --watch",
+    "e2e": "eleventy --config=.eleventy.cjs --serve --watch --quiet",
+    "sass": "sass ./asset/style.scss public/style.css --poll --watch --no-source-map"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "tsup": {
+    "entry": {
+      "bundle": "./asset/suite.ts"
+    },
+    "outDir": "./public",
+    "clean": false,
+    "treeshake": false,
+    "minify": false,
+    "minifyIdentifiers": false,
+    "minifySyntax": false,
+    "minifyWhitespace": false,
+    "splitting": false,
+    "platform": "browser",
+    "format": [
+      "iife"
+    ]
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1",
+    "@brixtol/bootstrap": "^1.7.3",
+    "@types/mergerino": "^0.4.5",
+    "@types/node": "^20.12.7",
+    "concurrently": "^8.2.2",
+    "e11ty": "^0.0.1",
+    "mergerino": "^0.4.0",
+    "sass": "^1.76.0",
+    "tsup": "^8.0.2"
+  },
+  "dependencies": {
+    "esthetic": "0.6.4-beta.1",
+    "mithril": "^2.2.2",
+    "papyrus": "^0.5.9",
+    "relapse": "^0.9.0",
+    "spx": "link:.."
+  }
+}

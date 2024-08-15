@@ -1,0 +1,29 @@
+---
+layout: views/index.liquid
+---
+
+<h1 id="title">
+  Incremental
+
+  <div
+    id="xxx"
+    spx-component="refs"></div>
+</h1>
+
+{{ content }}
+
+{% include 'cases/component-incremental/include/pages' %}
+{% include 'cases/component-incremental/include/target' %}
+
+<section
+  class="row bt mt-4 ml-1 py-3"
+  id="content">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="incremental.increment">
+    Increment Counter
+  </button>
+
+</section>

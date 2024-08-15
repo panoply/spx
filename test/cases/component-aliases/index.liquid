@@ -1,0 +1,44 @@
+---
+layout: views/index.liquid
+aliases:
+  - foo
+  - bar
+  - baz
+---
+
+<div class="row">
+  <div class="col-8">
+    {{
+      content
+    }}
+    <div class="row jc-center">
+      {% for alias in aliases %}
+        <div class="col-auto px-5 pt-5 {% unless forloop.last %}br{% endunless %}">
+          <h2 class="fs-sm mb-3">{{ alias }} Alias {{ forloop.index }}</h2>
+          <div
+            class="row ai-center mb-5"
+            id="{{ alias }}"
+            spx-component="alias"
+            spx-alias:qty="0"
+            spx-alias:min="0"
+            spx-alias:max="{{ 5 | plus: forloop.index }}">
+            <button
+              class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
+              type="button"
+              spx@click="{{ alias }}.increment">+</button>
+            <code
+              class="col-auto fs-lg"
+              spx-node="{{ alias }}.counter">0</code>
+            <button
+              class="col-auto fs-sm upper fw-bold  p-1 px-2"
+              type="button"
+              spx@click="{{ alias }}.decrement">–</button>
+          </div>
+          <span
+            class="d-block fs-sm mt-3 tc"
+            spx-node="{{ alias }}.feedback"></span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

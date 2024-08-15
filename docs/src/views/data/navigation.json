@@ -1,0 +1,345 @@
+{
+  "github": {
+    "title": "Github",
+    "url": "https://github.com/panoply/spx",
+    "target": "_blank"
+  },
+  "npm": {
+    "title": "NPM",
+    "url": "https://www.npmjs.com/package/spx",
+    "target": "_blank"
+  },
+  "discord": {
+    "title": "Discord",
+    "url": "https://discord.gg/shopify-developers-597504637167468564",
+    "target": "_blank"
+  },
+  "examples": [
+    {
+      "title": "Prefetching",
+      "links": [
+        {
+          "title": "Hover",
+          "url": "/examples/componentsr/"
+        },
+        {
+          "title": "Proximity",
+          "url": "/examples/componentsimity/"
+        },
+        {
+          "title": "Intersect",
+          "url": "/examples/componentsrsect/"
+        }
+      ]
+    },
+    {
+      "title": "Components",
+      "links": [
+        {
+          "title": "Components",
+          "url": "/examples/components/components/"
+        },
+        {
+          "title": "Dropdown",
+          "url": "/examples/components/dropdown/"
+        },
+        {
+          "title": "Dialog",
+          "url": "/examples/components/dialog/"
+        },
+        {
+          "title": "Embla Carousel",
+          "url": "/examples/components/carousel/using-embla/"
+        },
+        {
+          "title": "Infinite Scrolling",
+          "url": "/examples/components/infinite-scrolling/"
+        },
+        {
+          "title": "Forms",
+          "url": "/examples/components/forms/"
+        }
+      ]
+    }
+  ],
+  "menu": [
+    {
+      "title": "Getting Started",
+      "links": [
+        {
+          "title": "What is SPX?",
+          "url": "/what-is-spx/"
+        },
+        {
+          "title": "Using SPX",
+          "url": "#using-spx"
+        },
+        {
+          "title": "Tutorial",
+          "url": "/tutorial/"
+        },
+        {
+          "title": "Key Concepts",
+          "url": "/key-concepts/"
+        },
+        {
+          "title": "Getting Help",
+          "url": "/getting-help/"
+        }
+      ]
+    },
+    {
+      "title": "Usage",
+      "links": [
+        {
+          "title": "Installation",
+          "url": "/usage/installation/"
+        },
+        {
+          "title": "Connection",
+          "url": "/usage/connection/"
+        },
+        {
+          "title": "Options",
+          "url": "/usage/options/"
+        },
+        {
+          "title": "Resource Evaluation",
+          "url": "/usage/resource-evaluation/"
+        },
+        {
+          "title": "SPX Components",
+          "url": "/usage/spx-components/"
+        },
+        {
+          "title": "Lifecycle Events",
+          "url": "/usage/lifecycle-events/"
+        },
+        {
+          "title": "Using TypeScript",
+          "url": "/usage/using-typescript/"
+        },
+        {
+          "title": "VSCode Extension",
+          "url": "/usage/vscode-extension/"
+        }
+      ]
+    },
+    {
+      "title": "Components",
+      "links": [
+        {
+          "title": "Define",
+          "url": "/components/define/"
+        },
+        {
+          "title": "State",
+          "url": "/components/state/"
+        },
+        {
+          "title": "Hooks",
+          "url": "/components/hooks/"
+        },
+        {
+          "title": "Nodes",
+          "url": "/components/nodes/"
+        },
+        {
+          "title": "Events",
+          "url": "/components/events/"
+        },
+        {
+          "title": "Bindings",
+          "url": "/components/bindings/"
+        },
+        {
+          "title": "Directives",
+          "url": "/components/directives/"
+        },
+        {
+          "title": "Aliases",
+          "url": "/components/aliases/"
+        },
+        {
+          "title": "Register",
+          "url": "/components/register/"
+        }
+      ]
+    },
+    {
+      "title": "Directives",
+      "links": [
+        {
+          "title": "spx-target",
+          "url": "/directives/spx-target/"
+        },
+        {
+          "title": "spx-fragment",
+          "url": "/directives/spx-fragment/"
+        },
+        {
+          "title": "spx-morph",
+          "url": "/directives/spx-morph/"
+        },
+        {
+          "title": "spx-hover",
+          "url": "/directives/spx-hover/"
+        },
+        {
+          "title": "spx-eval",
+          "url": "/directives/spx-eval/"
+        },
+        {
+          "title": "spx-data",
+          "url": "/directives/spx-data/"
+        },
+        {
+          "title": "spx-component",
+          "url": "/directives/spx-component/"
+        },
+        {
+          "title": "spx-node",
+          "url": "/directives/spx-node/"
+        },
+        {
+          "title": "spx-bind",
+          "url": "/directives/spx-bind/"
+        },
+        {
+          "title": "spx-watch",
+          "url": "/directives/spx-watch/"
+        },
+        {
+          "title": "spx-intersect",
+          "url": "/directives/spx-intersect/"
+        },
+        {
+          "title": "spx-threshold",
+          "url": "/directives/spx-threshold/"
+        },
+        {
+          "title": "spx-proximity",
+          "url": "/directives/spx-proximity/"
+        },
+        {
+          "title": "spx-position",
+          "url": "/directives/spx-position/"
+        },
+        {
+          "title": "spx-scroll",
+          "url": "/directives/spx-scroll/"
+        },
+        {
+          "title": "spx-progress",
+          "url": "/directives/spx-progress/"
+        },
+        {
+          "title": "spx-cache",
+          "url": "/directives/spx-cache/"
+        },
+        {
+          "title": "spx-disable",
+          "url": "/directives/spx-disable/"
+        },
+        {
+          "title": "spx-history",
+          "url": "/directives/spx-history/"
+        }
+      ]
+    },
+    {
+      "title": "API",
+      "links": [
+        {
+          "title": "spx.connect",
+          "url": "/api/connect/"
+        },
+        {
+          "title": "spx.component",
+          "url": "/api/component/"
+        },
+        {
+          "title": "spx.on",
+          "url": "/api/on/"
+        },
+        {
+          "title": "spx.off",
+          "url": "/api/off/"
+        },
+        {
+          "title": "spx.visit",
+          "url": "/api/visit/"
+        },
+        {
+          "title": "spx.prefetch",
+          "url": "/api/prefetch/"
+        },
+        {
+          "title": "spx.fetch",
+          "url": "/api/fetch/"
+        },
+        {
+          "title": "spx.form",
+          "url": "/api/form/"
+        },
+        {
+          "title": "spx.render",
+          "url": "/api/render/"
+        },
+        {
+          "title": "spx.request",
+          "url": "/api/request/"
+        },
+        {
+          "title": "spx.capture",
+          "url": "/api/capture/"
+        },
+        {
+          "title": "spx.reload",
+          "url": "/api/reload/"
+        },
+        {
+          "title": "spx.clear",
+          "url": "/api/clear/"
+        },
+        {
+          "title": "spx.hydrate",
+          "url": "/api/hydrate/"
+        },
+        {
+          "title": "spx.store",
+          "url": "/api/store/"
+        },
+        {
+          "title": "spx.disconnect",
+          "url": "/api/disconnect/"
+        }
+      ]
+    },
+    {
+      "title": "Miscellaneous",
+      "links": [
+        {
+          "title": "Contributing",
+          "url": "/miscellaneous/contributing/"
+        },
+        {
+          "title": "Development",
+          "url": "/miscellaneous/development/"
+        },
+        {
+          "title": "Sessions",
+          "url": "/miscellaneous/sessions/"
+        },
+        {
+          "title": "Lexicon",
+          "url": "/miscellaneous/lexicon/"
+        },
+        {
+          "title": "Acknowledgements",
+          "url": "/miscellaneous/acknowledgements/"
+        }
+      ]
+    }
+  ]
+}

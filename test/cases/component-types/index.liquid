@@ -1,0 +1,169 @@
+---
+layout: views/index.liquid
+undefined:
+  - name: String
+    bind: undefinedStringValue
+  - name: Boolean
+    bind: undefinedBooleanValue
+  - name: Number
+    bind: undefinedNumberValue
+  - name: Object
+    bind: undefinedObjectValue
+  - name: Array
+    bind: undefinedArrayValue
+defined:
+  - name: String
+    bind: definedStringValue
+  - name: Boolean
+    bind: definedBooleanValue
+  - name: Number
+    bind: definedNumberValue
+  - name: Object
+    bind: definedObjectValue
+  - name: Array
+    bind: definedArrayValue
+defaults:
+  - name: String
+    bind: defaultStringValue
+  - name: Boolean
+    bind: defaultBooleanValue
+  - name: Number
+    bind: defaultNumberValue
+  - name: Object
+    bind: defaultObjectValue
+  - name: Array
+    bind: defaultArrayValue
+---
+
+<div class="row pt-4 g-0">
+  <div class="col-12 mb-4">
+    {{
+      content
+    }}
+  </div>
+</div>
+<div class="row bd bb-0 g-0">
+  <div
+    class="col-6 br"
+    spx-component="types">
+    <div class="pl-4 d-block bb">
+      <h3 class="pt-4 mb-2 fc-gray">
+        ❓ Undefined / Undefined
+      </h3>
+    </div>
+    {% for type in undefined %}
+      <div class="row g-0 ai-center jc-between pr-5 py-2 {% unless forloop.last %}bb{% endunless %}">
+        <span class="col-auto fs-sm pl-4">{{ type.name }}</span>
+        <code
+          class="col-auto"
+          spx-bind="types.{{ type.bind }}"></code>
+      </div>
+    {% endfor %}
+  </div>
+  <div
+    class="col-6"
+    spx-component="types"
+    spx-types:undefined-string="foo"
+    spx-types:undefined-number="250"
+    spx-types:undefined-boolean="true"
+    spx-types:undefined-object="{ test: 'pass' }"
+    spx-types:undefined-array="['test', { key: 'pass' }]">
+    <div class="pl-4 d-block bb ">
+      <h3 class="pt-4 mb-2 fc-green">
+        ✅ Undefined / Defined
+      </h3>
+    </div>
+    {% for type in undefined %}
+      <div class="row  g-0 ai-center jc-between px-4 py-2 {% unless forloop.last %}bb{% endunless %}">
+        <span class="col-auto fs-sm">{{ type.name }}</span>
+        <code
+          class="col-auto fc-green"
+          spx-bind="types.{{ type.bind }}"></code>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="row bd bb-0 g-0">
+  <div
+    class="col-6 br"
+    spx-component="types">
+    <div class="pl-4 d-block bb">
+      <h3 class="pt-4 mb-2 fc-gray">
+        ❓ Defined / Undefined
+      </h3>
+    </div>
+    {% for type in defined %}
+      <div class="row g-0 ai-center jc-between pr-5 py-2 {% unless forloop.last %}bb{% endunless %}">
+        <span class="col-auto fs-sm pl-4">{{ type.name }}</span>
+        <code
+          class="col-auto"
+          spx-bind="types.{{ type.bind }}"></code>
+      </div>
+    {% endfor %}
+  </div>
+  <div
+    class="col-6"
+    spx-component="types"
+    spx-types:defined-string="bar"
+    spx-types:defined-number="-250.22"
+    spx-types:defined-boolean="true"
+    spx-types:defined-object="{ number: 9999, array: ['string'] }"
+    spx-types:defined-array="['a','b','c',1,2,3]">
+    <div class="pl-4 d-block bb ">
+      <h3 class="pt-4 mb-2 fc-green">
+        ✅ Defined / Defined
+      </h3>
+    </div>
+    {% for type in defined %}
+      <div class="row  g-0 ai-center jc-between px-4 py-2 {% unless forloop.last %}bb{% endunless %}">
+        <span class="col-auto fs-sm">{{ type.name }}</span>
+        <code
+          class="col-auto fc-green"
+          spx-bind="types.{{ type.bind }}"></code>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="row bd g-0">
+  <div
+    class="col-6 br"
+    spx-component="types">
+    <div class="pl-4 d-block bb">
+      <h3 class="pt-4 mb-2 fc-gray">
+        ❓ Default / Undefined
+      </h3>
+    </div>
+    {% for type in defaults %}
+      <div class="row g-0 ai-center jc-between pr-5 py-2 {% unless forloop.last %}bb{% endunless %}">
+        <span class="col-auto fs-sm pl-4">{{ type.name }}</span>
+        <code
+          class="col-auto"
+          spx-bind="types.{{ type.bind }}"></code>
+      </div>
+    {% endfor %}
+  </div>
+  <div
+    class="col-6"
+    spx-component="types"
+    spx-types:default-string="qux"
+    spx-types:default-number="95.55"
+    spx-types:default-boolean="true"
+    spx-types:default-object="{ xxx: 'pass-3' }"
+    spx-types:default-array="[{ key: true },{ key: false}]">
+    <div class="pl-4 d-block bb ">
+      <h3 class="pt-4 mb-2 fc-green">
+        ✅ Default / Defined
+      </h3>
+    </div>
+    {% for type in defaults %}
+      <div class="row  g-0 ai-center jc-between px-4 py-2 {% unless forloop.last %}bb{% endunless %}">
+        <span class="col-auto fs-sm">{{ type.name }}</span>
+        <code
+          class="col-auto fc-green"
+          spx-bind="types.{{ type.bind }}"></code>
+      </div>
+    {% endfor %}
+  </div>
+</div>

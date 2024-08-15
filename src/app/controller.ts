@@ -3,8 +3,8 @@ import { $ } from './session';
 import { VisitType, LogType } from '../shared/enums';
 import { getRoute } from './location';
 import { log } from '../shared/logs';
-import { onNextTick } from '../shared/utils';
-import { defineProps } from '../shared/native';
+import { forEach, onNextTick } from '../shared/utils';
+import { defineProps, h, s } from '../shared/native';
 import { parse, takeSnapshot } from '../shared/dom';
 import * as q from './queries';
 import * as hrefs from '../observe/hrefs';
@@ -17,6 +17,7 @@ import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as fragment from '../observe/fragment';
 import { emit } from './events';
+import { walkElements } from 'src/morph/walk';
 
 // import * as timer from '../test/timer';
 
@@ -37,15 +38,9 @@ export function initialize (): Promise<Page> {
   const state = history.connect(q.create(route));
 
   defineProps($, {
-    prev: {
-      get: () => $.pages[$.history.rev]
-    },
-    page: {
-      get: () => $.pages[$.history.key]
-    },
-    snapDom: {
-      get: () => parse($.snaps[$.page.snap])
-    }
+    prev: { get: () => $.pages[$.history.rev] },
+    page: { get: () => $.pages[$.history.key] },
+    snapDom: { get: () => parse($.snaps[$.page.snap]) }
   });
 
   /**
@@ -70,7 +65,7 @@ export function initialize (): Promise<Page> {
       q.patch('type', VisitType.VISIT);
       request.reverse(page);
       request.preload(page);
-    });
+    }, 500);
 
     emit('x');
 
@@ -87,7 +82,7 @@ export function initialize (): Promise<Page> {
     // FALLBACK
     // Invoked if readyState is not matched, likely obsolete
     //
-    addEventListener('DOMContentLoaded', () => resolve(DOMReady()));
+    document.addEventListener('DOMContentLoaded', () => resolve(DOMReady()));
 
   });
 

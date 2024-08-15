@@ -2,7 +2,7 @@ import type { ComponentEvent, Scope, ComponentSession, ComponentNodes, Class } f
 import { type Context } from './context';
 import { $ } from '../app/session';
 import { Colors, Hooks, LogType, VisitType } from '../shared/enums';
-import { defineProp, defineProps, o } from '../shared/native';
+import { defineProps } from '../shared/native';
 import { addEvent } from './listeners';
 import { Component as Extended } from './extends';
 import { log } from '../shared/logs';
@@ -24,50 +24,44 @@ import { snap } from './snapshot';
  */
 function defineNodes (instance: Class, nodes: { [key: string]: ComponentNodes }) {
 
-  const model: { [schema: string]: string[] } = o();
+  const model: { [schema: string]: string[] } = {};
   const { $elements } = $.components;
 
   // First, we compose a workable model from the nodes entries,
   // we will use this model to assign the getter/setters on the instance
   for (const key in nodes) {
-    if (!(nodes[key].schema in model)) model[nodes[key].schema] = [];
-    model[nodes[key].schema].push(nodes[key].dom);
+
+    const { schema, dom } = nodes[key];
+
+    if (!(schema in model)) model[schema] = [];
+
+    model[schema].push(dom);
+
   }
 
   for (const prop in model) {
 
-    // TODO: Handle multiple nodes
-    if (`${prop}s` in instance) continue;
+    const plural = `${prop}s`;
+
+    let entries: HTMLElement[] = model[prop].map(id => $elements.get(id));
 
     // Let's re-assign (set) any existing node references
     // with an already defined property key
-    if (prop in instance) {
-      instance[prop] = model[prop];
+    if (plural in instance) {
+      instance[plural] = entries;
       continue;
     }
 
-    let entires = model[prop];
+    defineProps(instance, {
+      [`${prop}s`]: {
+        get: () => entries,
+        set (elements: HTMLElement[]) { entries = elements; }
+      },
+      [prop]: {
+        get: () => instance[`${prop}s`][0]
+      }
+    });
 
-    if (entires.length > 1) {
-
-      defineProps(instance, {
-        [prop]: {
-          get: () => $elements.get(entires[0]),
-          set (id: string[]) { entires = id; }
-        },
-        [`${prop}s`]: {
-          get: () => entires.map(id => $elements.get(id))
-        }
-      });
-
-    } else {
-
-      defineProp(instance, prop, {
-        get: () => $elements.get(entires[0]),
-        set (id) { entires = id; }
-      });
-
-    }
   }
 }
 
@@ -152,7 +146,7 @@ export function setInstances ({
 
               log(LogType.ERROR, [
                 'Incremental component update failed because more than 1 instance exists.',
-                `Provide an an alias identifer (id="") on: ${scope.instanceOf}`
+                `Provide an an alias "id" identifer on component: ${scope.instanceOf} (alias: ${scope.alias})`
               ]);
 
             }
@@ -229,7 +223,7 @@ export function setInstances ({
         // When initial run, onmount hook will run AFTER connect hook
         // We will hold the index in place to inject when such occurance
         // happens. The ensures execution order of hooks resolve correctly
-        // when the connect hook is async and onmount is syn
+        // when the connect hook is async and onmount is sync
         let idx: number = -1;
 
         if ('connect' in instance && !scope.connected) {
@@ -247,7 +241,6 @@ export function setInstances ({
             promises.push([ scope.key, 'onmount' ]);
           }
         }
-
       }
     };
   }
@@ -265,8 +258,6 @@ export function setInstances ({
 
   // Mount the instance, when promises is populated with entries
   // we will pass the mount() otherwise we simply resolve.
-  return promises.length > 0
-    ? mount(promises)
-    : Promise.resolve();
+  return promises.length > 0 ? mount(promises) : Promise.resolve();
 
 }

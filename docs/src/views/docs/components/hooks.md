@@ -8,7 +8,7 @@ layout: base.liquid
 
 Hooks are lifecycle callback methods provided within components which will execute at different stages of the SPX rendering cycle. There are 3 distinct callback hooks offered (connect, onmount and unmount). Each hook triggers in accordance with the presence of a element within the DOM annotated with an `spx-component` directive and value matching the component identifier.
 
-{% include 'hooks' %}
+{% include 'include/hooks-table' %}
 
 > The **order of execution** for components hooks is determined by initial or subsequent visits. Whenever a component instance is established the `connect` hook is triggered before `onmount`, whereas subsequent visits the `connect` hook will not be fired, resulting in `onmount` followed by `unmount` upon removal.
 
@@ -50,7 +50,7 @@ export class Example extends spx.Component {
 
   onmount({ page }) {
 
-    // Fires on initial visit after connect() and for all subsequent visits
+    // Fires after connect() and for all subsequent visits
     console.log(page)
 
   }
@@ -72,7 +72,7 @@ export class Example extends spx.Component {
 
   unmount({ page }) {
 
-    // Fires on initial visit after connect() and for all subsequent visits
+    // Fires whenever component element is removed from DOM
     console.log(page)
 
   }
@@ -84,4 +84,4 @@ export class Example extends spx.Component {
 
 # Demonstration
 
-{% include 'iframe', url: '/iframe/using-hooks/page-a', class: 'hook-iframe' %}
+{% include 'include/iframe', url: '/iframe/using-hooks/page-a/', class: 'hook-iframe' %}

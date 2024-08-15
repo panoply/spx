@@ -70,7 +70,7 @@ function evaluators (options: Options, attr: string, disable: string) {
     if (options.eval) {
       if (typeof options.eval === 'object') {
         const e = assign<IEval, IEval>($.config.eval as IEval, options.eval);
-        $.eval = !(!e.link && !e.meta && !e.script && !e.style);
+        $.eval = !(e.link === false && e.meta === false && e.script === false && e.style === false);
       }
     } else {
       $.eval = false;

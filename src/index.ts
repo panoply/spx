@@ -20,47 +20,10 @@ import * as renderer from './app/render';
 import * as history from './observe/history';
 import * as components from './observe/components';
 
-const spx = o({
-  get $ () { return $; },
-  Component,
-  on,
-  off,
-  connect,
-  component,
-  capture,
-  form,
-  render,
-  session,
-  reload,
-  fetch,
-  clear,
-  hydrate,
-  prefetch,
-  visit,
-  disconnect,
-  register,
-  get config () { return $.config; },
-  supported: !!(
-    isBrowser &&
-    window.history.pushState &&
-    window.requestAnimationFrame &&
-    window.DOMParser &&
-    window.Proxy
-  ),
-  history: o({
-    get state () { return $.history; },
-    api: history.api,
-    push: history.push,
-    replace: history.replace,
-    has: history.has,
-    reverse: history.reverse
-  })
-});
-
 /**
  * Connect SPX
  */
-function connect (options: Config = {}) {
+export default function spx (options: Config = {}) {
 
   if (isBrowser === false) {
     return log(LogType.ERROR, 'Invalid runtime environment: window is undefined.');
@@ -84,7 +47,7 @@ function connect (options: Config = {}) {
 
   return async function (callback: any) {
 
-    const state = (await promise);
+    const state = await promise;
 
     if (callback.constructor.name === 'AsyncFunction') {
       try {
@@ -101,6 +64,50 @@ function connect (options: Config = {}) {
   };
 
 };
+
+spx.Component = Component;
+spx.on = on;
+spx.off = off;
+spx.component = component;
+spx.registed = register;
+spx.component = component;
+spx.capture = capture;
+spx.form = form;
+spx.render = render;
+spx.session = session;
+spx.reload = reload;
+spx.fetch = fetch;
+spx.clear = clear;
+spx.hydrate = hydrate;
+spx.prefetch = prefetch;
+spx.route = route;
+spx.disconnect = disconnect;
+spx.register = register;
+spx.supported = supported();
+
+defineProps(spx, {
+  $: { get: () => $ },
+  history: {
+    value: {
+      get state () { return $.history; },
+      api: history.api,
+      push: history.push,
+      replace: history.replace,
+      has: history.has,
+      reverse: history.reverse
+    }
+  }
+});
+
+function supported () {
+
+  return !!(isBrowser &&
+    window.history.pushState &&
+    window.requestAnimationFrame &&
+    window.DOMParser &&
+    window.Proxy
+  );
+}
 
 function component (identifer: string) {
 
@@ -135,10 +142,9 @@ function register (...classes: any[]) {
           }
         }
       } else {
-        const type = typeof component;
-        if (type === 'function') {
+        if (typeof component === 'function') {
           registerComponents({ [getComponentId(component)]: component }, true);
-        } else if (type === 'object') {
+        } else if (typeof component === 'object') {
           registerComponents(component);
         }
       }
@@ -400,15 +406,13 @@ async function hydrate (link: string, nodes?: string[]): Promise<Document> {
 /**
  * Visit
  */
-async function visit (link: string, options?: Page): Promise<void|Page> {
+async function route (uri: string, options?: Page): Promise<void|Page> {
 
-  const route = getRoute(link);
-  const merge = typeof options === 'object' ? assign(route, options) : route;
+  const goto = getRoute(uri);
+  const merge = typeof options === 'object' ? assign(goto, options) : goto;
 
-  return q.has(route.key)
-    ? hrefs.navigate(route.key, q.update(merge))
-    : hrefs.navigate(route.key, q.create(merge));
+  return q.has(goto.key)
+    ? hrefs.navigate(goto.key, q.update(merge))
+    : hrefs.navigate(goto.key, q.create(merge));
 
 };
-
-export default spx;

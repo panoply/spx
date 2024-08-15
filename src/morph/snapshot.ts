@@ -135,7 +135,7 @@ export function patchComponentSnap (scope: Scope, scopeKey: string) {
 
     const snap = q.getSnapDom(scope.snap);
     const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
-
+    console.log(snap, elem);
     if (elem) {
       elem.innerHTML = scope.snapshot;
       q.setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
@@ -215,8 +215,9 @@ export function morphHead (method: 'removeChild' | 'appendChild', newNode: HTMLE
     $.snaps[page.snap] = dom.documentElement.outerHTML;
 
     log(LogType.VERBOSE, `Snapshot record was updated. Node ${operation} from <head>`, newNode);
+
   } else {
-    log(LogType.WARN, 'Node does not exists in snapshot record, no mutation applied', newNode);
+    log(LogType.WARN, 'Node does not exist in the snapshot record, no mutation applied', newNode);
   }
 
 }

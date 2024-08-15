@@ -17,9 +17,6 @@
     "liquid": {
       "commentIndent": true,
       "commentNewline": true,
-      "dedentTagList": [
-        "schema"
-      ],
       "delimiterPlacement": "consistent",
       "delimiterTrims": "never",
       "lineBreakSeparator": "before",

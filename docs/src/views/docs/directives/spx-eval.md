@@ -3,12 +3,6 @@ title: 'spx-eval'
 layout: base.liquid
 group: 'directive'
 permalink: '/directives/spx-eval/index.html'
-prev:
-  label: 'Installation'
-  uri: '/usage/installation'
-next:
-  label: 'Options'
-  uri: '/usage/options/'
 ---
 
 # spx-eval

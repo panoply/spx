@@ -6,3 +6,4 @@ export * from './config';
 export * from './page';
 export * from './namespace';
 export { Merge, LiteralUnion, ValueOf } from 'type-fest';
+export type Identity<T> = T;

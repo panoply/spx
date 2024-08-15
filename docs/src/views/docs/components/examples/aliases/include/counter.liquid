@@ -1,0 +1,29 @@
+<div class="row jc-center ml-2 bt pt-5">
+  <div class="col-7 tc bg-code py-3 rd-2">
+    <span
+      class="d-block tc fc-white pb-3 ff-head"
+      style="font-size:30px"
+      spx-bind="alias.count">0</span>
+    <div
+      spx-component="alias"
+      spx-alias:limit="5">
+      <div class="row jc-center">
+        <button
+          type="button"
+          class="btn bc-white btn-white rd-2 col-auto bd mr-2"
+          spx@click="alias.increment">
+          increase
+        </button>
+        <button
+          type="button"
+          class="btn bc-white  btn-white rd-2 col-auto bd"
+          spx@click="alias.decrement">
+          decrease
+        </button>
+      </div>
+    </div>
+    <div
+      class="w-100"
+      spx-node="alias.feedback"></div>
+  </div>
+</div>

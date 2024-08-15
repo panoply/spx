@@ -1,0 +1,61 @@
+---
+title: 'Basic'
+layout: views/index.liquid
+permalink: '/directives/spx-target/page-a/index.html'
+---
+
+<h1 id="title">SPX Targets - Page A</h1>
+
+{% include 'cases/directive-target/include/pages' %}
+
+<div class="row ai-center">
+  <div class="col-3">
+    <div
+      class="row ai-center ml-1"
+      id="page-a">
+      <div class="col-12 py-3 bg-ivory rd my-4 bd tc">
+        <h6 class="fw-bold pb-3 mb-4 bb">
+          Page A (Before)
+        </h6>
+        <div class="px-4 mb-3 fs-sm">
+          The target color has changed to cyan
+        </div>
+        <div
+          class="p-4 d-block w-100 rd-2"
+          style="background-color: cyan;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-3">
+    <div
+      class="row ai-center ml-1"
+      id="page-b">
+      <div class="col-12 py-3 bg-ivory rd my-4 bd tc">
+        <h6 class="fw-bold pb-3 mb-4 bb">
+          Page B (Before)
+        </h6>
+        <div class="px-4 mb-3 fs-sm">
+          The target color will change from gray to green.
+        </div>
+        <div class="p-4 d-block w-100 bg-gray rd-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-3">
+    <div
+      class="row ai-center ml-1"
+      id="page-c">
+      <div class="col-12 py-3 bg-ivory rd my-4 bd tc">
+        <h6 class="fw-bold pb-3 mb-4 bb">
+          Page C (Before)
+        </h6>
+        <div class="px-4 mb-3 fs-sm">
+          The target color will change from gray to red.
+        </div>
+        <div class="p-4 d-block w-100 bg-gray rd-2"></div>
+      </div>
+    </div>
+  </div>
+</div>

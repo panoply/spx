@@ -1,0 +1,19 @@
+---
+layout: views/index.liquid
+permalink: '/components/refs/page-a/index.html'
+base: /components/refs/
+---
+
+<h1>Component Refs</h1>
+<p>
+  Tests elements which contains multiple references. In some cases a component will use `spx-node` and `spx-event` annotations. Here we have a couple of components, each associated elements of these components are applying multiple references.
+</p>
+<hr>
+<div class="row">
+  <div class="col-3">
+    {% include 'cases/component-refs/include/pages' %}
+  </div>
+  <div class="col">
+    {% include 'cases/component-refs/include/demo', id: 'Page A', color: 'fc-pink' %}
+  </div>
+</div>

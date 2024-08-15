@@ -1,0 +1,44 @@
+flex {
+  display: flex;
+  overflow: hidden;
+}
+
+/* flex-item > flex {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+} */
+
+flex.h {
+  flex-direction: row;
+}
+
+flex.v {
+  flex-direction: column;
+}
+
+flex-item {
+  /* display: flex; */
+  /* position: relative; */
+  /* overflow: hidden; */
+  overflow: auto;
+}
+
+flex > flex-resizer {
+  flex: 0 0 12px;
+  background-color: $papyrus-complete-border-color;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-bottom: 2px solid $papyrus-code-bg;
+}
+
+flex.h > flex-resizer {
+  cursor: ew-resize;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='30'><path d='M2 0 v30 M5 0 v30 M8 0 v30' fill='none' stroke='black'/></svg>");
+}
+
+flex.v > flex-resizer {
+  cursor: ns-resize;
+
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='6'><path d='M0 2 h30 M0 5 h30 M0 8 h30' fill='none' stroke='black'/></svg>");
+}

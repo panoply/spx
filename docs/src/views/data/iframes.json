@@ -1,0 +1,40 @@
+{
+  "using-defaults": {
+    "links": [
+      {
+        "title": "Page A",
+        "url": "/iframe/basic/page-a/",
+        "disable": false
+      },
+      {
+        "title": "Page B",
+        "url": "/iframe/basic/page-b/",
+        "disable": false
+      },
+      {
+        "title": "Page C",
+        "url": "/iframe/basic/page-c/",
+        "disable": true
+      },
+      {
+        "title": "Page D",
+        "url": "/iframe/basic/page-d/",
+        "disable": false
+      }
+    ]
+  },
+  "using-hooks": {
+    "links": [
+      {
+        "title": "Page A",
+        "url": "/iframe/using-hooks/page-a/",
+        "disable": false
+      },
+      {
+        "title": "Page B",
+        "url": "/iframe/using-hooks/page-b/",
+        "disable": false
+      }
+    ]
+  }
+}

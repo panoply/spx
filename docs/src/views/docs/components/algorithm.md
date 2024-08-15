@@ -11,11 +11,15 @@ The SPX Component algorithm (or pattern) works in a progressive manner. This pag
 
 # Context
 
-SPX uses syntactical structures that cannot be obtained using `querySelector` and along with its alias tactic in order for context awareness the module will traverse the DOM and generate a workable model which describes components. This is a heavy operation and likely the most expensive in terms of performance bottlenecks (depending on the size of the DOM), however in most cases will conclude in less than 50ms. Context awareness is applied 2 different ways.
+SPX uses syntactical structures that **cannot** be obtained using `querySelector` and along with its alias tactic in order for context awareness the module will traverse the DOM and generate a workable model which describes components. This is a heavy operation and likely the most expensive in terms of performance bottlenecks (depending on the size of the DOM), however in most cases will conclude in less than 50ms. Context awareness is applied 2 different ways.
 
 ### Runtime
 
 Runtime context happens upon SPX connection. This is a heavy operation and likely the most expensive in terms of performance bottlenecks (depending on the size of the DOM), however in most cases will conclude in less than 50ms. Runtime context works in a similar way as subsequent context, the difference being is that subsequent context is composed during morph operations, whereas runtime context is component using DOM traversal.
+
+### Immutability
+
+Component instances are immutable and for every component occurrence, a new instance will be established, however once instances have been established, they will not re-establish. This is the intended design philosophy behind SPX component architecture and similar to the caching algorithm, component will behave in accordance with snapshot references.
 
 ### Subsequent
 

@@ -1,0 +1,30 @@
+{% assign refs = 'Foo,Bar,Baz' | split: ',' %}
+
+<div class="row">
+  {% for ref in refs %}
+
+    {% assign click = ref | prepend: 'on' | append: 'Press' %}
+
+    <div
+      spx-component="refs1"
+      class="col px-5 pt-5 {% unless forloop.last %}br{% endunless %}">
+      <div
+        class="row jc-center ai-center tc mb-5"
+        spx-component="refs2">
+        <h5 class="col-auto fs-sm mb-3 {{ color }}">
+          {{ ref }} Component
+          <small class="mt-2 fc-gray d-block">{{ id }}</small>
+        </h5>
+        <button
+          class="col-12 fs-sm upper fw-bold p-1 px-2 ml-3"
+          type="button"
+          spx-node="refs2.{{ ref | downcase }}"
+          spx@click="refs1.onQuxPress refs2.{{ click }}">0</button>
+
+        <div
+          class="col-12 fs-sm upper fw-bold p-1 px-2 ml-3"
+          spx-node="refs1.xxx"></div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

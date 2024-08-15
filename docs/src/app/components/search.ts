@@ -5,10 +5,18 @@ import Fuse from 'fuse.js';
 
 interface Results {
   title: string;
-  anchor: string;
   content: string;
   heading: string;
   url: string;
+}
+
+interface Result {
+  [heading: string]: {
+    header: string;
+    isHeader: boolean,
+    url: string;
+    items: string[]
+  }
 }
 
 export class Search extends spx.Component<typeof Search.define> {
@@ -32,18 +40,26 @@ export class Search extends spx.Component<typeof Search.define> {
 
     this.list = await list.json();
     this.fuse = new Fuse(this.list, {
-      keys: [ 'title', 'content' ],
-      threshold: 0,
+      keys: [
+        'title',
+        'heading',
+        'content'
+      ],
+      threshold: 0.1,
+      isCaseSensitive: false,
       includeMatches: false
     });
+
   }
 
   hide () {
 
     removeEventListener('click', this.outsideClick);
+
     this.listNode.classList.replace('d-block', 'd-none');
     this.inputNode.classList.remove('is-active', 'is-results');
     this.state.active = false;
+
   }
 
   outsideClick (event: Event) {
@@ -74,10 +90,7 @@ export class Search extends spx.Component<typeof Search.define> {
   onInput ({ target }: SPX.InputEvent<{}, HTMLInputElement>) {
 
     this.state.query = target.value;
-    this.result = [];
-    this.result = this.fuse.search(this.state.query, {
-      limit: 10
-    });
+    this.result = this.fuse.search(this.state.query, { limit: 10 });
 
     if (!this.state.active) {
       this.listNode.classList.replace('d-none', 'd-block');
@@ -86,10 +99,14 @@ export class Search extends spx.Component<typeof Search.define> {
     }
 
     if (this.state.query.length === 0) {
+
       this.inputNode.classList.remove('is-results');
       this.listNode.classList.replace('d-block', 'd-none');
+
     } else if (!this.listNode.classList.contains('d-block')) {
+
       this.listNode.classList.replace('d-none', 'd-block');
+
     }
 
     this.showList();
@@ -104,15 +121,27 @@ export class Search extends spx.Component<typeof Search.define> {
       this.inputNode.classList.add('is-results');
     }
 
-    const result: { [heading: string]: { url: string; items: string[] } } = {};
+    const result: Result = {};
     const match = new RegExp(`(${this.state.query})`, 'gi');
 
-    this.listNode.classList.remove('no-results');
     this.listNode.innerHTML = '';
+    this.listNode.classList.remove('no-results');
     this.result.forEach(({ item }) => {
 
-      const offset = item.content.search(match);
-      const slice = item.content.slice(offset);
+      const content = item.content === ''
+        ? item.title
+        : item.content;
+
+      let offset = item.heading.search(match);
+
+      let isHeader: boolean = true;
+
+      if (offset === -1) {
+        offset = content.search(match);
+        isHeader = false;
+      }
+
+      const slice = content.slice(offset);
 
       if (slice.trim().length > 0) {
 
@@ -120,21 +149,33 @@ export class Search extends spx.Component<typeof Search.define> {
 
         if (value.length > 2) {
 
+          let header: string;
+
+          if (item.title !== item.heading && item.heading !== '' && !/[(:]/.test(item.heading)) {
+            header = item.heading;
+          } else {
+            header = '';
+          }
+
           if (!(item.title in result)) {
             result[item.title] = {
+              header,
+              isHeader: header !== '' ? isHeader : false,
               url: item.url,
               items: []
             };
           }
 
-          result[item.title].items.push(
-            '<div class="result">',
-            '<span>',
-            value.replace(match, '<strong class="fc-blue">$1</strong>'),
-            '...',
-            '</span>',
-            '</div>'
-          );
+          if (value.length > 50) {
+            result[item.title].items.push(
+              '<div class="result">',
+              '<span>',
+              value.replace(match, '<strong class="fc-blue">$1</strong>'),
+              '...',
+              '</span>',
+              '</div>'
+            );
+          }
         }
       }
     });
@@ -148,9 +189,20 @@ export class Search extends spx.Component<typeof Search.define> {
       this.listNode.appendChild(element);
     } else {
       items.forEach(group => {
+
         const record = result[group];
         const element = document.createElement('li');
-        element.innerHTML = `<a href="${record.url}"><h5>${group}</h5>${record.items.join('')}</a>`;
+
+        element.innerHTML = [
+          `<a href="${record.url}">`,
+          '<h5 class="row ai-center jc-between px-2">',
+          `<span class="col-auto">${record.isHeader ? record.header : group}</span>`,
+          `<span class="col-auto fc-dark-gray fs-xs">${record.isHeader ? group : record.header}</span>`,
+          '</h5>',
+          `${record.items.join('')}`,
+          '</a>'
+        ].join('');
+
         this.listNode.appendChild(element);
       });
     }

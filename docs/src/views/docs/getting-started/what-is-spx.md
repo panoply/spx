@@ -2,18 +2,13 @@
 permalink: '/what-is-spx/index.html'
 layout: base.liquid
 title: 'What is SPX?'
-anchors:
-  - What is SPX?
-  - Why use SPX?
-  - Who uses SPX?
-  - How SPX Works?
 ---
 
 # What is SPX?
 
-SPX is a lightweight JavaScript library ({{ meta.gzipSize }} gzip) designed for static, SaaS, and server-side powered web applications. It leverages HTML pre-fetching over the wire and utilizes the response to perform morphed replacements. The module operates navigation in an idle state, maintaining an in-memory cache of fetched pages to prevent subsequent requests. It conducts morphed renders between visits and supports component integration.
+SPX is a lightweight JavaScript library ({{ meta.gzipSize }} gzip) designed for static, SaaS, and server-side powered web applications. It performs HTML pre-fetching over the wire and utilizes the response to carry-out morphed replacements. The module operates navigation in an idle state, maintaining an in-memory cache of fetched pages to prevent subsequent requests. It conducts morphed renders between visits and supports component integration.
 
-{% include 'comparison'%}
+{% include 'include/comparison' %}
 
 The name "SPX" stands for **Single Page XHR**, derived from terminologies used to describe JavaScript paradigms such as **SPA** (Single Page Application) and **MPA** (Multiple Page Application). The concept utilized by SPX is also known as **PJAX** (Push state Ajax), which intercepts clicks made on link elements and fetches pages over the wire instead of executing full-page reloads between visits.
 

@@ -1,0 +1,33 @@
+---
+title: 'Incremental - Page C'
+layout: views/index.liquid
+group: 'directive'
+permalink: '/components/incremental/page-c/index.html'
+base: /components/incremental/
+---
+
+<h1 id="title">Incremental - Page C</h1>
+
+{{ content }}
+
+{% include 'cases/component-incremental/include/pages' %}
+{% include 'cases/component-incremental/include/target' %}
+
+<section
+  class="row bt mt-4 ml-1 py-3"
+  id="content">
+
+  <button
+    type="button"
+    class="col-auto"
+    spx@click="increment.reset">
+    Reset Counter
+  </button>
+
+  <input
+    type="text"
+    class="col-auto ml-3"
+    placeholder="Change Label"
+    spx@input="increment.labelInput">
+
+</section>

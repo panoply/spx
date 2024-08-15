@@ -1,0 +1,25 @@
+---
+title: 'Incremental - Page A'
+layout: views/index.liquid
+permalink: '/components/incremental/page-a/index.html'
+base: /components/incremental/
+---
+
+<h1 id="title">Incremental - Page A</h1>
+
+{{ content }}
+
+{% include 'cases/component-incremental/include/pages' %}
+{% include 'cases/component-incremental/include/target' %}
+
+<section
+  class="row bt mt-4 ml-1 py-3"
+  id="content">
+
+  <input
+    type="color"
+    class="col-1 p-1"
+    style="height: 50px;"
+    spx@input="increment.changeColor">
+
+</section>

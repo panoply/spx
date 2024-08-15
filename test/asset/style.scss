@@ -1,0 +1,93 @@
+/* -------------------------------------------- */
+/* PRESET                                       */
+/* -------------------------------------------- */
+
+@import '../node_modules/@brixtol/bootstrap/variables';
+@import '../node_modules/papyrus/index';
+
+/* -------------------------------------------- */
+/* VENDORS                                      */
+/* -------------------------------------------- */
+
+$font-family-base:
+  system-ui,
+  -apple-system,
+  Segoe UI,
+  Roboto,
+  Ubuntu,
+  Cantarell,
+  Noto Sans,
+  sans-serif,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Helvetica,
+  Arial,
+  sans-serif,
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol';
+
+$font-family-other: 'JetBrains Mono', monospace;
+$font-family-heading: $font-family-other;
+$font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+
+// stylelint-enable
+
+/* -------------------------------------------- */
+/* FONT SIZES                                   */
+/* -------------------------------------------- */
+
+$font-size-base: 1rem;
+
+$font-size-xs: $font-size-base * 0.725; // 0.6875rem
+$font-size-md: 0.901rem; // 0.7771rem
+$font-size-sm: $font-size-base * 0.825; // 0.8525rem
+$font-size-lg: $font-size-base * 1.25; // 1.375rem
+
+/* -------------------------------------------- */
+/* FONT HEADINGS                                */
+/* -------------------------------------------- */
+
+$line-height-base: 1.4;
+$line-height-sm: 1.25;
+$line-height-lg: 2;
+$line-height-xl: 2.4;
+
+$headings-letter-spacing: $headings-letter-spacing;
+$headings-font-family: $font-family-heading;
+$headings-margin-bottom: $spacer-3;
+$headings-font-style: null;
+$headings-font-weight: 600;
+$headings-line-height: 1.2;
+$headings-color: null;
+$headings-uppercase: true;
+
+$h1-font-size: $font-size-base * 1.3;
+$h2-font-size: $font-size-base * 1.2;
+$h3-font-size: $font-size-base * 1.1;
+$h4-font-size: $font-size-base * 1;
+$h5-font-size: $font-size-base * 1;
+$h6-font-size: $font-size-base;
+
+$papyrus-height: 100%;
+
+$font-colors: (
+  'black': $black,
+  'white': $gray-200,
+  'gray': $gray-500,
+  'dark-gray': $gray-600,
+  'red': $red,
+  'yellow': $yellow,
+  'orange': $orange,
+  'cyan': $cyan,
+  'green': $green,
+  'blue': $blue,
+  'purple': $purple,
+  'pink': $pink
+);
+
+@import '../node_modules/@brixtol/bootstrap/variation';
+@import './style/resize';
+@import './style/extend';
+@import './style/json-tree';
+@import './style/explorer';

@@ -1,0 +1,168 @@
+---json
+{
+  "menu": [
+    {
+      "title": "Options",
+      "links": [
+        {
+          "title": "Fragments",
+          "url": "/options/fragments/"
+        }
+      ]
+    },
+    {
+      "title": "Directives",
+      "links": [
+        {
+          "title": "spx-target",
+          "url": "/directives/spx-target/"
+        }
+      ]
+    },
+    {
+      "title": "Components",
+      "links": [
+        {
+          "title": "Async",
+          "url": "/components/async/"
+        },
+        {
+          "title": "Lifecycle",
+          "url": "/components/lifecycle/"
+        },
+        {
+          "title": "Types",
+          "url": "/components/types/"
+        },
+        {
+          "title": "Merge",
+          "url": "/components/merge/"
+        },
+        {
+          "title": "Refs",
+          "url": "/components/refs/"
+        },
+        {
+          "title": "Alias",
+          "url": "/components/alias/"
+        },
+        {
+          "title": "Incremental",
+          "url": "/components/incremental/"
+        },
+        {
+          "title": "Nesting",
+          "url": "/components/nesting/"
+        }
+      ]
+    }
+  ]
+}
+---
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>
+      {{ title }}
+    </title>
+
+    <meta charset="UTF-8">
+    <meta
+      name="description"
+      content="{{ description }}">
+    <meta
+      http-equiv="X-UA-Compatible"
+      content="IE=edge">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+    <link
+      href="https://fonts.googleapis.com"
+      rel="preconnect">
+
+    <link
+      href="https://fonts.gstatic.com"
+      crossorigin
+      rel="preconnect">
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
+      rel="stylesheet"
+      spx-eval="false">
+
+    <link
+      href="{{'/style.css' | url }}"
+      spx-eval="false"
+      rel="stylesheet">
+
+    <script
+      src="{{'/bundle.js' | url }}"
+      spx-eval="false"
+      async></script>
+
+    <script
+      src="{{ script | url }}"
+      spx-eval="false"
+      async></script>
+
+  </head>
+  <body>
+
+    {% if iframe %}
+
+      {{ content }}
+
+    {% else %}
+
+      <flex
+        class="v"
+        style="height: 100vh;"
+        spx-component="explorer">
+        <flex
+          class="h"
+          style="flex: 1;">
+          <flex-item
+            class="content"
+            style="flex: 1;">
+            <div class="container-fluid h-100 pr-5 fixed-width">
+              <div class="row rel">
+                {% include 'views/include/cases' %}
+                <main
+                  class="col offset-2 px-5 py-5"
+                  id="main">
+                  {{ content }}
+                </main>
+              </div>
+            </div>
+          </flex-item>
+          <flex-resizer></flex-resizer>
+          {% include 'views/include/explorer' %}
+        </flex>
+        <flex-resizer></flex-resizer>
+        <flex
+          class="h"
+          style="flex: 0;">
+          <flex-item style="flex: 1;">
+            <section
+              spx-node="explorer.document"
+              class="compare"></section>
+          </flex-item>
+          <flex-resizer></flex-resizer>
+          <flex
+            class="v"
+            style="flex: 1; ">
+            <flex-item style="flex: 1;">
+              <section
+                spx-node="explorer.snapshot"
+                class="snap"></section>
+            </flex-item>
+          </flex>
+        </flex>
+      </flex>
+
+    {% endif %}
+
+  </body>
+</html>

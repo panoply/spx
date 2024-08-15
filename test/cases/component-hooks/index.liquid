@@ -1,0 +1,100 @@
+---
+layout: views/index.liquid
+delays:
+  - reference: '(2) Async Delay 1'
+    connectDelay: 2000
+    onmountDelay: 1000
+  - reference: '(4) Async Delay 2'
+    connectDelay: 3000
+    onmountDelay: 3000
+  - reference: '(1) Async Delay 3'
+    connectDelay: 1000
+    onmountDelay: 1000
+  - reference: '(5) Async Delay 4'
+    connectDelay: 2000
+    onmountDelay: 5000
+  - reference: '(3) Async Delay 5'
+    connectDelay: 3500
+    onmountDelay: 2000
+fetches:
+  - reference: '(1) Async Fetch 1'
+    connectDelay: 0
+    onmountDelay: 1000
+  - reference: '(2) Async Fetch 2'
+    connectDelay: 0
+    onmountDelay: 2000
+  - reference: '(3) Async Fetch 3'
+    connectDelay: 0
+    onmountDelay: 3000
+  - reference: '(4) Async Fetch 4'
+    connectDelay: 0
+    onmountDelay: 4000
+  - reference: '(5) Async Fetch 5'
+    connectDelay: 0
+    onmountDelay: 5000
+---
+
+<div class="row mt-4 g-0">
+  <div class="col-12 mb-4">
+    {{
+      content
+    }}
+  </div>
+  <div class="col-4 bx bb">
+    {% for hook in delays %}
+      <div
+        spx-component="async"
+        spx-async:connect-delay="{{ hook.connectDelay }}"
+        spx-async:onmount-delay="{{ hook.onmountDelay }}">
+        <h6 class="fw-bold pl-3 py-2 mb-2 by bg-ivory">{{ hook.reference }}</h6>
+        <div
+          class="row ai-center jc-between mb-3 px-2"
+          style="height: 35px;">
+          <code
+            class="col-auto fs-sm"
+            spx-bind="async.connectText"></code>
+          <code
+            class="col-auto  fs-sm fc-green"
+            spx-node="async.mounted"></code>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="col-4 br bb">
+    {% for hook in fetches %}
+      <div
+        spx-component="async"
+        spx-async:fetch-example="true"
+        spx-async:onmount-delay="{{ hook.onmountDelay }}">
+        <h6 class="fw-bold pl-3 py-2 mb-2 by bg-ivory">{{ hook.reference }}</h6>
+        <div
+          class="row ai-center jc-between mb-3 px-2"
+          style="height: 35px;">
+          <code
+            class="col-auto  fs-sm"
+            spx-bind="async.connectText"></code>
+          <code
+            class="col-auto  fs-sm fc-green"
+            spx-node="async.mounted"></code>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="col-4 br bb">
+    {% for hook in (1..5) %}
+      <div spx-component="async">
+        <h6 class="fw-bold pl-3 py-2 mb-2 by bg-ivory">({{ forloop.index }}) Sync</h6>
+        <div
+          class="row ai-center jc-between mb-3 px-2"
+          style="height: 35px;">
+          <code
+            class="col-auto  fs-sm"
+            spx-bind="async.connectText"></code>
+          <code
+            class="col-auto  fs-sm fc-green"
+            spx-node="async.mounted"></code>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

@@ -26,7 +26,7 @@ Fragments in SPX refer to elements annotated with an `id` attribute that persist
 ::: grid col-6
 
 <!-- prettier-ignore -->
-```js
+```ts
 import spx from 'spx';
 
 spx.connect({
@@ -119,7 +119,7 @@ By default, SPX initiates prefetches upon pointer hover events. However, recogni
 ::: grid col-12 col-md-6
 
 <!-- prettier-ignore -->
-```js
+```ts
 spx.connect({
   annotate: false,
   hover: {
