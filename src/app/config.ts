@@ -2,8 +2,8 @@
 import type { Config, IEval, IObserverOptions, Options, Selectors, LiteralUnion } from 'types';
 import { $ } from './session';
 import { patchSetAttribute } from '../shared/patch';
-import { Attributes, CharCode, LogLevel, LogType } from '../shared/enums';
-import { assign, defineProps, isArray, nil, o } from '../shared/native';
+import { Attributes, CharCode, LogLevel, Log } from '../shared/enums';
+import { nil, o } from '../shared/native';
 import { log } from '../shared/logs';
 import { hasProp } from '../shared/utils';
 import { progress } from './progress';
@@ -29,7 +29,7 @@ export function observers (options: Options) {
       if (options[key] === false) {
         $.config[key] = false;
       } else if (typeof options[key] === 'object') {
-        assign($.config[key], options[key]);
+        Object.assign($.config[key], options[key]);
       }
 
       delete options[key];
@@ -69,7 +69,7 @@ function evaluators (options: Options, attr: string, disable: string) {
   if ('eval' in options) {
     if (options.eval) {
       if (typeof options.eval === 'object') {
-        const e = assign<IEval, IEval>($.config.eval as IEval, options.eval);
+        const e = Object.assign<IEval, IEval>($.config.eval as IEval, options.eval);
         $.eval = !(e.link === false && e.meta === false && e.script === false && e.style === false);
       }
     } else {
@@ -94,16 +94,16 @@ function evaluators (options: Options, attr: string, disable: string) {
         : `${tag}:${disable}`;
 
     if ($.config.eval[tag] === null) return defaults;
-    if (isArray($.config.eval[tag] as string[])) {
+    if (Array.isArray($.config.eval[tag] as string[])) {
       if ($.config.eval[tag].length > 0) {
         return $.config.eval[tag].map<string>((s: string) => `${s}:${disable}`).join(',');
       } else {
-        log(LogType.WARN, `Missing eval ${tag} value, SPX will use defaults`);
+        log(Log.WARN, `Missing eval ${tag} value, SPX will use defaults`);
         return defaults;
       }
     }
 
-    log(LogType.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
+    log(Log.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
 
   };
 }
@@ -117,7 +117,7 @@ function fragments (options: Options) {
 
   const elements: string[] = [];
 
-  if ('fragments' in options && isArray(options.fragments) && options.fragments.length > 0) {
+  if ('fragments' in options && Array.isArray(options.fragments) && options.fragments.length > 0) {
     for (const fragment of options.fragments) {
 
       const charCode = fragment.charCodeAt(0);
@@ -125,7 +125,7 @@ function fragments (options: Options) {
       // check for . or [ starting characters
       if (charCode === CharCode.DOT || charCode === CharCode.LSB) {
 
-        log(LogType.WARN, [
+        log(Log.WARN, [
           `Invalid fragment selector "${fragment}" provided. Fragments must be id annotated values.`,
           'Use spx-target attributes for additional fragment selections.'
         ]);
@@ -159,13 +159,13 @@ export function configure (options: Options = o()) {
   if ('logLevel' in options) {
     $.logLevel = options.logLevel;
     if ($.logLevel === LogLevel.VERBOSE) {
-      log(LogType.VERBOSE, 'Verbose Logging');
+      log(Log.VERBOSE, 'Verbose Logging');
     }
   }
 
   patchSetAttribute();
 
-  defineProps($, {
+  Object.defineProperties($, {
     history: {
       get: () => typeof api.state === 'object' && 'spx' in api.state ? api.state.spx : null
     },
@@ -201,7 +201,7 @@ export function configure (options: Options = o()) {
 
   }
 
-  assign<Config, Options>($.config, observers(options));
+  Object.assign<Config, Options>($.config, observers(options));
 
   const schema = $.config.schema;
   const attr = schema === 'spx' ? 'spx' : schema.endsWith('-') ? schema : schema === null ? nil : `${schema}-`;
@@ -218,7 +218,7 @@ export function configure (options: Options = o()) {
 
   // qs
   // Registers all the attribute a selector entries SPX will use
-  assign<Selectors, Selectors>($.qs, {
+  Object.assign<Selectors, Selectors>($.qs, {
     $attrs: new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i'),
     $find: new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i'),
     $param: new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i'),

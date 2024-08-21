@@ -1,7 +1,7 @@
 import type { Page, LiteralUnion } from 'types';
 import { $ } from '../app/session';
-import { LogType } from './enums';
-import { assign, defineProp, d, nil, isArray, s } from './native';
+import { Log } from './enums';
+import { d, nil, s } from './native';
 import * as regex from './regexp';
 import { log } from '../shared/logs';
 
@@ -98,7 +98,7 @@ export function attrJSON (attr: string, string?: string) {
   } catch (err) {
 
     log(
-      LogType.ERROR,
+      Log.ERROR,
       'Invalid JSON expression in attribute value: ' + JSON.stringify(attr || string, null, 2),
       err
     );
@@ -115,7 +115,9 @@ export function attrJSON (attr: string, string?: string) {
  * Returns the last entry of an array list
  */
 export function last<T extends any[]> (input: T): T[number] {
+
   return input[input.length - 1];
+
 }
 
 /**
@@ -212,9 +214,39 @@ export function promiseResolve () {
 
 }
 
-export function scriptTag (script: string) {
+/**
+ * Tag Opened
+ *
+ * Slices a HTML tag opening region, e.g: `<script>`
+ */
+export function tagOpener (script: string) {
 
   return script.slice(0, script.indexOf('>', 1) + 1);
+
+}
+
+/**
+ * Eval Match
+ *
+ * Checks whether or not the element can be evaluated.
+ * This is used during head morphs and consults the {@link $.qs}
+ * selectors as per configuration options
+ */
+export function canEval (element: Element) {
+
+  const { nodeName } = element;
+
+  if (nodeName === 'SCRIPT') {
+    return element.matches($.qs.$script);
+  } else if (nodeName === 'STYLE') {
+    return element.matches($.qs.$style);
+  } else if (nodeName === 'META') {
+    return element.matches($.qs.$meta);
+  } else if (nodeName === 'LINK') {
+    return element.matches($.qs.$link);
+  }
+
+  return element.getAttribute($.qs.$eval) !== 'false';
 
 }
 
@@ -303,9 +335,7 @@ export function defineGetter <T> (
   if (name !== undefined) {
 
     if (!hasProp<any>(object, name)) {
-
-      defineProp(object, name, { get: () => value });
-
+      Object.defineProperty(object, name, { get: () => value });
     }
 
     return object;
@@ -318,8 +348,8 @@ export function defineGetter <T> (
 
       const get = () => value; ;
 
-      return defineProp<T>(object, name, options
-        ? assign(options, { get })
+      return Object.defineProperty<T>(object, name, options
+        ? Object.assign(options, { get })
         : <PropertyDescriptor>{ get });
     };
 
@@ -341,7 +371,7 @@ export function targets (page: Page) {
     if (page.target.length === 1 && page.target[0] === 'body') return page.target;
 
     if (page.target.includes('body')) {
-      log(LogType.WARN, `The body selector passed via ${$.qs.$target} will override`);
+      log(Log.WARN, `The body selector passed via ${$.qs.$target} will override`);
       return [ 'body' ];
     }
 
@@ -390,7 +420,7 @@ export function isEmpty (input: any) {
 
     return input[0] === undefined;
 
-  } else if (isArray(input)) {
+  } else if (Array.isArray(input)) {
 
     return input.length > 0;
 
@@ -529,6 +559,11 @@ export function camelCase (input: string) {
     : input;
 }
 
+/**
+ * Node Set
+ *
+ * Generates `Set<HTMLElement>` store model
+ */
 export function nodeSet <T extends HTMLElement> (nodes: NodeListOf<T>): Set<T> {
 
   return s([].slice.call(nodes));

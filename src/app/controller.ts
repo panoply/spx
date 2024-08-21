@@ -1,10 +1,9 @@
 import type { Page } from 'types';
 import { $ } from './session';
-import { VisitType, LogType } from '../shared/enums';
+import { VisitType, Log } from '../shared/enums';
 import { getRoute } from './location';
 import { log } from '../shared/logs';
-import { forEach, onNextTick } from '../shared/utils';
-import { defineProps, h, s } from '../shared/native';
+import { onNextTick } from '../shared/utils';
 import { parse, takeSnapshot } from '../shared/dom';
 import * as q from './queries';
 import * as hrefs from '../observe/hrefs';
@@ -17,9 +16,6 @@ import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as fragment from '../observe/fragment';
 import { emit } from './events';
-import { walkElements } from 'src/morph/walk';
-
-// import * as timer from '../test/timer';
 
 /**
  * Initialize SPX
@@ -37,7 +33,7 @@ export function initialize (): Promise<Page> {
   //
   const state = history.connect(q.create(route));
 
-  defineProps($, {
+  Object.defineProperties($, {
     prev: { get: () => $.pages[$.history.rev] },
     page: { get: () => $.pages[$.history.key] },
     snapDom: { get: () => parse($.snaps[$.page.snap]) }
@@ -49,7 +45,7 @@ export function initialize (): Promise<Page> {
    * This function is called returns the intitial page state and is responsible
    * for SPX activation. The promise callback will resolve the return value.
    */
-  const DOMReady = () => {
+  const DOMContentLoaded = () => {
 
     const page = q.set(state, takeSnapshot());
 
@@ -75,14 +71,9 @@ export function initialize (): Promise<Page> {
 
   return new Promise(resolve => {
 
-    const { readyState } = document;
-
-    if (readyState === 'interactive' || readyState === 'complete') return resolve(DOMReady());
-
-    // FALLBACK
-    // Invoked if readyState is not matched, likely obsolete
-    //
-    document.addEventListener('DOMContentLoaded', () => resolve(DOMReady()));
+    document.readyState === 'loading'
+      ? addEventListener('DOMContentLoaded', () => resolve(DOMContentLoaded()))
+      : resolve(DOMContentLoaded());
 
   });
 
@@ -111,6 +102,6 @@ export function disconnect (): void {
 
   if ($.config.globalThis) delete window.spx;
 
-  log(LogType.INFO, 'Disconnected');
+  log(Log.INFO, 'Disconnected');
 
 }

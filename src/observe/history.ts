@@ -1,9 +1,9 @@
-import type { HistoryState, HistoryAPI, Page, HistoryStateSPX } from 'types';
+import type { HistoryState, HistoryAPI, Page } from 'types';
 import { $ } from '../app/session';
-import { assign, o } from '../shared/native';
+import { o } from '../shared/native';
 import { hasProps, promiseResolve } from '../shared/utils';
 import { log } from '../shared/logs';
-import { Colors, LogType, VisitType } from '../shared/enums';
+import { Colors, Log, VisitType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
@@ -39,7 +39,7 @@ export function reverse (): boolean {
  */
 export function has (key?: string): boolean {
 
-  if (api.state == null) return false;
+  if (api.state === null) return false;
   if (typeof api.state !== 'object') return false;
   if (!('spx' in api.state)) return false;
 
@@ -77,8 +77,8 @@ export async function load () {
 export function initialize (page: Page) {
 
   if (has(page.key)) {
+    Object.assign(page, api.state.spx);
     scrollTo(api.state.spx.scrollX, api.state.spx.scrollY);
-    assign(page, api.state.spx);
   } else {
     replace(page as unknown as HistoryState);
   }
@@ -101,7 +101,7 @@ export function replace ({
   target
 }: HistoryState) {
 
-  const state: HistoryStateSPX = {
+  api.replaceState({
     spx: o<HistoryState>({
       key,
       rev,
@@ -110,11 +110,9 @@ export function replace ({
       target,
       title: title || document.title
     })
-  };
+  }, title, key);
 
-  api.replaceState(state, state.spx.title, state.spx.key);
-
-  log(LogType.VERBOSE, `History replaceState: ${state.spx.key}`);
+  log(Log.VERBOSE, `History replaceState: ${key}`);
 
   return api.state.spx;
 
@@ -125,18 +123,9 @@ export function replace ({
  *
  * Applied `history.pushState` and passes SPX references.
  */
-export function push ({
-  key,
-  rev,
-  title,
-  location,
-  scrollX,
-  scrollY,
-  target
-}: Page) {
+export function push ({ key, rev, title, scrollX, scrollY, target }: Page) {
 
-  const path = location.pathname + location.search;
-  const state: HistoryStateSPX = {
+  api.pushState({
     spx: o<HistoryState>({
       key,
       rev,
@@ -145,11 +134,9 @@ export function push ({
       target,
       title: title || document.title
     })
-  };
+  }, title, key);
 
-  api.pushState(state, state.spx.title, path);
-
-  log(LogType.VERBOSE, `History pushState: ${state.spx.key}`);
+  log(Log.VERBOSE, `History pushState: ${key}`);
 
   return api.state.spx;
 
@@ -183,23 +170,20 @@ async function pop (event: Merge<PopStateEvent, {
       request.reverse(spx);
     }
 
-    $.pages[spx.key].type = VisitType.POPSTATE;
+    q.patch('type', VisitType.POPSTATE, spx.key);
 
-    const page = $.pages[spx.key];
+    const { type, key } = render.update($.pages[spx.key]);
 
-    if (page.type === VisitType.REVERSE) {
-      log(LogType.VERBOSE, `History popState reverse (snapshot): ${page.key}`);
-    } else {
-      log(LogType.VERBOSE, `History popState session (snapshot): ${page.key}`);
-    }
-
-    render.update(page);
+    type === VisitType.REVERSE
+      ? log(Log.VERBOSE, `History popState reverse: ${key}`)
+      : log(Log.VERBOSE, `History popState session: ${key}`);
 
   } else {
 
-    log(LogType.VERBOSE, `History popState fetch: ${spx.key}`);
+    log(Log.VERBOSE, `History popState fetch: ${spx.key}`);
 
     spx.type = VisitType.POPSTATE;
+
     const page = await request.fetch(spx as Page);
 
     // No page, infers we have no record available
@@ -213,7 +197,7 @@ async function pop (event: Merge<PopStateEvent, {
 
       // Let's proceed as normal, our snapshot is ready.
 
-      log(LogType.VERBOSE, `History popState fetch Complete: ${spx.key}`, Colors.CYAN);
+      log(Log.VERBOSE, `History popState fetch Complete: ${spx.key}`, Colors.CYAN);
 
       page.target = [];
       page.selector = null;
@@ -222,8 +206,7 @@ async function pop (event: Merge<PopStateEvent, {
 
     } else if (q.has(key)) {
 
-      // We have a record, but the user might be agressively
-      // going backwards
+      // We have a record, but the user might be agressively going backwards
 
       render.update($.pages[key]);
 
@@ -235,10 +218,9 @@ async function pop (event: Merge<PopStateEvent, {
       // teardown();
 
       const data = q.create(getRoute(key, VisitType.POPSTATE));
+      const page = await request.fetch(data);
 
-      await request.fetch(data);
-
-      push(data);
+      if (page) push(page);
 
     }
 
@@ -267,7 +249,9 @@ export function connect (page?: Page): Page {
   // Connection allows page state to be passed
   // this will ensure history push~state is aligned on initial runs
   if (typeof page === 'object' && page.type === VisitType.INITIAL) {
+
     return initialize(page);
+
   }
 
   return page;

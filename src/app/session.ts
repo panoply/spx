@@ -1,4 +1,4 @@
-import type { Session, Selectors, Config, Hover, Progress, Intersect, Proximity, ComponentSession } from 'types';
+import type { Session, Selectors, Config, Hover, Progress, Intersect, Proximity } from 'types';
 import { m, o, p, s } from '../shared/native';
 
 export const $: Session = o<Session>({
@@ -51,14 +51,19 @@ export const $: Session = o<Session>({
     })
   }),
   fragments: m(),
-  components: {
+  components: o({
+    $connected: s(),
     $registry: m(),
     $instances: m(),
-    $connected: s(),
     $elements: m(),
     $mounted: m(),
-    $reference: p({ get: (target, key: string) => $.components.$instances.get(target[key]) })
-  },
+    $reference: p({
+      get: (
+        map: Record<string, string>,
+        key: string
+      ) => $.components.$instances.get(map[key])
+    })
+  }),
   events: o(),
   observe: o(),
   memory: o(),

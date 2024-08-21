@@ -56,15 +56,15 @@ export class Search extends spx.Component<typeof Search.define> {
 
     removeEventListener('click', this.outsideClick);
 
-    this.listNode.classList.replace('d-block', 'd-none');
-    this.inputNode.classList.remove('is-active', 'is-results');
+    this.dom.listNode.classList.replace('d-block', 'd-none');
+    this.dom.inputNode.classList.remove('is-active', 'is-results');
     this.state.active = false;
 
   }
 
   outsideClick (event: Event) {
 
-    if (this.listNode !== event.target && this.inputNode !== event.target) {
+    if (this.dom.listNode !== event.target && this.dom.inputNode !== event.target) {
       this.hide();
     }
 
@@ -72,17 +72,17 @@ export class Search extends spx.Component<typeof Search.define> {
 
   onFocus () {
 
-    this.inputNode.classList.add('is-active');
+    this.dom.inputNode.classList.add('is-active');
 
-    if (this.result.length > 0 && !this.listNode.classList.contains('d-block')) {
-      setTimeout(() => this.listNode.classList.replace('d-none', 'd-block'), 80);
-      this.inputNode.classList.add('is-results');
+    if (this.result.length > 0 && !this.dom.listNode.classList.contains('d-block')) {
+      setTimeout(() => this.dom.listNode.classList.replace('d-none', 'd-block'), 80);
+      this.dom.inputNode.classList.add('is-results');
     }
 
     if (this.state.query.length <= 2) {
-      this.inputNode.classList.remove('is-results');
+      this.dom.inputNode.classList.remove('is-results');
     } else {
-      this.inputNode.classList.add('is-results');
+      this.dom.inputNode.classList.add('is-results');
     }
 
   }
@@ -93,19 +93,19 @@ export class Search extends spx.Component<typeof Search.define> {
     this.result = this.fuse.search(this.state.query, { limit: 10 });
 
     if (!this.state.active) {
-      this.listNode.classList.replace('d-none', 'd-block');
+      this.dom.listNode.classList.replace('d-none', 'd-block');
       this.state.active = true;
       addEventListener('click', this.outsideClick.bind(this));
     }
 
     if (this.state.query.length === 0) {
 
-      this.inputNode.classList.remove('is-results');
-      this.listNode.classList.replace('d-block', 'd-none');
+      this.dom.inputNode.classList.remove('is-results');
+      this.dom.listNode.classList.replace('d-block', 'd-none');
 
-    } else if (!this.listNode.classList.contains('d-block')) {
+    } else if (!this.dom.listNode.classList.contains('d-block')) {
 
-      this.listNode.classList.replace('d-none', 'd-block');
+      this.dom.listNode.classList.replace('d-none', 'd-block');
 
     }
 
@@ -116,16 +116,16 @@ export class Search extends spx.Component<typeof Search.define> {
   showList () {
 
     if (this.state.query.length < 1) {
-      this.inputNode.classList.remove('is-results');
+      this.dom.inputNode.classList.remove('is-results');
     } else {
-      this.inputNode.classList.add('is-results');
+      this.dom.inputNode.classList.add('is-results');
     }
 
     const result: Result = {};
     const match = new RegExp(`(${this.state.query})`, 'gi');
 
-    this.listNode.innerHTML = '';
-    this.listNode.classList.remove('no-results');
+    this.dom.listNode.innerHTML = '';
+    this.dom.listNode.classList.remove('no-results');
     this.result.forEach(({ item }) => {
 
       const content = item.content === ''
@@ -185,8 +185,8 @@ export class Search extends spx.Component<typeof Search.define> {
     if (items.length === 0) {
       const element = document.createElement('li');
       element.innerHTML = '<h4 class="mb-0">No Results</h4>';
-      this.listNode.classList.add('no-results');
-      this.listNode.appendChild(element);
+      this.dom.listNode.classList.add('no-results');
+      this.dom.listNode.appendChild(element);
     } else {
       items.forEach(group => {
 
@@ -203,13 +203,11 @@ export class Search extends spx.Component<typeof Search.define> {
           '</a>'
         ].join('');
 
-        this.listNode.appendChild(element);
+        this.dom.listNode.appendChild(element);
       });
     }
   }
 
-  public listNode: HTMLElement;
-  public inputNode: HTMLElement;
   public fuse: Fuse<Results>;
   public list: Results[] = [];
   public result: Array<{ item: Results; refIndex: number; }> = [];

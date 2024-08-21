@@ -24,7 +24,7 @@ export class Merge extends spx.Component<typeof Merge.define> {
 
   onmount () {
 
-    this.relapse = relapse(this.dom);
+    this.relapse = relapse(this.root);
 
   }
 

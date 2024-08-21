@@ -80,10 +80,10 @@ export class Async extends spx.Component<typeof Async.define> {
       if (!this.state.hasConnectDelay && !this.state.hasOnmountDelay) {
         const finish = performance.now();
         const time = `${Math.abs(this.state.syncTime - finish)}`.split('.')[0];
-        this.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
       } else {
         const time = `${Math.abs((this.state.connectDelay + this.state.onmountDelay) / 10)}`.split('.')[0];
-        this.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
       }
 
       this.state.firstRun = false;
@@ -92,20 +92,13 @@ export class Async extends spx.Component<typeof Async.define> {
       if (!this.state.hasConnectDelay && !this.state.hasOnmountDelay) {
         const finish = performance.now();
         const time = `${Math.abs(begin - finish)}`.split('.')[0];
-        this.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
       } else {
         const time = this.state.onmountDelay / 10;
-        this.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
       }
     }
 
   }
-
-  /* -------------------------------------------- */
-  /* NODES                                        */
-  /* -------------------------------------------- */
-
-  public connectNode: HTMLElement;
-  public mountedNode: HTMLElement;
 
 }

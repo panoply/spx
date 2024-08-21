@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 /* eslint-disable no-unused-expressions */
 import spx from 'spx';
 import papyrus from 'papyrus';
@@ -23,21 +24,20 @@ esthetic.rules({
 export class Explorer extends spx.Component<typeof Explorer.define> {
 
   static define = {
-    nodes: [
-      'foo',
-      'bar',
-      'baz',
+    nodes: <const>[
+      'inputFoo',
+      'aBar',
+      'areaBaz',
       'content',
       'components',
       'snapshot',
       'document'
-    ] as const,
+    ],
     state: {
       count: Number,
-      foo: {
-        typeof: String,
-        default: 'xxx'
-      }
+      bar: Object<{ foo: string }>,
+      foo: String<'foo'>,
+      baz: Array<{ bar: string }>
     }
   };
 
@@ -52,7 +52,7 @@ export class Explorer extends spx.Component<typeof Explorer.define> {
 
     const format = this.format(state.document.getElementById('main').outerHTML);
 
-    papyrus.render(format, this.documentNode, {
+    papyrus.render(format, this.dom.documentNode, {
       language: 'html',
       showSpace: true
     });
@@ -63,7 +63,7 @@ export class Explorer extends spx.Component<typeof Explorer.define> {
 
     const format = this.format(state.snapshot.getElementById('main').outerHTML);
 
-    papyrus.render(format, this.snapshotNode, {
+    papyrus.render(format, this.dom.snapshotNode, {
       language: 'html',
       showSpace: true
     });
@@ -77,7 +77,7 @@ export class Explorer extends spx.Component<typeof Explorer.define> {
 
   setComponents () {
 
-    m.mount(this.componentsNode, Components);
+    m.mount(this.dom.componentsNode, Components);
 
     spx.on('load', () => {
       setTimeout(() => {
@@ -104,9 +104,5 @@ export class Explorer extends spx.Component<typeof Explorer.define> {
     log.scrollTop = log.parentElement.scrollHeight;
 
   }
-
-  public componentsNode: HTMLElement;
-  public documentNode: HTMLElement;
-  public snapshotNode: HTMLElement;
 
 }

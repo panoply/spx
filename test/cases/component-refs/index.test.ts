@@ -11,7 +11,7 @@ export class Refs1 extends spx.Component<typeof Refs1.define> {
 
   onQuxPress ({ attrs }: SPX.Event<{ age: number, dob: string }>) {
 
-    this.xxxNode.innerText = 'pressed';
+    this.dom.xxxNode.innerText = 'pressed';
 
   }
 
@@ -43,36 +43,32 @@ export class Refs2 extends spx.Component<typeof Refs2.define> {
 
   onmount () {
 
-    console.log(this.fooNode);
+    console.log(this.dom.fooNode);
 
   }
 
   onFooPress ({ attrs }: SPX.Event<{ age: number, dob: string }>) {
 
-    this.fooNode.innerText = `${++this.state.fooClicks}`;
+    this.dom.fooNode.innerText = `${++this.state.fooClicks}`;
     console.log(attrs);
 
   }
 
   onBarPress ({ attrs }: SPX.Event<{ age: number, dob: string }>) {
 
-    this.barNode.innerText = `${++this.state.barClicks}`;
+    this.dom.barNode.innerText = `${++this.state.barClicks}`;
     console.log(attrs);
 
   }
 
   onBazPress ({ attrs }: SPX.Event<{ age: number, dob: string }>) {
 
-    this.bazNode.innerText = `${++this.state.bazClicks}`;
+    this.dom.bazNode.innerText = `${++this.state.bazClicks}`;
     console.log(attrs);
 
   }
   /* -------------------------------------------- */
   /* NODES                                        */
   /* -------------------------------------------- */
-
-  public fooNode: HTMLElement;
-  public barNode: HTMLElement;
-  public bazNode: HTMLElement;
 
 }

@@ -20,10 +20,10 @@ export class Lifecycle extends spx.Component<typeof Lifecycle.define> {
 
     ++this.state.connect;
 
-    this.fooNode.style.backgroundColor = '#ccc';
-    this.barNode.style.backgroundColor = '#999';
-    this.bazNode.style.backgroundColor = '#111';
-    this.quxNode.style.backgroundColor = '#fff';
+    this.dom.fooNode.style.backgroundColor = '#ccc';
+    this.dom.barNode.style.backgroundColor = '#999';
+    this.dom.bazNode.style.backgroundColor = '#111';
+    this.dom.quxNode.style.backgroundColor = '#fff';
 
     console.log('Lifecycle Testing: connect');
 
@@ -35,17 +35,17 @@ export class Lifecycle extends spx.Component<typeof Lifecycle.define> {
 
     if (this.state.onmount % 2 === 0) {
 
-      this.fooNode.style.backgroundColor = 'green';
-      this.barNode.style.backgroundColor = 'blue';
-      this.bazNode.style.backgroundColor = 'pink';
-      this.quxNode.style.backgroundColor = 'hotpink';
+      this.dom.fooNode.style.backgroundColor = 'green';
+      this.dom.barNode.style.backgroundColor = 'blue';
+      this.dom.bazNode.style.backgroundColor = 'pink';
+      this.dom.quxNode.style.backgroundColor = 'hotpink';
 
     } else {
 
-      this.fooNode.style.backgroundColor = 'purple';
-      this.barNode.style.backgroundColor = 'orange';
-      this.bazNode.style.backgroundColor = 'yellow';
-      this.quxNode.style.backgroundColor = 'cyan';
+      this.dom.fooNode.style.backgroundColor = 'purple';
+      this.dom.barNode.style.backgroundColor = 'orange';
+      this.dom.bazNode.style.backgroundColor = 'yellow';
+      this.dom.quxNode.style.backgroundColor = 'cyan';
 
     }
 
@@ -57,21 +57,12 @@ export class Lifecycle extends spx.Component<typeof Lifecycle.define> {
 
     ++this.state.unmount;
 
-    // console.log('Lifecycle Testing: onLeave Node', this.fooNode);
-    // console.log('Lifecycle Testing: onLeave Node', this.barNode);
-    // console.log('Lifecycle Testing: onLeave Node', this.bazNode);
-    // console.log('Lifecycle Testing: onLeave Node', this.quxNode);
+    // console.log('Lifecycle Testing: onLeave Node', this.dom.fooNode);
+    // console.log('Lifecycle Testing: onLeave Node', this.dom.barNode);
+    // console.log('Lifecycle Testing: onLeave Node', this.dom.bazNode);
+    // console.log('Lifecycle Testing: onLeave Node', this.dom.quxNode);
     console.log('Lifecycle Testing: unmount');
 
   }
-
-  /* -------------------------------------------- */
-  /* NODES                                        */
-  /* -------------------------------------------- */
-
-  public fooNode: HTMLElement;
-  public barNode: HTMLElement;
-  public bazNode: HTMLElement;
-  public quxNode: HTMLElement;
 
 }

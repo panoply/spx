@@ -1,7 +1,7 @@
 import type { Page } from 'types';
 import { deviceType } from 'detect-it';
 import { $ } from '../app/session';
-import { LogType, VisitType } from '../shared/enums';
+import { Log, VisitType } from '../shared/enums';
 import { ts } from '../shared/utils';
 import { log } from '../shared/logs';
 import { XHR, pointer } from '../shared/native';
@@ -85,8 +85,6 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
   // Skip id href value is not a valid key
   if (key === null) return;
 
-  // TODO: Handle same URL clicks on link elements
-
   const isRoute = key === $.page.key;
 
   /**
@@ -99,7 +97,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
    * Credit to the brother mansedan for catching this.
    */
   const move = () => {
-    log(LogType.WARN, `Drag occurance deteced, cancelled visit: ${key}`);
+    log(Log.WARN, `Drag occurance, visit cancelled: ${key}`);
     handle.drag = true;
     target.removeEventListener(`${pointer}move`, move);
   };
@@ -134,7 +132,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
     if (isRoute) {
 
-      log(LogType.INFO, `Identical pathname, page visit skipped: ${key}`);
+      log(Log.INFO, `Identical pathname, page visit skipped: ${key}`);
 
     } else {
 
@@ -170,7 +168,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
     request.cancel(key); // Cancel any other fetches in transit
 
-    log(LogType.INFO, `Request in transit: ${key}`);
+    log(Log.INFO, `Request in transit: ${key}`);
 
     // console.log(request.timers, request.transit, request.xhr);
 
@@ -212,28 +210,34 @@ export async function visit (state: Page) {
   // Trigger progress bar loading
   if (state.progress) progress.start(state.progress as number);
 
-  // We will await the fetch in transit
-  const page = await request.wait(state);
+  try {
 
-  if (page) {
+    // We will await the fetch in transit
+    const page = await request.wait(state);
 
-    if (page.history === 'replace') {
+    if (page) {
 
-      // Push history into stack
-      history.replace(page);
+      if (page.history === 'replace') {
+
+        // Push history into stack
+        history.replace(page);
+
+      } else {
+        // Push history into stack
+        history.push(page);
+      }
+
+      // Let's begin the rendering cylce
+      render.update(page);
 
     } else {
-    // Push history into stack
-      history.push(page);
+
+      location.assign(state.key);
+
     }
 
-    // Let's begin the rendering cylce
-    render.update(page);
+  } catch {
 
-  } else {
-
-    // Something failed, we will trigger a
-    // traditional navigation
     location.assign(state.key);
 
   }

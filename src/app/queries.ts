@@ -3,10 +3,11 @@ import { $ } from './session';
 import { emit } from './events';
 import { log } from '../shared/logs';
 import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector } from '../shared/utils';
-import { assign, o, isArray, defineProps } from '../shared/native';
-import { LogType, VisitType } from '../shared/enums';
+import { o } from '../shared/native';
+import { CharCode, Log, VisitType } from '../shared/enums';
 import { parse, getTitle } from '../shared/dom';
 import * as fragments from '../observe/fragment';
+import { getLocation } from './location';
 
 /**
  * Create Session Page
@@ -32,32 +33,31 @@ export function create (page: Page): Page {
   // assign the selector reference if it is undefined
 
   if ($.config.cache) {
-    if (!has('cache')) page.cache = $.config.cache;
-    if (!has('snap')) page.snap = uuid();
+    has('cache') || (page.cache = $.config.cache);
+    page.snap ||= uuid();
   }
 
-  if (!has('scrollY')) page.scrollY = 0;
-  if (!has('scrollX')) page.scrollX = 0;
-
   if ($.config.hover !== false && page.type === VisitType.HOVER) {
-    if (!has('threshold')) {
-      page.threshold = $.config.hover.threshold;
-    }
+    page.threshold ||= $.config.hover.threshold;
   }
 
   if ($.config.proximity !== false && page.type === VisitType.PROXIMITY) {
-    if (!has('proximity')) page.proximity = $.config.proximity.distance;
-    if (!has('threshold')) page.threshold = $.config.proximity.threshold;
+    page.proximity ||= $.config.proximity.distance;
+    page.threshold ||= $.config.proximity.threshold;
   }
 
-  if ($.config.progress && !has('progress')) {
-    page.progress = $.config.progress.threshold;
+  if ($.config.progress) {
+    page.progress ||= $.config.progress.threshold;
   }
 
-  if (!has('fragments')) page.fragments = $.config.fragments;
   if (!has('history')) page.history = true;
-  if (!has('visits')) page.visits = 0;
-  if (!has('components')) page.components = [];
+
+  page.scrollY ||= 0;
+  page.scrollX ||= 0;
+  page.fragments ||= $.config.fragments;
+  page.visits ||= 0;
+  page.components ||= [];
+  page.location ||= getLocation(page.key);
 
   $.pages[page.key] = page;
 
@@ -73,7 +73,8 @@ export function create (page: Page): Page {
  */
 export function newPage (page: Page) {
 
-  const state = assign<Page, Partial<Page>>(o(page), {
+  const state = o<Page>({
+    ...page,
     target: [],
     selector: null,
     cache: $.config.cache,
@@ -109,7 +110,7 @@ export function newPage (page: Page) {
 export function patch <T extends keyof Page> (prop: T, value: Page[T], key = $.history.key) {
 
   if (prop === 'location') {
-    $.pages[key][prop] = assign($.pages[prop][key], value);
+    $.pages[key][prop] = Object.assign($.pages[prop][key], value);
   } else if (prop === 'target') {
     $.pages[key].target = targets(value);
     $.pages[key].selector = selector($.pages[key].target);
@@ -126,39 +127,40 @@ export function patch <T extends keyof Page> (prop: T, value: Page[T], key = $.h
  * Both a new page visit or subsequent visit will pass through this function. This will be called
  * after an XHR fetch completes or when state is to be added to the session memory.
  */
-export function set (state: Page, snapshot: string): Page {
+export function set (page: Page, snapshot: string): Page {
 
-  const event = emit('before:cache', state, snapshot as any);
+  const event = emit('before:cache', page, snapshot as any);
   const dom = typeof event === 'string' ? event : snapshot;
 
   // VisitTypes above 5 are prefetch/trigger kinds.
   // We need to augment the page store to align with the record we are handling.
-  if (state.type > VisitType.POPSTATE) {
+  if (page.type > VisitType.POPSTATE) {
 
     // VisitTypes above 9 are prefetch kinds
     // we need to update the type reference
-    if (state.type > VisitType.RELOAD) {
-      state.type = VisitType.PREFETCH;
+    if (page.type > VisitType.RELOAD) {
+      page.type = VisitType.PREFETCH;
     }
   }
 
   // Update to document title
-  state.title = getTitle(snapshot);
+  page.title = getTitle(snapshot);
 
-  // If cache is disabled or the lifecycle event
-  // returned a boolean false values we will return the record
-  if (!$.config.cache || event === false) return state;
-  if (state.type !== VisitType.INITIAL && !('snap' in state)) return update(state, dom);
+  // If cache is disabled or the lifecycle event returned false we stop processing
+  if (!$.config.cache || event === false) return page;
+
+  // visit type must not be initial and snap id does not exist
+  if (page.type !== VisitType.INITIAL && !hasProp(page, 'snap')) return update(page, dom);
 
   // Lets assign this record to the session store
-  $.pages[state.key] = state;
-  $.snaps[state.snap] = dom;
+  $.pages[page.key] = page;
+  $.snaps[page.snap] = dom;
 
-  fragments.setFragmentElements(state);
+  fragments.setFragmentElements(page);
 
-  emit('after:cache', state);
+  emit('after:cache', page);
 
-  return state;
+  return page;
 
 }
 
@@ -177,16 +179,16 @@ export function set (state: Page, snapshot: string): Page {
  * generated record should be provided. At the absolute very least, we need to pass a generated `route`
  * that was created via `getRoute()` location function.
  */
-export function update (page: Page, snapshot?: string): Page {
+export function update (page: Page, snapshot: string = null): Page {
 
-  const state = page.key in $.pages ? $.pages[page.key] : create(page);
+  const state = hasProp($.pages, page.key) ? $.pages[page.key] : create(page);
 
-  if (typeof snapshot === 'string') {
+  if (snapshot) {
     $.snaps[state.snap] = snapshot;
     page.title = getTitle(snapshot);
   }
 
-  return assign(state, page);
+  return Object.assign(state, page);
 
 }
 
@@ -202,7 +204,7 @@ export function update (page: Page, snapshot?: string): Page {
 export function setSnap (snapshot: string, key?: string) {
 
   const snap = key = key
-    ? key.charCodeAt(0) === 47
+    ? key.charCodeAt(0) === CharCode.FWD
       ? key in $.pages ? $.pages[key].snap : null
       : key
     : $.page.snap;
@@ -210,7 +212,7 @@ export function setSnap (snapshot: string, key?: string) {
   if (snap) {
     $.snaps[snap] = snapshot;
   } else {
-    log(LogType.WARN, 'Snapshot record does not exist, update failed');
+    log(Log.WARN, 'Snapshot record does not exist, update failed');
   }
 
 }
@@ -227,7 +229,7 @@ export function get (key?: string): { page: Page, dom: Document } {
 
   if (!key) {
     if ($.history === null) {
-      log(LogType.WARN, 'Missing history state reference, page cannot be returned');
+      log(Log.WARN, 'Missing history state reference, page cannot be returned');
       return;
     }
 
@@ -237,18 +239,14 @@ export function get (key?: string): { page: Page, dom: Document } {
 
   if (key in $.pages) {
 
-    return defineProps(o(), {
-      page: {
-        get: () => $.pages[key]
-      },
-      dom: {
-        get: () => parse($.snaps[$.pages[key].snap])
-      }
-    });
+    return {
+      get page () { return $.pages[key]; },
+      get dom () { return parse($.snaps[$.pages[key].snap]); }
+    };
 
   }
 
-  log(LogType.ERROR, `No record exists: ${key}`);
+  log(Log.ERROR, `No record exists: ${key}`);
 
 }
 
@@ -260,8 +258,11 @@ export function get (key?: string): { page: Page, dom: Document } {
  */
 export function getSnapDom (key?: string): Document {
 
-  // character code 47 is / which infers page key.
-  const uuid = key = key ? key.charCodeAt(0) === 47 ? $.pages[key].snap : key : $.page.snap;
+  const uuid = key
+    ? key.charCodeAt(0) === CharCode.FWD
+      ? $.pages[key].snap
+      : key
+    : $.page.snap;
 
   return parse($.snaps[uuid]);
 
@@ -280,21 +281,18 @@ export function mounted ({ mounted = null } = {}): { [instanceOf: string]: Class
 
   for (const instance of $instances.values()) {
 
-    const { scope } = instance;
+    if (!$connected.has(instance.scope.key)) continue;
+    if (mounted !== null && instance.scope.status === mounted) continue;
 
-    if (!$connected.has(scope.key)) continue;
-    if (mounted !== null && scope.status === mounted) continue;
-    if (scope.alias !== null && !(scope.alias in mounts)) {
+    const has = hasProps(mounts);
 
-      mounts[scope.alias] = [ instance ];
-
+    if (instance.scope.alias !== null && !has(instance.scope.alias)) {
+      mounts[instance.scope.alias] = [ instance ];
     }
 
-    if (!(scope.instanceOf in mounts)) {
-      mounts[scope.instanceOf] = [ instance ];
-    } else {
-      mounts[scope.instanceOf].push(instance);
-    }
+    has(instance.scope.instanceOf)
+      ? mounts[instance.scope.instanceOf].push(instance)
+      : mounts[instance.scope.instanceOf] = [ instance ];
 
   }
 
@@ -311,17 +309,18 @@ export function mounted ({ mounted = null } = {}): { [instanceOf: string]: Class
 export function getPage (key?: string): Page {
 
   if (!key) {
+
     if ($.history === null) {
-      log(LogType.WARN, 'Missing history state reference, page cannot be returned');
+      log(Log.WARN, 'Missing history state reference, page cannot be returned');
       return;
     }
 
     key = $.history.key;
   }
 
-  if (key in $.pages) return $.pages[key];
+  if (hasProp($.pages, key)) return $.pages[key];
 
-  log(LogType.ERROR, `No page record exists for: ${key}`);
+  log(Log.ERROR, `No page record exists for: ${key}`);
 
 }
 
@@ -350,7 +349,7 @@ export function has (key: string): boolean {
  */
 export function purge (key: string | string[]) {
 
-  const keys = isArray(key) ? key : [ key ];
+  const keys = Array.isArray(key) ? key : [ key ];
 
   for (const p in $.pages) {
     const index = keys.indexOf(p);
@@ -383,13 +382,11 @@ export function clear (key?: string[] | string): void {
     delete $.snaps[$.pages[key].snap];
     delete $.pages[key];
 
-  } else if (isArray(key)) {
+  } else if (Array.isArray(key)) {
 
     forEach(url => {
-
       delete $.snaps[$.pages[url].snap];
       delete $.pages[url];
-
     }, key);
   }
 }

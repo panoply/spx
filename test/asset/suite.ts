@@ -16,39 +16,34 @@ import { Logger } from './suite/logger';
 import { Explorer } from './suite/explorer';
 // import { Refs } from './suite/refs';
 
-spx.register(
-  Alias,
-  Async,
-  Types,
-  Incremental,
-  Merge,
-  Lifecycle,
-  Nesting,
-  Refs1,
-  Refs2
-);
-
-spx(
-  {
-    fragments: [
-      'sidebar',
-      'main'
-    ],
-    logLevel: 1,
-    hover: {
-      threshold: 100,
-      trigger: 'href'
-    },
-    progress: {
-      bgColor: 'red'
-    },
-    components: {
-      Logger,
-      Explorer
-      // Refs
-    }
+spx({
+  fragments: [
+    'sidebar',
+    'main'
+  ],
+  logLevel: 1,
+  hover: {
+    threshold: 100,
+    trigger: 'href'
+  },
+  progress: {
+    bgColor: 'red'
+  },
+  components: {
+    Logger,
+    Explorer,
+    Alias,
+    Async,
+    Types,
+    Incremental,
+    Merge,
+    Lifecycle,
+    Nesting,
+    Refs1,
+    Refs2
+    // Refs
   }
-)(() => {
+})(() => {
 
   code();
 

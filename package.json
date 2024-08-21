@@ -60,6 +60,7 @@
       "**/public/*.js"
     ],
     "rules": {
+      "promise/param-names": "off",
       "no-prototype-builtins": "off",
       "multiline-ternary": "off",
       "no-use-before-define": "off",

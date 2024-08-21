@@ -1,8 +1,8 @@
 import type { Page } from 'types';
 import { $ } from '../app/session';
 import { getSnapDom, patch, setSnap } from '../app/queries';
-import { LogType, VisitType } from '../shared/enums';
-import { d, nil, toArray } from '../shared/native';
+import { Log, VisitType } from '../shared/enums';
+import { d, nil } from '../shared/native';
 import { forNode, nodeSet, onNextTick, uuid } from '../shared/utils';
 import { log } from '../shared/logs';
 import { getSelector } from 'src/components/context';
@@ -16,54 +16,57 @@ import { mark } from '../components/observe';
  */
 export function connect () {
 
+  $.fragments.clear();
+
+  /**
+   * Selector string to be used to obtain dom elements during render
+   */
   let selector: string;
+
+  /**
+   * The SPX Target directive, will either be `spx-target` or `spx-fragment`
+   */
   let directive: string;
+
+  /**
+   * Set of SPX Component aliases using and `id=""` and `spx-component=""`
+   */
   let aliases: Set<HTMLElement>;
 
-  const pageDom = d();
-
-  $.fragments.clear();
+  const dom = d();
 
   if ($.page.target.length > 0) {
 
     directive = $.qs.$target;
     selector = $.page.target.join(',');
-    aliases = nodeSet(pageDom.querySelectorAll<HTMLElement>(`[id][${$.qs.$component}]`));
+    aliases = nodeSet(dom.querySelectorAll<HTMLElement>(`[id][${$.qs.$component}]`));
 
   } else {
 
-    const fragment = $.config.fragments;
     directive = $.qs.$fragment;
-    selector = fragment.length === 1 && fragment[0] === 'body'
+    selector = $.config.fragments.length === 1 && $.config.fragments[0] === 'body'
       ? $.qs.$fragments
-      : `${fragment.join()},${$.qs.$fragments}`;
+      : `${$.config.fragments.join()},${$.qs.$fragments}`;
   }
 
   forNode(selector, node => {
 
     if (aliases) {
       for (const alias of aliases) {
-        if (node.contains(alias)) {
-          aliases.delete(alias);
-          break;
-        }
+        if (!node.contains(alias)) continue;
+        aliases.delete(alias);
+        break;
       }
     }
 
     if (node.hasAttribute(directive)) {
-
-      const id = node.getAttribute(directive).trim();
-
-      if (node.id !== nil && (id === 'true' || id === nil)) {
-        $.fragments.set(`#${node.id}`, node);
-      } else {
-        $.fragments.set(getSelector(node, directive, id), node);
-      }
+      const attr = node.getAttribute(directive).trim();
+      (node.id !== nil && (attr === 'true' || attr === nil))
+        ? $.fragments.set(`#${node.id}`, node)
+        : $.fragments.set(getSelector(node, directive, attr), node);
 
     } else {
-
       $.fragments.set(`#${node.id}`, node);
-
     }
 
   });
@@ -80,7 +83,7 @@ export function connect () {
 
   }
 
-  patch('fragments', toArray($.fragments.keys()));
+  patch('fragments', [ ...$.fragments.keys() ]);
 
 }
 
@@ -92,51 +95,36 @@ export function connect () {
  */
 export function setFragmentElements (page: Page) {
 
-  if (page.type !== VisitType.VISIT) {
+  if (page.type === VisitType.VISIT || page.selector === 'body' || page.selector === null) return;
 
-    if (page.selector === 'body' || page.selector === null) return;
+  onNextTick(() => {
 
-    onNextTick(() => {
+    const snapDom = getSnapDom(page.snap);
+    const targets = snapDom.body.querySelectorAll<HTMLElement>($.qs.$targets);
+    const domNode = d().querySelectorAll<HTMLElement>($.qs.$targets);
 
-      const snapDom = getSnapDom(page.snap);
-      const targets = snapDom.body.querySelectorAll<HTMLElement>($.qs.$targets);
-      const domNode = d().querySelectorAll<HTMLElement>($.qs.$targets);
+    forNode(targets, (node, index) => {
 
-      forNode(targets, (node, index) => {
-
-        if (contains(node)) {
-
-          log(
-            LogType.WARN,
-            'The fragment or target is a decedent of an element which morphs',
-            node
-          );
-
-          return;
-
-        }
+      if (contains(node)) {
+        log(Log.WARN, 'The fragment or target is a decedent of an element which morphs', node);
+      } else {
 
         if (!node.hasAttribute('id')) {
-
           node.setAttribute('id', `t.${uuid()}`);
-
-          if (domNode !== null) domNode[index].setAttribute('id', `t.${uuid()}`);
-
-        } else {
-
-          if (node.id.startsWith('t.')) return;
-
+          domNode && domNode[index].setAttribute('id', `t.${uuid()}`);
+        } else if (node.id.startsWith('t.')) {
+          return;
         }
 
         page.target.push(node.id);
 
-      });
-
-      setSnap(snapDom.documentElement.outerHTML, page.snap);
-
+      }
     });
 
-  }
+    setSnap(snapDom.documentElement.outerHTML, page.snap);
+
+  });
+
 }
 
 /**

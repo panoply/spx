@@ -9,7 +9,7 @@ import type { IObserverOptions, Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
 import type { ComponentSession, Class } from './components';
 import type { Session } from './session';
-import type { Attrs, DOMEvents, Identity, TypeConstructors, TypeEvent, TypeOf, TypeState } from 'types';
+import type { Attrs, DOMEvents, Identity, Merge, TypeConstructors, TypeEvent, TypeOf, TypeState } from 'types';
 export * from './components';
 export * from './session';
 export * from './events';
@@ -615,6 +615,30 @@ export declare namespace SPX {
   export type SubmitEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['SubmitEvent'], E, A>;
   export type ToggleEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['ToggleEvent'], E, A>;
   export type FormDataEvent<A = Attrs, E = HTMLElement> = TypeEvent<DOMEvents['FormDataEvent'], E, A>;
+
+  /**
+   * An extended variation of {@link HTMLElementTagNameMap} which exposes support to some custom
+   * tag name variations, these include:
+   *
+   * ```js
+   * 'href' // HTMLAnchorElement (same as 'a')
+   * ```
+   */
+  export type TagNodes = HTMLElementTagNameMap & {
+    /**
+     * Hyperlink elements and provides special properties and methods (beyond those of the regular
+     * HTMLElement object interface that they inherit from) for manipulating the layout and presentation
+     * of such elements.
+     *
+     * [MDN Reference](https://developer.mozilla.org/docs/Web/API/HTMLAnchorElement)
+     */
+    href: HTMLAnchorElement;
+  }
+
+  /**
+   * Literal Union of the keys existing on {@link TagNodes} Element map.
+   */
+  export type TagNames = keyof TagNodes;
 
   export type Define = {
     /**

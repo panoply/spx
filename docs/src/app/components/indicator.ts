@@ -1,24 +1,22 @@
-import spx from 'spx';
+import spx, { SPX } from 'spx';
 
-export class Indicator extends spx.Component {
+export class Indicator extends spx.Component<typeof Indicator.define> {
 
-  toggle ({
-    attrs: { list }
-  }: {
-    attrs: {
-      list: number
-    }
-  }) {
+  static define: SPX.Define = {
+    nodes: <const>[
+      'marker'
+    ]
+  };
 
-    console.log(this.markerNodes);
+  toggle ({ attrs: { list } }: SPX.Event<{ list: number }>) {
 
-    this.markerNode.style.setProperty(
+    console.log(this.dom.markerNodes);
+
+    this.dom.markerNode.style.setProperty(
       'transform',
-      `translateY(${this.dom.offsetTop}px)`
+      `translateY(${this.root.offsetTop}px)`
     );
 
   }
-
-  markerNode: HTMLElement;
 
 }

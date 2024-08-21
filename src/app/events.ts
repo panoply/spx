@@ -5,7 +5,7 @@ import { $ } from './session';
 import { forEach } from '../shared/utils';
 import { log } from '../shared/logs';
 import { parse } from '../shared/dom';
-import { LogType } from '../shared/enums';
+import { Log } from '../shared/enums';
 import { LiteralUnion } from 'type-fest';
 
 /**
@@ -68,7 +68,7 @@ export function off (name: LiteralUnion<EventNames, string>, callback: (() => vo
     if (events && typeof callback === 'number') {
 
       events.splice(callback, 1);
-      log(LogType.INFO, `Removed ${name} event listener (id: ${callback})`);
+      log(Log.INFO, `Removed ${name} event listener (id: ${callback})`);
       if (events.length === 0) delete $.events[name];
 
     } else {
@@ -80,7 +80,7 @@ export function off (name: LiteralUnion<EventNames, string>, callback: (() => vo
           if (events[i] !== callback) {
             live.push(events[i]);
           } else if (name !== 'x') { // Do not log "x" events, they are internal
-            log(LogType.INFO, `Removed ${name} event listener (id: ${i})`);
+            log(Log.INFO, `Removed ${name} event listener (id: ${i})`);
           }
         }
       }
@@ -93,7 +93,7 @@ export function off (name: LiteralUnion<EventNames, string>, callback: (() => vo
     }
 
   } else {
-    log(LogType.WARN, `There are no ${name} event listeners`);
+    log(Log.WARN, `There are no ${name} event listeners`);
   }
 
   return this;

@@ -1,6 +1,6 @@
 import { $ } from '../app/session';
-import { Colors, LogLevel, LogType } from './enums';
-import { isArray, info, warn, error } from './native';
+import { Colors, LogLevel, Log } from './enums';
+import { info, warn, error } from './native';
 
 const PREFIX = 'SPX ';
 
@@ -10,17 +10,17 @@ const PREFIX = 'SPX ';
  * Error handler for console logging operations. The function allows for
  * throws, warnings and other SPX related logs.
  */
-export function log (type: LogType, message: string | string[], context?: any) {
+export function log (type: Log, message: string | string[], context?: any) {
 
   const LEVEL = $.logLevel;
 
-  if (LEVEL > LogType.INFO && type <= LogType.INFO) return;
+  if (LEVEL > Log.INFO && type <= Log.INFO) return;
 
-  if (isArray(message)) message = message.join(' ');
+  if (Array.isArray(message)) message = message.join(' ');
 
   if ((
-    type === LogType.INFO ||
-    type === LogType.VERBOSE
+    type === Log.INFO ||
+    type === Log.VERBOSE
   ) && (
     LEVEL === LogLevel.VERBOSE ||
     LEVEL === LogLevel.INFO
@@ -29,7 +29,7 @@ export function log (type: LogType, message: string | string[], context?: any) {
     info(`${PREFIX}%c${message}`, `color: ${context || Colors.GRAY};`);
 
   } else if (
-    type === LogType.WARN &&
+    type === Log.WARN &&
     LEVEL <= LogLevel.WARN
   ) {
 
@@ -40,8 +40,8 @@ export function log (type: LogType, message: string | string[], context?: any) {
     }
 
   } else if (
-    type === LogType.ERROR ||
-    type === LogType.TYPE
+    type === Log.ERROR ||
+    type === Log.TYPE
   ) {
 
     if (context) {
@@ -51,7 +51,7 @@ export function log (type: LogType, message: string | string[], context?: any) {
     }
 
     try {
-      if (type === LogType.TYPE) {
+      if (type === Log.TYPE) {
         throw new TypeError(message);
       } else {
         throw new Error(message);

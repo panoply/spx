@@ -3,7 +3,7 @@ import { $ } from './session';
 import { nil, o, origin } from '../shared/native';
 import { log } from '../shared/logs';
 import { chunk, hasProp, attrJSON, camelCase, splitAttrArrayValue, selector } from '../shared/utils';
-import { CharCode, LogType, Origins, VisitType } from '../shared/enums';
+import { CharCode, Log, Origins, VisitType } from '../shared/enums';
 import { newPage } from './queries';
 import * as regex from '../shared/regexp';
 
@@ -98,7 +98,7 @@ export function getAttributes (element: Element, page?: Page): Page {
 
           } else {
             log(
-              LogType.WARN,
+              Log.WARN,
               `Invalid attribute value on <${nodeName}>, expected: y:number or x:number`,
               element
             );
@@ -110,7 +110,7 @@ export function getAttributes (element: Element, page?: Page): Page {
             state.scrollY = +value;
           } else {
             log(
-              LogType.WARN,
+              Log.WARN,
               `Invalid attribute value on <${nodeName}>, expected: number`,
               element
             );
@@ -129,7 +129,7 @@ export function getAttributes (element: Element, page?: Page): Page {
           if (name === 'history') {
             if (value !== 'push' && value !== 'replace') {
               log(
-                LogType.ERROR,
+                Log.ERROR,
                 `Invalid attribute value on <${nodeName}>, expected: false, push or replace`,
                 element
               );
@@ -198,13 +198,11 @@ function getPath (url: string, protocol: number) {
   const path = url.indexOf('/', protocol);
 
   if (path > protocol) {
-
     const hash = url.indexOf('#', path);
     return hash < 0 ? url.slice(path) : url.slice(path, hash);
   }
 
   const param = url.indexOf('?', protocol);
-
   if (param > protocol) {
     const hash = url.indexOf('#', param);
     return hash < 0 ? url.slice(param) : url.slice(param, hash);
@@ -254,7 +252,7 @@ function parseOrigin (url: string) {
  */
 function hasOrigin (url: string): Origins {
 
-  if (url.startsWith('http')) return Origins.HTTP;
+  if (url.startsWith('http:') || url.startsWith('https:')) return Origins.HTTP;
   if (url.startsWith('//')) return Origins.SLASH;
   if (url.startsWith('www.')) return Origins.WWW;
 
@@ -272,7 +270,7 @@ export function validKey (url: string) {
 
   if (typeof url !== 'string' || url.length === 0) return false;
 
-  if (url.charCodeAt(0) === CharCode.FWD) { // 47 is unicode for '/'
+  if (url.charCodeAt(0) === CharCode.FWD) {
 
     if (url.charCodeAt(1) !== CharCode.FWD) return true;
     if (url.startsWith('www.', 2)) return url.startsWith(hostname, 6);
@@ -283,6 +281,7 @@ export function validKey (url: string) {
 
   if (url.charCodeAt(0) === CharCode.QWS) return true;
   if (url.startsWith('www.')) return url.startsWith(hostname, 4);
+
   if (url.startsWith('http')) {
 
     const start = url.indexOf('/', 4) + 2;
@@ -291,6 +290,8 @@ export function validKey (url: string) {
       ? url.startsWith(hostname, start + 4)
       : url.startsWith(hostname, start);
   }
+
+  return false;
 
 }
 
@@ -335,42 +336,34 @@ export function parseKey (url: string): Location {
  */
 export function getKey (link: string | Location): string {
 
-  if (typeof link === 'object') {
-    return link.pathname + link.search;
-  }
+  if (typeof link === 'object') return link.pathname + link.search;
 
   if (link === nil || link === '/') return '/';
 
   const has = hasOrigin(link);
 
-  if (has === 1) {
-
-    const protocol = link.charCodeAt(4) === 115 ? 8 : 7;
+  if (has === Origins.HTTP) {
+    const protocol = link.charCodeAt(4) === CharCode.COL ? 8 : 7;
     const www = link.startsWith('www.', protocol) ? (protocol + 4) : protocol;
-
-    return link.startsWith(hostname, www)
-      ? getPath(link, www)
-      : null;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
   }
 
-  if (has === 2) {
-
+  if (has === Origins.SLASH) {
     const www = link.startsWith('www.', 2) ? 6 : 2;
-
-    return link.startsWith(hostname, www)
-      ? getPath(link, www)
-      : null;
+    return link.startsWith(hostname, www) ? getPath(link, www) : null;
   }
 
-  if (has === 3) {
-    return link.startsWith(hostname, 4)
-      ? getPath(link, 4)
-      : null;
+  if (has === Origins.WWW) {
+    return link.startsWith(hostname, 4) ? getPath(link, 4) : null;
   }
+
+  // Getting here we have pathname key, e.g: /something
 
   return link.startsWith(hostname, 0)
     ? getPath(link, 0)
-    : null;
+    : link.charCodeAt(0) === CharCode.FWD
+      ? link
+      : null;
 
 };
 
@@ -384,12 +377,12 @@ export function fallback (): Location {
 
   const { pathname, search, hash } = location;
 
-  return o({
+  return o<Location>({
     hostname,
     origin,
     pathname,
-    search,
-    hash
+    hash,
+    search
   });
 }
 
@@ -405,7 +398,7 @@ export function getLocation (path: string): Location {
   const state = parseKey(path);
 
   if (state === null) {
-    log(LogType.ERROR, `Invalid pathname: ${path}`);
+    log(Log.ERROR, `Invalid pathname: ${path}`);
   }
 
   state.origin = origin;
@@ -436,9 +429,12 @@ export function getRoute <
   // PASSED IN ELEMENT
   // Route state will be generated using node attributes
   if (link instanceof Element) {
+
     const state = getAttributes(link);
     state.type = type || VisitType.VISIT;
+
     return state;
+
   }
 
   const state: Page = o();

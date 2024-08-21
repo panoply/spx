@@ -2,9 +2,9 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-redeclare */
 
-import type { Scope, ValueOf } from 'types';
+import type { DOM, Scope, ValueOf } from 'types';
 import { $ } from '../app/session';
-import { nil, isArray, defineProps, defineProp, m } from '../shared/native';
+import { nil, m, p, o } from '../shared/native';
 import { attrJSON, hasProp, isEmpty, kebabCase, upcase } from '../shared/utils';
 
 /**
@@ -32,11 +32,18 @@ export const Component = class {
   readonly scope: Scope;
 
   /**
-   * DOM Node
+   * Root Node
    *
    * Returns the element of which is annotated with `spx-component`
    */
-  readonly dom: HTMLElement;
+  readonly root: HTMLElement;
+
+  /**
+   * Root Node
+   *
+   * Returns the element of which is annotated with `spx-component`
+   */
+  readonly dom: DOM = o();
 
   /**
    * Component State
@@ -59,7 +66,7 @@ export const Component = class {
      */
     [key: string]: any;
 
-  }> = {};
+  }> = o();
 
   /**
    * **SPX Document Element**
@@ -76,30 +83,49 @@ export const Component = class {
   constructor (key: string) {
 
     const { $elements } = $.components;
-    const { scope } = defineProps(this, {
-      scope: {
-        get: () => Component.scopes.get(key)
-      },
-      dom: {
-        get: () => $elements.get(scope.dom)
-      }
+    const { scope } = Object.defineProperties(this, {
+      scope: { get: () => Component.scopes.get(key) },
+      root: { get: () => $elements.get(scope.root) }
     });
+
+    /**
+     * First, we will assign all the DOM nodes
+     *
+     * This operation will also apply within instances generator
+     * in situation where nodes are not defined.
+     */
+    for (const identifer of scope.define.nodes) {
+
+      const schema = `${identifer}Nodes`;
+      const domNode = schema.slice(0, -1);
+      const hasNode = `has${upcase(domNode)}`;
+
+      scope.nodeMap[schema] = [];
+
+      Object.defineProperties(this.dom, {
+        [domNode]: { get: () => this.dom[schema][0] },
+        [hasNode]: { get: () => this.dom[schema].length > 0 },
+        [schema]: {
+          get: () => scope.nodeMap[schema].map(id => $elements.get(id)),
+          set: (ids) => (scope.nodeMap[schema] = ids)
+        }
+      });
+
+    }
 
     const { define } = scope;
     const prefix = `${$.config.schema}${scope.instanceOf}`;
-
-    // console.log(scope);
 
     /**
      * State applied proxy
      *
      * Aligns the DOM attributes whenever a state change is applied.
      */
-    this.state = new Proxy({}, {
+    this.state = p({
       set: (target, key: string, value) => {
 
         const preset = define.state[key];
-        const domValue = typeof value === 'object' || isArray(value)
+        const domValue = typeof value === 'object' || Array.isArray(value)
           ? JSON.stringify(value)
           : `${value}`;
 
@@ -110,14 +136,14 @@ export const Component = class {
           target[key] = value;
         }
 
-        if (domValue.trim() !== nil && this.dom) {
+        if (domValue.trim() !== nil && this.root) {
 
-          const attrName = this.dom.hasAttribute(`${prefix}:${key}`)
+          const attrName = this.root.hasAttribute(`${prefix}:${key}`)
             ? `${prefix}:${key}`
             : `${prefix}:${kebabCase(key)}`;
 
-          if (domValue !== this.dom.getAttribute(`${prefix}:${key}`)) {
-            this.dom.setAttribute(attrName, domValue);
+          if (domValue !== this.root.getAttribute(`${prefix}:${key}`)) {
+            this.root.setAttribute(attrName, domValue);
           }
 
         }
@@ -172,7 +198,7 @@ export const Component = class {
         } else if (type === Number) {
           this.state[prop] = value ? Number(value) : 0;
         } else if (type === Array) {
-          this.state[prop] = isArray(value) ? value : [];
+          this.state[prop] = Array.isArray(value) ? value : [];
         } else if (type === Object) {
           this.state[prop] = typeof value === 'object' ? value : {};
         }
@@ -217,9 +243,9 @@ export const Component = class {
         /**
          * The `static` state type converted value
          */
-        let value: string = this.dom.hasAttribute(`${prefix}:${attrName}`)
-          ? this.dom.getAttribute(`${prefix}:${attrName}`)
-          : this.dom.getAttribute(`${prefix}:${prop}`);
+        let value: string = this.root.hasAttribute(`${prefix}:${attrName}`)
+          ? this.root.getAttribute(`${prefix}:${attrName}`)
+          : this.root.getAttribute(`${prefix}:${prop}`);
 
         /**
          * Whether or not dom state reference exists
@@ -234,7 +260,7 @@ export const Component = class {
         }
 
         if (!(`has${upcase(prop)}` in this.state)) {
-          defineProp(this.state, `has${upcase(prop)}`, {
+          Object.defineProperty(this.state, `has${upcase(prop)}`, {
             get () { return defined; }
           });
         }

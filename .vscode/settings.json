@@ -51,7 +51,7 @@
         }
       ]
     },
-    "\\b(connect|onmount|unmount)\\b(?=\\s*\\()": {
+    "\\b(connect|onmount|unmount|onmedia)\\b(?=\\s*\\()": {
       "decorations": [
         {
           "color": "#58e093",
@@ -79,7 +79,7 @@
     "**/.DS_Store": true,
     "**/node_modules": true,
     "**/pnpm-lock.yaml": true,
-    "**/public": true
+    //"**/public": true
   },
   "cSpell.words": [
     "Alexey",

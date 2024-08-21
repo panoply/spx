@@ -1,9 +1,8 @@
 import type { ComponentRegister, Merge } from 'types';
 import { $ } from '../app/session';
 import { camelCase, downcase } from '../shared/utils';
-import { Colors, LogType } from '../shared/enums';
+import { Colors, Log } from '../shared/enums';
 import { log } from '../shared/logs';
-import { assign } from '../shared/native';
 
 type Register = Merge<ComponentRegister, {
   /**
@@ -29,17 +28,12 @@ export function getComponentId (instance: Register, identifier?: string) {
 
   identifier = downcase(identifier || name);
 
-  instance.define = assign({
-    id: identifier,
-    merge: false,
-    state: {},
-    nodes: []
-  }, instance.define);
+  instance.define = Object.assign({ id: identifier, merge: false, state: {}, nodes: [] }, instance.define);
 
   if (identifier !== instance.define.id) identifier = camelCase(instance.define.id);
 
   if (name !== original && /^[A-Z]|[_-]/.test(instance.define.id)) {
-    log(LogType.WARN, [
+    log(Log.WARN, [
       `Component identifer id "${instance.define.id}" must use camelCase format.`,
       `The identifer has been converted to "${identifier}"`
     ]);
@@ -69,11 +63,7 @@ export function registerComponents (components: { [id: string]: Register }, isVa
 
     if (!$registry.has(identifier)) {
       $registry.set(identifier, instance);
-      log(
-        LogType.VERBOSE,
-        `Component ${instance.name} registered using id: ${identifier}`,
-        Colors.PINK
-      );
+      log(Log.VERBOSE, `Component ${instance.name} registered using id: ${identifier}`, Colors.PINK);
     }
   }
 

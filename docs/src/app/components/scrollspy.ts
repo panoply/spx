@@ -35,13 +35,13 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    */
   onmount () {
 
-    this.hrefNode.classList.add('fc-blue');
+    this.dom.hrefNode.classList.add('fc-blue');
 
-    for (const a of this.hrefNodes) {
+    for (const a of this.dom.hrefNodes) {
       this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
       a.onclick = () => {
         setTimeout(() => {
-          this.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+          this.dom.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
           a.classList.add('fc-blue');
         }, 300);
       };
@@ -64,7 +64,7 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
   onScroll = () => {
 
-    this.anchorNodes.filter(a => {
+    this.dom.anchorNodes.filter(a => {
       return this.anchors.includes(a.id);
     }).forEach((v, i) => {
 
@@ -72,10 +72,10 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
       const next = v.getBoundingClientRect().top;
 
-      if (next < window.screenY && this.hrefNodes[i]) {
+      if (next < window.screenY && this.dom.hrefNodes[i]) {
 
-        this.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
-        this.hrefNodes[i].classList.add('fc-blue');
+        this.dom.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+        this.dom.hrefNodes[i].classList.add('fc-blue');
 
       }
     });
@@ -88,7 +88,5 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
   anchors: string[];
   observer: IntersectionObserver;
   options: IntersectionObserverInit;
-  anchorNodes: HTMLLinkElement[];
-  hrefNodes: HTMLLinkElement[];
 
 }

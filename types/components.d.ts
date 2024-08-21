@@ -1,9 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import type { CamelCase, LiteralUnion, Merge } from 'type-fest';
+import type { CamelCase, Except, LiteralUnion, Merge, StringSlice, KebabCase, Split, Constructor } from 'type-fest';
 import type { Page } from './page';
 import { Hooks } from 'src/shared/enums';
 import { SPX } from './global';
+import { Identity } from 'types';
 
 /**
  * Type Constructors
@@ -138,15 +139,15 @@ type GetNode<T extends SPX.Define> = T['nodes'][number] extends string ? T['node
 export type State<T extends SPX.Define> = Merge<{
   [K in keyof T['state']]?:
   T['state'][K] extends BooleanConstructor ? boolean :
-  T['state'][K] extends StringConstructor ? string :
   T['state'][K] extends NumberConstructor ? number :
+  T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
   T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
   T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
   T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
-  T['state'][K] extends TypeState<StringConstructor> ? LiteralUnion<T['state'][K]['default'], string> :
   T['state'][K] extends TypeState<NumberConstructor> ? number :
+  T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
   T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
-  T['state'][K] extends TypeState<ObjectConstructor> ? T['state'][K]['default'] : never
+  T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> : never
 }, {
   /**
    * **Has Reference**
@@ -156,37 +157,61 @@ export type State<T extends SPX.Define> = Merge<{
   [K in keyof T['state'] as K extends string ? `has${Capitalize<K>}` : never]: boolean;
 }>
 
-type DOM<T extends ReadonlyArray<string> = ReadonlyArray<string>> = {
-  /**
+/**
+ * DOM Element
+ *
+ * Returns the HTMLElement tag based on the nodes[] name entry.
+ */
+type DOMElement<T extends string> = T extends SPX.TagNames ? SPX.TagNodes[T] : HTMLElement
+
+/**
+ * First Array Item
+ *
+ * Extracts the first item in an array list.
+ */
+type First<T extends readonly [...unknown[]]> = T extends readonly [infer H, ...unknown[] ] ? H : never;
+
+/**
+ * DOM Node
+ *
+ * Determines whether or not the node identifier should return a specific Element tag or
+ * default to HTMLElement. Node identifiers which use prefixed HTMLElement tag names
+ * will return the referenced HTML Element.
+ *
+ * @example
+ *
+ * 'input' // => HTMLInputElement
+ * 'label' // => HTMLLabelElement
+ * 'href'  // => HTMLAnchorElement
+ *
+ * // camelCase expression are supported
+ *
+ * 'inputFoo' // => HTMLInputElement
+ * 'labelBar' // => HTMLLabelElement
+ * 'hrefBaz'  // => HTMLAnchorElement
+ */
+type DOMNode<T extends string> = DOMElement<First<Split<KebabCase<T>, '-'>>>;
+
+export type DOM<T extends readonly string[] = readonly string[]> = {
+ /**
    * Dom Element/s
    *
    * As per the static **define** `nodes` method.
    */
-  [K in T[number]]?: HTMLElement
+  [K in T[number] as `${K}Node` ]: DOMNode<K>;
+} & {
+  /**
+   * Returns an array list of DOM Elements marked with `spx-dom=""`
+   */
+  [K in T[number] as `${K}Nodes` ]: DOMNode<K>[];
+} & {
+  /**
+   * Returns a boolean signaling whether or not DOM has been defined
+   */
+  [K in T[number] as `has${Capitalize<K>}Node` ]: boolean;
 }
 
 export declare class Class<T extends SPX.Define = SPX.Define> {
-
-  /**
-   * **Node**
-   *
-   * Returns a node
-   */
-  readonly [node: `${Lowercase<string>}Node`]: HTMLElement;
-
-  /**
-   * **Node**
-   *
-   * Returns a node
-   */
-  readonly [nodes: `${Lowercase<string>}Nodes`]: HTMLElement[];
-
-  /**
-   * **Node Exists**
-   *
-   * Whether or not a node exists in the DOM
-   */
-  readonly [hasNode: `has${Capitalize<string>}Node`]: boolean;
 
   /**
    * **SPX Scope**
@@ -211,13 +236,6 @@ export declare class Class<T extends SPX.Define = SPX.Define> {
   public readonly state?: State<T>;
 
   /**
-   * **SPX Dom**
-   *
-   * Holds a reference to the SPX Element annotated with `spx-component`.
-   */
-  public readonly dom: HTMLElement;
-
-  /**
    * **SPX Document Element**
    *
    * Holds a reference to the DOM Document element `<html>` node.
@@ -225,25 +243,47 @@ export declare class Class<T extends SPX.Define = SPX.Define> {
   public readonly html: HTMLElement;
 
   /**
+   * **SPX Component Element**
+   *
+   * Holds a reference to the SPX Element annotated with `spx-component`.
+   */
+  public readonly root: HTMLElement;
+
+  /**
+   * **SPX Dom**
+   *
+   * Holds a reference to the SPX Element annotated with `spx-component`.
+   */
+  public readonly dom: DOM<T['nodes']>;
+
+  /**
    * **SPX `connect`**
    *
    * An SPX component lifecycle callback that will be triggered on component register.
    * This event will on fire once for each instance occurance throughout an SPX session.
    */
-  connect(session: { page: Page }): any;
+  connect(session?: { page: Page }): any;
   /**
    * **SPX `onmount`**
    *
    * SPX lifecycle hook triggered each time the component is present in the DOM.
    */
-  onmount(session: { page: Page }): any;
+  onmount(session?: { page: Page }): any;
   /**
    * **SPX `unmount`**
    *
    * SPX lifecycle hook that executes when a component is removed from the DOM.
    *
    */
-  unmount(session: { page: Page }): any;
+  unmount(session?: { page: Page }): any;
+
+  /**
+   * **SPX `onmedia`**
+   *
+   * SPX lifecycle hook which fire upon media query breakpoint changes.
+   *
+   */
+  onmedia(screen: 'xs' | 'sm' | 'md' | 'lg' | 'xl'): any;
 
 }
 
@@ -623,7 +663,7 @@ export interface Scope {
    * {@link $elements} Map cache. All active component elements are accessible from this store.
    *
    */
-  dom: string
+  root: string
   /**
    * #### Instance Key
    *
@@ -668,6 +708,30 @@ export interface Scope {
    * @default true
    */
   inFragment: boolean;
+  /**
+   * Whether or not `connect()` exists
+   *
+   * @default false
+   */
+  hasConnect: boolean;
+  /**
+   * Whether or not `onmount()` exists
+   *
+   * @default false
+   */
+  hasOnmount: boolean;
+  /**
+   * Whether or not `unmount()` exists
+   *
+   * @default false
+   */
+  hasUnmount: boolean;
+  /**
+   * Whether or not `onmedia()` exists
+   *
+   * @default false
+   */
+  hasOnmedia: boolean;
   /**
    * #### Connection Status
    *
@@ -757,6 +821,12 @@ export interface Scope {
    * @example 'n.f8i4b2'
    */
   nodes: { [key: string]: ComponentNodes; };
+  /**
+   * #### Nodes Map
+   *
+   * Holds a mapped proxy references to various identifers that contain stores.
+   */
+  nodeMap: { [schema: string]: string[] }
 }
 
 export enum ElementType {

@@ -2,7 +2,7 @@
 /* SETTERS                                      */
 /* -------------------------------------------- */
 
-import { LogType } from '../shared/enums';
+import { Log } from '../shared/enums';
 import { $ } from '../app/session';
 import { m } from '../shared/native';
 import { forNode, onNextTick } from '../shared/utils';
@@ -33,12 +33,9 @@ function MarkSnapshots () {
    * reference we need to align in the snapshot.
    */
   const set = (element: HTMLElement) => {
-
     cache.push([ element, m() ]);
     record = cache[cache.length - 1][1];
-
     return element;
-
   };
 
   /**
@@ -49,9 +46,9 @@ function MarkSnapshots () {
    */
   const add = (selector: string, ref: string, incremental = false) => {
 
-    if (!record.has(selector)) record.set(selector, []);
-
-    record.get(selector).push(ref);
+    record.has(selector)
+      ? record.get(selector).push(ref)
+      : record.set(selector, [ ref ]);
 
   };
 
@@ -60,7 +57,7 @@ function MarkSnapshots () {
    *
    * This is a final cycle call which will use the references we have
    * created to update the snapshot DOM. This operation executes outside
-   * the event loop.
+   * the event loop 250ms after its triggered.
    */
   const sync = (snapshot: HTMLElement) => onNextTick(() => {
 
@@ -69,31 +66,24 @@ function MarkSnapshots () {
       const [ dom, marks ] = cache.shift();
 
       for (const [ selector, refs ] of marks) {
-        forNode(dom.querySelectorAll<HTMLElement>(selector), (node) => {
-          const attrValue = node.getAttribute($.qs.$ref);
-          if (attrValue) {
-            node.setAttribute($.qs.$ref, `${attrValue},${refs.shift()}`);
-          } else {
-            node.setAttribute($.qs.$ref, refs.shift());
-          }
-        });
+        forNode(
+          dom.querySelectorAll<HTMLElement>(selector)
+          , node => node.hasAttribute($.qs.$ref)
+            ? node.setAttribute($.qs.$ref, `${node.getAttribute($.qs.$ref)},${refs.shift()}`)
+            : node.setAttribute($.qs.$ref, refs.shift())
+        );
       }
 
       marks.clear();
-
     }
 
     setSnap(snapshot.ownerDocument.documentElement.outerHTML);
 
-    log(LogType.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
+    log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
 
-  });
+  }, 250);
 
-  return {
-    set,
-    add,
-    sync
-  };
+  return { set, add, sync };
 }
 
 /**

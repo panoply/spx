@@ -2,7 +2,7 @@ import type { ComponentBinds, Scope } from 'types';
 import { $ } from '../app/session';
 import { isDirective } from '../components/context';
 import { log } from '../shared/logs';
-import { LogType } from '../shared/enums';
+import { Log } from '../shared/enums';
 import { onNextTick } from '../shared/utils';
 import { walkElements } from './walk';
 import * as q from '../app/queries';
@@ -32,7 +32,7 @@ import * as q from '../app/queries';
 
 //       if (node.getAttribute($.qs.$ref) !== bind.key) {
 //         node.setAttribute($.qs.$ref, bind.key);
-//         log(LogType.VERBOSE, `Binding reference in snapshot ${bind.key} was applied`, '#fff');
+//         log(Log.VERBOSE, `Binding reference in snapshot ${bind.key} was applied`, '#fff');
 //       }
 //     }
 
@@ -44,13 +44,13 @@ import * as q from '../app/queries';
 
 //       if (node.getAttribute($.qs.$ref) !== item.key) {
 //         node.setAttribute($.qs.$ref, item.key);
-//         log(LogType.VERBOSE, `Node reference in snapshot ${item.key} was applied`, '#fff');
+//         log(Log.VERBOSE, `Node reference in snapshot ${item.key} was applied`, '#fff');
 //       }
 //     }
 
 //     if (element.getAttribute($.qs.$ref) !== attrRef) {
 //       element.setAttribute($.qs.$ref, attrRef);
-//       log(LogType.VERBOSE, `Component reference in snapshot ${page.snap} was applied`, '#fff');
+//       log(Log.VERBOSE, `Component reference in snapshot ${page.snap} was applied`, '#fff');
 //     }
 //   }
 
@@ -72,7 +72,7 @@ export function morphBinds (cRef: string, bind: ComponentBinds, value: string) {
 
     elem.innerText = value;
     q.setSnap(elem.ownerDocument.documentElement.outerHTML, page.snap);
-    log(LogType.VERBOSE, `Components binded node in snapshot was updated: ${value}`);
+    log(Log.VERBOSE, `Components binded node in snapshot was updated: ${value}`);
 
   } else {
     // TODO: FAILED
@@ -135,12 +135,12 @@ export function patchComponentSnap (scope: Scope, scopeKey: string) {
 
     const snap = q.getSnapDom(scope.snap);
     const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
-    console.log(snap, elem);
+    // console.log(snap, elem);
     if (elem) {
       elem.innerHTML = scope.snapshot;
       q.setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
     } else {
-      log(LogType.WARN, `Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
+      log(Log.WARN, `Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
     }
 
   });
@@ -165,7 +165,7 @@ export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) 
 
       if (!nodeRef) {
         // console.log('MORPH SNAP', nodeRef, node);
-        // log(LogType.ERROR, 'Undefined reference, the snapshot record failed to align', node);
+        // log(Log.ERROR, 'Undefined reference, the snapshot record failed to align', node);
       }
 
       if ($elements.has(nodeRef)) {
@@ -181,7 +181,7 @@ export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) 
 
           if (isPatch === false) {
             q.setSnap(node.ownerDocument.documentElement.outerHTML);
-            log(LogType.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
+            log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
           }
 
           return false;
@@ -189,7 +189,7 @@ export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) 
 
       } else {
 
-        // log(LogType.ERROR, 'Undefined reference, the snapshot record failed to align', node);
+        // log(Log.ERROR, 'Undefined reference, the snapshot record failed to align', node);
 
       }
     }
@@ -214,10 +214,10 @@ export function morphHead (method: 'removeChild' | 'appendChild', newNode: HTMLE
 
     $.snaps[page.snap] = dom.documentElement.outerHTML;
 
-    log(LogType.VERBOSE, `Snapshot record was updated. Node ${operation} from <head>`, newNode);
+    log(Log.VERBOSE, `Snapshot record was updated. Node ${operation} from <head>`, newNode);
 
   } else {
-    log(LogType.WARN, 'Node does not exist in the snapshot record, no mutation applied', newNode);
+    log(Log.WARN, 'Node does not exist in the snapshot record, no mutation applied', newNode);
   }
 
 }

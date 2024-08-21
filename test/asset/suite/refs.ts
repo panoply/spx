@@ -1,12 +1,12 @@
 import papyrus from 'papyrus';
 import spx from 'spx';
 
-export class Refs extends spx.Component {
+export class Refs extends spx.Component<typeof Refs.define> {
 
   compare: { [key: string]: string[] } = {};
 
   static define = {
-    nodes: [
+    nodes: <const>[
       'snap',
       'mark'
     ]
@@ -53,8 +53,8 @@ export class Refs extends spx.Component {
       const valid = this.page.join('\n');
       const format = dom.join('\n');
 
-      papyrus.render(valid, this.markNode, { language: 'html' });
-      papyrus.render(format, this.snapNode, { language: 'html' });
+      papyrus.render(valid, this.dom.markNode, { language: 'html' });
+      papyrus.render(format, this.dom.snapNode, { language: 'html' });
 
     }, 300);
   }

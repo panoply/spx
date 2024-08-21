@@ -6,7 +6,7 @@ import { Dropdown } from './components/dropdown';
 import { Search } from './components/search';
 import { ScrollSpy } from './components/scrollspy';
 
-spx.connect({
+spx({
   fragments: [
     'content',
     'menu'

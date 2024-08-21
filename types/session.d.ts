@@ -248,5 +248,5 @@ export interface Session {
    * This object hold resource elements added to the document
    * dynamically. It's populated via the mutation observer.
    */
-  readonly resources: Set<Node|string>
+  readonly resources: Set<Node>
 }

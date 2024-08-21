@@ -5,8 +5,8 @@ import { emit } from './events';
 import { log } from '../shared/logs';
 import { hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
-import { XHR, isArray, toArray } from '../shared/native';
-import { LogType, VisitType } from '../shared/enums';
+import { XHR } from '../shared/native';
+import { Log, VisitType } from '../shared/enums';
 import * as q from './queries';
 
 interface RequestParams {
@@ -34,20 +34,6 @@ interface RequestParams {
    * @default null
    */
   headers?: { [key: string]: string };
-}
-
-/**
- * Returns specific element/s from over the wire
- */
-export async function element <T extends HTMLElement> (key: string, ...elements: string[]): Promise<T[]> {
-
-  const dom = await request(key, { type: 'document' });
-  const elm = dom.querySelectorAll<T>(elements.join());
-
-  if (!elm) return null;
-
-  return toArray(elm);
-
 }
 
 /**
@@ -148,7 +134,7 @@ export function abort (key: string): void {
 
   if (XHR.$request.has(key)) {
     XHR.$request.get(key).abort();
-    log(LogType.WARN, `Cancelled request: ${key}`);
+    log(Log.WARN, `Cancelled request: ${key}`);
   }
 
 };
@@ -165,7 +151,7 @@ export function cancel (key?: string): void {
   for (const [ url, xhr ] of XHR.$request) {
     if (key !== url) {
       xhr.abort();
-      log(LogType.WARN, `Pending request aborted: ${url}`);
+      log(Log.WARN, `Pending request aborted: ${url}`);
     }
   }
 
@@ -182,7 +168,7 @@ export function preload (state: Page) {
 
   if ($.config.preload !== null) {
 
-    if (isArray($.config.preload)) {
+    if (Array.isArray($.config.preload)) {
 
       const promises = $.config.preload.filter(path => {
         const route = getRoute(path, VisitType.PRELOAD);
@@ -232,9 +218,9 @@ export async function reverse (state: Page | HistoryState): Promise<void> {
 
   fetch(page).then(page => {
     if (page) {
-      log(LogType.INFO, `Reverse fetch completed: ${page.rev}`);
+      log(Log.INFO, `Reverse fetch completed: ${page.rev}`);
     } else {
-      log(LogType.WARN, `Reverse fetch failed: ${state.rev}`);
+      log(Log.WARN, `Reverse fetch failed: ${state.rev}`);
     }
   });
 
@@ -268,9 +254,9 @@ export async function fetch <T extends Page> (state: T): Promise<false|Page> {
 
       if (state.type === VisitType.REVERSE && XHR.$request.has(state.rev)) {
         XHR.$request.get(state.rev).abort();
-        log(LogType.WARN, `Request aborted: ${state.rev}`);
+        log(Log.WARN, `Request aborted: ${state.rev}`);
       } else {
-        log(LogType.WARN, `Request in transit: ${state.key}`);
+        log(Log.WARN, `Request in transit: ${state.key}`);
       }
 
       return false;
@@ -278,7 +264,7 @@ export async function fetch <T extends Page> (state: T): Promise<false|Page> {
   }
 
   if (!emit('fetch', state)) {
-    log(LogType.WARN, `Request cancelled via dispatched event: ${state.key}`);
+    log(Log.WARN, `Request cancelled via dispatched event: ${state.key}`);
     return false;
   }
 

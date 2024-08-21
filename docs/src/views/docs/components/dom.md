@@ -5,7 +5,7 @@ layout: base.liquid
 group: components
 ---
 
-# Component Nodes
+# Component DOM
 
 Component nodes represent DOM elements associated with a specific component instance and are made available using attribute annotations and act as query selectors. The `spx-node` directive can be used to establish association with components which expects a `<ref>.<identifier>` dot notation value be provided. Every element in the DOM marked with an `spx-node` directive is made accessible within component scope and support both multiple occurrences and referencing.
 

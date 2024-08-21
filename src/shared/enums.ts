@@ -88,7 +88,11 @@ export enum CharCode {
   /**
    * Lowercase letter `p`
    */
-  LCP = 112
+  LCP = 112,
+  /**
+   * Colon `:`
+   */
+  COL = 115
 }
 
 /**
@@ -100,7 +104,7 @@ export enum Origins {
   /**
    * URL is likely a pathname
    */
-  NONE = 1,
+  NONE = 0,
   /**
    * URL starts with `http` or `https`
    */
@@ -113,6 +117,17 @@ export enum Origins {
    * URL starts with `www`
    */
   WWW = 3
+}
+
+export enum CanFetch {
+  /**
+   * URL Key does not have a snapshot record
+   */
+  YES = 2,
+ /**
+   * URL Key has already been fetched and exists in snapshot cache
+   */
+  NO = 2
 }
 
 /**
@@ -182,7 +197,7 @@ export enum LogLevel {
 /**
  * Error Types
  */
-export enum LogType {
+export enum Log {
   /**
    * Prints Verbose info to console (does not throw)
    */

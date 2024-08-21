@@ -8,8 +8,6 @@ title: 'Using TypeScript'
 
 SPX is written in TypeScript and provides thorough type coverage. Each definition is accompanied by detailed JSDoc annotations, providing in-depth descriptions, documentation reference links and code examples. Incorporating SPX into TypeScript projects is straightforward.
 
-> It is important that developers keep in mind that there are some very minor limitations with TypeScript itself which limit the auto-typing features that SPX is able to provide, namely [Component Nodes](#component-nodes) completions.
-
 ---
 
 # SPX Namespace
@@ -96,9 +94,9 @@ export class Example extends spx.Component<typeof Example.define> {
 
 # Component Nodes
 
-SPX cannot automatically type node occurrences within components, but it does support index signatures using string literal formations. While type validations will apply, type completions will not. This limitation stems from TypeScript itself. Therefore, developers who desire completions for nodes will need to manually type them on classes.
+SPX Supports HTMLElement typing for all `nodes[]` provided on the static `define` configuration object. Nodes will be exposed and available via the {js `this.dom`} object. SPX will look at node name identifiers to determine element tag types, this results in auto-typing capabilities whenever a tag name expression is applied as a prefix in the identifier SPX will resolve that element.
 
-> The `<const>` prefix type annotation provided to `nodes` are used for the index signatures and can be omitted if you are manually typing nodes for type completions.
+> The `<const>` prefix type annotation provided to `nodes` is **required** and when omitted SPX will not apply DOM Node element typing.
 
 <!-- prettier-ignore -->
 ```ts
@@ -107,20 +105,31 @@ import spx from 'spx';
 export class Example extends spx.Component<typeof Example.define> {
 
   static define {
-    nodes: <const>['button']
+    nodes: <const>[
+      'buttonFoo',
+      'inputDemo',
+      'example'
+    ]
   }
 
   connect () {
-    this.buttonNode      // => HTMLButtonElement
-    this.buttonNodes     // => HTMLButtonElement[]
-    this.hasButtonNode   // => true or false
+
+
+    this.dom.buttonFooNode      // => HTMLButtonElement
+    this.dom.buttonFooNodes     // => HTMLButtonElement[]
+    this.dom.hasButtonFooNode   // => true or false
+
+    this.dom.inputDemoNode      // => HTMLInputElement
+    this.dom.inputDemoNodes     // => HTMLInputElement[]
+    this.dom.hasInputDemoNode   // => true or false
+
+    this.dom.exampleNode        // => HTMLElement
+    this.dom.exampleNodes       // => HTMLElement[]
+    this.dom.hasExampleNode     // => true or false
+
   }
 
   // Explicitly pass the following for completion support
-
-  public buttonNode: HTMLButtonElement;
-  public buttonNodes: HTMLButtonElement[];
-  public hasButtonNode: boolean;
 
 }
 ```

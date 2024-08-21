@@ -1,5 +1,6 @@
 import { getKey, validKey } from '../app/location';
 import { has } from '../app/queries';
+import { CanFetch } from './enums';
 import { forNode } from './utils';
 
 /**
@@ -8,11 +9,11 @@ import { forNode } from './utils';
 export function getLink <T> (
   target: EventTarget | MouseEvent,
   selector: string
-): T & HTMLLinkElement | HTMLLinkElement | false {
+): T & HTMLAnchorElement | HTMLAnchorElement | false {
 
   if (!(target instanceof Element)) return false;
 
-  const element = target.closest<HTMLLinkElement>(selector);
+  const element = target.closest<HTMLAnchorElement>(selector);
 
   return (element && element.tagName === 'A') ? element : false;
 
@@ -21,16 +22,18 @@ export function getLink <T> (
 /**
  * Link is not cached and can be fetched
  */
-export function canFetch (target: HTMLLinkElement): boolean {
+export function canFetch (target: HTMLAnchorElement): CanFetch {
 
-  if (target.nodeName !== 'A') return false;
+  if (target.nodeName !== 'A') return CanFetch.NO;
 
   const href = target.getAttribute('href');
 
-  if (!href) return false;
-  if (!validKey(href)) return false;
+  if (!href) return CanFetch.NO;
+  if (!validKey(href)) return CanFetch.NO;
 
-  return has(getKey(href)) === false;
+  const key = getKey(href);
+
+  return key === null ? CanFetch.NO : has(key) ? CanFetch.NO : CanFetch.YES;
 
 };
 
@@ -38,31 +41,27 @@ export function canFetch (target: HTMLLinkElement): boolean {
  * Returns a list of link elements to be prefetched. Filters out
  * any links which exist in cache to prevent pointless transits.
  */
-export function getNodeTargets (selector: string, hrefs: string): HTMLLinkElement[] {
+export function getNodeTargets (selector: string, hrefs: string): HTMLAnchorElement[] {
 
-  const targets: HTMLLinkElement[] = [];
+  const targets: HTMLAnchorElement[] = [];
 
-  forNode<HTMLLinkElement>(selector, (targetNode) => {
+  forNode<HTMLAnchorElement>(
+    selector,
+    targetNode => {
+      if (targetNode.nodeName !== 'A') {
+        forNode<HTMLAnchorElement>(
+          hrefs,
+          linkNode => canFetch(linkNode) === CanFetch.YES ? targets.push(linkNode) : null
+        );
 
-    if (targetNode.nodeName !== 'A') {
-
-      const nodes = targetNode.querySelectorAll<HTMLLinkElement>(hrefs);
-
-      forNode<HTMLLinkElement>(nodes, linkNode => {
-        if (canFetch(linkNode)) {
-          targets.push(linkNode);
-        }
-      });
-
-    } else {
-      if (targetNode.hasAttribute('href')) {
-        const { href } = targetNode;
-        if (validKey(href) && has(getKey(href))) {
-          targets.push(targetNode);
+      } else {
+        if (targetNode.hasAttribute('href') && validKey(targetNode.href)) {
+          const key = getKey(targetNode.href);
+          if (getKey(key) !== null && has(key) === false) targets.push(targetNode);
         }
       }
     }
-  });
+  );
 
   return targets;
 
@@ -72,15 +71,14 @@ export function getNodeTargets (selector: string, hrefs: string): HTMLLinkElemen
  * Returns a list of link elements to be prefetched. Filters out
  * any links which exist in cache to prevent extrenous transit.
  */
-export const getTargets = (selector: string): HTMLLinkElement[] => {
+export const getTargets = (selector: string): HTMLAnchorElement[] => {
 
-  const targets: HTMLLinkElement[] = [];
+  const targets: HTMLAnchorElement[] = [];
 
-  forNode<HTMLLinkElement>(selector, linkNode => {
-    if (canFetch(linkNode)) {
-      targets.push(linkNode);
-    }
-  });
+  forNode<HTMLAnchorElement>(
+    selector,
+    linkNode => canFetch(linkNode) === CanFetch.YES ? targets.push(linkNode) : null
+  );
 
   return targets;
 

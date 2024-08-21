@@ -1,7 +1,7 @@
 import type { ComponentEvent, Merge, Class } from 'types';
-import { assign, o } from '../shared/native';
-import { defineGetter, hasProp } from '../shared/utils';
-import { LogType } from '../shared/enums';
+import { o } from '../shared/native';
+import { hasProp } from '../shared/utils';
+import { Log } from '../shared/enums';
 import { getEventParams } from './context';
 import { log } from '../shared/logs';
 import { $ } from '../app/session';
@@ -16,7 +16,7 @@ export function isValidEvent (eventName: string, node: Element | Window) {
 
   if (`on${eventName}` in node) return true;
 
-  log(LogType.ERROR, [
+  log(Log.ERROR, [
     `Invalid event name "${eventName}" provided. No such event exists in the DOM API.`,
     'Only known event listeners can be attached.'
   ], node);
@@ -41,8 +41,8 @@ export function eventAttrs (instance: Class, event: ComponentEvent, node?: HTMLE
   return function handle (e: Merge<Event, { attrs: object }>) {
 
     if (event.params) {
-      if (!hasProp(e, 'attrs')) defineGetter(e, 'attrs', o());
-      assign(e.attrs, event.params);
+      if (!hasProp(e, 'attrs')) Object.defineProperty(e, 'attrs', { get: () => o() });
+      Object.assign(e.attrs, event.params);
     }
 
     method.call(instance, e);
@@ -67,7 +67,7 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
 
   $.components.$elements.delete(event.dom);
 
-  log(LogType.VERBOSE, [
+  log(Log.VERBOSE, [
     `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
     `${instance.scope.define.id}: ${instance.scope.key}`
   ]);
@@ -85,7 +85,7 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
   if (event.attached) return;
 
   if (!(event.method in instance)) {
-    log(LogType.WARN, `Undefined callback method: ${instance.scope.define.id}.${event.method}()`);
+    log(Log.WARN, `Undefined callback method: ${instance.scope.define.id}.${event.method}()`);
     return;
   }
 
@@ -104,7 +104,7 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
 
   event.attached = true;
 
-  log(LogType.VERBOSE, [
+  log(Log.VERBOSE, [
     `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
     `${instance.scope.define.id}: ${instance.scope.key}`
   ]);

@@ -19,26 +19,23 @@ export class Alias extends spx.Component<typeof Alias.define> {
     console.log(this.state.qty, this.state.max);
 
     if (this.state.qty < this.state.max) {
-      this.counterNode.innerHTML = `${++this.state.qty}`;
+      this.dom.counterNode.innerHTML = `${++this.state.qty}`;
     } else {
-      this.feedbackNode.innerText = `Maximum: ${this.state.max}`;
+      this.dom.feedbackNode.innerText = `Maximum: ${this.state.max}`;
     }
   }
 
   decrement () {
 
     if (this.state.qty > this.state.min) {
-      this.counterNode.innerHTML = `${--this.state.qty}`;
+      this.dom.counterNode.innerHTML = `${--this.state.qty}`;
     } else {
-      this.feedbackNode.innerText = `Minimum: ${this.state.min}`;
+      this.dom.feedbackNode.innerText = `Minimum: ${this.state.min}`;
     }
   }
 
   /* -------------------------------------------- */
   /* NODES                                        */
   /* -------------------------------------------- */
-
-  public feedbackNode: HTMLElement;
-  public counterNode: HTMLElement;
 
 }

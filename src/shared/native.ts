@@ -35,39 +35,9 @@ export const pointer = supportsTouchEvents ? 'pointer' : 'mouse';
 export const origin = window.location.origin;
 
 /**
- * Cached `Object.assign` and `Object.keys`
- */
-export const { assign, keys, entries } = Object;
-
-/**
- * Cached `Object.defineProperty`
- */
-export const defineProp = Object.defineProperty;
-
-/**
-  * Cached `Object.defineProperty`
-  */
-export const defineProps = Object.defineProperties;
-
-/**
  * Cached `Object.create`
  */
 export const object = Object.create;
-
-/**
- * Cached `Object.values`
- */
-export const values = Object.values;
-
-/**
- * Cached `Array.isArray`
- */
-export const { isArray } = Array;
-
-/**
- * Cached `Array.from`
- */
-export const toArray = Array.from;
 
 /**
  * Empty string value
@@ -102,7 +72,7 @@ export const h = () => document.head;
  *
  * Creates a null prototype object
  */
-export const o = <T> (value?: T) => value ? assign(object(null), value) : object(null);
+export const o = <T> (value?: T) => value ? Object.assign(object(null), value) : object(null);
 
 /**
  * Set Create

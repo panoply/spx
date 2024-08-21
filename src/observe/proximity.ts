@@ -1,14 +1,15 @@
 import type { Proximity } from 'types';
 import { $ } from '../app/session';
-import { getTargets } from '../shared/links';
+import { canFetch, getTargets } from '../shared/links';
 import { isNumber } from '../shared/regexp';
 import { log } from '../shared/logs';
 import { getRoute } from '../app/location';
 import { emit } from '../app/events';
-import { VisitType, LogType } from '../shared/enums';
+import { VisitType, Log, CanFetch } from '../shared/enums';
 import { pointer } from '../shared/native';
 import * as q from '../app/queries';
 import * as request from '../app/fetch';
+import { onNextTick } from 'src/shared/utils';
 
 /**
  * Detects if the cursor (mouse) is in range of a target element.
@@ -26,7 +27,7 @@ function inRange ({ clientX, clientY }: MouseEvent, bounds: {
     clientY >= bounds.top;
 }
 
-function setBounds (target: HTMLLinkElement) {
+function setBounds (target: HTMLAnchorElement) {
 
   const rect = target.getBoundingClientRect();
   const attr = target.getAttribute($.qs.$proximity);
@@ -47,7 +48,7 @@ function setBounds (target: HTMLLinkElement) {
  * bounds. Once within distance a fetch is triggered.
  */
 function observer (targets?: {
-  target: Element,
+  target: HTMLAnchorElement,
   top: number;
   bottom: number;
   left: number;
@@ -55,8 +56,6 @@ function observer (targets?: {
 }[]) {
 
   let wait: boolean = false;
-
-  // console.log(targets);
 
   return (event: MouseEvent) => {
 
@@ -68,34 +67,41 @@ function observer (targets?: {
 
     if (node === -1) {
 
-      setTimeout(() => { wait = false; }, ($.config.proximity as Proximity).throttle);
+      onNextTick(() => (wait = false), ($.config.proximity as Proximity).throttle);
 
     } else {
 
       const { target } = targets[node];
-      const page = q.create(getRoute(target, VisitType.PROXIMITY));
-      const delay = page.threshold || ($.config.proximity as Proximity).threshold;
 
-      request.throttle(page.key, async () => {
+      if (canFetch(target) === CanFetch.NO) {
 
-        if (!emit('prefetch', target, page)) return disconnect();
+        targets.splice(node, 1);
 
-        const prefetch = await request.fetch(page);
+      } else {
 
-        if (prefetch) {
+        const page = q.create(getRoute(target, VisitType.PROXIMITY));
+        const delay = page.threshold || ($.config.proximity as Proximity).threshold;
 
-          targets.splice(node, 1);
+        request.throttle(page.key, async () => {
 
-          wait = false;
+          if (!emit('prefetch', target, page)) return disconnect();
 
-          if (targets.length === 0) {
-            disconnect();
-            log(LogType.INFO, 'Proximity observer disconnected');
+          const prefetch = await request.fetch(page);
+
+          if (prefetch) {
+
+            targets.splice(node, 1);
+
+            wait = false;
+
+            if (targets.length === 0) {
+              disconnect();
+              log(Log.INFO, 'Proximity observer disconnected');
+            }
           }
-        }
 
-      }, delay);
-
+        }, delay);
+      }
     }
   };
 }
@@ -110,14 +116,13 @@ export function connect (): void {
 
   if (!$.config.proximity || $.observe.proximity) return;
 
-  const targets = getTargets($.qs.$proximity).map(setBounds);
+  const target = getTargets($.qs.$proximity);
+  const targets = target.map(setBounds);
 
   if (targets.length > 0) {
-
     entries = observer(targets);
     addEventListener(`${pointer}move`, entries, { passive: true });
     $.observe.proximity = true;
-
   }
 
 }
