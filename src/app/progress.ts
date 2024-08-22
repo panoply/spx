@@ -1,6 +1,6 @@
 import type { Progress } from 'types';
 import { $ } from './session';
-import { d } from '../shared/native';
+import { b } from '../shared/native';
 import { glue } from '../shared/utils';
 
 function ProgressBar () {
@@ -77,7 +77,7 @@ function ProgressBar () {
     if (element) return element;
 
     node.style.setProperty('transform', `translateX(${percent(status || 0)}%)`);
-    element = d().appendChild(node);
+    element = b().appendChild(node);
 
     return node;
 
@@ -88,7 +88,7 @@ function ProgressBar () {
    */
   const remove = () => {
 
-    const dom = d();
+    const dom = b();
 
     if (dom.contains(element)) {
 
