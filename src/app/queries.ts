@@ -109,13 +109,15 @@ export function newPage (page: Page) {
  */
 export function patch <T extends keyof Page> (prop: T, value: Page[T], key = $.history.key) {
 
-  if (prop === 'location') {
-    $.pages[key][prop] = Object.assign($.pages[prop][key], value);
-  } else if (prop === 'target') {
-    $.pages[key].target = targets(value);
-    $.pages[key].selector = selector($.pages[key].target);
-  } else {
-    $.pages[key][prop] = value;
+  if (key in $.pages && prop in $.pages[key]) {
+    if (prop === 'location') {
+      $.pages[key][prop] = Object.assign($.pages[prop][key], value);
+    } else if (prop === 'target') {
+      $.pages[key].target = targets(value);
+      $.pages[key].selector = selector($.pages[key].target);
+    } else {
+      $.pages[key][prop] = value;
+    }
   }
 
 }
@@ -181,7 +183,7 @@ export function set (page: Page, snapshot: string): Page {
  */
 export function update (page: Page, snapshot: string = null): Page {
 
-  const state = hasProp($.pages, page.key) ? $.pages[page.key] : create(page);
+  const state = page.key in $.pages ? $.pages[page.key] : create(page);
 
   if (snapshot) {
     $.snaps[state.snap] = snapshot;
@@ -277,11 +279,11 @@ export function getSnapDom (key?: string): Document {
 export function mounted ({ mounted = null } = {}): { [instanceOf: string]: Class[] } {
 
   const mounts: { [instanceOf: string]: Class[] } = o();
-  const { $instances, $connected } = $.components;
+  const { $instances, $mounted } = $.components;
 
   for (const instance of $instances.values()) {
 
-    if (!$connected.has(instance.scope.key)) continue;
+    if (!$mounted.has(instance.scope.key)) continue;
     if (mounted !== null && instance.scope.status === mounted) continue;
 
     const has = hasProps(mounts);
