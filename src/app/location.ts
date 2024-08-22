@@ -97,11 +97,7 @@ export function getAttributes (element: Element, page?: Page): Page {
             }
 
           } else {
-            log(
-              Log.WARN,
-              `Invalid attribute value on <${nodeName}>, expected: y:number or x:number`,
-              element
-            );
+            log(Log.WARN, `Invalid attribute value on <${nodeName}>, expected: y:number or x:number`, element);
           }
 
         } else if (name === 'scroll') {
@@ -109,11 +105,7 @@ export function getAttributes (element: Element, page?: Page): Page {
           if (regex.isNumber.test(value)) {
             state.scrollY = +value;
           } else {
-            log(
-              Log.WARN,
-              `Invalid attribute value on <${nodeName}>, expected: number`,
-              element
-            );
+            log(Log.WARN, `Invalid attribute value on <${nodeName}>, expected: number`, element);
           }
 
         } else if (regex.isBoolean.test(value) && !regex.isPrefetch.test(nodeName)) {
@@ -126,14 +118,8 @@ export function getAttributes (element: Element, page?: Page): Page {
 
         } else {
 
-          if (name === 'history') {
-            if (value !== 'push' && value !== 'replace') {
-              log(
-                Log.ERROR,
-                `Invalid attribute value on <${nodeName}>, expected: false, push or replace`,
-                element
-              );
-            }
+          if (name === 'history' && value !== 'push' && value !== 'replace') {
+            log(Log.ERROR, `Invalid attribute value on <${nodeName}>, expected: false, push or replace`, element);
           }
 
           state[name] = value;
