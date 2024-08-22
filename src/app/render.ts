@@ -2,7 +2,7 @@ import type { Page } from 'types';
 import { $ } from './session';
 import { emit } from './events';
 import { Log, VisitType } from '../shared/enums';
-import { d, h, nil, s } from '../shared/native';
+import { d, b, h, nil, s } from '../shared/native';
 import { canEval, hasProp } from '../shared/utils';
 import { progress } from './progress';
 import { context, mark } from '../components/observe';
@@ -72,7 +72,6 @@ async function morphHead (curHead: HTMLHeadElement, newHead: HTMLHeadElement): P
     }
 
     curHead.appendChild(node);
-
     newHeadExternal.delete(outerHTML);
 
   }
@@ -95,7 +94,7 @@ async function morphHead (curHead: HTMLHeadElement, newHead: HTMLHeadElement): P
  */
 function morphNodes (page: Page, snapDom: Document) {
 
-  const pageDom = d();
+  const pageDom = b();
 
   if (page.selector === 'body' || page.fragments.length === 0) {
 
@@ -157,6 +156,9 @@ function morphNodes (page: Page, snapDom: Document) {
     const anchor = pageDom.querySelector(page.location.hash);
     anchor && anchor.scrollIntoView();
   }
+
+  // We mark the document <html> element
+  d().id = page.snap;
 
   scrollTo(page.scrollX, page.scrollY);
 
