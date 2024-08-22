@@ -1,12 +1,12 @@
 /* eslint-disable no-unused-vars */
 
+import type { LiteralUnion } from 'type-fest';
 import type { EventNames, EmitterArguments } from 'types';
 import { $ } from './session';
 import { forEach } from '../shared/utils';
 import { log } from '../shared/logs';
 import { parse } from '../shared/dom';
 import { Log } from '../shared/enums';
-import { LiteralUnion } from 'type-fest';
 
 /**
  * Emit Event
