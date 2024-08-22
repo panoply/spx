@@ -4,6 +4,7 @@ import { VisitType, Log } from '../shared/enums';
 import { getRoute } from './location';
 import { log } from '../shared/logs';
 import { onNextTick } from '../shared/utils';
+import { d } from '../shared/native';
 import { parse, takeSnapshot } from '../shared/dom';
 import * as q from './queries';
 import * as hrefs from '../observe/hrefs';
@@ -15,7 +16,6 @@ import * as proximity from '../observe/proximity';
 import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as fragment from '../observe/fragment';
-import { emit } from './events';
 
 /**
  * Initialize SPX
@@ -49,6 +49,9 @@ export function initialize (): Promise<Page> {
 
     const page = q.set(state, takeSnapshot());
 
+    // We mark the document <html> element
+    d().id = page.snap;
+
     hrefs.connect();
     fragment.connect();
     hover.connect();
@@ -62,8 +65,6 @@ export function initialize (): Promise<Page> {
       request.reverse(page);
       request.preload(page);
     }, 500);
-
-    emit('x');
 
     return page;
 
