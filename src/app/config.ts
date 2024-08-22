@@ -17,12 +17,7 @@ import { api } from '../observe/history';
  */
 export function observers (options: Options) {
 
-  for (const key of <Array<keyof IObserverOptions>>[
-    'hover',
-    'intersect',
-    'proximity',
-    'progress'
-  ]) {
+  for (const key of <Array<keyof IObserverOptions>>[ 'hover', 'intersect', 'proximity', 'progress' ]) {
 
     if (hasProp(options, key)) {
 
@@ -166,12 +161,8 @@ export function configure (options: Options = o()) {
   patchSetAttribute();
 
   Object.defineProperties($, {
-    history: {
-      get: () => typeof api.state === 'object' && 'spx' in api.state ? api.state.spx : null
-    },
-    ready: {
-      get: () => document.readyState === 'complete'
-    },
+    history: { get: () => typeof api.state === 'object' && 'spx' in api.state ? api.state.spx : null },
+    ready: { get: () => document.readyState === 'complete' },
     types: {
       get: () => o({
         INITIAL: 0,
