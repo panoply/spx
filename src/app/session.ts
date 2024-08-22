@@ -13,7 +13,7 @@ export const $: Session = o<Session>({
     timeout: 30000,
     globalThis: true,
     schema: 'spx-',
-    logLevel: 2,
+    logLevel: 3,
     cache: true,
     components: null,
     maxCache: 100,
@@ -52,11 +52,9 @@ export const $: Session = o<Session>({
   }),
   fragments: m(),
   components: o({
-    $connected: s(),
+    $mounted: s(),
     $registry: m(),
     $instances: m(),
-    $elements: m(),
-    $mounted: m(),
     $reference: p({
       get: (
         map: Record<string, string>,
