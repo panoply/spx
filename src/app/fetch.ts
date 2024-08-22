@@ -39,7 +39,7 @@ interface RequestParams {
 /**
  * Fetch XHR Request wrapper function
  */
-export function request <T> (key: string, {
+export function http <T> (key: string, {
   method = 'GET',
   body = null,
   headers = null,
@@ -118,10 +118,7 @@ export function cleanup (key: string) {
 export function throttle (key: string, callback: (cancel?: boolean) => void, delay: number): void {
 
   if (key in XHR.$timeout) return;
-
-  if (!q.has(key)) {
-    XHR.$timeout[key] = setTimeout(callback, delay);
-  }
+  if (!q.has(key)) XHR.$timeout[key] = setTimeout(callback, delay);
 
 };
 
@@ -218,9 +215,13 @@ export async function reverse (state: Page | HistoryState): Promise<void> {
 
   fetch(page).then(page => {
     if (page) {
+
       log(Log.INFO, `Reverse fetch completed: ${page.rev}`);
+
     } else {
+
       log(Log.WARN, `Reverse fetch failed: ${state.rev}`);
+
     }
   });
 
@@ -269,7 +270,7 @@ export async function fetch <T extends Page> (state: T): Promise<false|Page> {
   }
 
   // create a transit queue reference of the dispatched request in transit.
-  XHR.$transit.set(state.key, request<string>(state.key));
+  XHR.$transit.set(state.key, http<string>(state.key));
 
   return wait(state);
 
