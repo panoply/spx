@@ -4,8 +4,8 @@
 
 import type { DOM, Scope, ValueOf } from 'types';
 import { $ } from '../app/session';
-import { nil, m, p, o } from '../shared/native';
-import { attrJSON, hasProp, isEmpty, kebabCase, upcase } from '../shared/utils';
+import { nil, m, p, o, d, b } from '../shared/native';
+import { attrJSON, isEmpty, kebabCase, upcase } from '../shared/utils';
 
 /**
  * Component Extends
@@ -30,13 +30,6 @@ export const Component = class {
    * and event reference handling.
    */
   readonly scope: Scope;
-
-  /**
-   * Root Node
-   *
-   * Returns the element of which is annotated with `spx-component`
-   */
-  readonly root: HTMLElement;
 
   /**
    * Root Node
@@ -73,7 +66,10 @@ export const Component = class {
    *
    * Holds a reference to the DOM Document element `<html>` node.
    */
-  get html () { return document.documentElement; };
+  get html () { return d(); };
+
+  get root () { return this.scope.root; }
+  set root (dom) { Object.defineProperty(this.scope, 'root', { get: () => dom }); }
 
   /**
    * Constructor
@@ -82,38 +78,28 @@ export const Component = class {
    */
   constructor (key: string) {
 
-    const { $elements } = $.components;
-    const { scope } = Object.defineProperties(this, {
-      scope: { get: () => Component.scopes.get(key) },
-      root: { get: () => $elements.get(scope.root) }
-    });
+    const { scope } = Object.defineProperties(this, { scope: { get: () => Component.scopes.get(key) } });
 
     /**
      * First, we will assign all the DOM nodes
      *
      * This operation will also apply within instances generator
-     * in situation where nodes are not defined.
+     * in situations where nodes are not defined.
      */
-    for (const identifer of scope.define.nodes) {
+    // for (const identifer of scope.define.nodes) {
 
-      const schema = `${identifer}Nodes`;
-      const domNode = schema.slice(0, -1);
-      const hasNode = `has${upcase(domNode)}`;
+    //   const schema = `${identifer}Nodes`;
+    //   const domNode = schema.slice(0, -1);
+    //   const hasNode = `has${upcase(domNode)}`;
 
-      scope.nodeMap[schema] = [];
+    //   Object.defineProperties(this.dom, {
+    //     [domNode]: { get: () => this.dom[schema][0] },
+    //     [hasNode]: { get: () => this.dom[schema].length > 0 },
+    //     [schema]: { get: () => Array.from(d().querySelectorAll(selector)) }
+    //   });
 
-      Object.defineProperties(this.dom, {
-        [domNode]: { get: () => this.dom[schema][0] },
-        [hasNode]: { get: () => this.dom[schema].length > 0 },
-        [schema]: {
-          get: () => scope.nodeMap[schema].map(id => $elements.get(id)),
-          set: (ids) => (scope.nodeMap[schema] = ids)
-        }
-      });
+    // }
 
-    }
-
-    const { define } = scope;
     const prefix = `${$.config.schema}${scope.instanceOf}`;
 
     /**
@@ -124,17 +110,14 @@ export const Component = class {
     this.state = p({
       set: (target, key: string, value) => {
 
-        const preset = define.state[key];
+        const preset = scope.define.state[key];
         const domValue = typeof value === 'object' || Array.isArray(value)
           ? JSON.stringify(value)
           : `${value}`;
 
-        if (typeof preset === 'object' && hasProp(preset, 'persist') && preset.persist) {
-          scope.state[key] = value;
-          target[key] = scope.state[key];
-        } else {
-          target[key] = value;
-        }
+        target[key] = typeof preset === 'object' && 'persist' in preset && preset.persist
+          ? scope.state[key] = value
+          : value;
 
         if (domValue.trim() !== nil && this.root) {
 
@@ -149,14 +132,12 @@ export const Component = class {
         }
 
         if (key in scope.binds) {
-
-          const { binds } = scope;
-
-          for (const id in binds[key]) {
-            binds[key][id].value = domValue;
-            if ($elements.has(binds[key][id].dom)) {
-              $elements.get(binds[key][id].dom).innerText = domValue;
-            }
+          for (const id in scope.binds[key]) {
+            if (!scope.binds[key][id].live) continue;
+            scope.binds[key][id].value = domValue;
+            b().querySelectorAll<HTMLElement>(scope.binds[key][id].selector).forEach(node => {
+              node.innerText = domValue;
+            });
           }
         }
 
@@ -167,17 +148,17 @@ export const Component = class {
 
     if (isEmpty(scope.state)) {
 
-      for (const prop in define.state) {
+      for (const prop in scope.define.state) {
 
         /**
          * The `static` state value
          */
-        const attr = define.state[prop];
+        const attr = scope.define.state[prop];
 
         /**
          * The `static` state type contructor value
          */
-        let type: ValueOf<typeof define.state>;
+        let type: ValueOf<typeof scope.define.state>;
 
         /**
          * The `static` state type converted value
@@ -209,13 +190,13 @@ export const Component = class {
 
     } else {
 
-      for (const prop in define.state) {
+      for (const prop in scope.define.state) {
 
         if (!(prop in scope.state)) {
-          if (typeof define.state[prop] === 'object') {
-            scope.state[prop] = define.state[prop].default;
+          if (typeof scope.define.state[prop] === 'object') {
+            scope.state[prop] = scope.define.state[prop].default;
           } else {
-            switch (define.state[prop]) {
+            switch (scope.define.state[prop]) {
               case String: scope.state[prop] = nil; break;
               case Boolean: scope.state[prop] = false; break;
               case Number: scope.state[prop] = 0; break;
@@ -228,7 +209,7 @@ export const Component = class {
         /**
          * The `static` state value
          */
-        const attr = define.state[prop];
+        const attr = scope.define.state[prop];
 
         /**
          * The converted attribute name
@@ -236,9 +217,14 @@ export const Component = class {
         const attrName = kebabCase(prop);
 
         /**
+         * The `hasState` key getter value
+         */
+        const hasProp = `has${upcase(prop)}`;
+
+        /**
        * The `static` state type contructor value
        */
-        let type: ValueOf<typeof define.state>;
+        let type: ValueOf<typeof scope.define.state>;
 
         /**
          * The `static` state type converted value
@@ -259,11 +245,7 @@ export const Component = class {
           type = attr;
         }
 
-        if (!(`has${upcase(prop)}` in this.state)) {
-          Object.defineProperty(this.state, `has${upcase(prop)}`, {
-            get () { return defined; }
-          });
-        }
+        hasProp in this.state || Object.defineProperty(this.state, hasProp, { get: () => defined });
 
         if (typeof value === 'string' && value.startsWith('window.')) {
           this.state[prop] = window[value.slice(7)];
