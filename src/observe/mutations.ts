@@ -1,5 +1,5 @@
 import { $ } from '../app/session';
-import { d } from '../shared/native';
+import { b } from '../shared/native';
 import { getComponents } from '../components/context';
 import { morphHead } from '../morph/snapshot';
 import { Nodes } from '../shared/enums';
@@ -43,7 +43,7 @@ const resources = new MutationObserver(function ([ mutation ]: MutationRecord[])
 
 function nodeOutsideTarget (node: Node) {
 
-  const targets = d().querySelectorAll(`${$.page.target.join(',')},[${$.qs.$target}]`);
+  const targets = b().querySelectorAll(`${$.page.target.join(',')},[${$.qs.$target}]`);
 
   for (let i = 0, s = targets.length; i < s; i++) {
     if (targets[i].contains(node)) return false;
@@ -61,7 +61,7 @@ export function connect () {
     childList: true
   });
 
-  resources.observe(d(), {
+  resources.observe(b(), {
     childList: true,
     subtree: true
   });
@@ -78,7 +78,7 @@ export function disconnect () {
   resources.disconnect();
 
   for (const node of $.resources) {
-    d().removeChild(node);
+    b().removeChild(node);
     $.resources.delete(node);
   }
 

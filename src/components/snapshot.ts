@@ -9,12 +9,18 @@ import { forNode, onNextTick } from '../shared/utils';
 import { setSnap } from '../app/queries';
 import { log } from '../shared/logs';
 
-function MarkSnapshots () {
+/**
+ * Reference Marker
+ *
+ * Tracks component elements within the snapshot. This class
+ * will mark snapshots with `data-spx="*"` identifier references.
+ */
+export const snap = new class {
 
   /**
    * Storage Model
    */
-  const cache: Array<[element: HTMLElement, Map<string, string[]>]> = [];
+  cache: Array<[element: HTMLElement, Map<string, string[]>]> = [];
 
   /**
    * Storage Record
@@ -23,7 +29,7 @@ function MarkSnapshots () {
    * The Map **key** is a selector whereas the `string[]` **value** represents
    * each reference to be assigned.
    */
-  let record: Map<string, string[]>;
+  record: Map<string, string[]>;
 
   /**
    * Set Record
@@ -32,9 +38,9 @@ function MarkSnapshots () {
    * is expected to be passed. A `Map` reference will be created for each `data-spx`
    * reference we need to align in the snapshot.
    */
-  const set = (element: HTMLElement) => {
-    cache.push([ element, m() ]);
-    record = cache[cache.length - 1][1];
+  set (element: HTMLElement) {
+    this.cache.push([ element, m() ]);
+    this.record = this.cache[this.cache.length - 1][1];
     return element;
   };
 
@@ -44,11 +50,11 @@ function MarkSnapshots () {
    * Creates a new record and pushes a `data-spx` reference into the list, or
    * if no selector record exists, it will be created.
    */
-  const add = (selector: string, ref: string, incremental = false) => {
+  add (selector: string, ref: string, incremental = false) {
 
-    record.has(selector)
-      ? record.get(selector).push(ref)
-      : record.set(selector, [ ref ]);
+    this.record.has(selector)
+      ? this.record.get(selector).push(ref)
+      : this.record.set(selector, [ ref ]);
 
   };
 
@@ -59,37 +65,32 @@ function MarkSnapshots () {
    * created to update the snapshot DOM. This operation executes outside
    * the event loop 250ms after its triggered.
    */
-  const sync = (snapshot: HTMLElement) => onNextTick(() => {
+  sync (snapshot: HTMLElement) {
 
-    while (cache.length > 0) {
+    onNextTick(() => {
 
-      const [ dom, marks ] = cache.shift();
+      while (this.cache.length > 0) {
 
-      for (const [ selector, refs ] of marks) {
-        forNode(
-          dom.querySelectorAll<HTMLElement>(selector)
-          , node => node.hasAttribute($.qs.$ref)
-            ? node.setAttribute($.qs.$ref, `${node.getAttribute($.qs.$ref)},${refs.shift()}`)
-            : node.setAttribute($.qs.$ref, refs.shift())
-        );
+        const [ dom, marks ] = this.cache.shift();
+
+        for (const [ selector, refs ] of marks) {
+          forNode(
+            dom.querySelectorAll<HTMLElement>(selector),
+            node => node.setAttribute($.qs.$ref, node.hasAttribute($.qs.$ref)
+              ? `${node.getAttribute($.qs.$ref)},${refs.shift()}`
+              : refs.shift())
+          );
+        }
+
+        marks.clear();
       }
 
-      marks.clear();
-    }
+      setSnap(snapshot.ownerDocument.documentElement.outerHTML);
 
-    setSnap(snapshot.ownerDocument.documentElement.outerHTML);
+      log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
 
-    log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
+    }, 250);
 
-  }, 250);
+  }
 
-  return { set, add, sync };
-}
-
-/**
- * Reference Marker
- *
- * Tracks component elements within the snapshot. This class
- * will mark snapshots with `data-spx="*"` identifier references.
- */
-export const snap = MarkSnapshots();
+}();

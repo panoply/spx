@@ -54,11 +54,18 @@ export const { warn, info, error, debug } = console;
 /* -------------------------------------------- */
 
 /**
+ * Document <html>
+ *
+ * Returns `document.documentElement`
+ */
+export const d = () => document.documentElement;
+
+/**
  * Document <body>
  *
  * Returns `document.body`
  */
-export const d = () => document.body;
+export const b = () => document.body;
 
 /**
  * Document <head>
@@ -141,6 +148,6 @@ export class XHR extends XMLHttpRequest {
    * and trigger operations like hover or proximity
    * prefetching.
    */
-  static $timeout: { [key: string]: NodeJS.Timeout } = o();
+  static $timeout: { [key: string]: NodeJS.Timeout } = {};
 
 }

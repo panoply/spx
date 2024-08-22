@@ -8,9 +8,7 @@ import { Hooks, Log, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
 import { o } from '../shared/native';
 import { patchComponentSnap } from '../morph/snapshot';
-import { onNextTick, promiseResolve } from '../shared/utils';
-import { Class } from 'types';
-import { SPX } from 'types/global';
+import { promiseResolve } from '../shared/utils';
 
 export type Lifecycle = (
   | 'connect'
@@ -38,9 +36,8 @@ export function teardown () {
     }
   }
 
-  $.components.$elements.clear();
   $.components.$instances.clear();
-  $.components.$connected.clear();
+  $.components.$mounted.clear();
 
   log(Log.INFO, 'Component instances were disconnected');
 
@@ -115,17 +112,13 @@ export function mount (promises: LifecycleHooks) {
  */
 export function hook () {
 
-  const { $connected, $instances, $registry, $elements } = $.components;
+  const { $mounted, $instances, $registry } = $.components;
 
-  if (
-    $connected.size === 0 &&
-    $instances.size === 0 &&
-    $elements.size === 0 &&
-    $registry.size > 0) return getComponents();
+  if ($mounted.size === 0 && $instances.size === 0 && $registry.size > 0) return getComponents();
 
   const promises: LifecycleHooks = [];
 
-  for (const ref of $connected) {
+  for (const ref of $mounted) {
 
     if (!$instances.has(ref)) continue;
 
@@ -159,7 +152,7 @@ export function hook () {
   promises.length > 0 && mount(promises).catch(ref => {
     const instance = $instances.get(ref);
     instance.scope.status = Hooks.UNMOUNTED;
-    $connected.delete(ref);
+    $mounted.delete(ref);
   });
 
 }

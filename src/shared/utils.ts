@@ -1,7 +1,7 @@
 import type { Page, LiteralUnion } from 'types';
 import { $ } from '../app/session';
 import { Log } from './enums';
-import { d, nil, s } from './native';
+import { b, nil, s } from './native';
 import * as regex from './regexp';
 import { log } from '../shared/logs';
 
@@ -393,10 +393,7 @@ export function targets (page: Page) {
 export function selector (target: string[]) {
 
   // assign the selector reference if it is undefined
-
   if (target.length === 1 && target[0] === 'body') return 'body';
-
-  //  `${(target.length === 0 ? $.config.fragments : target).join(',')},${$.qs.$targets}`;
 
   return target.length === 0 ? null : target.join(',');
 
@@ -582,7 +579,7 @@ export function forNode <T extends HTMLElement> (
 ) {
 
   const nodes = typeof selector === 'string'
-    ? d().querySelectorAll<T>(selector)
+    ? b().querySelectorAll<T>(selector)
     : selector;
 
   const count = nodes.length;

@@ -247,7 +247,7 @@ export declare class Class<T extends SPX.Define = SPX.Define> {
    *
    * Holds a reference to the SPX Element annotated with `spx-component`.
    */
-  public readonly root: HTMLElement;
+  public root: HTMLElement;
 
   /**
    * **SPX Dom**
@@ -347,7 +347,20 @@ export interface ComponentEvent {
    *
    * @example 'e3q4w1'
    */
-  dom: string
+  get dom(): HTMLElement;
+  /**
+   * #### Within Component
+   *
+   * Whether or not the event node is child of the component template. When `true` the event element is
+   * contained within the component. The value signals on the location of the element within
+   * the DOM. When `false` it signals to SPX that this event element exists outside of the component
+   * element.
+   *
+   * > **NOTE**
+   * >
+   * > The `dom` getter will query from component root level if this is true, otherwise from body.
+   */
+  isChild: boolean;
   /**
    * #### DOM Selector
    *
@@ -388,9 +401,7 @@ export interface ComponentEvent {
    * > - `spx@window:click` _signals to trigger if window is clicked_
    * > - `spx@window:scroll` _signals to trigger if window is scrolled_
    *
-   *
-   * @example
-   * 'onScroll' // <div spx@window:scroll="demo.onScroll">
+   * @default false
    */
   isWindow: boolean;
   /**
@@ -407,14 +418,10 @@ export interface ComponentEvent {
   /**
    * #### Attachment Status
    *
-   * Whether or not the event has been attached and is listening. When `true`, the even
+   * Whether or not the event has been attached and is listening. When `true`, the event
    * has been established, when `false` the event is not enabled.
    */
   attached: boolean;
-  /**
-   * #### Mount Status
-   */
-  status: 'connect' | 'mounted' | 'unmounted';
   /**
    * #### Event Name
    *
@@ -471,9 +478,11 @@ interface ComponentBinds {
    */
   dom: string
   /**
-   * #### Mount Status
+   * #### Live Node
+   *
+   * Whether or not the bind node element is present in the current DOM.
    */
-  status: 'connect' | 'mounted' | 'unmounted';
+  live: boolean;
   /**
    * #### DOM Selector
    *
@@ -549,9 +558,11 @@ interface ComponentNodes {
    */
   dom: string;
   /**
-   * #### Mount Status
+   * #### Live Node
+   *
+   * Whether or not the node is present in the current DOM.
    */
-  status: 'connect' | 'mounted' | 'unmounted';
+  live: boolean;
   /**
    * #### DOM Selector
    *
@@ -663,7 +674,7 @@ export interface Scope {
    * {@link $elements} Map cache. All active component elements are accessible from this store.
    *
    */
-  root: string
+  root: HTMLElement
   /**
    * #### Instance Key
    *
@@ -709,29 +720,36 @@ export interface Scope {
    */
   inFragment: boolean;
   /**
-   * Whether or not `connect()` exists
+   * #### Component Hooks
    *
-   * @default false
+   * Holds a reference to method hooks exposed within the component
    */
-  hasConnect: boolean;
-  /**
-   * Whether or not `onmount()` exists
-   *
-   * @default false
-   */
-  hasOnmount: boolean;
-  /**
-   * Whether or not `unmount()` exists
-   *
-   * @default false
-   */
-  hasUnmount: boolean;
-  /**
-   * Whether or not `onmedia()` exists
-   *
-   * @default false
-   */
-  hasOnmedia: boolean;
+  hooks: {
+    /**
+     * Whether or not `connect()` exists
+     *
+     * @default false
+     */
+    connect: boolean;
+    /**
+     * Whether or not `onmount()` exists
+     *
+     * @default false
+     */
+    onmount: boolean;
+    /**
+     * Whether or not `unmount()` exists
+     *
+     * @default false
+     */
+    unmount: boolean;
+    /**
+     * Whether or not `onmedia()` exists
+     *
+     * @default false
+     */
+    onmedia: boolean;
+  };
   /**
    * #### Connection Status
    *
@@ -789,7 +807,7 @@ export interface Scope {
    *
    * @example 'b.w6y71e'
    */
-  binds:{ [stateKey: string]: { [key: string]: ComponentBinds; } };
+  binds: { [stateKey: string]: { [key: string]: ComponentBinds; } };
   /**
    * #### Component Events
    *
@@ -821,12 +839,6 @@ export interface Scope {
    * @example 'n.f8i4b2'
    */
   nodes: { [key: string]: ComponentNodes; };
-  /**
-   * #### Nodes Map
-   *
-   * Holds a mapped proxy references to various identifers that contain stores.
-   */
-  nodeMap: { [schema: string]: string[] }
 }
 
 export enum ElementType {
@@ -876,19 +888,6 @@ export interface ComponentSession {
    */
   $instances: Map<string, Class>;
   /**
-   * #### Connected Elements
-   *
-   * Elements of interest in the DOM. Component DOM, Nodes and Event elements exists
-   * in this map and will update for each page visit incurred. This storage reference
-   * will hold records which will be of importants, such as:
-   *
-   * - Component DOM Element
-   * - Component Node Elements
-   * - Component Event Elements
-   * - Component Bind Elements
-   */
-  $elements: Map<string, HTMLElement>;
-  /**
    * #### Instance References
    *
    * SPX Component instance UUID's existing on the page. Each entry points to an
@@ -902,12 +901,5 @@ export interface ComponentSession {
    * References represent the DOM `data-spx=""` UUIDs. This is Proxy which returns
    * component instances as per `$instances` store.
    */
-  $connected: Set<string>;
-  /**
-   * NOT YET INTEGRATED
-   *
-   * SPX Component instance UUID's existing on the current page. Each entry
-   * points to an instance scope on {@link ComponentSession}.
-   */
-  $mounted?: Map<HTMLElement, string>;
+  $mounted: Set<string>;
 }

@@ -2,7 +2,7 @@ import type { Page } from 'types';
 import { $ } from '../app/session';
 import { getSnapDom, patch, setSnap } from '../app/queries';
 import { Log, VisitType } from '../shared/enums';
-import { d, nil } from '../shared/native';
+import { b, nil } from '../shared/native';
 import { forNode, nodeSet, onNextTick, uuid } from '../shared/utils';
 import { log } from '../shared/logs';
 import { getSelector } from 'src/components/context';
@@ -33,7 +33,7 @@ export function connect () {
    */
   let aliases: Set<HTMLElement>;
 
-  const dom = d();
+  const dom = b();
 
   if ($.page.target.length > 0) {
 
@@ -101,7 +101,7 @@ export function setFragmentElements (page: Page) {
 
     const snapDom = getSnapDom(page.snap);
     const targets = snapDom.body.querySelectorAll<HTMLElement>($.qs.$targets);
-    const domNode = d().querySelectorAll<HTMLElement>($.qs.$targets);
+    const domNode = b().querySelectorAll<HTMLElement>($.qs.$targets);
 
     forNode(targets, (node, index) => {
 

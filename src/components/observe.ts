@@ -30,45 +30,40 @@ export const mark: Set<string> = s();
  */
 export const resetContext = () => onNextTick(() => (context = undefined));
 
-function onmount (node: HTMLElement, refs: string[]) {
-
-  const { $reference, $connected, $elements } = $.components;
+function connect (node: HTMLElement, refs: string[]) {
 
   for (const id of refs) {
 
-    if (!$reference[id]) continue;
+    if (!$.components.$reference[id]) continue;
 
-    const instance: Class = $reference[id];
+    const instance: Class = $.components.$reference[id];
     const ref = id.charCodeAt(0);
 
     if (ref === Refs.COMPONENT) {
 
-      $connected.add(instance.scope.key);
-      $elements.set(instance.scope.root, node);
+      $.components.$mounted.add(instance.scope.key);
 
+      instance.root = node;
       instance.scope.status = Hooks.MOUNT;
 
       log(Log.VERBOSE, `Component ${instance.scope.define.id} mounted: ${instance.scope.key}`, Colors.GREEN);
 
     } else if (ref === Refs.EVENT) {
 
-      addEvent(instance, node, instance.scope.events[id]);
+      addEvent(instance, instance.scope.events[id], node);
 
     } else if (ref === Refs.NODE) {
 
-      $elements.set(instance.scope.nodes[id].dom, node);
-      instance.scope.nodes[id].status = 'mounted';
+      // $elements.set(instance.scope.nodes[id].dom, node);
+      instance.scope.nodes[id].live = true;
 
     } else if (ref === Refs.BINDING) {
 
       for (const k in instance.scope.binds) {
         if (id in instance.scope.binds[k]) {
-
           node.innerText = instance.scope.binds[k][id].value;
-          $elements.set(instance.scope.binds[k][id].dom, node);
-          instance.scope.binds[k][id].status = 'unmounted';
+          instance.scope.binds[k][id].live = true;
           break;
-
         }
       }
     }
@@ -76,23 +71,20 @@ function onmount (node: HTMLElement, refs: string[]) {
 
 }
 
-function unmount (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
-
-  const { $reference, $elements, $connected } = $.components;
+function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
 
   for (const id of refs) {
 
-    if (!$reference[id]) continue;
+    if (!$.components.$reference[id]) continue;
 
-    const instance: Class = $reference[id];
+    const instance: Class = $.components.$reference[id];
     const ref = id.charCodeAt(0);
 
     if (ref === Refs.COMPONENT) {
 
-      !instance.scope.hasUnmount || instance.unmount(hargs());
+      !instance.scope.hooks.unmount || instance.unmount(hargs());
 
-      $connected.delete(id);
-      $elements.delete(instance.scope.root);
+      $.components.$mounted.delete(instance.scope.key);
 
       if (instance.scope.define.merge) {
 
@@ -102,14 +94,12 @@ function unmount (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
       }
 
       for (const k in instance.scope.nodes) {
-        $elements.delete(instance.scope.nodes[k].dom);
-        instance.scope.nodes[k].status = 'unmounted';
+        instance.scope.nodes[k].live = false;
       }
 
       for (const k in instance.scope.binds) {
         for (const uuid in instance.scope.binds[k]) {
-          $elements.delete(instance.scope.binds[k][uuid].dom);
-          instance.scope.binds[k][uuid].status = 'unmounted';
+          instance.scope.binds[k][uuid].live = false;
         }
       }
 
@@ -127,17 +117,13 @@ function unmount (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
 
     } else if (ref === Refs.NODE) {
 
-      $elements.delete(instance.scope.nodes[id].dom);
-      instance.scope.nodes[id].status = 'unmounted';
+      instance.scope.nodes[id].live = false;
 
     } else if (ref === Refs.BINDING) {
 
       for (const k in instance.scope.binds) {
         if (id in instance.scope.binds[k]) {
-
-          $elements.delete(instance.scope.binds[k][id].dom);
-          instance.scope.binds[k][id].status = 'unmounted';
-
+          instance.scope.binds[k][id].live = false;
           break;
         }
       }
@@ -151,7 +137,7 @@ export function removeNode (node: HTMLElement) {
   if (node.nodeType !== Nodes.ELEMENT_NODE && node.nodeType !== Nodes.FRAGMENT_NODE) return;
 
   const attrs = node.getAttribute($.qs.$ref);
-  attrs && unmount(node, attrs.split(','));
+  attrs && disconnect(node, attrs.split(','));
 
 }
 
@@ -161,7 +147,7 @@ export function addedNode (node: HTMLElement) {
 
   if (attrs) {
 
-    onmount(node, attrs.split(','));
+    connect(node, attrs.split(','));
 
   } else {
 
@@ -180,17 +166,17 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
 
   if (cRef && nRef) {
 
-    unmount(curNode, cRef);
-    onmount(curNode, nRef);
+    disconnect(curNode, cRef);
+    connect(curNode, nRef);
 
   } else if (!cRef && nRef) {
 
-    onmount(curNode, nRef);
+    connect(curNode, nRef);
 
   } else {
 
     context ? context.$morph = curNode : context = getContext(curNode, newNode);
-    cRef && !nRef && unmount(curNode, cRef, newNode);
+    cRef && !nRef && disconnect(curNode, cRef, newNode);
 
     isDirective(newNode.attributes) && walkNode(curNode, context);
 

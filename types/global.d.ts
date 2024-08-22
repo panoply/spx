@@ -646,6 +646,16 @@ export declare namespace SPX {
      */
     id?: string;
     /**
+     * Media Query
+     */
+    media?: [
+      'xs',
+      'sm',
+      'md',
+      'lg',
+      'xl'
+    ]
+    /**
      * Whether or not to merge on mount
      */
     merge?: boolean;

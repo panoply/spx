@@ -10,14 +10,8 @@ import * as observe from '../components/observe';
 export function setBooleanAttribute (curElement: Element, newElement: Element, name: string) {
 
   if (curElement[name] !== newElement[name]) {
-
     curElement[name] = newElement[name];
-
-    if (curElement[name]) {
-      curElement.setAttribute(name, nil);
-    } else {
-      curElement.removeAttribute(name);
-    }
+    curElement[name] ? curElement.setAttribute(name, nil) : curElement.removeAttribute(name);
   }
 }
 

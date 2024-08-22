@@ -1,10 +1,8 @@
 import type { ComponentBinds, Scope } from 'types';
 import { $ } from '../app/session';
-import { isDirective } from '../components/context';
 import { log } from '../shared/logs';
 import { Log } from '../shared/enums';
 import { onNextTick } from '../shared/utils';
-import { walkElements } from './walk';
 import * as q from '../app/queries';
 
 // export function markComponents (datasets: Array<[string, string]>) {
@@ -80,47 +78,6 @@ export function morphBinds (cRef: string, bind: ComponentBinds, value: string) {
 
 }
 
-export function patchSnap (snapNode: Element, pageNode: Element, nodes: string[], morphs: Set<Element>) {
-
-  let i: number;
-  let s: Element;
-  let d: Element;
-
-  if (snapNode.firstElementChild) {
-    i = 0;
-    s = snapNode.children[i];
-    d = pageNode.children[i];
-  }
-
-  while (s) {
-
-    if (s) {
-
-      if (morphs.has(d)) {
-
-        morphSnap(s, nodes, true);
-        morphs.delete(d);
-
-      } else if (d.hasAttribute($.qs.$ref)) {
-
-        s.setAttribute(
-          $.qs.$ref,
-          d.getAttribute($.qs.$ref)
-        );
-
-      }
-
-      patchSnap(s, d, nodes, morphs);
-
-    }
-
-    s = snapNode.children[++i];
-    d = pageNode.children[i];
-
-  }
-
-};
-
 /**
  * Snapshot Component Merge
  *
@@ -145,58 +102,6 @@ export function patchComponentSnap (scope: Scope, scopeKey: string) {
 
   });
 }
-
-/**
- * Morph Snapshot
- *
- * Walks the snapshot and updates DOM Elements with reference datasets.
- */
-export function morphSnap (snapNode: Element, nodes: string[], isPatch = false) {
-
-  const { $elements } = $.components;
-
-  walkElements(snapNode, (node) => {
-
-    if (node.getAttribute('spx-snapshot') === 'false') return;
-
-    if (isDirective(node.attributes) && !node.hasAttribute($.qs.$ref)) {
-
-      const nodeRef = nodes.shift();
-
-      if (!nodeRef) {
-        // console.log('MORPH SNAP', nodeRef, node);
-        // log(Log.ERROR, 'Undefined reference, the snapshot record failed to align', node);
-      }
-
-      if ($elements.has(nodeRef)) {
-
-        const domNode = $elements.get(nodeRef);
-        const domAttr = domNode.getAttribute($.qs.$ref);
-
-        if (node.getAttribute($.qs.$ref) !== domAttr) {
-          node.setAttribute($.qs.$ref, domAttr);
-        }
-
-        if (nodes.length === 0) {
-
-          if (isPatch === false) {
-            q.setSnap(node.ownerDocument.documentElement.outerHTML);
-            log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
-          }
-
-          return false;
-        }
-
-      } else {
-
-        // log(Log.ERROR, 'Undefined reference, the snapshot record failed to align', node);
-
-      }
-    }
-
-  });
-
-};
 
 /**
  * Insert Node Snapshot

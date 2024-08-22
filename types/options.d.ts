@@ -355,11 +355,11 @@ export interface Options extends IObserverOptions {
    * >
    * > Verbose logging to the console, use in development mode.
    *
-   * > **INFO - `2`** (default)
+   * > **INFO - `2`**
    * >
    * > Suppress trace logs, prints info, warnings and errors to the browser console.
    *
-   * > **WARN - `3`**
+   * > **WARN - `3`** (default)
    * >
    * > Suppress trace and info logs, prints warnings and errors to the browser console.
    *
@@ -369,7 +369,7 @@ export interface Options extends IObserverOptions {
    *
    * ---
    *
-   * @default 2
+   * @default 3
    */
   logLevel?: 1 | 2 | 3 | 4;
   /**

@@ -1,10 +1,8 @@
 import type { ComponentEvent, Merge, Class } from 'types';
 import { o } from '../shared/native';
-import { hasProp } from '../shared/utils';
 import { Log } from '../shared/enums';
 import { getEventParams } from './context';
 import { log } from '../shared/logs';
-import { $ } from '../app/session';
 
 /**
  * Is Valid Event
@@ -31,7 +29,7 @@ export function isValidEvent (eventName: string, node: Element | Window) {
  * Assigns the `event.attrs` key to event method callbacks when DOM elements
  * contains attrs-state on containing element.
  */
-export function eventAttrs (instance: Class, event: ComponentEvent, node?: HTMLElement) {
+export function eventAttrs (instance: Class, event: ComponentEvent) {
 
   /**
    * The component event method
@@ -41,7 +39,7 @@ export function eventAttrs (instance: Class, event: ComponentEvent, node?: HTMLE
   return function handle (e: Merge<Event, { attrs: object }>) {
 
     if (event.params) {
-      if (!hasProp(e, 'attrs')) Object.defineProperty(e, 'attrs', { get: () => o() });
+      if (e && !('attrs' in e)) Object.defineProperty(e, 'attrs', { get: () => o() });
       Object.assign(e.attrs, event.params);
     }
 
@@ -65,8 +63,6 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
   event.options.signal = event.listener.signal;
   event.attached = false;
 
-  $.components.$elements.delete(event.dom);
-
   log(Log.VERBOSE, [
     `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
     `${instance.scope.define.id}: ${instance.scope.key}`
@@ -80,7 +76,7 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
  * Adds a listener to the instance method and binds any `attrs` the event _might_
  * have passed on the element.
  */
-export function addEvent (instance: Class, node: HTMLElement, event: ComponentEvent) {
+export function addEvent (instance: Class, event: ComponentEvent, node?: HTMLElement) {
 
   if (event.attached) return;
 
@@ -89,16 +85,17 @@ export function addEvent (instance: Class, node: HTMLElement, event: ComponentEv
     return;
   }
 
-  getEventParams(node.attributes, event);
+  const dom = node ? Object.defineProperty(event, 'dom', { get: () => node }).dom : event.dom;
+
+  getEventParams(dom.attributes, event);
 
   if (event.isWindow) {
     if (isValidEvent(event.eventName, window)) {
       addEventListener(event.eventName, eventAttrs(instance, event));
     }
   } else {
-    if (isValidEvent(event.eventName, node)) {
-      node.addEventListener(event.eventName, eventAttrs(instance, event), event.options);
-      $.components.$elements.set(event.dom, node);
+    if (isValidEvent(event.eventName, dom)) {
+      dom.addEventListener(event.eventName, eventAttrs(instance, event), event.options);
     }
   }
 

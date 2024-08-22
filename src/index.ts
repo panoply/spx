@@ -1,11 +1,11 @@
 import type { Config, Page, LiteralUnion } from 'types';
 import { $ } from './app/session';
 import { log } from './shared/logs';
-import { defineGetter, forNode, hasProp, size } from './shared/utils';
+import { defineGetter, forNode, size } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute } from './app/location';
 import { Log, VisitType } from './shared/enums';
-import { d, isBrowser, o, origin } from './shared/native';
+import { b, o, isBrowser, origin } from './shared/native';
 import { initialize, disconnect } from './app/controller';
 import { clear } from './app/queries';
 import { on, off } from './app/events';
@@ -39,7 +39,7 @@ export default function spx (options: Config = {}) {
 
   configure(options);
 
-  if ($.config.globalThis && hasProp(window, 'spx') === false) {
+  if ($.config.globalThis && !('spx' in window)) {
     defineGetter(window, 'spx', spx);
   }
 
@@ -227,7 +227,7 @@ async function fetch (url: string) {
     log(Log.ERROR, 'Cross origin fetches are not allowed');
   }
 
-  const dom = await request.request<Document>(link.key);
+  const dom = await request.http<Document>(link.key);
 
   if (dom) return dom;
 
@@ -243,7 +243,7 @@ async function render (url: string, pushState: 'intersect' | 'replace' | 'push',
 
   if (route.location.origin !== origin) log(Log.ERROR, 'Cross origin fetches are not allowed');
 
-  const dom = await request.request<Document>(route.key, { type: 'document' });
+  const dom = await request.http<Document>(route.key, { type: 'document' });
 
   if (!dom) log(Log.ERROR, `Fetch failed for: ${route.key}`, dom);
 
@@ -277,13 +277,13 @@ function capture (targets?: string[]) {
   targets = Array.isArray(targets) ? targets : page.target;
 
   if (targets.length === 1 && targets[0] === 'body') {
-    morph(dom.body, d());
+    morph(dom.body, b());
     q.update(page, takeSnapshot(dom));
     return;
   }
 
   const selector = targets.join(',');
-  const current = d().querySelectorAll<HTMLElement>(selector);
+  const current = b().querySelectorAll<HTMLElement>(selector);
 
   forNode(dom.body.querySelectorAll<HTMLElement>(selector), (node, i) => {
     morph(node, current[i]);
@@ -324,7 +324,7 @@ async function form (action: string, options: {
     body.append(key, options.data[key]);
   }
 
-  const submit = await request.request(action, {
+  const submit = await request.http(action, {
     method: options.method,
     body
   });

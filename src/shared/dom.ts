@@ -1,4 +1,4 @@
-import { nil } from './native';
+import { b, nil } from './native';
 import { decodeEntities } from './utils';
 
 /**
@@ -39,4 +39,26 @@ export function getTitle (dom: string) {
   const end = dom.indexOf('</title', start);
 
   return decodeEntities(dom.slice(start, end).trim());
+}
+
+/**
+ * Element
+ *
+ * Returns a single element
+ */
+export function element <T extends HTMLElement = HTMLElement> (selector: string): T {
+
+  return b().querySelector<T>(selector);
+
+}
+
+/**
+ * Elements Array
+ *
+ * Returns an array list of elements from a selector
+ */
+export function elements <T extends HTMLElement = HTMLElement> (selector: string): T[] {
+
+  return [].slice.call(b().querySelectorAll<T>(selector));
+
 }

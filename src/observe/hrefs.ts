@@ -219,7 +219,7 @@ export async function visit (state: Page) {
 
       if (page.history === 'replace') {
 
-        // Push history into stack
+        // Replace history into stack
         history.replace(page);
 
       } else {
