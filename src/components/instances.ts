@@ -6,10 +6,10 @@ import { addEvent } from './listeners';
 import { Component as Extended } from './extends';
 import { log } from '../shared/logs';
 import { mount } from '../observe/components';
+import { snap } from './snapshot';
+import { element, elements } from '../shared/dom';
 import * as u from '../shared/utils';
 import * as q from '../app/queries';
-import { snap } from './snapshot';
-import { o } from '../shared/native';
 
 /**
  * Define Nodes
@@ -22,41 +22,29 @@ import { o } from '../shared/native';
  * named `dom` and the value of `dom` will be the `key` property within `$elements`
  * storage Map.
  */
-function defineNodes (instance: Class, { nodes, nodeMap, instanceOf }: Scope) {
+function defineNodes (instance: Class, { nodes }: Scope) {
 
   // First, we compose a workable model from the nodes entries,
   // we will use this model to assign the getter/setters on the instance
+  // for (const key in nodes) {
+  //   const { schema, selector } = nodes[key];
+  //   u.hasProp(nodeMap, schema) ? nodeMap[schema].push(selector) : nodeMap[schema] = [ selector ];
+  // }
+
   for (const key in nodes) {
-    const { schema, dom } = nodes[key];
-    u.hasProp(nodeMap, schema) ? nodeMap[schema].push(dom) : nodeMap[schema] = [ dom ];
-  }
 
-  for (const schema in nodeMap) {
+    const { schema, isChild, selector } = nodes[key];
 
-    if (u.hasProp(instance.dom, schema)) {
+    if (u.hasProp(instance.dom, schema)) continue;
 
-      instance.dom[schema] = nodeMap[schema];
+    const domNode = schema.slice(0, -1);
+    const hasNode = `has${u.upcase(domNode)}`;
 
-    } else {
-
-      log(Log.WARN, [
-        `Undefined DOM Node: ${$.qs.$node}="${instanceOf}.${schema}"`,
-        `Add the "${schema.slice(0, -5)}" identifier to your ${u.upcase(instanceOf)} components`,
-        'nodes[] setting via the static define key.'
-      ]);
-
-      const domNode = schema.slice(0, -1);
-      const hasNode = `has${u.upcase(domNode)}`;
-
-      Object.defineProperties(instance.dom, {
-        [domNode]: { get: () => instance.dom[schema][0] },
-        [hasNode]: { get: () => instance.dom[schema].length > 0 },
-        [schema]: {
-          get: () => nodeMap[schema].map(id => $.components.$elements.get(id)),
-          set: ids => (nodeMap[schema] = ids)
-        }
-      });
-    }
+    Object.defineProperties(instance.dom, {
+      [domNode]: { get: () => isChild ? instance.root.querySelector(selector) : element(selector) },
+      [hasNode]: { get: () => instance.dom[domNode] !== null },
+      [schema]: { get: () => elements(selector) }
+    });
 
   }
 
@@ -81,7 +69,7 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
   const mounted = q.mounted();
   const isReverse = $.page.type === VisitType.REVERSE;
   const promises: [ scopeKey: string, firstHook: string, nextHook?: string][] = [];
-  const { $elements, $connected, $instances, $registry, $reference } = <ComponentSession>$.components;
+  const { $mounted, $instances, $registry, $reference } = <ComponentSession>$.components;
   const isMounted = u.hasProps(mounted);
 
   for (const instanceOf in $scopes) {
@@ -163,18 +151,15 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
         Component = $registry.get(scope.instanceOf);
 
         Extended.scopes.set(scope.key, Object.defineProperties(scope, {
-          define: { get: () => Component.define },
-          nodeMap: { value: o() }
+          define: { get: () => Component.define }
         }));
 
         instance = new Component(scope.key);
 
-        const hooks = u.hasProps(instance);
-
-        scope.hasConnect = hooks('connect');
-        scope.hasOnmount = hooks('onmount');
-        scope.hasUnmount = hooks('unmount');
-        scope.hasOnmedia = hooks('onmedia');
+        scope.hooks.connect = 'connect' in instance;
+        scope.hooks.onmount = 'onmount' in instance;
+        scope.hooks.unmount = 'unmount' in instance;
+        scope.hooks.onmedia = 'onmedia' in instance;
 
       }
 
@@ -199,13 +184,13 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
           event = scope.events[key];
         }
 
-        addEvent(instance, $elements.get(event.dom), event);
+        addEvent(instance, event);
 
       }
 
       if ($morph === null || (($morph !== null || isReverse) && scope.status === Hooks.MOUNT)) {
 
-        $connected.add(scope.key);
+        $mounted.add(scope.key);
         $instances.set(scope.key, instance);
 
         log(Log.VERBOSE, `Component ${scope.define.id} (connect) mounted: ${scope.key}`, Colors.GREEN);
@@ -217,16 +202,14 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
         // when the connect hook is async and onmount is sync
         let idx: number = -1;
 
-        if (!scope.connected && scope.hasConnect) {
+        if (!scope.connected && scope.hooks.connect) {
           promises.push([ scope.key, 'connect' ]);
           instance.scope.status = Hooks.CONNNECT;
           idx = promises.length - 1;
         }
 
-        if (scope.hasOnmount) {
-          idx > -1
-            ? promises[idx].push('onmount')
-            : promises.push([ scope.key, 'onmount' ]);
+        if (scope.hooks.onmount) {
+          idx > -1 ? promises[idx].push('onmount') : promises.push([ scope.key, 'onmount' ]);
         }
 
       }
