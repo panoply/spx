@@ -14,20 +14,17 @@ import { onNextTick } from 'src/shared/utils';
 /**
  * Detects if the cursor (mouse) is in range of a target element.
  */
-function inRange ({ clientX, clientY }: MouseEvent, bounds: {
+const inRange = ({
+  clientX,
+  clientY
+}: MouseEvent, bounds: {
   top: number;
   bottom: number;
   left: number;
   right: number;
-}) {
+}) => clientX <= bounds.right && clientX >= bounds.left && clientY <= bounds.bottom && clientY >= bounds.top;
 
-  return clientX <= bounds.right &&
-    clientX >= bounds.left &&
-    clientY <= bounds.bottom &&
-    clientY >= bounds.top;
-}
-
-function setBounds (target: HTMLAnchorElement) {
+const setBounds = (target: HTMLAnchorElement) => {
 
   const rect = target.getBoundingClientRect();
   const attr = target.getAttribute($.qs.$proximity);
@@ -41,70 +38,62 @@ function setBounds (target: HTMLAnchorElement) {
     right: rect.right + distance
   };
 
-}
+};
 
 /**
  * Observes mouse movements and awaiting for the mouse to enter
  * bounds. Once within distance a fetch is triggered.
  */
-function observer (targets?: {
-  target: HTMLAnchorElement,
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}[]) {
+const observer = (
+  targets?: { target: HTMLAnchorElement, top: number, bottom: number, left: number, right: number }[],
+  wait = false
+) => (event: MouseEvent) => {
 
-  let wait: boolean = false;
+  if (wait) return;
 
-  return (event: MouseEvent) => {
+  wait = true;
 
-    if (wait) return;
+  const node = targets.findIndex(node => inRange(event, node));
 
-    wait = true;
+  if (node === -1) {
 
-    const node = targets.findIndex(node => inRange(event, node));
+    onNextTick(() => (wait = false), ($.config.proximity as Proximity).throttle);
 
-    if (node === -1) {
+  } else {
 
-      onNextTick(() => (wait = false), ($.config.proximity as Proximity).throttle);
+    const { target } = targets[node];
+
+    if (canFetch(target) === CanFetch.NO) {
+
+      targets.splice(node, 1);
 
     } else {
 
-      const { target } = targets[node];
+      const page = q.create(getRoute(target, VisitType.PROXIMITY));
+      const delay = page.threshold || ($.config.proximity as Proximity).threshold;
 
-      if (canFetch(target) === CanFetch.NO) {
+      request.throttle(page.key, async () => {
 
-        targets.splice(node, 1);
+        if (!emit('prefetch', target, page)) return disconnect();
 
-      } else {
+        const prefetch = await request.fetch(page);
 
-        const page = q.create(getRoute(target, VisitType.PROXIMITY));
-        const delay = page.threshold || ($.config.proximity as Proximity).threshold;
+        if (prefetch) {
 
-        request.throttle(page.key, async () => {
+          targets.splice(node, 1);
 
-          if (!emit('prefetch', target, page)) return disconnect();
+          wait = false;
 
-          const prefetch = await request.fetch(page);
-
-          if (prefetch) {
-
-            targets.splice(node, 1);
-
-            wait = false;
-
-            if (targets.length === 0) {
-              disconnect();
-              log(Log.INFO, 'Proximity observer disconnected');
-            }
+          if (targets.length === 0) {
+            disconnect();
+            log(Log.INFO, 'Proximity observer disconnected');
           }
+        }
 
-        }, delay);
-      }
+      }, delay);
     }
-  };
-}
+  }
+};
 
 let entries: ReturnType<typeof observer>;
 
@@ -112,7 +101,7 @@ let entries: ReturnType<typeof observer>;
  * Starts proximity prefetch, will parse all link nodes and
  * begin watching mouse movements.
  */
-export function connect (): void {
+export const connect = () => {
 
   if (!$.config.proximity || $.observe.proximity) return;
 
@@ -125,12 +114,12 @@ export function connect (): void {
     $.observe.proximity = true;
   }
 
-}
+};
 
 /**
  * Stops prefetch, will remove pointer move event listener
  */
-export function disconnect (): void {
+export const disconnect = () => {
 
   if (!$.observe.proximity) return;
 

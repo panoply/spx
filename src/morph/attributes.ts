@@ -7,15 +7,15 @@ import * as observe from '../components/observe';
 /**
  * Set or Remove boolean attribute annotations, specifically used for Form elements
  */
-export function setBooleanAttribute (curElement: Element, newElement: Element, name: string) {
+export const setBooleanAttribute = (curElement: Element, newElement: Element, name: string) => {
 
   if (curElement[name] !== newElement[name]) {
     curElement[name] = newElement[name];
     curElement[name] ? curElement.setAttribute(name, nil) : curElement.removeAttribute(name);
   }
-}
+};
 
-export function morphAttributes (curNode: HTMLElement, newNode: HTMLElement) {
+export const morphAttributes = (curNode: HTMLElement, newNode: HTMLElement) => {
 
   // document-fragments dont have attributes so lets not do anything
   //
@@ -125,4 +125,4 @@ export function morphAttributes (curNode: HTMLElement, newNode: HTMLElement) {
     );
   }
 
-}
+};

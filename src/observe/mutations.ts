@@ -5,6 +5,18 @@ import { morphHead } from '../morph/snapshot';
 import { Nodes } from '../shared/enums';
 import { isResourceTag } from '../shared/regexp';
 
+const nodeOutsideTarget = (node: Node) => {
+
+  const targets = b().querySelectorAll(`${$.page.target.join(',')},[${$.qs.$target}]`);
+
+  for (let i = 0, s = targets.length; i < s; i++) {
+    if (targets[i].contains(node)) return false;
+  }
+
+  return true;
+
+};
+
 const resources = new MutationObserver(function ([ mutation ]: MutationRecord[]) {
 
   if (mutation.type !== 'childList') return;
@@ -41,19 +53,7 @@ const resources = new MutationObserver(function ([ mutation ]: MutationRecord[])
 
 });
 
-function nodeOutsideTarget (node: Node) {
-
-  const targets = b().querySelectorAll(`${$.page.target.join(',')},[${$.qs.$target}]`);
-
-  for (let i = 0, s = targets.length; i < s; i++) {
-    if (targets[i].contains(node)) return false;
-  }
-
-  return true;
-
-}
-
-export function connect () {
+export const connect = () => {
 
   if (!$.observe.mutations) return;
 
@@ -68,9 +68,9 @@ export function connect () {
 
   $.observe.mutations = true;
 
-}
+};
 
-export function disconnect () {
+export const disconnect = () => {
 
   if (!$.observe.mutations) return;
 
@@ -83,4 +83,4 @@ export function disconnect () {
   }
 
   $.observe.mutations = false;
-}
+};

@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-expressions */
 const { eleventy, terser, sprite, markdown, util } = require('e11ty');
+const papyrus = require('papyrus');
 const container = require('markdown-it-container');
 const attrs = require('markdown-it-attrs');
 const anchor = require('markdown-it-anchor');
@@ -152,20 +154,12 @@ function search (config) {
 module.exports = eleventy(function (config) {
 
   const md = markdown(config, {
-    papyrus: {
-      default: {
-        trimEnd: true,
-        trimStart: true
-      },
-      language: {
-        bash: {
-          lineNumbers: false
-        },
-        treeview: {
-          trimEnd: false,
-          trimStart: false
-        }
-      }
+    highlight: {
+      block: ({ raw, language }) => papyrus.highlight(raw, {
+        language,
+        lineNumbers: language !== 'bash'
+      }),
+      inline: ({ raw, language }) => papyrus.inline(raw, { language })
     },
     options: {
       html: true,

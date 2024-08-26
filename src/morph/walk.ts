@@ -8,7 +8,7 @@
  * This function is will traverse the DOM and return Elements from which we analyze and
  * reason with to compose component scopes.
  */
-export function walkElements <T extends Element> (node: T, callback: (node: T) => any) {
+export const walkElements = <T extends Element> (node: T, callback: (node: T) => any) => {
 
   const cb = callback(node);
 

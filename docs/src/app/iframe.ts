@@ -4,7 +4,7 @@ import { Counter } from './examples/counter';
 import { Alias } from './examples/alias';
 import { IFrame } from './examples/iframe';
 
-spx.connect({
+spx({
   fragments: [
     'main',
     'menu'

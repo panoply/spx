@@ -21,7 +21,7 @@ export const hostname = origin.replace(/(?:https?:)?(?:\/\/(?:www\.)?|(?:www\.))
  * Parses `href` or `form` attributes and assigns them to  configuration options.
  * This function contructs the initial page state model.
  */
-export function getAttributes (element: Element, page?: Page): Page {
+export const getAttributes = (element: Element, page?: Page): Page => {
 
   const state: Page = page ? newPage(page) : o();
   const attrs: string[] = element.getAttributeNames();
@@ -131,14 +131,14 @@ export function getAttributes (element: Element, page?: Page): Page {
 
   return state;
 
-}
+};
 
 /**
  * Parse Path
  *
  * Builds an object model of the provided path string.
  */
-function parsePath (path: string) {
+const parsePath = (path: string) => {
 
   const state: Location = o();
   const size = path.length;
@@ -171,7 +171,7 @@ function parsePath (path: string) {
   state.pathname = path;
 
   return state;
-}
+};
 
 /**
  * Get Path
@@ -179,7 +179,7 @@ function parsePath (path: string) {
  * Returns the pathname from `url` which is then used as the `key`
  * reference in SPX sessions.
  */
-function getPath (url: string, protocol: number) {
+const getPath = (url: string, protocol: number) => {
 
   const path = url.indexOf('/', protocol);
 
@@ -196,7 +196,7 @@ function getPath (url: string, protocol: number) {
 
   return url.length - protocol === hostname.length ? '/' : null;
 
-}
+};
 
 /**
  * Parse Origin
@@ -205,7 +205,7 @@ function getPath (url: string, protocol: number) {
  * with the exception that the `origin` value is validated against. This
  * is used when a URL was supplied.
  */
-function parseOrigin (url: string) {
+const parseOrigin = (url: string) => {
 
   const path = url.startsWith('www.') ? url.slice(4) : url;
   const name = path.indexOf('/');
@@ -227,7 +227,7 @@ function parseOrigin (url: string) {
 
   return null;
 
-}
+};
 
 /**
  * Has Origin
@@ -236,7 +236,7 @@ function parseOrigin (url: string) {
  * values to inform the origin type. If a value of `0` returned there
  * is no origin in the URL.
  */
-function hasOrigin (url: string): Origins {
+const hasOrigin = (url: string): Origins => {
 
   if (url.startsWith('http:') || url.startsWith('https:')) return Origins.HTTP;
   if (url.startsWith('//')) return Origins.SLASH;
@@ -244,7 +244,7 @@ function hasOrigin (url: string): Origins {
 
   return Origins.NONE;
 
-}
+};
 
 /**
  * Valid Key
@@ -252,7 +252,7 @@ function hasOrigin (url: string): Origins {
  * Validates URL's contained in a document and returns
  * a boolean informing if the the path is valid or not.
  */
-export function validKey (url: string) {
+export const validKey = (url: string) => {
 
   if (typeof url !== 'string' || url.length === 0) return false;
 
@@ -279,7 +279,7 @@ export function validKey (url: string) {
 
   return false;
 
-}
+};
 
 /**
  * Parse Key
@@ -287,7 +287,7 @@ export function validKey (url: string) {
  * Builds an object reference from a string path
  * value and returns a parsed record of the value.
  */
-export function parseKey (url: string): Location {
+export const parseKey = (url: string): Location => {
 
   // eg: /
   if (url.charCodeAt(0) === CharCode.FWD) {
@@ -313,14 +313,14 @@ export function parseKey (url: string): Location {
 
   return null;
 
-}
+};
 
 /**
  * Get Key (pathname)
  *
  * Returns the pathname cache key URL reference which is used as property id in the cache store.
  */
-export function getKey (link: string | Location): string {
+export const getKey = (link: string | Location): string => {
 
   if (typeof link === 'object') return link.pathname + link.search;
 
@@ -359,32 +359,31 @@ export function getKey (link: string | Location): string {
  * Obtains the SPX Page session `location` model as fallback by extracting
  * the `window.location` data.
  */
-export function fallback (): Location {
-
-  const { pathname, search, hash } = location;
-
-  return o<Location>({
-    hostname,
-    origin,
-    pathname,
-    hash,
-    search
-  });
-}
+export const fallback = ({
+  pathname,
+  search,
+  hash
+} = location): Location => o<Location>({
+  hostname,
+  origin,
+  pathname,
+  hash,
+  search
+});
 
 /**
  * Get Location
  *
  * Parses link and returns an Location.
  */
-export function getLocation (path: string): Location {
+export const getLocation = (path: string): Location => {
 
   if (path === nil) return fallback();
 
   const state = parseKey(path);
 
   if (state === null) {
-    log(Log.ERROR, `Invalid pathname: ${path}`);
+    log(Log.WARN, `Invalid pathname: ${path}`);
   }
 
   state.origin = origin;
@@ -403,14 +402,14 @@ export function getLocation (path: string): Location {
  * This function is triggered for every visit request or action which infers
  * navigations (i.e, mouseover).
  */
-export function getRoute <
+export const getRoute = <
   Type extends VisitType | Element | string,
   Link extends Type extends VisitType.HYDRATE
   ? string
   : Type extends VisitType.INITIAL
   ? Type
   : Element
-> (link: Link, type: VisitType = VisitType.VISIT): Page {
+> (link: Link, type: VisitType = VisitType.VISIT): Page => {
 
   // PASSED IN ELEMENT
   // Route state will be generated using node attributes

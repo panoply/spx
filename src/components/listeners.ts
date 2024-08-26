@@ -3,6 +3,7 @@ import { o } from '../shared/native';
 import { Log } from '../shared/enums';
 import { getEventParams } from './context';
 import { log } from '../shared/logs';
+import { defineGetter } from 'src/shared/utils';
 
 /**
  * Is Valid Event
@@ -10,7 +11,7 @@ import { log } from '../shared/logs';
  * Small hack to determine whether or not the event name provided
  * is valid and a listener can be added.
  */
-export function isValidEvent (eventName: string, node: Element | Window) {
+export const isValidEvent = (eventName: string, node: Element | Window) => {
 
   if (`on${eventName}` in node) return true;
 
@@ -21,7 +22,7 @@ export function isValidEvent (eventName: string, node: Element | Window) {
 
   return false;
 
-}
+};
 
 /**
  * Add Event Attrs
@@ -29,14 +30,14 @@ export function isValidEvent (eventName: string, node: Element | Window) {
  * Assigns the `event.attrs` key to event method callbacks when DOM elements
  * contains attrs-state on containing element.
  */
-export function eventAttrs (instance: Class, event: ComponentEvent) {
+export const eventAttrs = (instance: Class, event: ComponentEvent) => {
 
   /**
    * The component event method
    */
   const method: () => void = instance[event.method];
 
-  return function handle (e: Merge<Event, { attrs: object }>) {
+  return (e: Merge<Event, { attrs: object }>) => {
 
     if (event.params) {
       if (e && !('attrs' in e)) Object.defineProperty(e, 'attrs', { get: () => o() });
@@ -46,7 +47,7 @@ export function eventAttrs (instance: Class, event: ComponentEvent) {
     method.call(instance, e);
 
   };
-}
+};
 
 /**
  * Remove Event Listener
@@ -54,7 +55,7 @@ export function eventAttrs (instance: Class, event: ComponentEvent) {
  * Removes an existing listener from a component instance method and updates the
  * the `$.components.elements` Map, removing the element attached.
  */
-export function removeEvent (instance: Class, event: ComponentEvent) {
+export const removeEvent = (instance: Class, event: ComponentEvent) => {
 
   if (!event.attached) return;
 
@@ -68,7 +69,7 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
     `${instance.scope.define.id}: ${instance.scope.key}`
   ]);
 
-}
+};
 
 /**
  * Add Event Listener
@@ -76,7 +77,7 @@ export function removeEvent (instance: Class, event: ComponentEvent) {
  * Adds a listener to the instance method and binds any `attrs` the event _might_
  * have passed on the element.
  */
-export function addEvent (instance: Class, event: ComponentEvent, node?: HTMLElement) {
+export const addEvent = (instance: Class, event: ComponentEvent, node?: HTMLElement) => {
 
   if (event.attached) return;
 
@@ -85,7 +86,7 @@ export function addEvent (instance: Class, event: ComponentEvent, node?: HTMLEle
     return;
   }
 
-  const dom = node ? Object.defineProperty(event, 'dom', { get: () => node }).dom : event.dom;
+  const dom = node ? defineGetter(event, 'dom', node).dom : event.dom;
 
   getEventParams(dom.attributes, event);
 
@@ -106,4 +107,4 @@ export function addEvent (instance: Class, event: ComponentEvent, node?: HTMLEle
     `${instance.scope.define.id}: ${instance.scope.key}`
   ]);
 
-}
+};

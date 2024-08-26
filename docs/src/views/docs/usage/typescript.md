@@ -1,12 +1,14 @@
 ---
-permalink: '/usage/using-typescript/index.html'
+permalink: '/usage/typescript/index.html'
 layout: base.liquid
 title: 'Using TypeScript'
 ---
 
-# Using TypeScript
+# TypeScript
 
 SPX is written in TypeScript and provides thorough type coverage. Each definition is accompanied by detailed JSDoc annotations, providing in-depth descriptions, documentation reference links and code examples. Incorporating SPX into TypeScript projects is straightforward.
+
+> SPX is at home in a TypeScript environment and it encompasses all specificities around intelliSense capabilities. Developers are encouraged to adopt and use SPX within a TS project.
 
 ---
 

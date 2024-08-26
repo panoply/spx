@@ -4,11 +4,11 @@ import { getComponents } from '../components/context';
 import { setInstances } from '../components/instances';
 import { removeEvent } from '../components/listeners';
 import { context, resetContext } from '../components/observe';
-import { Hooks, Log, VisitType } from '../shared/enums';
+import { Hooks, HookStatus, Log, VisitType } from '../shared/enums';
 import { log } from '../shared/logs';
 import { o } from '../shared/native';
 import { patchComponentSnap } from '../morph/snapshot';
-import { promiseResolve } from '../shared/utils';
+import { onNextTick, promiseResolve } from '../shared/utils';
 
 export type Lifecycle = (
   | 'connect'
@@ -24,7 +24,7 @@ type LifecycleHooks = [
 
 export const hargs = () => o({ page: o($.page) });
 
-export function teardown () {
+export const teardown = () => {
 
   for (const ref in $.components.$reference) {
     delete $.components.$reference[ref];
@@ -41,9 +41,9 @@ export function teardown () {
 
   log(Log.INFO, 'Component instances were disconnected');
 
-}
+};
 
-export function mount (promises: LifecycleHooks) {
+export const mount = (promises: LifecycleHooks) => {
 
   const params = hargs();
   const promise: any[] = [];
@@ -59,13 +59,9 @@ export function mount (promises: LifecycleHooks) {
 
       try {
 
-        if (!instance.scope.connected && finalhook && instance.scope.status === Hooks.CONNNECT) {
-
+        if (finalhook && instance.scope.status === Hooks.CONNNECT) {
           await instance[firsthook](params);
           await instance[finalhook](params);
-
-          instance.scope.connected = true; // updates scope.connect, ensures it triggers once
-
         } else {
           if (instance.scope.status === Hooks.UNMOUNT) {
             instance.scope.define.merge && patchComponentSnap(instance.scope, ref);
@@ -77,6 +73,10 @@ export function mount (promises: LifecycleHooks) {
         instance.scope.status = instance.scope.status === Hooks.UNMOUNT
           ? Hooks.UNMOUNTED
           : Hooks.MOUNTED;
+
+        if (instance.scope.hooks.connect === HookStatus.DEFINED) {
+          instance.scope.hooks.connect = HookStatus.EXECUTED;
+        }
 
       } catch (error) {
 
@@ -95,7 +95,7 @@ export function mount (promises: LifecycleHooks) {
 
   return Promise.allSettled(promise);
 
-}
+};
 
 /**
  * Component Hooks
@@ -110,7 +110,7 @@ export function mount (promises: LifecycleHooks) {
  * `onmount()` has been, leaving the `scope.connected` reference as `false` and this might be
  * problematic at some point, depending on how i wrote the code.
  */
-export function hook () {
+export const hook = () => {
 
   const { $mounted, $instances, $registry } = $.components;
 
@@ -127,16 +127,13 @@ export function hook () {
     if (instance.scope.status !== Hooks.MOUNTED && instance.scope.status !== Hooks.UNMOUNTED) {
 
       const unmount = instance.scope.status === Hooks.UNMOUNT;
-      const connect = unmount ? false : instance.scope.connected;
-      const event = unmount ? 'unmount' : 'onmount';
+      const trigger = unmount ? 'unmount' : 'onmount';
 
-      if (event in instance) {
+      if (trigger in instance) {
 
-        if (event === 'onmount' && 'connect' in instance && instance.scope.connected === false) {
-          promises.push([ ref, 'connect', event ]);
-        } else {
-          promises.push([ ref, event ]);
-        }
+        trigger === 'onmount' && 'connect' in instance && instance.scope.hooks.connect === HookStatus.DEFINED
+          ? promises.push([ ref, 'connect', trigger ])
+          : promises.push([ ref, trigger ]);
 
       } else if (unmount) {
 
@@ -155,9 +152,9 @@ export function hook () {
     $mounted.delete(ref);
   });
 
-}
+};
 
-export function connect () {
+export const connect = () => {
 
   if ($.components.$registry.size === 0 || $.observe.components) return;
 
@@ -180,9 +177,9 @@ export function connect () {
 
   $.observe.components = true;
 
-}
+};
 
-export function disconnect () {
+export const disconnect = () => {
 
   if (!$.observe.components) return;
 
@@ -190,4 +187,4 @@ export function disconnect () {
 
   $.observe.components = false;
 
-}
+};

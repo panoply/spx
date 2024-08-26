@@ -1,4 +1,4 @@
-import type { Hover, Page } from 'types';
+import type { Hover } from 'types';
 import { $ } from '../app/session';
 import { XHR, pointer } from '../shared/native';
 import { forEach } from '../shared/utils';
@@ -16,7 +16,7 @@ import * as request from '../app/fetch';
  *
  * @param {MouseEvent} event
  */
-function onEnter (event: MouseEvent): void {
+const onEnter = (event: MouseEvent): void => {
 
   const target = getLink(event.target, $.qs.$hover);
 
@@ -50,7 +50,7 @@ function onEnter (event: MouseEvent): void {
  * concludes. This prevents fetches being made for hovers that
  * do not exceeds threshold.
  */
-function onLeave (this: Page, event: MouseEvent) {
+const onLeave = (event: MouseEvent) => {
 
   const target = getLink(event.target, $.qs.$hover);
 
@@ -62,28 +62,24 @@ function onLeave (this: Page, event: MouseEvent) {
 /**
  * Add event to a target
  */
-function addListener (target: EventTarget): void {
-
-  target.addEventListener(`${pointer}enter`, onEnter);
-
-};
+const addListener = (target: EventTarget): void => target.addEventListener(`${pointer}enter`, onEnter);
 
 /**
  * Remove events from a target
  */
-function removeListener (target: EventTarget): void {
+const removeListener = (target: EventTarget): void => {
 
   target.removeEventListener(`${pointer}enter`, onEnter);
   target.removeEventListener(`${pointer}leave`, onLeave);
 
-}
+};
 
 /**
  * Starts mouseovers, will attach mouseover events
  * to all elements which contain a `spx-prefetch="hover"`
  * data attribute
  */
-export function connect (): void {
+export const connect = () => {
 
   if (!$.config.hover || $.observe.hover) return;
 
@@ -91,14 +87,14 @@ export function connect (): void {
 
   $.observe.hover = true;
 
-}
+};
 
 /**
  * Stops mouseovers, will remove all mouseover and mouseout
  * events on elements which contains a `spx-prefetch="hover"`
  * unless target href already exists in cache.
  */
-export function disconnect (): boolean {
+export const disconnect = () => {
 
   if (!$.observe.hover) return;
 

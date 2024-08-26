@@ -1,5 +1,5 @@
 ---
-permalink: '/installation/index.html'
+permalink: '/usage/installation/index.html'
 title: 'Installation'
 layout: base.liquid
 anchors:
@@ -14,7 +14,7 @@ anchors:
 SPX is available for consumption via the [NPM](https://www.npmjs.com/package/spx) registry as an ESM module and is designed for usage in Browser environments. SPX is lightweight with a distribution size of **{{ meta.gzipSize }}** (gzipped) and ships with types included.
 
 :::: grid row mt-5
-::: grid col-12 col-md-6 pr-4
+::: grid col-12 col-md-6 pr-4 mb-5
 
 #### PNPM
 
@@ -23,7 +23,7 @@ $ pnpm add spx --save
 ```
 
 :::
-::: grid col-12 col-md-6 pl-4
+::: grid col-12 col-md-6 pl-4 mb-5
 
 #### NPM
 
@@ -56,13 +56,13 @@ $ bun add spx
 
 # Bundling SPX
 
-SPX is distributed as an [ESM](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) module, with the generated bundle compiled into ECMAScript 6 ([ES6](https://kangax.github.io/compat-table/es6/)) from TypeScript. When bundling SPX and if you intend of leveraging to module as the core solution in your project, you'll often yield the best results and overall productivity by using a single entry point and exporting the `spx.connect` method as `default`.
+SPX is distributed as an [ESM](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) module, with the generated bundle compiled into ECMAScript 6 ([ES6](https://kangax.github.io/compat-table/es6/)) from TypeScript. When bundling SPX and if you intend of leveraging to module as the core solution in your project, you'll often yield the best results and overall productivity by using a single entry point and exporting the `{js} spx` method as `default`.
 
 <!-- prettier-ignore -->
 ```js
 import spx from 'spx';
 
-export default spx.connect({
+export default spx({
   //
   // Options
   //
@@ -86,9 +86,7 @@ export default spx.connect({
 
 If you're new to JavaScript or prefer a straightforward setup, you can easily integrate SPX into your website by fetching it from a CDN and dropping it into your project. Ensure that SPX is included before any other JavaScript files and add the `type="module"` attribute to the script tag. By default, SPX will replace the entire `<body>` fragment during navigation.
 
-<br>
-
-#### Option 1
+### Option 1
 
 Importing SPX using the [esm.sh](https://esm.sh) CDN:
 
@@ -104,7 +102,7 @@ Importing SPX using the [esm.sh](https://esm.sh) CDN:
 
     import spx from 'https://esm.sh/spx';
 
-    spx.connect()
+    spx({ /* options */})
 
   </script>
 </head>
@@ -114,9 +112,7 @@ Importing SPX using the [esm.sh](https://esm.sh) CDN:
 </body>
 ```
 
-<br>
-
-#### Option 2
+### Option 2
 
 Importing SPX using the [unpkg.com](https://unpkg.com) CDN:
 
@@ -134,7 +130,7 @@ Importing SPX using the [unpkg.com](https://unpkg.com) CDN:
     async="true"
     spx-eval="false">
 
-    spx.connect()
+    spx({ /* options */})
 
   </script>
 </head>

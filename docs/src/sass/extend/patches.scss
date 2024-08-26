@@ -1,0 +1,5 @@
+.language-typescript {
+  .token.operator + .token.operation + .token.maybe-class-name {
+    color: $papyrus-ts-constant;
+  }
+}

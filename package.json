@@ -74,7 +74,7 @@
   },
   "scripts": {
     "dev": "pnpm tsup & conc -n \"DOCS,TEST,SPX\" -c \"#81D4FA,#FF69B,#00CED1\" \"pnpm @docs dev\" \"pnpm @test test\" \"tsup --watch\"",
-    "build": "ENV=PROD tsup --minify terser && gzip-size index.js --include-original",
+    "build": "ENV=PROD tsup --minify && gzip-size index.js --include-original",
     "@spx": "ENV=PROD tsup --minify --watch",
     "@docs": "pnpm -F @spx/docs",
     "@test": "pnpm -F @spx/test"
@@ -84,16 +84,16 @@
     "@sissel/prettier-config": "^1.2.5",
     "concurrently": "^8.2.2",
     "detect-it": "^4.0.1",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.23.1",
     "eslint": "^8.56.0",
     "gzip-size-cli": "^5.1.0",
-    "terser": "^5.31.0",
-    "tsup": "^8.0.2",
-    "type-fest": "^4.18.1",
-    "typescript": "^5.4.5"
+    "terser": "^5.31.6",
+    "tsup": "^8.2.4",
+    "type-fest": "^4.25.0",
+    "typescript": "^5.5.4"
   },
   "optionalDependencies": {
-    "@types/node": "^20.12.8",
-    "prettier": "^3.2.5"
+    "@types/node": "^22.5.0",
+    "prettier": "^3.3.3"
   }
 }

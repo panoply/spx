@@ -17,7 +17,7 @@ import * as mutations from '../observe/mutations';
 import * as proximity from '../observe/proximity';
 import * as fragment from '../observe/fragment';
 
-async function morphHead (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Promise<PromiseSettledResult<void>[]> {
+const morphHead = async (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Promise<PromiseSettledResult<void>[]> => {
 
   if (!$.eval || !curHead.children || !newHead.children) return;
 
@@ -82,7 +82,7 @@ async function morphHead (curHead: HTMLHeadElement, newHead: HTMLHeadElement): P
 
   await Promise.allSettled<void>(promises);
 
-}
+};
 
 /**
  * Render Nodes
@@ -92,7 +92,7 @@ async function morphHead (curHead: HTMLHeadElement, newHead: HTMLHeadElement): P
  * This function is also responsible for handling append,
  * prepend and tracked replacements of element in the dom.
  */
-function morphNodes (page: Page, snapDom: Document) {
+const morphNodes = (page: Page, snapDom: Document) => {
 
   const pageDom = b();
 
@@ -162,13 +162,13 @@ function morphNodes (page: Page, snapDom: Document) {
 
   scrollTo(page.scrollX, page.scrollY);
 
-}
+};
 
 /**
  * Update the DOM and execute page adjustments
  * to new navigation point
  */
-export function update (page: Page): Page {
+export const update = (page: Page): Page => {
 
   hover.disconnect();
   intersect.disconnect();
@@ -197,4 +197,4 @@ export function update (page: Page): Page {
 
   return page;
 
-}
+};

@@ -70,6 +70,14 @@ export enum CharCode {
    */
   DOT = 46,
   /**
+   * Double Quotation `"`
+   */
+  DQO = 34,
+  /**
+   * Left Curly Brace `{`
+   */
+  LCB = 123,
+  /**
    * Left Square Bracket `[`
    */
   LSB = 91,
@@ -123,11 +131,28 @@ export enum CanFetch {
   /**
    * URL Key does not have a snapshot record
    */
-  YES = 2,
+  YES = 1,
  /**
    * URL Key has already been fetched and exists in snapshot cache
    */
   NO = 2
+}
+
+export enum HookStatus {
+  /**
+   * The hook method does not exist on the component
+   */
+  UNDEFINED = 1,
+  /**
+   * The hook method is defined
+   */
+  DEFINED = 2,
+  /**
+   * The hook method has executed.
+   *
+   * > This reference is for the `connect()` hook specifically to prevent repeat calls.
+   */
+  EXECUTED = 3,
 }
 
 /**

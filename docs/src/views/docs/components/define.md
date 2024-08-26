@@ -8,9 +8,7 @@ layout: base.liquid
 
 SPX components have the ability to control connection configuration through a static reference named `define`. The static `define` reference is an object utilized to control component state, nodes, and various other options related to the component rendering and execution behavior.
 
-<br>
-
-# Interface
+### Interface
 
 The static `define` reference is an `object` type which is used as the configuration preset of a component. It's here where you'll provide a state interface and specify how SPX handles the component.
 
@@ -30,13 +28,11 @@ export class Component extends spx.Component {
 }
 ```
 
-<br>
-
 ---
 
 # Available Context
 
-In each component, references defined in the `define` object are utilized and made available within the component scope. Below, we define some `state` and `nodes`, and the `oninit` lifecycle method demonstrates how we access these references. Additionally, besides the `define` references, SPX components expose a couple of additional scopes for your usage.
+In each component, references defined in the `define` object are utilized and made available within the component scope. Below, we define some `state` and `nodes`, and the `{js} connect()` lifecycle method demonstrates how we access these references. Additionally, besides the `define` references, SPX components expose a couple of additional scopes for your usage.
 
 <!--prettier-ignore-->
 ```ts
@@ -45,31 +41,37 @@ import spx from 'spx';
 export class Component extends spx.Component {
 
   static define = {
-    nodes: [ 'title', 'count'],
+    nodes: [ 'element', 'button'],
     state: {
-      string: String,     // The default value will be empty string
-      boolean: Boolean,   // The default value will be 0
-      number: Number,     // The default value will be false
-      object: Object,     // The default value will be empty object, {}
-      array: Array        // The default value will be empty array, []
+      someString: String,     // The default value will be empty string
+      someBoolean: Boolean,   // The default value will be 0
+      someNumber: Number,     // The default value will be false
+      someObject: Object,     // The default value will be empty object, {}
+      someArray: Array        // The default value will be empty array, []
     }
   };
 
   connect() {
 
-    // COMMON CONTEXT
+    // COMMON CONTEXTS
 
-    this.dom             // The element using spx-component=""
-    this.html            // The <html> element in the DOM
-    this.state.string    // => ''
-    this.state.boolean   // => false
-    this.state.number    // => 0
-    this.state.object    // => {}
-    this.state.array     // => []
-    this.titleNode       // => HTMLElement
-    this.countNode       // => HTMLElement
-    this.titleNodes      // => HTMLElement[]
-    this.countNodes      // => HTMLElement[]
+    this.html                 // => The <html> element in the DOM
+    this.root                 // => The element using spx-component=""
+
+    // STATE DATA
+
+    this.state.someString       // => ''
+    this.state.someBoolean      // => false
+    this.state.someNumber       // => 0
+    this.state.someObject       // => {}
+    this.state.someArray        // => []
+
+    // DOM ELEMENTS
+
+    this.dom.elementNode     // => HTMLElement | undefined
+    this.dom.elementNodes    // => HTMLElement[] | []
+    this.dom.buttonNode      // => HTMLButtonElement | undefined
+    this.dom.buttonNode      // => HTMLButtonElement[] | []
 
     // SPECIAL CONTEXT
 
@@ -95,11 +97,13 @@ import spx from 'spx';
 export class Component extends spx.Component {
 
   static define = {
-    nodes: [ 'title', 'count'],
+    nodes: [ 'element', 'button'],
     state: {
-      foo: String,   // The default value will be empty string
-      bar: Boolean,  // The default value will be 0
-      baz: Number    // The default value will be false
+      someString: String,     // The default value will be empty string
+      someBoolean: Boolean,   // The default value will be 0
+      someNumber: Number,     // The default value will be false
+      someObject: Object,     // The default value will be empty object, {}
+      someArray: Array        // The default value will be empty array, []
     }
   };
 
@@ -107,14 +111,16 @@ export class Component extends spx.Component {
 
     // STATE EXISTENCE
 
-    this.state.hasFoo    // boolean
-    this.state.hasBar    // boolean
-    this.state.hasBaz    // boolean
+    this.state.hasSomeString    // => boolean
+    this.state.hasSomeBoolean   // => boolean
+    this.state.hasSomeNumber    // => boolean
+    this.state.hasSomeObject    // => boolean
+    this.state.hasSomeArray     // => boolean
 
-    // NODE EXISTENCE
+    // DOM ELEMENT EXISTENCE
 
-    this.hasTitleNode    // boolean
-    this.hasCountNode    // boolean
+    this.dom.hasElementNode  // => boolean
+    this.dom.hasButtonNode   // => boolean
 
   }
 }

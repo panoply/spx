@@ -16,7 +16,7 @@ let entries: IntersectionObserver;
 /**
  * Intersection callback when entries are in viewport.
  */
-async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
+const onIntersect = async (entry: IntersectionObserverEntry): Promise<void> => {
 
   if (entry.isIntersecting) {
 
@@ -41,7 +41,7 @@ async function onIntersect (entry: IntersectionObserverEntry): Promise<void> {
  * Starts prefetch, will initialize `IntersectionObserver` and
  * add event listeners and other logics.
  */
-export function connect (): void {
+export const connect = () => {
 
   if (!$.config.intersect || $.observe.intersect) return;
   if (!entries) entries = new IntersectionObserver(forEach(onIntersect), $.config.intersect);
@@ -53,13 +53,13 @@ export function connect (): void {
 
   $.observe.intersect = true;
 
-}
+};
 
 /**
  * Stops prefetch, will disconnect `IntersectionObserver` and
  * remove any event listeners or transits.
  */
-export function disconnect (): void {
+export const disconnect = () => {
 
   if (!$.observe.intersect) return;
 

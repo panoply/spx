@@ -5,7 +5,7 @@
 import type { DOM, Scope, ValueOf } from 'types';
 import { $ } from '../app/session';
 import { nil, m, p, o, d, b } from '../shared/native';
-import { attrJSON, isEmpty, kebabCase, upcase } from '../shared/utils';
+import { attrJSON, defineGetter, isEmpty, kebabCase, upcase } from '../shared/utils';
 
 /**
  * Component Extends
@@ -32,9 +32,9 @@ export const Component = class {
   readonly scope: Scope;
 
   /**
-   * Root Node
+   * DOM Nodes
    *
-   * Returns the element of which is annotated with `spx-component`
+   * Element sector for `spx-node` directions
    */
   readonly dom: DOM = o();
 
@@ -69,7 +69,7 @@ export const Component = class {
   get html () { return d(); };
 
   get root () { return this.scope.root; }
-  set root (dom) { Object.defineProperty(this.scope, 'root', { get: () => dom }); }
+  set root (node) { defineGetter(this.scope, 'root', node); }
 
   /**
    * Constructor
@@ -78,28 +78,7 @@ export const Component = class {
    */
   constructor (key: string) {
 
-    const { scope } = Object.defineProperties(this, { scope: { get: () => Component.scopes.get(key) } });
-
-    /**
-     * First, we will assign all the DOM nodes
-     *
-     * This operation will also apply within instances generator
-     * in situations where nodes are not defined.
-     */
-    // for (const identifer of scope.define.nodes) {
-
-    //   const schema = `${identifer}Nodes`;
-    //   const domNode = schema.slice(0, -1);
-    //   const hasNode = `has${upcase(domNode)}`;
-
-    //   Object.defineProperties(this.dom, {
-    //     [domNode]: { get: () => this.dom[schema][0] },
-    //     [hasNode]: { get: () => this.dom[schema].length > 0 },
-    //     [schema]: { get: () => Array.from(d().querySelectorAll(selector)) }
-    //   });
-
-    // }
-
+    const { scope } = defineGetter(this, 'scope', Component.scopes.get(key));
     const prefix = `${$.config.schema}${scope.instanceOf}`;
 
     /**
@@ -245,7 +224,7 @@ export const Component = class {
           type = attr;
         }
 
-        hasProp in this.state || Object.defineProperty(this.state, hasProp, { get: () => defined });
+        hasProp in this.state || defineGetter(this.state, hasProp, defined);
 
         if (typeof value === 'string' && value.startsWith('window.')) {
           this.state[prop] = window[value.slice(7)];

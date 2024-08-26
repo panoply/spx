@@ -15,12 +15,7 @@ import { log } from '../shared/logs';
  * Tracks component elements within the snapshot. This class
  * will mark snapshots with `data-spx="*"` identifier references.
  */
-export const snap = new class {
-
-  /**
-   * Storage Model
-   */
-  cache: Array<[element: HTMLElement, Map<string, string[]>]> = [];
+export const snap = ((cache: Array<[element: HTMLElement, Map<string, string[]>]>) => {
 
   /**
    * Storage Record
@@ -29,7 +24,7 @@ export const snap = new class {
    * The Map **key** is a selector whereas the `string[]` **value** represents
    * each reference to be assigned.
    */
-  record: Map<string, string[]>;
+  let record: Map<string, string[]>;
 
   /**
    * Set Record
@@ -38,9 +33,9 @@ export const snap = new class {
    * is expected to be passed. A `Map` reference will be created for each `data-spx`
    * reference we need to align in the snapshot.
    */
-  set (element: HTMLElement) {
-    this.cache.push([ element, m() ]);
-    this.record = this.cache[this.cache.length - 1][1];
+  const set = (element: HTMLElement) => {
+    cache.push([ element, m() ]);
+    record = cache[cache.length - 1][1];
     return element;
   };
 
@@ -50,13 +45,11 @@ export const snap = new class {
    * Creates a new record and pushes a `data-spx` reference into the list, or
    * if no selector record exists, it will be created.
    */
-  add (selector: string, ref: string, incremental = false) {
+  const add = (selector: string, ref: string, incremental = false) =>
 
-    this.record.has(selector)
-      ? this.record.get(selector).push(ref)
-      : this.record.set(selector, [ ref ]);
-
-  };
+    record.has(selector)
+      ? record.get(selector).push(ref)
+      : record.set(selector, [ ref ]);
 
   /**
    * Sync Snapshot
@@ -65,32 +58,30 @@ export const snap = new class {
    * created to update the snapshot DOM. This operation executes outside
    * the event loop 250ms after its triggered.
    */
-  sync (snapshot: HTMLElement) {
+  const sync = (snapshot: HTMLElement) => onNextTick(() => {
 
-    onNextTick(() => {
+    while (cache.length > 0) {
 
-      while (this.cache.length > 0) {
+      const [ dom, marks ] = cache.shift();
 
-        const [ dom, marks ] = this.cache.shift();
-
-        for (const [ selector, refs ] of marks) {
-          forNode(
-            dom.querySelectorAll<HTMLElement>(selector),
-            node => node.setAttribute($.qs.$ref, node.hasAttribute($.qs.$ref)
-              ? `${node.getAttribute($.qs.$ref)},${refs.shift()}`
-              : refs.shift())
-          );
-        }
-
-        marks.clear();
+      for (const [ selector, refs ] of marks) {
+        forNode(
+          dom.querySelectorAll<HTMLElement>(selector),
+          node => node.setAttribute($.qs.$ref, node.hasAttribute($.qs.$ref)
+            ? `${node.getAttribute($.qs.$ref)},${refs.shift()}`
+            : refs.shift())
+        );
       }
 
-      setSnap(snapshot.ownerDocument.documentElement.outerHTML);
+      marks.clear();
+    }
 
-      log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
+    setSnap(snapshot.ownerDocument.documentElement.outerHTML);
 
-    }, 250);
+    log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
 
-  }
+  }, 250);
 
-}();
+  return { set, add, sync };
+
+})([]);

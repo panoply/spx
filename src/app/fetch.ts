@@ -39,70 +39,66 @@ interface RequestParams {
 /**
  * Fetch XHR Request wrapper function
  */
-export function http <T> (key: string, {
+export const http = <T> (key: string, {
   method = 'GET',
   body = null,
   headers = null,
   type = 'text'
-}: RequestParams = {}) {
+}: RequestParams = {}) => new Promise<T extends string ? string : Document>(function (resolve, reject) {
 
-  return new Promise<T extends string ? string : Document>(function (resolve, reject) {
+  const xhr = new XHR();
 
-    const xhr = new XHR();
+  xhr.key = key;
+  xhr.responseType = type;
+  xhr.open(method, key, true);
+  xhr.setRequestHeader('spx-request', 'true');
 
-    xhr.key = key;
-    xhr.responseType = type;
-    xhr.open(method, key, true);
-    xhr.setRequestHeader('spx-request', 'true');
-
-    if (headers !== null) {
-      for (const prop in headers) {
-        xhr.setRequestHeader(prop, headers[prop]);
-      }
+  if (headers !== null) {
+    for (const prop in headers) {
+      xhr.setRequestHeader(prop, headers[prop]);
     }
+  }
 
-    xhr.onloadstart = function (this: XHR) {
+  xhr.onloadstart = function (this: XHR) {
 
-      XHR.$request.set(this.key, xhr);
+    XHR.$request.set(this.key, xhr);
 
-    };
+  };
 
-    xhr.onload = function (this: XHR) {
+  xhr.onload = function (this: XHR) {
 
-      resolve(this.response);
+    resolve(this.response);
 
-    };
+  };
 
-    xhr.onerror = function (this: XHR) {
+  xhr.onerror = function (this: XHR) {
 
-      reject(this.statusText);
+    reject(this.statusText);
 
-    };
+  };
 
-    xhr.onabort = function (this: XHR) {
+  xhr.onabort = function (this: XHR) {
 
-      delete XHR.$timeout[this.key];
-      XHR.$transit.delete(this.key);
-      XHR.$request.delete(this.key);
+    delete XHR.$timeout[this.key];
+    XHR.$transit.delete(this.key);
+    XHR.$request.delete(this.key);
 
-    };
+  };
 
-    xhr.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
-      XHR.$request.delete(this.key);
-      $.memory.bytes = $.memory.bytes + event.loaded;
-      $.memory.visits = $.memory.visits + 1;
-    };
+  xhr.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
+    XHR.$request.delete(this.key);
+    $.memory.bytes = $.memory.bytes + event.loaded;
+    $.memory.visits = $.memory.visits + 1;
+  };
 
-    xhr.send(body);
+  xhr.send(body);
 
-  });
-
-};
+});
 
 /**
  * Cleanup throttlers
  */
-export function cleanup (key: string) {
+export const cleanup = (key: string) => {
 
   if (!(key in XHR.$timeout)) return true;
 
@@ -110,12 +106,12 @@ export function cleanup (key: string) {
 
   return delete XHR.$timeout[key];
 
-}
+};
 
 /**
  * Fetch Throttle
  */
-export function throttle (key: string, callback: (cancel?: boolean) => void, delay: number): void {
+export const throttle = (key: string, callback: (cancel?: boolean) => void, delay: number): void => {
 
   if (key in XHR.$timeout) return;
   if (!q.has(key)) XHR.$timeout[key] = setTimeout(callback, delay);
@@ -127,7 +123,7 @@ export function throttle (key: string, callback: (cancel?: boolean) => void, del
  *
  * Aborts a specific request in transit.
  */
-export function abort (key: string): void {
+export const abort = (key: string): void => {
 
   if (XHR.$request.has(key)) {
     XHR.$request.get(key).abort();
@@ -143,7 +139,7 @@ export function abort (key: string): void {
  * the request id (page key identifier) provided.
  * To cancel a specific request, use `abort` export.
  */
-export function cancel (key?: string): void {
+export const cancel = (key?: string): void => {
 
   for (const [ url, xhr ] of XHR.$request) {
     if (key !== url) {
@@ -161,7 +157,7 @@ export function cancel (key?: string): void {
  * locations defined in configuration. This
  * fetch is executed only once.
  */
-export function preload (state: Page) {
+export const preload = (state: Page) => {
 
   if ($.config.preload !== null) {
 
@@ -196,7 +192,7 @@ export function preload (state: Page) {
       }
     }
   }
-}
+};
 
 /**
  * Reverse Fetch
@@ -205,7 +201,7 @@ export function preload (state: Page) {
  * dispatched at different points, like (for example) in
  * popstate operations or at initial load.
  */
-export async function reverse (state: Page | HistoryState): Promise<void> {
+export const reverse = async (state: Page | HistoryState): Promise<void> => {
 
   if (state.rev === state.key) return;
 
@@ -225,9 +221,9 @@ export async function reverse (state: Page | HistoryState): Promise<void> {
     }
   });
 
-}
+};
 
-export async function wait (state: Page): Promise<Page> {
+export const wait = async (state: Page): Promise<Page> => {
 
   if (!XHR.$transit.has(state.key)) return state;
 
@@ -239,7 +235,7 @@ export async function wait (state: Page): Promise<Page> {
 
   return q.set(state, snapshot);
 
-}
+};
 
 /**
  * Fetch Request
@@ -248,7 +244,7 @@ export async function wait (state: Page): Promise<Page> {
  * from being dispatched when an indentical fetch is inFlight.
  * Page state is returned and the session is update success.
  */
-export async function fetch <T extends Page> (state: T): Promise<false|Page> {
+export const fetch = async <T extends Page> (state: T): Promise<false|Page> => {
 
   if (XHR.$request.has(state.key)) {
     if (state.type !== VisitType.HYDRATE) {

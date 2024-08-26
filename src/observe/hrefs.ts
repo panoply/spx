@@ -248,7 +248,7 @@ export async function visit (state: Page) {
  * Executes a SPX navigation.
  *
  */
-export async function navigate (key: string, state?: Page): Promise<void> {
+export const navigate = async (key: string, state?: Page): Promise<void> => {
 
   if (state) {
 
@@ -272,12 +272,12 @@ export async function navigate (key: string, state?: Page): Promise<void> {
 
   }
 
-}
+};
 
 /**
  * Attached `click` event listener.
  */
-export function connect (): void {
+export const connect = (): void => {
 
   if ($.observe.hrefs) return;
 
@@ -294,12 +294,12 @@ export function connect (): void {
 
   $.observe.hrefs = true;
 
-}
+};
 
 /**
  * Removed `click` event listener.
  */
-export function disconnect (): void {
+export const disconnect = (): void => {
 
   if (!$.observe.hrefs) return;
 
@@ -314,4 +314,4 @@ export function disconnect (): void {
 
   $.observe.hrefs = false;
 
-}
+};

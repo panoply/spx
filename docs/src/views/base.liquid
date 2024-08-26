@@ -30,8 +30,54 @@
       rel="preconnect">
     <link
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
-      rel="stylesheet"
-      spx-eval="false">
+      rel="stylesheet">
+
+    <link
+      type="font/woff2"
+      href="{{ '/assets/font/proxima-nova-regular.woff2' | url }}"
+      as="font"
+      crossorigin
+      rel="stylesheet preload" />
+
+    <link
+      type="font/woff2"
+      href="{{ '/assets/font/proxima-nova-bold.woff2' | url }}"
+      as="font"
+      crossorigin
+      rel="stylesheet preload" />
+
+    <link
+      type="font/woff2"
+      href="{{ '/assets/font/proxima-nova-light.woff2' | url }}"
+      as="font"
+      crossorigin
+      rel="stylesheet preload" />
+
+    <style spx-eval="false">
+      @font-face {
+        font-family: 'Proxima Nova';
+        src: url('{{ '/assets/font/proxima-nova-regular.woff2' | url }}') format('woff2');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Proxima Nova';
+        src: url('{{ '/assets/font/proxima-nova-bold.woff2' | url }}') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Proxima Nova';
+        src: url('{{ '/assets/font/proxima-nova-light.woff2' | url }}') format('woff2');
+        font-weight: 100;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
     <link
       href="{{'/style.css' | url }}"
       rel="stylesheet"
@@ -93,9 +139,12 @@
       </div>
 
     {% endif %}
-    {% sprite %}
 
+    {% sprite %}
     {% search %}
+    <div
+      class="drawer-backdrop"
+      spx-node="drawer.backdrop"></div>
 
   </body>
 </html>

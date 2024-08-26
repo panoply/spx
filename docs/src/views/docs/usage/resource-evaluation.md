@@ -17,15 +17,13 @@ External resources linked within `<script>`, `<link>`, or those which dictate th
 
 Control over resources is facilitated through the `eval` configuration option upon connection. This option can accept either a `boolean` or an `object` type. When passing an `object`, each key represents a resource tag. You can provide [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) to instruct SPX to apply evaluation accordingly.
 
-<br>
-
-#### Default Options
+### Default Options
 
 <!-- prettier-ignore -->
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   eval: {
     script: ['script:not(script[src])'],    // Evaluates all inline <script> tags
     style: ['style'],                       // Evaluates all inline <style> tags
@@ -35,9 +33,7 @@ spx.connect({
 });
 ```
 
-<br>
-
-#### Attribute Directives
+### Attribute Directives
 
 Connection settings serve as defaults, allowing developers to override `eval` options by annotating resource elements with the `spx-eval` attribute directive. The `spx-eval` attribute accepts a `boolean` value of `true` or `false`.
 
@@ -67,7 +63,7 @@ JavaScript evaluation between navigations is supported when `<script>` elements 
 <head>
 
   <script src="https://unpkg.com/spx" type="module">
-    spx.connect()
+    spx()
   </script>
 
   <script spx-eval="false">
@@ -87,8 +83,6 @@ JavaScript evaluation between navigations is supported when `<script>` elements 
   </script>
 </body>
 ```
-
-<br>
 
 ### Load Event
 

@@ -46,20 +46,20 @@ export function emit<T extends EventNames> (name: LiteralUnion<T, string>, ...ar
  *
  * Exposed as public method on `spx`
  */
-export function on (name: LiteralUnion<EventNames, string>, callback?: () => void, scope?: any) {
+export const on = (name: LiteralUnion<EventNames, string>, callback?: () => void, scope?: any) => {
 
   if (!(name in $.events)) $.events[name] = [];
 
   return $.events[name].push(scope ? callback.bind(scope) : callback) - 1;
 
-}
+};
 
 /**
  * Off Event
  *
  * Exposed as public method on `spx`
  */
-export function off (name: LiteralUnion<EventNames, string>, callback: (() => void) | number) {
+export const off = (name: LiteralUnion<EventNames, string>, callback: (() => void) | number) => {
 
   if (name in $.events) {
 
@@ -97,4 +97,4 @@ export function off (name: LiteralUnion<EventNames, string>, callback: (() => vo
   }
 
   return this;
-}
+};

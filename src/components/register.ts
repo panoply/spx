@@ -21,7 +21,7 @@ type Register = Merge<ComponentRegister, {
  * The `identifer` parameter is optional here, when `undefined` we will obtain
  * id reference from either the instance `static connect` or the component class name.
  */
-export function getComponentId (instance: Register, identifier?: string) {
+export const getComponentId = (instance: Register, identifier?: string) => {
 
   const name = instance.name;
   const original = identifier;
@@ -41,7 +41,7 @@ export function getComponentId (instance: Register, identifier?: string) {
 
   return identifier;
 
-}
+};
 
 /**
  * Register Components
@@ -52,7 +52,7 @@ export function getComponentId (instance: Register, identifier?: string) {
  * it signals that component was registered via `spx.register()` method and analysis has
  * already taken place,
  */
-export function registerComponents (components: { [id: string]: Register }, isValidID = false) {
+export const registerComponents = (components: { [id: string]: Register }, isValidID = false) => {
 
   const { $registry } = $.components;
 
@@ -69,4 +69,4 @@ export function registerComponents (components: { [id: string]: Register }, isVa
 
   if (!$.config.components) $.config.components = true;
 
-}
+};

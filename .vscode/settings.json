@@ -7,6 +7,9 @@
     "less",
     "postcss"
   ],
+  "spx.files": [
+    "./docs/src/app/**/*.ts"
+  ],
   "stylelint.packageManager": "pnpm",
   "stylelint.enable": false,
   "scss.validate": false,

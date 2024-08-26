@@ -53,13 +53,13 @@ https://unpkg.com/spx
 
 # Usage
 
-SPX is distributed as an ESM module and designed for usage in browser. You need to establish a connection to invoke the module, this can be done by calling the `spx.connect()` method.
+SPX is distributed as an ESM module and designed for usage in browser. You need to establish a connection to invoke the module, this can be done by calling the `spx()` method.
 
 <!--prettier-ignore-->
 ```ts
 import spx from 'spx';
 
-spx.connect({
+spx({
   fragments: [
     'menu',
     'main'
@@ -89,7 +89,7 @@ An SPX connection will initialize an SPX session. In the above example we are ta
 
 ### Components
 
-For more advanced cases, SPX provides component extendability. Register and connect components to DOM elements, and use attribute driven control for state, events, and element queries:
+For more advanced cases, SPX provides component extendability. Connect components to DOM elements and use attribute driven control for state, events, and element queries:
 
 <!--prettier-ignore-->
 ```ts
@@ -98,7 +98,7 @@ import spx from 'spx';
 class Counter extends spx.Component {
 
   static define = {
-    nodes: ['count'],
+    nodes: <const>['count'],
     state: {
       clicks: Number
     }
@@ -113,7 +113,7 @@ spx.register(Counter);
 
 ```
 
-Connect the component to DOM elements, add the following to a defined `fragment` and allow SPX to do the rest:
+Associate the component to a DOM elements, add the following within a defined `fragment` and allow SPX to do the rest:
 
 <!--prettier-ignore-->
 ```html
@@ -151,7 +151,7 @@ pnpm test        # Spins up the testing web application
 
 # Testing
 
-The [tests](/tests/) directory contains a runtime for testing SPX. Given that SPX often involves actions that typical testing tools don't handle well, a custom test suite that performs e2e (end-to-end) testing is leveraged.
+The [tests](/tests/) directory contains a runtime for testing SPX. Given that SPX often involves actions that typical testing tools don't handle well, a custom test suite that performs e2e (end-to-end) testing is appropriated.
 
 ### How It Works
 
@@ -159,7 +159,7 @@ We generate a static site using [11ty](https://www.11ty.dev/) and serve it local
 
 ### Writing Tests
 
-In the [cases](/tests/cases/) directory, you'll find sub-directories named after individual test cases. Each sub-directory follows a common file-pattern structure:
+In the [cases](/test/cases/) directory, you'll find sub-directories named after individual test cases. Each sub-directory follows a common file-pattern structure:
 
 ```bash
 ├── readme.md            # Information about the test to be injected into index.liquid

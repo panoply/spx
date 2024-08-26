@@ -10,7 +10,7 @@ const PREFIX = 'SPX ';
  * Error handler for console logging operations. The function allows for
  * throws, warnings and other SPX related logs.
  */
-export function log (type: Log, message: string | string[], context?: any) {
+export const log = (type: Log, message: string | string[], context?: any) => {
 
   const LEVEL = $.logLevel;
 
@@ -59,4 +59,4 @@ export function log (type: Log, message: string | string[], context?: any) {
     } catch (e) {}
 
   }
-}
+};

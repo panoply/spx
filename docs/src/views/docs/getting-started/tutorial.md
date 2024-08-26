@@ -14,13 +14,13 @@ This tutorial will demonstrate SPX usage in TypeScript using the [pnpm](https://
 
 # Install SPX
 
-To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your `package.json` file is marked with the type `module`. For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
+To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your `package.json` file is marked with the type `module`.
+
+> For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
 
 ```bash
 $ pnpm add spx --save     # Install as dependency in your project
 ```
-
-<br>
 
 # Project Structure
 
@@ -30,7 +30,7 @@ In this tutorial, we'll create components and explore various capabilities of SP
 /
 └── src/
     ├── app/                      # This directory will contain your .ts files
-    │   ├── components/     # This is where we will place out components
+    │   ├── components/     # This is where we will place our components
     │   └── bundle.ts      # This is our entry point file
     ├── views/                  # This directory contains our static pages
     ├── package.json
@@ -42,19 +42,24 @@ In this tutorial, we'll create components and explore various capabilities of SP
 
 # Connect SPX
 
-To establish SPX as the communication point of your application, we'll use it as our default export and initialize it using the `spx.connect()` method. This method requires no options initially and will use the defaults. Once SPX is connected, it will take over the rendering cycle of your web application. Add the following code to your `bundle.ts` file:
+To establish SPX as the communication point of your application, we'll use it as our default export and initialize it using the `{js} spx()` method. This method requires no options initially and will use the defaults. Once SPX is connected, it will take over the rendering cycle of your web application. Add the following code to your `bundle.ts` file:
 
-```typescript
+<!-- prettier-ignore -->
+```ts
 import spx from 'spx';
 
-spx.connect();
+spx(/* options */)(function () {
+
+  console.log('SPX Connected!');
+
+});
 ```
 
 > By default, SPX will morph the entire `<body>` content between navigations. If you wish to adjust this behavior, you can do so using the `fragments` option. However, for now, let's stick to the basic configuration provided above. You can find more information about fragments in the [Key Concepts](/introduction/key-concepts) page.
 
 # Script Evaluation
 
-In SPX, adherence to two crucial rules is paramount. Firstly, it's imperative to include JavaScript files within the `<head>` element of your application. Secondly, it's vital to prevent evaluation on the script responsible for establishing a connection to SPX. This can be achieved by adding a `spx-eval="false"` attribute to the `<script>` tag containing SPX. This precautionary measure ensures that SPX isn't re-initialized for each navigation. Failure to implement this attribute may lead to SPX re-initializing for all subsequent visits, compromising its intended functionality.
+In SPX, adherence to two crucial rules is paramount. Firstly, it's imperative to include JavaScript files within the `{html} <head>` element of your application. Secondly, it's vital to prevent evaluation on the script responsible for establishing a connection to SPX. This can be achieved by adding a `{html} <script spx-eval="false">` attribute to the tag containing SPX. This precautionary measure ensures that SPX isn't re-initialized for each navigation. Failure to implement this attribute may lead to SPX re-initializing for all subsequent visits, compromising its intended functionality.
 
 ```html
 <html>
@@ -87,8 +92,6 @@ import spx, { SPX } from 'spx';
 
 export class Counter extends spx.Component<typeof Counter.define> {
 
-  public countNode: HTMLElement;
-
   static define = {
     nodes: <const>['count' ],
     state: {
@@ -97,19 +100,17 @@ export class Counter extends spx.Component<typeof Counter.define> {
   };
 
   increment () {
-    this.countNode.innerText = `${++this.state.count}`;
+    this.dom.countNode.innerText = `${++this.state.count}`;
   }
 
   decrement () {
-    this.countNode.innerText = `${--this.state.count}`;
+    this.dom.countNode.innerText = `${--this.state.count}`;
   }
 
 }
 ```
 
 > Notice the extension of `spx.Component` in our component declaration. This step is essential for SPX components, as `spx.Component` serves as a base class that provides essential capabilities for component functionality.
-
-<br>
 
 # Registering Component
 
@@ -120,7 +121,7 @@ Now that we have our component defined, the next step is to register it with SPX
 import spx from 'spx';
 import { Counter } from './components/counter'
 
-export default spx.connect({
+export default spx({
   components: {
     Counter // Provide the component in an object
   }
@@ -129,7 +130,7 @@ export default spx.connect({
 
 > You can also register components using the **spx.register** API method. For further details, please refer to the [Component Register](/components/register) section of the documentation.
 
-<br>
+---
 
 # Counter Markup
 
@@ -164,8 +165,6 @@ import spx, { SPX } from 'spx';
 
 export class Tabs extends spx.Component<typeof Tabs.define> {
 
-  public buttonNode: HTMLElement;
-  public panelNodes: HTMLElement[];
   static define = {
     nodes: <const>['button', 'panel'],
     state: {
@@ -184,27 +183,23 @@ export class Tabs extends spx.Component<typeof Tabs.define> {
   }
 
   close(idx: number) {
-    this.buttonNode.children[idx].classList.remove('active');
-    this.panelNodes[idx].classList.toggle('d-none', true);
+    this.dom.buttonNode.children[idx].classList.remove('active');
+    this.dom.panelNodes[idx].classList.toggle('d-none', true);
   }
 
-  toggle (event: SPX.Event<{ idx: number }>) {
-    if (this.state.open === event.attrs.idx) return;
-    this.state.open = event.attrs.idx;
-    for (let idx = 0, len = this.panelNodes.length; idx < len; idx++) {
-      idx === event.attrs.idx ? this.open(idx) : this.close(idx);
-    }
+  toggle ({ attrs }: SPX.Event<{ idx: number }>) {
+    if (this.state.open === attrs.idx) return;
+    this.state.open = attrs.idx;
+    this.dom.panelNodes.forEach((_, idx) => idx === attrs.idx ? this.open(idx) : this.close(idx))
   }
 }
 ```
 
 Our Tabs component introduces a bit more complexity compared to the Counter component, particularly highlighting the `oninit` method. SPX components support lifecycle hooks, triggered at various points during rendering and fetching cycles. Another significant aspect of the Tabs component is the `event` argument passed to the `toggle` method. Here, we're leveraging the SPX event `attrs` feature, enabling parameter values to be passed in via directives in the DOM.
 
-<br>
-
 # Register Tabs
 
-Just as we did with our [Counter Component](#6-registering-component), we need to make SPX aware that the Tabs component exists. Open up the `bundle.ts` entry point file where we called `spx.connect()` and let's register the component.
+Just as we did with our [Counter Component](#6-registering-component), we need to make SPX aware that the Tabs component exists. Open up the `bundle.ts` entry point file where we called `spx()` and let's register the component.
 
 <!--prettier-ignore-->
 ```ts
@@ -212,7 +207,7 @@ import spx from 'spx';
 import { Counter } from './components/counter'
 import { Tabs } from './components/tabs'
 
-export default spx.connect({
+export default spx({
   components: {
     Counter,
     Tabs     // Provide the component in an object
@@ -249,4 +244,4 @@ State Directives serve as a means to define component state directly from the DO
 </section>
 ```
 
-> The static `connect.state` object serves as an interface for state directives. These directives are considered as default values when provided and are parsed according to the Type Constructor specified.
+> The static `define.state` object serves as an interface for state directives. These directives are considered as default values when provided and are parsed according to the Type Constructor specified.

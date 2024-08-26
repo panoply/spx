@@ -15,7 +15,7 @@ import { api } from '../observe/history';
  *
  * Merges observer configuration with defaults.
  */
-export function observers (options: Options) {
+export const observers = (options: Options) => {
 
   for (const key of <Array<keyof IObserverOptions>>[ 'hover', 'intersect', 'proximity', 'progress' ]) {
 
@@ -34,14 +34,14 @@ export function observers (options: Options) {
 
   return options;
 
-}
+};
 
 /**
  * Selector Exclusion
  *
  * Omits observer qs from the query and applies a `false` to element qs.
  */
-function not (attr: string, name: 'hover' | 'intersect' | 'proximity') {
+const not = (attr: string, name: 'hover' | 'intersect' | 'proximity') => {
 
   const prefix = `:not([${attr}${name}=false]):not([${attr}link])`;
 
@@ -59,7 +59,7 @@ function not (attr: string, name: 'hover' | 'intersect' | 'proximity') {
  * Constructs the query selectors used in resource evaluation. This
  * is a curried caller, first call merges `eval` options, second assigns qs.
  */
-function evaluators (options: Options, attr: string, disable: string) {
+const evaluators = (options: Options, attr: string, disable: string) => {
 
   if ('eval' in options) {
     if (options.eval) {
@@ -101,14 +101,14 @@ function evaluators (options: Options, attr: string, disable: string) {
     log(Log.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
 
   };
-}
+};
 
 /**
  * Fragment Selectors
  *
  * Validates that fragment selectors are id values.
  */
-function fragments (options: Options) {
+const fragments = (options: Options) => {
 
   const elements: string[] = [];
 
@@ -141,7 +141,7 @@ function fragments (options: Options) {
 
   return elements;
 
-}
+};
 
 /**
  * Initialize
@@ -149,7 +149,7 @@ function fragments (options: Options) {
  * Connects store and intialized the workable state management model. Connect MUST be called
  * upon SPX initialization. This function acts as a class `constructor` establishing an instance.
  */
-export function configure (options: Options = o()) {
+export const configure = (options: Options = o()) => {
 
   if ('logLevel' in options) {
     $.logLevel = options.logLevel;

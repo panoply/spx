@@ -54,12 +54,11 @@ export interface MorphContext {
  * The element's namespace URI, i.e. the value of its `xmlns` attribute or
  * its inferred namespace.
  */
-function createElementNS (nodeName: string, namespaceURI?: string): Element {
+const createElementNS = (nodeName: string, namespaceURI?: string): Element =>
 
-  return !namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml'
+  !namespaceURI || namespaceURI === 'http://www.w3.org/1999/xhtml'
     ? document.createElement(nodeName)
     : document.createElementNS(namespaceURI, nodeName);
-}
 
 /**
  * Returns true if two node's names are the same.
@@ -69,7 +68,7 @@ function createElementNS (nodeName: string, namespaceURI?: string): Element {
  * We don't bother checking `namespaceURI` because you will never find
  * two HTML elements with the same nodeName and different namespace URIs.
  */
-function matchName (curNodeName: string, newNodeName: string): boolean {
+const matchName = (curNodeName: string, newNodeName: string): boolean => {
 
   if (curNodeName === newNodeName) return true;
 
@@ -83,7 +82,7 @@ function matchName (curNodeName: string, newNodeName: string): boolean {
     ? curNodeName === newNodeName.toUpperCase()
     : newCodeStart <= 90 && curCodeStart >= 97 ? newNodeName === curNodeName.toUpperCase() : false;
 
-}
+};
 
 /**
  * Form element handling
@@ -122,18 +121,16 @@ function formNodes (curElement: Element, newElement: Element) {
 /**
  * Get default node key
  */
-function getKey (node: Element | ChildNode) {
+const getKey = (node: Element | ChildNode) =>
 
-  return node ? 'getAttribute' in node ? node.getAttribute('id') : undefined : undefined;
-
-}
+  node ? 'getAttribute' in node ? node.getAttribute('id') : undefined : undefined;
 
 /**
  * Move Children
  *
  * Copies the children of one DOM element to another DOM element
  */
-function moveChildren (curElement: Element, newElement: Element) {
+const moveChildren = (curElement: Element, newElement: Element) => {
 
   let firstChild: ChildNode = curElement.firstChild;
   let nextChild: ChildNode;
@@ -146,37 +143,31 @@ function moveChildren (curElement: Element, newElement: Element) {
 
   return newElement;
 
-}
+};
 
 /**
  * Remove Node
  *
  * Discard a node from the DOM.
  */
-function removeNode (curNode: any, parentNode: Node, context: MorphContext, skipKeys = true): void {
+const removeNode = (curNode: any, parentNode: Node, context: MorphContext, skipKeys = true): void => {
 
   // if (onBeforeNodeDiscarded(node) === false) return;
 
   observe.removeNode(curNode);
 
-  if (parentNode) {
-    parentNode.removeChild(curNode);
-  }
+  if (parentNode) parentNode.removeChild(curNode);
 
-  walkNodes(
-    curNode,
-    skipKeys,
-    context
-  );
+  walkNodes(curNode, skipKeys, context);
 
-}
+};
 
 /**
  * Morph Childrem
  *
  * Traversed and applies morphs to child nodes.
  */
-function morphChildren (curElement: Element, newElement: Element, context: MorphContext) {
+const morphChildren = (curElement: Element, newElement: Element, context: MorphContext) => {
 
   let newNode = newElement.firstChild;
   let newKey: string;
@@ -419,14 +410,14 @@ function morphChildren (curElement: Element, newElement: Element, context: Morph
     curElement,
     newElement
   );
-}
+};
 
 /**
  * Morph Elements
  *
  * Applies morph to elements. Comparison is done via `isEqualNode` to determain changes.
  */
-function morphElement (curElement: any, newElement: Element, context: MorphContext) {
+const morphElement = (curElement: any, newElement: Element, context: MorphContext) => {
 
   const newKey = getKey(newElement);
 
@@ -469,14 +460,14 @@ function morphElement (curElement: any, newElement: Element, context: MorphConte
 
   }
 
-}
+};
 
 /**
  * Walk Nodes
  *
  * Recusively traverse through the node node list.
  */
-function walkNodes (curNode: ChildNode, skipKeys: boolean, context: MorphContext) {
+const walkNodes = (curNode: ChildNode, skipKeys: boolean, context: MorphContext) => {
 
   if (curNode.nodeType !== Nodes.ELEMENT_NODE) return;
 
@@ -516,14 +507,14 @@ function walkNodes (curNode: ChildNode, skipKeys: boolean, context: MorphContext
 
   }
 
-}
+};
 
 /**
  * Added Node
  *
  * A new node has been added to the DOM
  */
-function addedNode (curElement: Node, context: MorphContext) {
+const addedNode = (curElement: Node, context: MorphContext) => {
 
   // Lets check our component observer to determine whether or
   // not this node is component related.
@@ -581,7 +572,7 @@ function addedNode (curElement: Node, context: MorphContext) {
     curChild = <Element>nextSibling;
 
   }
-}
+};
 
 /**
  * Clean Nodes
@@ -589,7 +580,7 @@ function addedNode (curElement: Node, context: MorphContext) {
  * We have processed all of the "to nodes". If `curFromNodeChild` is non-null
  * then we still have some from nodes left over that need to be removed.
  */
-function cleanNode (curElement: Element, curNode: ChildNode, curKey: string, context: MorphContext) {
+const cleanNode = (curElement: Element, curNode: ChildNode, curKey: string, context: MorphContext) => {
 
   // We have processed all of the "to nodes". If curNode is
   // non-null then we still have some from nodes left over that need to be removed
@@ -617,9 +608,9 @@ function cleanNode (curElement: Element, curNode: ChildNode, curKey: string, con
     curNode = curNextSibling;
 
   }
-}
+};
 
-function indexNode (fromNode: Element | ChildNode, context: MorphContext) {
+const indexNode = (fromNode: Element | ChildNode, context: MorphContext) => {
 
   if (fromNode.nodeType === Nodes.ELEMENT_NODE || fromNode.nodeType === Nodes.FRAGMENT_NODE) {
 
@@ -648,9 +639,9 @@ function indexNode (fromNode: Element | ChildNode, context: MorphContext) {
     }
 
   }
-}
+};
 
-export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
+export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
 
   /**
    * New Node
@@ -794,4 +785,4 @@ export function morph (curNode: HTMLElement, snapNode: HTMLElement) {
   context.$remove.clear();
 
   return morphedNode;
-}
+};

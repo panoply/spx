@@ -13,9 +13,7 @@
 @import '../../node_modules/@brixtol/bootstrap/variation';
 @import '../../node_modules/@brixtol/bootstrap/sass/components/drawer';
 
-@import '../../node_modules/papyrus/theme/vars';
-@import '../../node_modules/papyrus/theme/root';
-@import '../../node_modules/papyrus/theme/base';
+@import '../../node_modules/papyrus/index';
 @import '../../node_modules/papyrus/theme/languages/bash';
 @import '../../node_modules/papyrus/theme/languages/html';
 @import '../../node_modules/papyrus/theme/languages/liquid';
@@ -30,16 +28,13 @@
 /* -------------------------------------------- */
 /* COMPONENTS                                   */
 /* -------------------------------------------- */
+
+@import 'extend/svg';
 @import 'extend/base';
+@import 'extend/patches';
 @import 'extend/sidebar';
 @import 'extend/navbar';
 @import 'extend/layout';
+@import 'extend/landing';
+@import 'extend/blockquote';
 @import 'extend/iframes';
-
-@import 'styles/svg';
-@import 'styles/overwrites';
-@import 'styles/code';
-@import 'styles/json-tree';
-@import 'styles/landing';
-@import 'styles/session';
-@import 'styles/tabs';

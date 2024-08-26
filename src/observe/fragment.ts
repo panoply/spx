@@ -9,12 +9,29 @@ import { getSelector } from 'src/components/context';
 import { mark } from '../components/observe';
 
 /**
+ * Node is contained in Fragment
+ *
+ * Checks whether or not the provided node is a child of a fragment
+ * or the fragment itself
+ */
+export const contains = (node: HTMLElement) => {
+
+  for (const [ id, fragment ] of $.fragments) {
+    if (id === node.id) return true;
+    if (fragment.contains(node)) return true;
+  }
+
+  return false;
+
+};
+
+/**
  * Connect Fragments
  *
  * Updates the session `$.fragments` references. The `$.page.fragments` will hold identifers
  * and its here were we obtain the elements for each identifier.
  */
-export function connect () {
+export const connect = () => {
 
   $.fragments.clear();
 
@@ -47,6 +64,7 @@ export function connect () {
     selector = $.config.fragments.length === 1 && $.config.fragments[0] === 'body'
       ? $.qs.$fragments
       : `${$.config.fragments.join()},${$.qs.$fragments}`;
+
   }
 
   forNode(selector, node => {
@@ -85,7 +103,7 @@ export function connect () {
 
   patch('fragments', [ ...$.fragments.keys() ]);
 
-}
+};
 
 /**
  * Set Fragment elements
@@ -93,7 +111,7 @@ export function connect () {
  * Checks snapshots outside the event loop for fragment targets
  * and marks them accordingly.
  */
-export function setFragmentElements (page: Page) {
+export const setFragmentElements = (page: Page) => {
 
   if (page.type === VisitType.VISIT || page.selector === 'body' || page.selector === null) return;
 
@@ -125,21 +143,4 @@ export function setFragmentElements (page: Page) {
 
   });
 
-}
-
-/**
- * Node is contained in Fragment
- *
- * Checks whether or not the provided node is a child of a fragment
- * or the fragment itself
- */
-export function contains (node: HTMLElement) {
-
-  for (const [ id, fragment ] of $.fragments) {
-    if (id === node.id) return true;
-    if (fragment.contains(node)) return true;
-  }
-
-  return false;
-
-}
+};

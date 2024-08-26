@@ -8,15 +8,11 @@ layout: base.liquid
 
 Before using SPX, it is important to acquaint yourself with a few of its fundamental **key concepts** outlined on this page. Gaining familiarity with these concepts and understanding the approaches employed by SPX will allow you to better leverage the module in an effective manner and enable you to take advantage of its capabilities with more command.
 
----
-
 # Rendering Cycle
 
 SPX integrates into your web application and takes control of the rendering cycle. It achieves this by intercepting link clicks and executing navigation in an isolated and controlled manner. Pages are fetched over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) and the XHR (DOM String) responses are stored in browser state where they will remain until called upon.
 
 There are several ways developers can optimize SPX and improve the speed of per-page visits. In its default state, the module applies the bare minimum in terms of preset configuration and optimization is encouraged. The quickest and easiest optimization tactic one can use is to define **Fragments** which persist across pages.
-
----
 
 # Fragments
 
@@ -29,7 +25,7 @@ Fragments in SPX refer to elements annotated with an `id` attribute that persist
 ```ts
 import spx from 'spx';
 
-spx.connect({
+spx({
   fragments: [
     'menu',  // <nav id="menu"></nav>
     'main'   // <div id="main"></div>
@@ -120,7 +116,7 @@ By default, SPX initiates prefetches upon pointer hover events. However, recogni
 
 <!-- prettier-ignore -->
 ```ts
-spx.connect({
+spx({
   annotate: false,
   hover: {
     trigger: 'href',
@@ -149,17 +145,17 @@ spx.connect({
 -->
 <a spx-hover="true">Link</a>
 <!--
-  Threshold Limits
+  Intersection Prefetching
 -->
-<a spx-threshold="500">Link</a>
+<a spx-intersect="50">Link</a>
 <!--
   Proximity Prefetching
 -->
 <a spx-proximity="1000">Link</a>
 <!--
-  Intersection Prefetching
+  Threshold Limits
 -->
-<a spx-intersect="50">Link</a>
+<a spx-threshold="500">Link</a>
 ```
 
 :::

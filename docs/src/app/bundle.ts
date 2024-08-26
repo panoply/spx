@@ -1,9 +1,9 @@
 import spx from 'spx';
 import relapse from 'relapse';
-import { Marquee } from './components/marquee';
 import { Drawer } from './components/drawer';
 import { Dropdown } from './components/dropdown';
 import { Search } from './components/search';
+import { Sidebar } from './components/sidebar';
 import { ScrollSpy } from './components/scrollspy';
 
 spx({
@@ -16,7 +16,7 @@ spx({
     Drawer,
     Search,
     ScrollSpy,
-    Marquee
+    Sidebar
   },
   logLevel: 1,
   hover: {
@@ -26,16 +26,4 @@ spx({
   progress: {
     bgColor: 'red'
   }
-})(() => relapse());
-
-spx.on('load', (page) => {
-
-  if (page.key === '/') {
-    relapse.has() && relapse.destroy();
-  } else if (!relapse.has()) {
-    relapse();
-  } else {
-    relapse.reinit();
-  }
-
 });

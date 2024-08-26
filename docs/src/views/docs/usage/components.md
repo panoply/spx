@@ -1,5 +1,5 @@
 ---
-permalink: '/components/overview/index.html'
+permalink: '/usage/spx-components/index.html'
 title: Components - Overview
 layout: base.liquid
 ---
@@ -17,7 +17,7 @@ export class Demo extends spx.Component {
   static define = {
     id: 'demo',             // Define an identifier (optional)
     merge: false,           // Define whether component snapshot merges apply
-    nodes: [],              // Define elements associated with components
+    nodes: ['foo'],         // Define elements associated with components
     state: {}               // Define component state interface
   }
 
@@ -28,8 +28,12 @@ export class Demo extends spx.Component {
   method() {
 
     this.html               // DocumentElement reference: <html>
-    this.dom                // HTMLElement reference for: <div spx-component="demo">
+    this.root               // HTMLElement reference for: <div spx-component="demo">
     this.state              // State object as per define.state
+
+    this.dom.hasFooNode     // Whether or not <div spx-node="demo.foo"> exists in dom
+    this.dom.fooNode        // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
+    this.dom.fooNodes       // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
 
   }
 

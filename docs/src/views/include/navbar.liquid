@@ -3,10 +3,12 @@
   class="container-fluid navbar d-unset d-sm-none">
   <nav class="row jc-between ai-center px-2">
 
-    <input
+    <button
       type="button"
-      class="col-auto btn drawer-toggle ml-2 d-flex d-sm-none"
+      class="col-auto btn navbar-drawer ml-2 d-flex d-sm-none p-0"
       spx@click="drawer.toggle">
+      {% svg 'menu', 'icon-menu' %}
+    </button>
 
     <a
       href="/"

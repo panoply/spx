@@ -14,15 +14,15 @@ export class Sidebar extends spx.Component<typeof Sidebar.define> {
     }
   };
 
-  connect () {
-    this.relapse = relapse(this.root);
-  }
-
   onmount () {
-    this.relapse.reinit();
+
+   this.relapse ? this.relapse.reinit() :   this.relapse = relapse(this.root);
+
   }
 
   unmount () {
+
+    this.relapse.destroy();
 
   }
 

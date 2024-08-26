@@ -25,13 +25,13 @@ anchors:
 
 # Options
 
-The `spx.connect` (see [connection](/usage/connection)) method is the gateway to configuring SPX behavior. It accepts an object containing various options, all of which are optional but highly recommended for optimal performance. By specifying `targets`, defining evaluation behavior, and refining observers, you can tailor SPX to suit your application's needs effectively.
+The `spx` (see [connection](/usage/connection)) method is the gateway to configuring SPX behavior. It accepts an object containing various options, all of which are optional but highly recommended for optimal performance. By specifying `targets`, defining evaluation behavior, and refining observers, you can tailor SPX to suit your application's needs effectively.
 
 <!-- prettier-ignore -->
 ```js
 import spx from 'spx'
 
-spx.connect({
+spx({
   fragments: [],             // Element (id="") values that are dynamic
   timeout: 30000,            // Request Timeout limit
   logLevel: 2,               // Console Log level
@@ -63,7 +63,7 @@ The `spx-fragment` directive can be used to extend the connection presets in the
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   fragments: [] // By default, this empty as SPX applies morphed replacement of the <body>
 });
 ```
@@ -77,7 +77,7 @@ By default, SPX makes the instance available globally via `window.spx`. This mea
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   globalThis: true // Access SPX using window.spx
 });
 ```
@@ -92,7 +92,7 @@ By default, SPX automatically invokes observers upon connection, handling prefet
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   manual: false // Prevents SPX from initializing the internal observers
 });
 
@@ -118,7 +118,7 @@ By default, attribute identifiers use an `spx-` identifier. You can use a custom
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   schema: 'spx' // The default attribute, eg: <a spx-hover></a>
 });
 ```
@@ -132,7 +132,7 @@ Request polling limit is used when a request is already in transit. By default t
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   timeout: 30000 // The default time is set to 30s
 });
 ```
@@ -146,7 +146,7 @@ The `reverse` option determines whether SPX should perform reverse fetch + cache
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   reverse: true // The default is true, backward (reverse) fetches will apply
 });
 ```
@@ -160,7 +160,7 @@ The `annotate` option determines whether or not directive annotation is required
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   annotate: false // When set to true, <a> elements are identified using spx-link
 });
 ```
@@ -176,7 +176,7 @@ Logging to the console imposes a measurable performance penalty in browsers. SPX
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   logLevel: 2 // The default level is 2, printing info, warnings and errors
 });
 ```
@@ -212,7 +212,7 @@ When the log level is set to `4`, SPX enters **SILENT** mode. In this mode, SPX 
 You can toggle caching behavior with the `cache` option. By default, caching is enabled, meaning that each page visit request is cached for subsequent visits to the same location. However, setting this option to `false` disables caching. Keep in mind that when caching is disabled, all visits will be fetched over the network, and any configurations specified with the `spx-cache` attribute will be ignored.
 
 ```js
-spx.connect({
+spx({
   cache: true // Cache is enabled by default, you should avoid disabling
 });
 ```
@@ -226,7 +226,7 @@ SPX imposes a cache size limit of 100MB. When the cache size surpasses this limi
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   maxCache: 100 // Use smaller limit if your HTML pages are large
 });
 ```
@@ -244,7 +244,7 @@ import { Foo } from './components/foo';
 import { Example } from './components/example';
 import { BazQux } from './components/baz-qux';
 
-spx.connect({
+spx({
   components: {
     Foo,        // => Reference as spx-component="foo"
     Example,    // => Reference as spx-component="example"
@@ -265,12 +265,12 @@ Entries can be specified as either a `string[]` list of paths or an `object` key
 
 ```js
 // OPTION 1 - Preloading a list of routes
-spx.connect({
+spx({
   preload: ['/path/foo', '/path/bar', '/path/baz']
 });
 
 // OPTION 2 - Preloading routes when page has been visited
-spx.connect({
+spx({
   preload: {
     '/path/foo': ['/path/to/bar', '/path/to/baz'],
     '/path/qux': ['/path/to/xxx']
@@ -288,7 +288,7 @@ The `hover` setting can be either a `boolean` or an `object` type. If set to `fa
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   hover: {
     trigger: 'href', // When attribute, SPX assumes <a spx-hover> annotation
     threshold: 250   // The amount of time before executing pre-fetch
@@ -320,7 +320,7 @@ To use the default behavior, set this option to `true`, and all `<a>` elements a
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   proximity: {
     distance: 75,   // The distance the cursor must be within before executing pre-fetch
     threshold: 250, // The amount of time before executing pre-fetch
@@ -357,7 +357,7 @@ The `intersect` option accepts either a `boolean` or `object` type. Intersection
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   intersect: {
     rootMargin: '0px 0px 0px 0px', // Passed to intersection observer
     threshold: 0 // Passed to intersection observer
@@ -387,7 +387,7 @@ The `eval` option allows you to control the evaluation of specific tags, typical
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   eval: {
     script: [
       'script:not(script[src])'  // SPX defaults to this evaluation
@@ -438,7 +438,7 @@ The `progress` configuration option in SPX offers extensive customization for th
 ```js
 import spx from 'spx';
 
-spx.connect({
+spx({
   progress: {
     bgColor: '#000',
     barHeight: '3px',

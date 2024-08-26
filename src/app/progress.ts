@@ -3,7 +3,7 @@ import { $ } from './session';
 import { b } from '../shared/native';
 import { glue } from '../shared/utils';
 
-function ProgressBar () {
+export const progress = (() => {
 
   /**
    * Pending Queue
@@ -219,7 +219,7 @@ function ProgressBar () {
    * Shows the progress bar. This is the same as setting the status to 0%,
    * except that it doesn't go backwards.
    */
-  function start (threshold?: number) {
+  const start = (threshold?: number) => {
 
     if (!$.config.progress) return;
 
@@ -241,7 +241,7 @@ function ProgressBar () {
    *
    * > If `true` is passed, it will show the progress bar even if its hidden.
    */
-  function done (force?: boolean) {
+  const done = (force?: boolean) => {
 
     clearTimeout(timeout);
 
@@ -252,7 +252,10 @@ function ProgressBar () {
 
   };
 
-  return { start, done, style };
-}
+  return {
+    start,
+    done,
+    style
+  };
 
-export const progress = ProgressBar();
+})();

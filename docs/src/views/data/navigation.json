@@ -71,10 +71,6 @@
           "url": "/what-is-spx/"
         },
         {
-          "title": "Using SPX",
-          "url": "#using-spx"
-        },
-        {
           "title": "Tutorial",
           "url": "/tutorial/"
         },
@@ -96,6 +92,10 @@
           "url": "/usage/installation/"
         },
         {
+          "title": "TypeScript",
+          "url": "/usage/typescript/"
+        },
+        {
           "title": "Connection",
           "url": "/usage/connection/"
         },
@@ -108,16 +108,12 @@
           "url": "/usage/resource-evaluation/"
         },
         {
-          "title": "SPX Components",
-          "url": "/usage/spx-components/"
+          "title": "Components",
+          "url": "/usage/components/"
         },
         {
           "title": "Lifecycle Events",
           "url": "/usage/lifecycle-events/"
-        },
-        {
-          "title": "Using TypeScript",
-          "url": "/usage/using-typescript/"
         },
         {
           "title": "VSCode Extension",

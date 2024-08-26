@@ -3,7 +3,7 @@ import { setBooleanAttribute } from './attributes';
 /**
  * Handling of `<option>` element morphs
  */
-export function option (curElement: Element, newElement: HTMLOptionElement) {
+export const option = (curElement: Element, newElement: HTMLOptionElement) => {
 
   let parentNode = curElement.parentNode;
 
@@ -39,7 +39,7 @@ export function option (curElement: Element, newElement: HTMLOptionElement) {
 
   setBooleanAttribute(curElement, newElement, 'selected');
 
-}
+};
 
 /**
  * The "value" attribute is special for the `<input>` element since it sets
@@ -48,7 +48,7 @@ export function option (curElement: Element, newElement: HTMLOptionElement) {
  *
  * Similar for the "checked" attribute, and "disabled".
  */
-export function input (curElement: HTMLInputElement, newElement: HTMLInputElement) {
+export const input = (curElement: HTMLInputElement, newElement: HTMLInputElement) => {
 
   setBooleanAttribute(curElement, newElement, 'checked');
   setBooleanAttribute(curElement, newElement, 'disabled');
@@ -56,12 +56,12 @@ export function input (curElement: HTMLInputElement, newElement: HTMLInputElemen
   if (curElement.value !== newElement.value) curElement.value = newElement.value;
   if (!newElement.hasAttribute('value')) curElement.removeAttribute('value');
 
-}
+};
 
 /**
  * Handling of `<textarea>` element morphs
  */
-export function textarea (curElement: HTMLTextAreaElement, newElement: HTMLTextAreaElement) {
+export const textarea = (curElement: HTMLTextAreaElement, newElement: HTMLTextAreaElement) => {
 
   const { value } = newElement;
 
@@ -80,7 +80,7 @@ export function textarea (curElement: HTMLTextAreaElement, newElement: HTMLTextA
     firstChild.nodeValue = value;
 
   }
-}
+};
 
 /**
  * We have to loop through children of curElement, not newElement since nodes can be moved
@@ -89,7 +89,7 @@ export function textarea (curElement: HTMLTextAreaElement, newElement: HTMLTextA
  * At the time this special handler is invoked, all children have already been morphed
  * and appended to / removed from curElement, so using curElement here is safe and correct.
  */
-export function select (curElement: HTMLElement, newElement: HTMLElement) {
+export const select = (curElement: HTMLElement, newElement: HTMLElement) => {
 
   if (!newElement.hasAttribute('multiple')) {
 
@@ -133,4 +133,4 @@ export function select (curElement: HTMLElement, newElement: HTMLElement) {
     (curElement as HTMLSelectElement).selectedIndex = selectedIndex;
 
   }
-}
+};

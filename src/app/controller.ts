@@ -23,7 +23,7 @@ import * as fragment from '../observe/fragment';
  * This function is invoked upon connection and is used to generate
  * an SPX instance. It will run only once, unless SPX re-invokes.
  */
-export function initialize (): Promise<Page> {
+export const initialize = (): Promise<Page> => {
 
   const route = getRoute(VisitType.INITIAL);
 
@@ -78,12 +78,12 @@ export function initialize (): Promise<Page> {
 
   });
 
-}
+};
 
 /**
  * Destory SPX instances
  */
-export function disconnect (): void {
+export const disconnect = (): void => {
 
   history.disconnect();
   hrefs.disconnect();
@@ -105,4 +105,4 @@ export function disconnect (): void {
 
   log(Log.INFO, 'Disconnected');
 
-}
+};

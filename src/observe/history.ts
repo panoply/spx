@@ -20,16 +20,12 @@ export const api = window.history as HistoryAPI;
  *
  * Check if history state holds reverse last path reference. Returns a boolean
  */
-export function reverse (): boolean {
-
-  return (
-    api.state !== null &&
-    'spx' in api.state &&
-    'rev' in api.state.spx &&
-    api.state.spx.key !== api.state.spx.rev
-  );
-
-}
+export const reverse = (): boolean => (
+  api.state !== null &&
+  'spx' in api.state &&
+  'rev' in api.state.spx &&
+  api.state.spx.key !== api.state.spx.rev
+);
 
 /**
  * History Exists
@@ -37,7 +33,7 @@ export function reverse (): boolean {
  * Check if an SPX hsitory state reference exists. Accepts a `key` reference,
  * and when passed will apply an additional check to ensure history record matches key.
  */
-export function has (key?: string): boolean {
+export const has = (key?: string): boolean => {
 
   if (api.state === null) return false;
   if (typeof api.state !== 'object') return false;
@@ -54,27 +50,27 @@ export function has (key?: string): boolean {
 
   return typeof key === 'string' ? match && api.state.spx.key === key : match;
 
-}
+};
 
 /**
  * Load
  *
  * Toggles the `$.loaded` session reference
  */
-export async function load () {
+export const load = async () => {
 
   await promiseResolve();
 
   $.loaded = true;
 
-}
+};
 
 /**
  * Initialise
  *
  * Assigns the `page` with last known `history.state` reference and aligns scroll position.
  */
-export function initialize (page: Page) {
+export const initialize = (page: Page) => {
 
   if (has(page.key)) {
     Object.assign(page, api.state.spx);
@@ -85,21 +81,21 @@ export function initialize (page: Page) {
 
   return page;
 
-}
+};
 
 /**
  * History ReplaceState
  *
  * Applied `history.replaceState` reference update.
  */
-export function replace ({
+export const replace = ({
   key,
   rev,
   title,
   scrollX,
   scrollY,
   target
-}: HistoryState) {
+}: HistoryState) => {
 
   api.replaceState({
     spx: o<HistoryState>({
@@ -116,14 +112,14 @@ export function replace ({
 
   return api.state.spx;
 
-}
+};
 
 /**
  * History PushState
  *
  * Applied `history.pushState` and passes SPX references.
  */
-export function push ({ key, rev, title, scrollX, scrollY, target }: Page) {
+export const push = ({ key, rev, title, scrollX, scrollY, target }: Page) => {
 
   api.pushState({
     spx: o<HistoryState>({
@@ -140,20 +136,20 @@ export function push ({ key, rev, title, scrollX, scrollY, target }: Page) {
 
   return api.state.spx;
 
-}
+};
 
 /**
  * Popstate Event
  *
  * Fires popstate navigation request
  */
-async function pop (event: Merge<PopStateEvent, {
+const pop = async (event: Merge<PopStateEvent, {
   state: {
     spx: Merge<HistoryState, {
       type?: VisitType
     }>
   }
-}>) {
+}>) => {
 
   // console.log('POP', spx.key, event.state.position);
 
@@ -234,13 +230,13 @@ async function pop (event: Merge<PopStateEvent, {
  * reference, which is passed on initialisation and used to execute
  * assignment for history push~state when no context exists.
  */
-export function connect (page?: Page): Page {
+export const connect = (page?: Page): Page => {
 
   if ($.observe.history) return;
 
   // Scroll restoration is set to manual for Safari and iOS
   // when auto, content flashes are incurred, manual is a far better approach here.
-  if (api.scrollRestoration) api.scrollRestoration = 'manual';
+  // if (api.scrollRestoration) api.scrollRestoration = 'manual';
 
   addEventListener('popstate', pop, false);
 
@@ -256,14 +252,14 @@ export function connect (page?: Page): Page {
 
   return page;
 
-}
+};
 
 /**
  * End History API
  *
  * Removed `history` event listener.
  */
-export function disconnect (): void {
+export const disconnect = (): void => {
 
   if (!$.observe.history) return;
 
@@ -275,4 +271,4 @@ export function disconnect (): void {
 
   $.observe.history = false;
 
-}
+};

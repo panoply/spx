@@ -1,7 +1,7 @@
 import type { Class } from 'types';
 import type { Context } from './context';
 import { $ } from '../app/session';
-import { Colors, Hooks, Log, Nodes, Refs } from '../shared/enums';
+import { Colors, Hooks, HookStatus, Log, Nodes, Refs } from '../shared/enums';
 import { getContext, walkNode, isDirective } from './context';
 import { addEvent, removeEvent } from './listeners';
 import { log } from '../shared/logs';
@@ -30,7 +30,7 @@ export const mark: Set<string> = s();
  */
 export const resetContext = () => onNextTick(() => (context = undefined));
 
-function connect (node: HTMLElement, refs: string[]) {
+const connect = (node: HTMLElement, refs: string[]) => {
 
   for (const id of refs) {
 
@@ -69,9 +69,9 @@ function connect (node: HTMLElement, refs: string[]) {
     }
   }
 
-}
+};
 
-function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) {
+const disconnect = (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) => {
 
   for (const id of refs) {
 
@@ -82,7 +82,7 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
 
     if (ref === Refs.COMPONENT) {
 
-      !instance.scope.hooks.unmount || instance.unmount(hargs());
+      instance.scope.hooks.unmount === HookStatus.DEFINED && instance.unmount(hargs());
 
       $.components.$mounted.delete(instance.scope.key);
 
@@ -130,7 +130,7 @@ function disconnect (curNode: HTMLElement, refs: string[], newNode?: HTMLElement
     }
   }
 
-}
+};
 
 export function removeNode (node: HTMLElement) {
 

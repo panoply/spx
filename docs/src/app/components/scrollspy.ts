@@ -35,16 +35,26 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    */
   onmount () {
 
-    this.dom.hrefNode.classList.add('fc-blue');
+    console.log('onmount');
 
-    for (const a of this.dom.hrefNodes) {
-      this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
-      a.onclick = () => {
-        setTimeout(() => {
-          this.dom.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
-          a.classList.add('fc-blue');
-        }, 300);
-      };
+    if (this.dom.hasHrefNode) {
+
+      this.dom.hrefNode.classList.add('fc-blue');
+
+      for (const a of this.dom.hrefNodes) {
+
+        this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
+
+        a.onclick = () => {
+
+          setTimeout(() => {
+            this.dom.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
+            a.classList.add('fc-blue');
+          }, 300);
+
+        };
+
+      }
 
     }
 
@@ -57,7 +67,7 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    * Stimulus: Disconnect
    */
   unmount (): void {
-
+    console.log('unmount');
     this.anchors = [];
 
   }

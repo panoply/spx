@@ -12,7 +12,7 @@ import { $ } from '../app/session';
  *
  * @see https://t.ly/u4U8W
  */
-export function patchSetAttribute () {
+export const patchSetAttribute = () => {
 
   if ($.patched) return;
 
@@ -35,4 +35,4 @@ export function patchSetAttribute () {
 
   };
 
-}
+};

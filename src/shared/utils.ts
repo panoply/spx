@@ -1,55 +1,49 @@
 import type { Page, LiteralUnion } from 'types';
 import { $ } from '../app/session';
-import { Log } from './enums';
+import { CharCode, Log } from './enums';
 import { b, nil, s } from './native';
-import * as regex from './regexp';
 import { log } from '../shared/logs';
 
 /**
- * Get Fragment Selector
- *
- * Returns the query selector reference
+ * Get the fragment Selector and teturns the query selector reference
  */
-export function qsTarget (targets: string[]) {
+export const qsTarget = (targets: string[]) => {
+
+  const suffix = `,[${$.qs.$target}]`;
 
   return targets.length === 0
-    ? `${$.config.fragments.join(',')},[${$.qs.$target}]`
-    : `${targets.join(',')},[${$.qs.$target}]`;
-}
+    ? $.config.fragments.join(',') + suffix
+    : targets.join(',') + suffix;
+};
 
 /**
- * Get SPX Selector
- *
- * Returns an element selector for SPX Component node morphs
+ * Get SPX Selector and teturns an element selector for SPX Component node morphs
  */
-export function qsNode (node: HTMLElement, key: string, value: string) {
-
-  return `${node.nodeName.toLowerCase()}[${key}*=${escSelector(value)}]`;
-
-}
+export const qsNode = (
+  node: HTMLElement,
+  key: string,
+  value: string
+) => `${node.nodeName.toLowerCase()}[${key}*=${escSelector(value)}]`;
 
 /**
- * Split Attribute Array Value
- *
- * Some SPX attribute value accept array pattern structures. This function
- * will remove characters the following characters if detected:
+ * Split Attribute Array Value. Some SPX attribute value accept array pattern
+ * structures. This function will remove characters the following characters if detected:
  *
  * - `[`
  * - `]`
  * - `'`
  * - `"`
  *
- * From here, the refined string will be split and return an array list of
- * strings that can be understood.
+ * The provided `input` string will be split and return an array list of strings.
  */
-export function splitAttrArrayValue (input: string) {
+export const splitAttrArrayValue = (input: string) => {
 
   let value: string = input
     .replace(/\s+,/g, ',')
     .replace(/,\s+/g, ',')
-    .replace(/['"]/g, nil);
+    .replace(/['"]/g, '');
 
-  if (value.charCodeAt(0) === 91) {
+  if (value.charCodeAt(0) === CharCode.LSB) {
 
     // Value might be an attribute selector within an array
     // let's quickly determine, pattern would be: spx-target="[[data-foo]]"
@@ -60,301 +54,177 @@ export function splitAttrArrayValue (input: string) {
     //
     if (/^\[\s*\[/.test(value) || (/,/.test(value) && /\]$/.test(value))) {
       value = value
-        .replace(/^\[/, nil)
-        .replace(/\]$/, nil);
+        .replace(/^\[/, '')
+        .replace(/\]$/, '');
     }
   }
 
   return value.split(/,|\|/);
 
-}
+};
 
 /**
- * Attribute JSON
- *
- * Parses Attribute values as JSON. Supports both Array or Object types
- * and does not require quotations be applied.
+ * Parses attribute values as JSON. Supports both Array or Object types
+ * and does not require quotations to be applied. Fixes newlines in strings
+ * and ensure the structure can be parsed.
  */
-export function attrJSON (attr: string, string?: string) {
+export const attrJSON = (attr: string, string?: string) => {
 
   try {
 
     const json = (string || attr)
-      .replace(/\\'|'/g, (m) => m[0] === '\\' ? m : '"')
-      .replace(/\[|[^\s[\]]*|\]/g, match => /[[\]]/.test(match)
-        ? match : match.split(',').map(
-          value => value
-            .replace(/^(\w+)$/, '"$1"')
-            .replace(/^"([\d.]+)"$/g, '$1')
-        ).join(','))
+      .replace(/\\'|'/g, m => m[0] === '\\' ? m : '"')
+      .replace(/"(?:\\.|[^"])*"/g, m => m.replace(/\n/g, '\\n'))
+      .replace(/\[|[^[\]]*|\]/g
+        , m => /[[\]]/.test(m) ? m : m.split(',').map(value => value
+          .replace(/^(\w+)$/, '"$1"')
+          .replace(/^"([\d.]+)"$/g, '$1')).join(','))
       .replace(/([a-zA-Z0-9_-]+)\s*:/g, '"$1":')
-      .replace(/:\s*([$a-zA-Z_-]+)\s*([,\]}])/g, ':"$1"$2')
-      .replace(/,([\]}])/g, '$1')
+      .replace(/:\s*([$\w-]+)\s*([,\]}])/g, ':"$1"$2')
+      .replace(/,(\s*[\]}])/g, '$1')
       .replace(/([a-zA-Z_-]+)\s*,/g, '"$1",')
       .replace(/([\]},\s]+)?"(true|false)"([\s,{}\]]+)/g, '$1$2$3');
 
     return JSON.parse(json);
 
-  } catch (err) {
+  } catch (e) {
 
-    log(
-      Log.ERROR,
-      'Invalid JSON expression in attribute value: ' + JSON.stringify(attr || string, null, 2),
-      err
-    );
+    log(Log.ERROR, 'Invalid JSON in attribute value: ' + JSON.stringify(attr || string, null, 2), e);
 
     return string;
 
   }
 
-}
+};
 
 /**
  * Last Index
  *
  * Returns the last entry of an array list
  */
-export function last<T extends any[]> (input: T): T[number] {
-
-  return input[input.length - 1];
-
-}
+export const last = < T extends any[]> (input: T): T[number] => input[input.length - 1];
 
 /**
- * Equalizes Whitespace in a string
- *
- * Strips out extraneous whitespaces and newlines from a string, and returns
- * an single whitespace seprated result. Used to ensure structures adhere to
- * a common pattern.
+ * Equalizes Whitespace in a string. Strips out extraneous whitespaces
+ * and newlines, returns a single whitespace seprated result.
  */
-export function equalizeWS (input: string) {
-
-  return input.replace(/\s+/g, ' ').trim();
-
-}
+export const equalizeWS = (input: string) => input.replace(/\s+/g, ' ').trim();
 
 /**
- * Get SPX Selector
- *
- * Returns an element selector for SPX Component node morphs
+ * Get SPX Selector and returns an element selector for SPX Component node morphs
  */
-export function escSelector (input: string) {
-
-  return input
-    .replace(/\./g, '\\.')
-    .replace(/@/g, '\\@')
-    .replace(/:/g, '\\:');
-
-}
+export const escSelector = (input: string) => input.replace(/\./g, '\\.').replace(/@/g, '\\@').replace(/:/g, '\\:');
 
 /**
- * Attribute Value Notation
- *
- * Normalizes and corrects possibly malformed attribute values which use dot `.`
- * notation entries. Returns a string list and all entries contained.
+ *Resolves a promise outside the of the event loop.
  */
-export function attrValueNotation (input: string) {
-
-  return equalizeWS(input.replace(/\s \./g, '.'))
-    .replace(/\s+/g, ' ')
-    .trim()
-    .split(/[ ,]/);
-
-}
+export const onNextTickResolve = () => new Promise<void>((resolve) => setTimeout(() => resolve(), 1));
 
 /**
- * Attribute Value from Type
- *
- * Converts attribute value strings into relative types.
- */
-export function attrValueFromType (input: string) {
-
-  if (regex.isNumeric.test(input)) return input === 'NaN' ? NaN : +input;
-  if (regex.isBoolean.test(input)) return input === 'true';
-
-  const code = input.charCodeAt(0);
-
-  if (code === 123 || code === 91) return attrJSON(input); // { or [
-
-  return input; // string value
-
-}
-
-/**
- * On Next Tick Resolve
- *
- * Resolves a promise outside the of the event loop.
- */
-export function onNextTickResolve () {
-
-  return new Promise<void>((resolve) => setTimeout(() => resolve(), 1));
-
-}
-
-/**
- * On Next Tick
- *
  * Executes the provided `callback()` parameter outside of the event loop.
  */
-export function onNextTick (callback: () => void, timeout = 1, bind?: any) {
-
-  return setTimeout(() => bind ? callback.bind(bind)() : callback(), timeout);
-
-}
+export const onNextTick = (callback: () => void, timeout = 1, bind?: any) => setTimeout(
+  () => bind
+    ? callback.bind(bind)()
+    : callback(), timeout
+);
 
 /**
- * Promise Resolver
- *
  * Returns `Promise.resolve()` and used to ensure async actions conclude
  * before next operation begins.
  */
-export function promiseResolve () {
-
-  return Promise.resolve();
-
-}
+export const promiseResolve = () => Promise.resolve();
 
 /**
- * Tag Opened
- *
  * Slices a HTML tag opening region, e.g: `<script>`
  */
-export function tagOpener (script: string) {
-
-  return script.slice(0, script.indexOf('>', 1) + 1);
-
-}
+export const tagOpener = (script: string) => script.slice(0, script.indexOf('>', 1) + 1);
 
 /**
- * Eval Match
- *
- * Checks whether or not the element can be evaluated.
- * This is used during head morphs and consults the {@link $.qs}
- * selectors as per configuration options
+ * Checks whether or not the element can be evaluated. This is used during head
+ * morphs and consults the {@link $.qs} selectors as per configuration options.
  */
-export function canEval (element: Element) {
+export const canEval = (element: Element) => {
 
-  const { nodeName } = element;
+  const nn = element.nodeName;
 
-  if (nodeName === 'SCRIPT') {
+  if (nn === 'SCRIPT') {
     return element.matches($.qs.$script);
-  } else if (nodeName === 'STYLE') {
+  } else if (nn === 'STYLE') {
     return element.matches($.qs.$style);
-  } else if (nodeName === 'META') {
+  } else if (nn === 'META') {
     return element.matches($.qs.$meta);
-  } else if (nodeName === 'LINK') {
+  } else if (nn === 'LINK') {
     return element.matches($.qs.$link);
   }
 
   return element.getAttribute($.qs.$eval) !== 'false';
 
-}
+};
 
 /**
- * Delay
- *
  * Resolves a Promise after the provided `timeout` has finished.
  */
-export function delay (timeout: number) {
-
-  return new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
-
-}
+export const delay = (timeout: number) => new Promise<void>((resolve) => setTimeout(() => resolve(), timeout));
 
 /**
- * Decode Entities
- *
  * Used to ensure entries are correctly handled
  */
-export function decodeEntities (string: string) {
+export const decodeEntities = (string: string) => {
 
   const textarea = document.createElement('textarea');
-
   textarea.innerHTML = string;
-
   return textarea.value;
 
-}
+};
 
 /**
- * Timestamp
- *
  * Returns the current time value in milliseconds
  */
-export function ts () {
-
-  return new Date().getTime();
-
-}
+export const ts = () => new Date().getTime();
 
 /**
- * Has Properties
- *
- * Same as `hasProp` but accepts an array list of properties.
- * Used to validate the null prototype objects used in the module.
+ * Performs a strict analysis for the existence of properties contained
+ * on an object. Returns a function which accepts either an array or string
+ * property reference.
  */
-export function hasProps<T extends object> (object: T) {
+export const hasProps = <T extends object> (object: T) => {
 
-  return <
-    S extends keyof T,
-    A extends Array<S>,
-    P extends S | A
-  >(property: P) => {
+  const typeOf = typeof object === 'object';
 
-    if (!property) return false;
-    if (typeof property === 'string') return property in object;
+  return <S extends keyof T, A extends Array<S>, P extends S | A> (property: P) => {
 
-    return (property as A).every(prop => prop in object);
+    return typeOf ? !property ? false : typeof property === 'string'
+      ? property in object
+      : (<string[]>property).every(p => p in object) : false;
 
   };
 
-}
+};
 
 /**
- * Has Property
- *
  * Used to validate the `null` prototype objects used in the module.
  */
-export function hasProp<T extends object> (object: T, property: keyof T | string) {
-
-  return object ? property in object : false;
-
-}
+export const hasProp = <T extends object> (object: T, property: keyof T | string) => object
+  ? property in object
+  : false;
 
 /**
- * Define Getter
+ * Creates a getter on an object and be used to redefine a getter.
+ * The `configurable` parameter when undefined signals a refine operation,
+ * wherein the function resets the getter.
  *
- * Creates a getter on an object. Accepts curried callback.
+ * Redefine can only apply when the property was set to `configurable` otherwise it will fail.
  */
-export function defineGetter <T> (
+export const defineGetter = <T extends object> (
   object: T,
-  name?: undefined | LiteralUnion<keyof T, string>,
-  value?: any
-) {
-
-  if (name !== undefined) {
-
-    if (!hasProp<any>(object, name)) {
-      Object.defineProperty(object, name, { get: () => value });
-    }
-
-    return object;
-
-  } else {
-
-    return (name: string, value: any, options?: Omit<PropertyDescriptor, 'get'>): T => {
-
-      if (hasProp<any>(object, name)) return;
-
-      const get = () => value; ;
-
-      return Object.defineProperty<T>(object, name, options
-        ? Object.assign(options, { get })
-        : <PropertyDescriptor>{ get });
-    };
-
-  }
-}
+  name: undefined | LiteralUnion<keyof T, string>,
+  value: any,
+  configurable: boolean = null
+) => configurable !== null ? name in object
+    ? object
+    : Object.defineProperty(object, name, { get: () => value, configurable })
+    : Object.defineProperty(object, name, { get: () => value });
 
 /**
  * Returns a concated string list of `target` selectors.
@@ -364,9 +234,9 @@ export function defineGetter <T> (
  * all targets and keep a record of them, then when we come accross the spx-target
  * node, we check to see if it is a decendent of an already morphed target and exclude
  */
-export function targets (page: Page) {
+export const targets = (page: Page) => {
 
-  if (hasProp(page, 'target')) {
+  if ('target' in page) {
 
     if (page.target.length === 1 && page.target[0] === 'body') return page.target;
 
@@ -375,10 +245,10 @@ export function targets (page: Page) {
       return [ 'body' ];
     }
 
-    return page.target.filter((v, i, a) => (
-      v !== nil &&
-      v.indexOf(',') === -1 ? a.indexOf(v) === i : false
-    ));
+    return page.target.filter((v, i, a) =>
+      v !== '' && v.indexOf(',') === -1
+        ? a.indexOf(v) === i
+        : false);
 
   } else if ($.config.fragments.length === 1 && $.config.fragments[0] === 'body') {
 
@@ -388,68 +258,48 @@ export function targets (page: Page) {
 
   return [];
 
-}
+};
 
-export function selector (target: string[]) {
-
-  // assign the selector reference if it is undefined
-  if (target.length === 1 && target[0] === 'body') return 'body';
-
-  return target.length === 0 ? null : target.join(',');
-
-}
+export const selector = (target: string[]) => target.length === 1 && target[0] === 'body'
+  ? 'body'
+  : target.length === 0 ? null : target.join(',');
 
 /**
- * is Empty
- *
  * Checks whether an `object`, `string` or `array` is empty.
+ *
+ * > **NOTE**
+ * >
+ * > If `input` parameter type cannot de determined, `null` will be returned.
  */
-export function isEmpty (input: any) {
+export const isEmpty = (input: any) => {
 
   const T = typeof input;
 
   if (T === 'object') {
-
     // eslint-disable-next-line no-unreachable-loop
-    for (const _ in input) return false; return true;
-
-  } else if (T === 'string') {
-
-    return input[0] === undefined;
-
-  } else if (Array.isArray(input)) {
-
-    return input.length > 0;
-
+    for (const _ in input) return false;
+    return true;
   }
 
-  return false;
-}
+  return T === 'string'
+    ? input[0] === undefined
+    : Array.isArray(input) ? input.length > 0 : null;
+
+};
 
 /**
- * Glue
- *
- * Joins an array list together
+ * Joins an array list together with an empty string (`''`) separator
  */
-export function glue (...input: string[]) {
-
-  return input.join(nil);
-
-}
+export const glue = (...input: string[]) => input.join(nil);
 
 /**
- * UUID
- *
  * Creates a UUID string. Ensure unique generation be referencing Set cache
  */
-export const uuid: {
-  (size?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10): string;
-  $cache: Set<string>;
-} = function uuid (length = 5) {
+export const uuid: { (size?: 1 | 2 | 3 | 4 | 5): string; $cache: Set<string>; } = function uuid (s = 5) {
 
-  const k = Math.random().toString(36).slice(-length);
+  const k = Math.random().toString(36).slice(-s);
 
-  if (uuid.$cache.has(k)) return uuid(length);
+  if (uuid.$cache.has(k)) return uuid(s);
 
   uuid.$cache.add(k);
 
@@ -460,169 +310,114 @@ export const uuid: {
 uuid.$cache = s();
 
 /**
- * Hash
- *
  * Creates a hash from string.
  */
-export function hash (key: string) {
+export const hash = (key: string) => {
 
   let h = 0;
 
-  for (let i = 0, s = key.length; i < s; i++) {
-    h = ((h << 3) - h + key.charCodeAt(i)) | 0;
-  }
-
+  for (let i = 0, s = key.length; i < s; i++) h = ((h << 3) - h + key.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
-
-}
+};
 
 /**
- * Array Chunk function
- *
  * Augments an array into smaller subsets (i.e: "chunks").
  */
-export function chunk (size: number = 2): (acc: any[], value: string) => any[] {
+export const chunk = (size: number = 2): (acc: any[], value: string) => any[] => (acc, value) => {
 
-  return (acc, value) => {
+  const length: number = acc.length;
+  const chunks = length < 1 || acc[length - 1].length === size
+    ? acc.push([ value ])
+    : acc[length - 1].push(value);
 
-    const length: number = acc.length;
-    const chunks = length < 1 || acc[length - 1].length === size
-      ? acc.push([ value ])
-      : acc[length - 1].push(value);
+  return chunks && acc;
 
-    return chunks && acc;
-
-  };
-}
+};
 
 /**
- * Memory Size
- *
  * Converts bytes to `B`, `KB`, `MB` or `GB` readable strings.
  */
-export function size (bytes: number): string {
-
-  const kb = 1024;
-  const mb = 1048576;
-  const gb = 1073741824;
-
-  if (bytes < kb) return bytes + ' B';
-  else if (bytes < mb) return (bytes / kb).toFixed(1) + ' KB';
-  else if (bytes < gb) return (bytes / mb).toFixed(1) + ' MB';
-  else return (bytes / gb).toFixed(1) + ' GB';
-}
+export const size = (bytes: number): string =>
+  bytes < 1024 ? bytes + ' B' : bytes < 1048576
+    ? (bytes / 1024).toFixed(1) + ' KB'
+    : bytes < 1073741824 ? (bytes / 1048576).toFixed(1) + ' MB' : (bytes / 1073741824).toFixed(1) + ' GB';
 
 /**
- * Lowercase First
- *
  * Converts the first letter to lowercase
  */
-export function downcase (input: string) {
-
-  return input[0].toLowerCase() + input.slice(1);
-}
+export const downcase = (input: string) => input[0].toLowerCase() + input.slice(1);
 
 /**
- * Upcase
- *
  * Converts the first letter to Uppercase
  */
-export function upcase (input: string) {
-
-  return input[0].toUpperCase() + input.slice(1);
-}
+export const upcase = (input: string) => input[0].toUpperCase() + input.slice(1);
 
 /**
- * Camel Case
- *
  * Converts a string from kebab-case or snake_case to camelCase.
  */
-export function kebabCase (input: string) {
-
-  return /[A-Z]/.test(input)
+export const kebabCase = (input: string) =>
+  /[A-Z]/.test(input)
     ? input.replace(/(.{1})([A-Z])/g, '$1-$2').toLowerCase()
     : input;
-}
 
 /**
- * Camel Case
- *
  * Converts a string from kebab-case or snake_case to camelCase.
  */
-export function camelCase (input: string) {
-
-  return /[_-]/.test(downcase(input))
+export const camelCase = (input: string) =>
+  /[_-]/.test(downcase(input))
     ? input.replace(/([_-]+).{1}/g, (x, k) => x[k.length].toUpperCase())
     : input;
-}
 
 /**
- * Node Set
- *
  * Generates `Set<HTMLElement>` store model
  */
-export function nodeSet <T extends HTMLElement> (nodes: NodeListOf<T>): Set<T> {
-
-  return s([].slice.call(nodes));
-
-}
+export const nodeSet = <T extends HTMLElement> (nodes: NodeListOf<T>): Set<T> => s([].slice.call(nodes));
 
 /**
- * For Node
- *
  * Wrapper around `querySelectorAll` which will loop though nodes.
  * Returning a boolean `false` will stop iteration.
  */
-export function forNode <T extends HTMLElement> (
+export const forNode = <T extends HTMLElement> (
   selector: string | NodeListOf<T>,
-  callback: (node: T, index?: number) => any | false
-) {
+  cb: (node: T, index?: number) => any | false
+) => {
 
-  const nodes = typeof selector === 'string'
-    ? b().querySelectorAll<T>(selector)
-    : selector;
-
+  const nodes = typeof selector === 'string' ? b().querySelectorAll<T>(selector) : selector;
   const count = nodes.length;
 
   // Ensure we can iterate the list
   if (count === 0) return;
 
   // Loop over the items in the array
-  for (let i = 0; i < count; i++) if (callback(nodes[i], i) === false) break;
+  for (let i = 0; i < count; i++) if (cb(nodes[i], i) === false) break;
 
-}
+};
 
 /**
- * For Each
- *
  * Synchronous forEach iterator wrapper. Provides curried support.
  * It's using the `for` iterator which is best for records under
  * 1000 (which is the standard for this library).
  */
-export function forEach<T> (
-  callback: (item: T, index?: number, array?: Array<T>) => void,
-  array?: Array<T>
-) {
-  // curried expression
-  if (arguments.length === 1) return (array: Array<T>) => forEach(callback, array);
+export function forEach <T> (cb: (item: T, index?: number, array?: Array<T>) => void, array?: Array<T>) {
 
-  const len = array.length;
+  // curried expression
+  if (arguments.length === 1) return (array: Array<T>) => forEach(cb, array);
+
+  const s = array.length;
 
   // Ensure we can iterate the list
-  if (len === 0) return;
+  if (s === 0) return;
 
   // Loop over the items in the array
-  for (let i = 0; i < len; i++) callback(array[i], i, array);
+  for (let i = 0; i < s; i++) cb(array[i], i, array);
+
 }
 
 /**
- * Empty Object
- *
- * Returns a list of link elements to be prefetched. Filters out
- * any links which exist in cache to prevent extrenous transit.
+ * Clears an object of all its properties and values
  */
-export function empty<T> (object: T) {
+export const empty = <T> (object: T) => {
 
   for (const prop in object) delete object[prop];
 
-}
+};

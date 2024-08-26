@@ -2,9 +2,51 @@
 /* eslint-disable no-use-before-define */
 import type { CamelCase, Except, LiteralUnion, Merge, StringSlice, KebabCase, Split, Constructor } from 'type-fest';
 import type { Page } from './page';
-import { Hooks } from 'src/shared/enums';
 import { SPX } from './global';
 import { Identity } from 'types';
+
+declare enum Hooks {
+  /**
+   * Signals a connection `onmount` trigger should apply. Used when establishing a new
+   * instance or on `INITIAL` page visit types.
+   */
+  CONNNECT = 1,
+  /**
+   * Signals that the component should trigger `onmount` on next `component.connect()`
+   * observer action.
+   */
+  MOUNT = 2,
+  /**
+   * Indicates that the component has mounted and is rendered in the DOM.
+   */
+  MOUNTED = 3,
+  /**
+   * Signals that the component should trigger `unmount` on the next `component.disconnect()`
+   * observe action.
+   */
+  UNMOUNT = 4,
+  /**
+   * Indicates the component is unmounted and not present in the DOM.
+   */
+  UNMOUNTED = 5
+}
+
+declare enum HookStatus {
+  /**
+   * The hook method does not exist on the component
+   */
+  UNDEFINED = 1,
+  /**
+   * The hook method is defined
+   */
+  DEFINED = 2,
+  /**
+   * The hook method has executed.
+   *
+   * > This reference is for the `connect()` hook specifically to prevent repeat calls.
+   */
+  EXECUTED = 3,
+}
 
 /**
  * Type Constructors
@@ -701,15 +743,6 @@ export interface Scope {
    */
   ref: string;
   /**
-   * #### DOM Selector
-   *
-   * A query selector string which can be used to find matching elements within
-   * the snapshot record. This will be the schema attribute reference.
-   *
-   * @example 'div[spx-component="identifier"]'
-   */
-  selector: string;
-  /**
    * #### Within Fragment
    *
    * Whether or not the component is contained within page fragments. When this is `false`
@@ -730,36 +763,26 @@ export interface Scope {
      *
      * @default false
      */
-    connect: boolean;
+    connect: HookStatus
     /**
      * Whether or not `onmount()` exists
      *
      * @default false
      */
-    onmount: boolean;
+    onmount: HookStatus
     /**
      * Whether or not `unmount()` exists
      *
      * @default false
      */
-    unmount: boolean;
+    unmount: HookStatus
     /**
      * Whether or not `onmedia()` exists
      *
      * @default false
      */
-    onmedia: boolean;
+    onmedia: HookStatus
   };
-  /**
-   * #### Connection Status
-   *
-   * Whether or not this component has been connected. When `true` the `connect` hook methods
-   * has been triggered, whereas a value of `false` indicates that `connect()` has yet to be
-   * called.
-   *
-   * @default false
-   */
-  connected: boolean;
   /**
    * #### Mount Status
    *
@@ -782,6 +805,7 @@ export interface Scope {
    * > `5` = `UNMOUNTED` _Component has unmounted and is not present in the DOM._
    *
    * @default
+   *
    * 5 // UNMOUNTED
    */
   status: Hooks;

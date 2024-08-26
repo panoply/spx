@@ -86,29 +86,26 @@ export function morphBinds (cRef: string, bind: ComponentBinds, value: string) {
  * has fired or if no lifecycle hook is defined within a component, it will fire when resetting
  * the `mounted` enum within the component scope reference.
  */
-export function patchComponentSnap (scope: Scope, scopeKey: string) {
+export const patchComponentSnap = (scope: Scope, scopeKey: string) => onNextTick(() => {
 
-  onNextTick(() => {
+  const snap = q.getSnapDom(scope.snap);
+  const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
+  // console.log(snap, elem);
+  if (elem) {
+    elem.innerHTML = scope.snapshot;
+    q.setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
+  } else {
+    log(Log.WARN, `Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
+  }
 
-    const snap = q.getSnapDom(scope.snap);
-    const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
-    // console.log(snap, elem);
-    if (elem) {
-      elem.innerHTML = scope.snapshot;
-      q.setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
-    } else {
-      log(Log.WARN, `Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
-    }
-
-  });
-}
+});
 
 /**
  * Insert Node Snapshot
  *
  * Updates DOM elements contained in snapshot cache.
  */
-export function morphHead (method: 'removeChild' | 'appendChild', newNode: HTMLElement | Node) {
+export const morphHead = (method: 'removeChild' | 'appendChild', newNode: HTMLElement | Node) => {
 
   const { page, dom } = q.get($.page.key);
   const operation = method.charCodeAt(0) === 114 ? 'removed' : 'appended';
@@ -125,4 +122,4 @@ export function morphHead (method: 'removeChild' | 'appendChild', newNode: HTMLE
     log(Log.WARN, 'Node does not exist in the snapshot record, no mutation applied', newNode);
   }
 
-}
+};

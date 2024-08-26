@@ -1,54 +1,15 @@
-import type { ComponentEvent, Scope, ComponentSession, Class } from 'types';
-import { type Context } from './context';
+import type { ComponentEvent, ComponentSession, Class } from 'types';
+import { isLive, type Context } from './context';
 import { $ } from '../app/session';
-import { Colors, Hooks, Log, VisitType } from '../shared/enums';
+import { Colors, Hooks, HookStatus, Log, VisitType } from '../shared/enums';
 import { addEvent } from './listeners';
 import { Component as Extended } from './extends';
 import { log } from '../shared/logs';
 import { mount } from '../observe/components';
 import { snap } from './snapshot';
 import { element, elements } from '../shared/dom';
-import * as u from '../shared/utils';
+import { defineGetter, hasProps, upcase } from '../shared/utils';
 import * as q from '../app/queries';
-
-/**
- * Define Nodes
- *
- * Assigns the getter/setter node references to component instances.
- * Iterates over nodes in instance {@link Scope} and queries the
- * {@link ComponentSession} (`$elements`) Map which contains the HTMLElements.
- *
- * Each entry in the {@link ComponentNodes} scope model contains a UUID reference
- * named `dom` and the value of `dom` will be the `key` property within `$elements`
- * storage Map.
- */
-function defineNodes (instance: Class, { nodes }: Scope) {
-
-  // First, we compose a workable model from the nodes entries,
-  // we will use this model to assign the getter/setters on the instance
-  // for (const key in nodes) {
-  //   const { schema, selector } = nodes[key];
-  //   u.hasProp(nodeMap, schema) ? nodeMap[schema].push(selector) : nodeMap[schema] = [ selector ];
-  // }
-
-  for (const key in nodes) {
-
-    const { schema, isChild, selector } = nodes[key];
-
-    if (u.hasProp(instance.dom, schema)) continue;
-
-    const domNode = schema.slice(0, -1);
-    const hasNode = `has${u.upcase(domNode)}`;
-
-    Object.defineProperties(instance.dom, {
-      [domNode]: { get: () => isChild ? instance.root.querySelector(selector) : element(selector) },
-      [hasNode]: { get: () => instance.dom[domNode] !== null },
-      [schema]: { get: () => elements(selector) }
-    });
-
-  }
-
-}
 
 /**
  * Set Instances
@@ -64,20 +25,20 @@ function defineNodes (instance: Class, { nodes }: Scope) {
  * `connect` and/or `onmount` of component classes are gracefully handled. The components
  * observer applies a `thenable` call from which this function has resolved.
  */
-export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?: HTMLElement) {
+export const setInstances = ({ $scopes, $aliases, $morph }: Context, snapshot?: HTMLElement) => {
 
   const mounted = q.mounted();
+  const isMounted = hasProps(mounted);
   const isReverse = $.page.type === VisitType.REVERSE;
   const promises: [ scopeKey: string, firstHook: string, nextHook?: string][] = [];
   const { $mounted, $instances, $registry, $reference } = <ComponentSession>$.components;
-  const isMounted = u.hasProps(mounted);
 
   for (const instanceOf in $scopes) {
 
     for (const scope of $scopes[instanceOf]) {
 
       if (scope.instanceOf === null) {
-        if (u.hasProp($aliases, instanceOf)) {
+        if (instanceOf in $aliases) {
           scope.instanceOf = $aliases[instanceOf];
         } else if (isMounted(instanceOf)) {
           scope.instanceOf = mounted[instanceOf][0].scope.instanceOf;
@@ -142,24 +103,37 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
 
         scope.key = instance.scope.key;
         scope.ref = instance.scope.ref;
-        scope.selector = instance.scope.selector;
-        scope.connected = instance.scope.connected;
         scope.status = instance.scope.status = Hooks.MOUNTED;
 
       } else {
 
+        // Step 1 (New Visit)
+        // Obtain the component from te registry
+        //
         Component = $registry.get(scope.instanceOf);
 
-        Extended.scopes.set(scope.key, Object.defineProperties(scope, {
-          define: { get: () => Component.define }
-        }));
+        // Step 2 (New Visit)
+        // Add the component scope to the static define Map of Extended
+        //
+        Extended.scopes.set(scope.key, defineGetter(scope, 'define', Component.define));
 
+        // Step 3 (New Visit)
+        // Create the component instance
+        //
         instance = new Component(scope.key);
 
-        scope.hooks.connect = 'connect' in instance;
-        scope.hooks.onmount = 'onmount' in instance;
-        scope.hooks.unmount = 'unmount' in instance;
-        scope.hooks.onmedia = 'onmedia' in instance;
+        // Step 4 (New Visit)
+        // Lets inspect our component for hook existences
+        //
+        for (const hook in scope.hooks) {
+
+          // Set the component hook status
+          //
+          scope.hooks[hook] = hook in instance
+            ? HookStatus.DEFINED
+            : HookStatus.UNDEFINED;
+
+        }
 
       }
 
@@ -167,12 +141,36 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
       /* NODES                                        */
       /* -------------------------------------------- */
 
-      defineNodes(instance, scope);
+      // Step 5 (New Visit)
+      // Step 2 (Old Visit)
+      //
+      // We now obtain and define dom node scopes to the component.
+      //
+      for (const key in scope.nodes) {
+
+        const { schema, isChild, selector } = scope.nodes[key];
+
+        if (schema in instance.dom) continue;
+
+        const domNode = schema.slice(0, -1);
+
+        Object.defineProperties(instance.dom, {
+          [domNode]: { get: () => isChild ? instance.root.querySelector(selector) : element(selector) },
+          [schema]: { get: () => elements(selector) },
+          [`has${upcase(domNode)}`]: { get: () => isLive(schema, scope.nodes) }
+        });
+
+      }
 
       /* -------------------------------------------- */
       /* EVENTS                                       */
       /* -------------------------------------------- */
 
+      // Step 6 (New Visit)
+      // Step 3 (Old Visit)
+      //
+      // We now obtain and define event listener scopes to the component
+      //
       for (const key in scope.events) {
 
         let event: ComponentEvent;
@@ -188,6 +186,12 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
 
       }
 
+      // Step 7 (New Visit)
+      // Step 4 (Old Visit)
+      //
+      // We will now determine hook triggers and set the session references for the
+      // components. The $mounted and $instances stores are populated in this step
+      //
       if ($morph === null || (($morph !== null || isReverse) && scope.status === Hooks.MOUNT)) {
 
         $mounted.add(scope.key);
@@ -200,16 +204,21 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
         // We will hold the index in place to inject when such occurance
         // happens. The ensures execution order of hooks resolve correctly
         // when the connect hook is async and onmount is sync
-        let idx: number = -1;
+        let i: number = -1;
 
-        if (!scope.connected && scope.hooks.connect) {
+        if (scope.hooks.connect === HookStatus.DEFINED) {
+
           promises.push([ scope.key, 'connect' ]);
           instance.scope.status = Hooks.CONNNECT;
-          idx = promises.length - 1;
+
+          i = promises.length - 1;
+
         }
 
-        if (scope.hooks.onmount) {
-          idx > -1 ? promises[idx].push('onmount') : promises.push([ scope.key, 'onmount' ]);
+        if (scope.hooks.onmount === HookStatus.DEFINED) {
+
+          i > -1 ? promises[i].push('onmount') : promises.push([ scope.key, 'onmount' ]);
+
         }
 
       }
@@ -217,12 +226,19 @@ export function setInstances ({ $scopes, $aliases, $morph }: Context, snapshot?:
   }
 
   // Mark Snapshot
-  // Intial visits will apply adjustments to snapshot
+  //
+  // Intial visits require snapshot sync to apply. All visits thereafter
+  // will augment and align snapshots during morph/render operations.
   //
   $.page.type === VisitType.INITIAL && snap.sync(snapshot);
 
-  // Mount the instance, when promises is populated with entries
-  // we will pass the mount() otherwise we simply resolve.
+  // Mount Components
+  //
+  // Our final operation is to mount the component. The promises[] array
+  // will be populated with entries which we will iterate over and initialize.
+  //
+  // We can resolve id promises[] is empty.
+  //
   return promises.length > 0 ? mount(promises) : Promise.resolve();
 
-}
+};

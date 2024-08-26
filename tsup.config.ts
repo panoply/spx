@@ -1,7 +1,16 @@
 import { defineConfig } from 'tsup';
 import { utimes } from 'fs/promises';
-
+import { version } from './package.json'
 const PROD = process.env.ENV === 'PROD';
+const BANNER = [
+  '/**',
+  '* SPX ~ Single Page XHR | https://spx.js.org',
+  '*',
+  '* @license CC BY-NC-ND 4.0',
+  `* @version ${version}`,
+  '* @copyright 2024 Nikolas Savvidis',
+  '*/'
+]
 
 export default defineConfig({
   entry: [
@@ -11,12 +20,14 @@ export default defineConfig({
   clean: false,
   outDir: './',
   minify: PROD,
+  outExtension: () =>({ js: '.js' }),
   platform: 'browser',
-  keepNames: true,
+  keepNames: false, // Possible breaks may need to use true in v1
   splitting: false,
   target: 'es2017',
   globalName: 'spx',
-  treeshake: 'recommended',
+  treeshake: 'smallest',
+  banner: () =>({ js: BANNER.join('\n') }),
   esbuildOptions (options) {
     if (PROD) {
       options.mangleQuoted = false;
