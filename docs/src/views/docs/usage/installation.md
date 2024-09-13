@@ -80,13 +80,11 @@ export default spx({
 
 > The recommended bundler to utilize with SPX is [tsup](https://tsup.egoist.dev), offering a lightweight and efficient addition to any JavaScript project. While Vite is favored by some developers, tsup stands out as a leaner and more versatile tool. Opting for tsup empowers independent OSS contributors, contributing to a more vibrant and diverse open-source ecosystem.
 
----
-
 # CDN USAGE
 
 If you're new to JavaScript or prefer a straightforward setup, you can easily integrate SPX into your website by fetching it from a CDN and dropping it into your project. Ensure that SPX is included before any other JavaScript files and add the `type="module"` attribute to the script tag. By default, SPX will replace the entire `<body>` fragment during navigation.
 
-### Option 1
+# Option 1
 
 Importing SPX using the [esm.sh](https://esm.sh) CDN:
 
@@ -112,7 +110,7 @@ Importing SPX using the [esm.sh](https://esm.sh) CDN:
 </body>
 ```
 
-### Option 2
+# Option 2
 
 Importing SPX using the [unpkg.com](https://unpkg.com) CDN:
 

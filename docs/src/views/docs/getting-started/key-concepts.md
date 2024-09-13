@@ -2,6 +2,14 @@
 permalink: '/key-concepts/index.html'
 title: 'Key Concepts'
 layout: base.liquid
+anchors:
+  - Key Concepts
+  - Rendering Cycle
+  - Fragments
+  - Navigation
+  - Prefetching
+  - Morphing
+  - Caching
 ---
 
 # Key Concepts
@@ -53,8 +61,6 @@ spx({
 
 In the provided example, we've specified two fragments that are anticipated to change: `menu` and `main`. These fragments are identified by their respective `id` attributes as per the entires supplied to `fragments` upon connection. Between visits, only the contents within these elements undergo replacements, or morphs, based on the updates received from the server or the directive annotation applied to link elements. This targeted approach aids in minimizing traversal operations when SPX swaps content, which brings us to the underlying method employed by SPX for replacing nodes.
 
----
-
 # Navigation
 
 SPX actively monitors events occurring on `<a>` elements within the DOM. This is the fundamental behavior of the module, as it revolves around link interception and navigational intent. When a user clicks on any link, SPX steps in to manage the navigation process. The link elements are essential to SPX, serving as representations of your web application routes and providing insights into the browsing intent of the end user.
@@ -102,8 +108,6 @@ SPX actively monitors events occurring on `<a>` elements within the DOM. This is
 <!-- Progress Control, whether or not to show a progress bar -->
 <a spx-progress="false"></a>
 ```
-
----
 
 # Prefetching
 
@@ -161,8 +165,6 @@ spx({
 :::
 ::::
 
----
-
 # Morphing
 
 DOM morphing is a technique employed by SPX to efficiently update the Document Object Model (DOM) when navigating between pages and replacing elements. Unlike traditional page loading methods, which often involve full-page reloads or re-rendering of entire DOM Tree, morphing focuses on selectively updating only the parts of the DOM that have changed. Below is a more detailed breakdown of the process and operations carried out under the hood.
@@ -198,8 +200,6 @@ By applying changes incrementally, SPX minimizes the amount of work required to 
 #### 5. Real DOM Manipulation
 
 Unlike virtual DOM libraries like React, which operate on a virtual representation of the DOM, SPX directly manipulates the real DOM. This means that changes are applied directly to the visible page, eliminating the need for additional abstraction layers and optimizing performance.
-
----
 
 # Caching
 

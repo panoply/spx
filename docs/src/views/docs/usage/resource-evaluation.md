@@ -3,21 +3,26 @@ title: 'Resource Evaluation'
 permalink: '/usage/resource-evaluation/index.html'
 layout: base.liquid
 group: usage
+anchors:
+  - Resource Evaluation
+  - Configuration
+  - Attribute Directives
+  - Script Evaluation
+  - Load Event
+  - Style Evaluation
 ---
 
 # Resource Evaluation
 
-External resources linked within `<script>`, `<link>`, or those which dictate the browser's treatment of external references are categorized as **Resources** in SPX. As SPX governs rendering operations, it's crucial to be intentional about how it manages such assets and files that require evaluation. While SPX is configured by default to handle a limited subset of resource elements without additional configuration, developers are strongly encouraged to fine-tune and expand support to align with their application's specific requirements.
+In SPX, external resources such as those referenced by `<script>`, `<link>`, or any other elements that influence how the browser handles external content, are classified as **Resources**. Given SPX's control over rendering, it's vital to approach the management of these resources with intentionality, especially concerning how they are evaluated or loaded.
 
-> For optimal performance, it's recommended to minimize resource evaluation to the absolute minimum and ideally trigger project execution at runtime only.
+By default, SPX is set up to manage a basic set of resource elements without needing extra configuration. However, for tailored performance and functionality, developers are encouraged to customize and broaden this support to match their application's unique needs.
 
----
+> To maximize efficiency, it's advisable to limit resource evaluation to only what is strictly necessary and, where possible, delay the execution of project-specific scripts until runtime. This approach not only optimizes load times but also ensures that resources are loaded in a manner that best serves the application's dynamic requirements.
 
 # Configuration
 
-Control over resources is facilitated through the `eval` configuration option upon connection. This option can accept either a `boolean` or an `object` type. When passing an `object`, each key represents a resource tag. You can provide [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) to instruct SPX to apply evaluation accordingly.
-
-### Default Options
+Control over resource evaluation in SPX is managed through the `eval` configuration option during connection setup. This option can be set to either a `boolean` value or an `object`. If you choose to use an `object`, each key should correspond to a resource tag name. By specifying [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) for these tags, you can direct SPX to evaluate resources based on specific attributes, thereby customizing how and when these resources are processed.
 
 <!-- prettier-ignore -->
 ```js
@@ -33,11 +38,10 @@ spx({
 });
 ```
 
-### Attribute Directives
+# Attribute Directives
 
-Connection settings serve as defaults, allowing developers to override `eval` options by annotating resource elements with the `spx-eval` attribute directive. The `spx-eval` attribute accepts a `boolean` value of `true` or `false`.
+Connection settings in SPX provide default configurations, but developers can override the `eval` options directly on resource elements by using the `spx-eval` attribute directive. This attribute accepts a `boolean` value, where `true` or `false` dictates whether SPX should evaluate that specific resource element, allowing for fine-grained control over resource handling at the element level.
 
-<!-- prettier-ignore -->
 <!-- prettier-ignore -->
 ```html
 <head>
@@ -46,17 +50,15 @@ Connection settings serve as defaults, allowing developers to override `eval` op
 </head>
 ```
 
----
-
 # Script Evaluation
 
-Script occurrences in the DOM are evaluated and initialized asynchronously. By default, re-evaluation applies to all inline scripts, whereas linked scripts (i.e., `<script src="">`) will only be evaluated once and never again thereafter. Modules that initialize using an IIFE execution pattern will require decoupling if re-evaluation is necessary. When navigating between pages that depend on linked resources being analyzed and re-executed, it is recommended to call inline scripts. Scripts within the `<body>` or within defined fragments should be avoided. There is little necessity for `<body>` script occurrences, and developers can easily replicate such logic using component design architecture.
+In SPX, scripts within the DOM undergo asynchronous evaluation and initialization. By default, all inline scripts are subject to re-evaluation, while scripts linked via `{html} <script src="">` are evaluated once upon their first encounter and not re-evaluated subsequently. For modules employing an Immediately Invoked Function Expression (IIFE) pattern, re-evaluation might require a redesign to support repeated execution. When navigating between pages that necessitate the re-execution of linked scripts, employing inline scripts is recommended. Placing scripts within the `{html} <body>` or within defined fragments is generally not advised.
 
-> In cases where the default behavior is problematic, you can configure SPX to perform re-evaluation on a per-resource basis using the `spx-eval` attribute or `eval` configuration option.
+> There's seldom a need for `{html} <body>` script placements; component-based designs can achieve similar outcomes more effectively. Should the default handling not meet your needs, SPX allows for custom script evaluation settings per resource using the `spx-eval` directive.
 
-### Placements
+# Script Placement
 
-JavaScript evaluation between navigations is supported when `<script>` elements are contained within the document `<head>` or `<body>` elements. However, script tags in the `<body>` are **highly discouraged** and can lead to issues. You can avoid loading scripts in the body by taking advantage of ESM, which is widely supported in almost all modern browsers. Leverage dynamic imports (`import('.')`) within your bundle instead of rendering inline.
+JavaScript evaluation is supported for `{html} <script>` elements located in the document's `{html} <head>` or `{html} <body>` during navigation. However, placing scripts within the `{html} <body>` is **strongly discouraged** due to potential issues. To avoid this, utilize ES Modules (ESM), which are widely supported across modern browsers. Instead of using inline scripts, consider employing `{js} import('.')` dynamic imports within your bundle for better control and performance.
 
 <!-- prettier-ignore -->
 ```html
@@ -84,9 +86,9 @@ JavaScript evaluation between navigations is supported when `<script>` elements 
 </body>
 ```
 
-### Load Event
+# Load Event
 
-You may wish to leverage SPX lifecycle events to re-invoke JavaScript code between page visits. This is ideal for tasks such as Google Analytics and scripts that require per-page execution. The `spx.on('load')` event fires each time a page visit concludes and has rendered to the DOM. It serves as the final event to execute and is equivalent to using the `DOMContentLoaded` event.
+You might want to use SPX [events](/usage/events/) to re-execute JavaScript code with each page visit, which is particularly useful for tasks like Google Analytics or scripts needing execution on a per-page basis. The `{js} spx.on('load')` event triggers after each page visit has completed rendering to the DOM, acting as the last event in the sequence, akin to the DOMContentLoaded event.
 
 <!-- prettier-ignore -->
 ```js
@@ -96,14 +98,12 @@ spx.on('load', function () {
 
   gtag('js', new Date()); // Trigger google analytics each time page loads
 
-})
+});
 ```
-
----
 
 # Style Evaluation
 
-Stylesheet and inline CSS evaluation is supported for `<style>` and `<link rel="stylesheet>` elements contained in the `<head>` or `<body>` elements. External stylesheets reference using `<link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `spx-eval="true"` attribute annotations.
+Stylesheet and inline CSS evaluation is supported for ` <style>` and `<link rel="stylesheet>` elements contained in the `{html} <head>` or `{html} <body>` elements. External stylesheets reference using `{html} <link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `spx-eval="true"` attribute annotations.
 
 ```html
 <head>

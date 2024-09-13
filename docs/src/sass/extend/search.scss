@@ -1,0 +1,228 @@
+.search {
+  position: fixed;
+  min-width: 250px;
+  right: $spacer-5;
+  top: 15px;
+  z-index: 10;
+
+  .keys {
+    display: block;
+    position: absolute;
+    right: 25px;
+    top: 7px;
+
+    kbd {
+      height: 22px;
+      width: 20px;
+      line-height: 22px;
+      text-align: center;
+      padding: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: $white;
+      background-color: $gray-600;
+      &.letters {
+        margin-left: 5px;
+        font-size: 0.7rem;
+      }
+    }
+  }
+
+  input.fm-input {
+    padding: 7px 0 7px 35px;
+    border: transparent;
+    background-color: $code-bg;
+    color: $white;
+    border: 0.01rem solid $border-color;
+    border-radius: 8px;
+    background-position: 8px center;
+    background-size: 20px;
+    width: 100%;
+    font-weight: 400;
+    text-transform: initial;
+    background-image: url(icon-search($white, 1.3));
+    transition: width linear 200ms;
+
+    &:focus::-webkit-search-cancel-button {
+      background-image: url(icon-search($input-placeholder-color, 2px));
+      background-size: 25px;
+      width: 25px;
+      margin-right: 55px;
+
+      &:hover {
+        background-image: url(icon-search($white, 2px));
+      }
+    }
+
+    &::placeholder {
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-family: $font-family-heading;
+    }
+
+    &.is-active {
+      width: 450px;
+
+      &.is-results {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &::placeholder {
+      color: $white;
+    }
+
+    &:focus {
+      color: $white;
+    }
+
+    &::-webkit-search-cancel-button {
+      background-color: $code-bg;
+    }
+
+    &::-webkit-search-cancel-button {
+      appearance: none;
+      margin: 0;
+      height: 21px;
+      width: 21px;
+      opacity: 0;
+      pointer-events: none;
+      background-size: 21px;
+      background-position: right 1px center;
+      position: absolute;
+      right: $input-padding-x;
+    }
+
+    &:focus::-webkit-search-cancel-button {
+      opacity: 1;
+      pointer-events: all;
+      cursor: pointer;
+      background-image: url(icon-delete($input-placeholder-color));
+
+      &:hover {
+        // prettier-ignore
+        background-image: url(icon-delete($input-placeholder-color));
+      }
+    }
+  }
+
+  .search-list {
+    position: absolute;
+    top: 35px;
+    width: 450px;
+    max-height: 400px;
+    background-color: $code-bg;
+    border: $border-color $border-width solid;
+    border-radius: 7px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    overflow-y: scroll;
+    margin: 0;
+    padding: 0;
+
+    .w-icon {
+      width: 20px;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .icon-goto {
+      opacity: 0;
+    }
+
+    .icon-clown {
+      height: 70px;
+      width: 70px;
+      color: #505050;
+    }
+
+    &.no-results {
+      padding: 40px 0;
+
+      li:first-of-type {
+        background-color: $code-bg;
+        border: none;
+
+        a {
+          color: $white;
+        }
+      }
+
+      > li {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        border-bottom: none;
+
+        h4 {
+          font-size: 1rem;
+        }
+      }
+    }
+
+    li {
+      border: $border-color $border-width solid;
+      color: $body-color;
+      list-style-type: none;
+      padding: 10px 15px;
+      margin: 0;
+      background-color: $code-bg;
+
+      &:first-of-type {
+        background-color: $body-bg;
+
+        a {
+          color: $white;
+        }
+
+        .result strong {
+          text-decoration: underline;
+          color: $blue;
+        }
+      }
+
+      &:hover {
+        transition: background-color 20ms linear 20ms;
+        background-color: $body-bg;
+        cursor: pointer;
+
+        .icon-goto {
+          opacity: 1;
+        }
+      }
+
+      a {
+        color: $body-color;
+      }
+
+      .arrow {
+        background-image: url(icon-right($body-color));
+        background-position: right center;
+        background-repeat: no-repeat;
+        background-size: 12px;
+      }
+
+      .result {
+        width: 335px;
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        font-size: 0.9rem;
+        text-overflow: ellipsis;
+
+        strong {
+          color: $blue;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}

@@ -17,6 +17,24 @@
     right: $spacer-5;
     top: 20px;
 
+    .icon-github {
+      width: 42px;
+      height: 22px;
+      color: $white;
+    }
+
+    .icon-discord {
+      width: 22px;
+      height: 22px;
+      color: $white;
+    }
+
+    .icon-npm {
+      width: 22px;
+      height: 22px;
+      color: $white;
+    }
+
     input.fm-input {
       border: $border-color $border-width solid;
       border-radius: 5px;

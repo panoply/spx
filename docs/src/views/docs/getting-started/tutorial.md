@@ -2,6 +2,18 @@
 permalink: '/tutorial/index.html'
 title: 'Tutorial'
 layout: base.liquid
+anchors:
+  - Tutorial
+  - Install SPX
+  - Project Structure
+  - Connect SPX
+  - Script Evaluation
+  - Creating Components
+  - Registering Component
+  - Counter Markup
+  - Tabs Component
+  - Register Tabs
+  - Tabs Markup
 ---
 
 # Tutorial
@@ -10,17 +22,31 @@ SPX operates under the assumption that developers possess an intermediate level 
 
 This tutorial will demonstrate SPX usage in TypeScript using the [pnpm](https://pnpm.io) package manager and [tsup](https://tsup.egoist.dev) bundler. However, if you're not using TypeScript or prefer a different development stack, feel free to make necessary adjustments to suit your preferences.
 
----
-
 # Install SPX
 
-To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your `package.json` file is marked with the type `module`.
+To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your `package.json` file is marked with the type `module`. For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
 
-> For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
+:::: grid row mt-4
+::: grid col-12 col-md-6 pr-4 mb-5
+
+#### PNPM
 
 ```bash
-$ pnpm add spx --save     # Install as dependency in your project
+$ pnpm add spx --save
 ```
+
+:::
+::: grid col-12 col-md-6 pl-4 mb-5
+
+#### NPM
+
+```bash
+$ npm install spx --save
+```
+
+:::
+::: grid col-12 col-md-6 pr-4
+::::
 
 # Project Structure
 
@@ -38,8 +64,6 @@ In this tutorial, we'll create components and explore various capabilities of SP
     └── tsup.config.ts
 ```
 
----
-
 # Connect SPX
 
 To establish SPX as the communication point of your application, we'll use it as our default export and initialize it using the `{js} spx()` method. This method requires no options initially and will use the defaults. Once SPX is connected, it will take over the rendering cycle of your web application. Add the following code to your `bundle.ts` file:
@@ -55,7 +79,7 @@ spx(/* options */)(function () {
 });
 ```
 
-> By default, SPX will morph the entire `<body>` content between navigations. If you wish to adjust this behavior, you can do so using the `fragments` option. However, for now, let's stick to the basic configuration provided above. You can find more information about fragments in the [Key Concepts](/introduction/key-concepts) page.
+By default, SPX will morph the entire `{html} <body>` content between navigations. If you wish to adjust this behavior, you can do so using the [fragments](/usage/options#fragments) option. However, for now, let's stick to the basic configuration provided above. You can find more information about fragments in the [Key Concepts](/introduction/key-concepts) page.
 
 # Script Evaluation
 
@@ -78,13 +102,11 @@ In SPX, adherence to two crucial rules is paramount. Firstly, it's imperative to
 </html>
 ```
 
----
-
 # Creating Components
 
-Let's proceed with creating SPX components to integrate into our web application. For a comprehensive understanding, it's advisable to review the [Components Structure](/components/structure) section of the documentation. In this tutorial, we'll craft simple components and delve into the process of registering and utilizing them effectively.
+Let's proceed with creating SPX components to integrate into our web application. In this tutorial, we'll craft simple components and delve into the process of registering and utilizing them. We will start by developing a counter component, aiming to enable incrementing and decrementing a number utilizing SPX Component [events](/components/events), [state](/components/state), and [nodes](/components/nodes). Begin by generating a new file named `counter.ts` within the `./src/app/components/` directory of your project, and insert the following code:
 
-We'll commence by developing a fundamental counter component, aiming to enable incrementing and decrementing a number utilizing Component [Events](/components/events), Component [State](/components/state), and Component [Nodes](/components/nodes). Begin by generating a new file named `counter.ts` within the `components` directory of your project, and insert the following code:
+## `counter.ts`
 
 <!--prettier-ignore-->
 ```ts
@@ -93,7 +115,7 @@ import spx, { SPX } from 'spx';
 export class Counter extends spx.Component<typeof Counter.define> {
 
   static define = {
-    nodes: <const>['count' ],
+    nodes: <const>['count' ], // We use <const> to enable completions
     state: {
       count: Number
     }
@@ -110,11 +132,9 @@ export class Counter extends spx.Component<typeof Counter.define> {
 }
 ```
 
-> Notice the extension of `spx.Component` in our component declaration. This step is essential for SPX components, as `spx.Component` serves as a base class that provides essential capabilities for component functionality.
-
 # Registering Component
 
-Now that we have our component defined, the next step is to register it with SPX so that SPX recognizes its existence. Let's open up the `bundle.ts` entry point file where we called `spx.connect()` and proceed to import and register the component.
+Now that we have our component defined, the next step is to register it with SPX so that SPX recognizes its existence. Let's open up the `bundle.ts` entry point file where we called `{js} spx()` and proceed to import and register the component.
 
 <!--prettier-ignore-->
 ```ts
@@ -128,9 +148,7 @@ export default spx({
 });
 ```
 
-> You can also register components using the **spx.register** API method. For further details, please refer to the [Component Register](/components/register) section of the documentation.
-
----
+> You can also register components using the `{js} spx.register()` API method. For further details, please refer to the [Component Register](/components/register/) section of the documentation.
 
 # Counter Markup
 
@@ -153,11 +171,11 @@ Now, it's time to integrate our component into the DOM. SPX components follow a 
 </section>
 ```
 
----
-
 # Tabs Component
 
-A simple counter component is an excellent starting point, but let's create a slightly more advanced component to explore the capabilities of SPX further. We'll design a Tabs component that allows us to incorporate tabs into our web application. While still relatively straightforward, this component will enable us to delve into additional features. Following the same approach as with our Counter component, let's create a new file in the `components` directory named `tabs.ts` and add the following code:
+A simple counter component is an excellent starting point, but let's create a slightly more advanced component to explore the capabilities of SPX further. We'll design a Tabs component that allows us to incorporate tabs into our web application. While still relatively straightforward, this component will enable us to delve into additional features. Following the same approach as with our Counter component, let's create a new file in the `./src/app/components/` directory named `tabs.ts` and add the following code:
+
+## `tabs.ts`
 
 <!--prettier-ignore-->
 ```ts
@@ -195,7 +213,9 @@ export class Tabs extends spx.Component<typeof Tabs.define> {
 }
 ```
 
-Our Tabs component introduces a bit more complexity compared to the Counter component, particularly highlighting the `oninit` method. SPX components support lifecycle hooks, triggered at various points during rendering and fetching cycles. Another significant aspect of the Tabs component is the `event` argument passed to the `toggle` method. Here, we're leveraging the SPX event `attrs` feature, enabling parameter values to be passed in via directives in the DOM.
+<br>
+
+Our Tabs component introduces a bit more complexity compared to the Counter component, particularly highlighting the `{js} connect()` method. SPX components support [lifecycle hooks](/components/hooks/), triggered at various points during rendering and fetching cycles. Another significant aspect of the Tabs component is the event argument passed to the `{js} toggle(event)` method. Here, we're leveraging the SPX event `attrs` feature, enabling parameter values to be passed in via directives in the DOM.
 
 # Register Tabs
 
@@ -214,8 +234,6 @@ export default spx({
   }
 });
 ```
-
-<br>
 
 # Tabs Markup
 

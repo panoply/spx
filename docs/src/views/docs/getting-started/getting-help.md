@@ -2,6 +2,12 @@
 permalink: '/getting-help/index.html'
 title: 'Getting Help'
 layout: base.liquid
+anchors:
+  - Getting Help
+  - Shopify Developers
+  - Odestry Discord
+  - Github Repository
+  - X / Formally Twitter
 ---
 
 # Getting Help
@@ -18,9 +24,9 @@ The author and main contributors of SPX are active members of the [Shopify Devel
 
 <br>
 
-### Blanklob Community
+### Odestry Community
 
-Contributors and users of SPX are also available on the [Blanklob Discord](https://discord.gg/blanklob-community-983602196493004820), where you can reach out via the Projects ~ Sissel Channel. While the Discord primarily focuses on Shopify theme development, similar to the Shopify Developers Discord, you'll find a variety of discussions around web technologies.
+Contributors and users of SPX are also available on the [Odestry Discord](https://discord.gg/blanklob-community-983602196493004820), where you can reach out via the Projects ~ Sissel Channel. While the Discord primarily focuses on Shopify theme development, similar to the Shopify Developers Discord, you'll find a variety of discussions around web technologies.
 
 [Join the Discord](https://discord.gg/blanklob-community-983602196493004820)
 

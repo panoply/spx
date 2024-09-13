@@ -2,15 +2,21 @@
 permalink: '/components/define/index.html'
 title: Components - Define
 layout: base.liquid
+anchors:
+  - Definitions
+  - Static Define
+  - Lifecycle Hooks
+  - Context Reference
+  - Existence Checks
 ---
 
 # Definitions
 
-SPX components have the ability to control connection configuration through a static reference named `define`. The static `define` reference is an object utilized to control component state, nodes, and various other options related to the component rendering and execution behavior.
+SPX components leverage a static `define` reference to provide comprehensive control over their configuration, encompassing state management, DOM node interactions, rendering strategies, and execution behavior. The `define` object acts as a pivotal point for developers to tailor component behavior, allowing for precise adjustments in how components handle state changes, interact with the DOM, manage their lifecycle, and optimize rendering for various environments.
 
-### Interface
+# Static Define
 
-The static `define` reference is an `object` type which is used as the configuration preset of a component. It's here where you'll provide a state interface and specify how SPX handles the component.
+The static `define` reference in SPX components is an object that serves as the configuration blueprint for the component. Within this object, developers define the state interface and dictate how SPX should manage and interact with the component, effectively setting the rules for its behavior and lifecycle.
 
 <!--prettier-ignore-->
 ```ts
@@ -28,113 +34,11 @@ export class Component extends spx.Component {
 }
 ```
 
----
+# Lifecycle Hooks
 
-# Available Context
+SPX components are equipped with lifecycle hooks, which are reserved methods that allow developers to monitor and react to changes in a component's status within the DOM. These hooks are exclusive, meaning they are specifically designed to trigger at distinct moments during the component's lifecycle.
 
-In each component, references defined in the `define` object are utilized and made available within the component scope. Below, we define some `state` and `nodes`, and the `{js} connect()` lifecycle method demonstrates how we access these references. Additionally, besides the `define` references, SPX components expose a couple of additional scopes for your usage.
-
-<!--prettier-ignore-->
-```ts
-import spx from 'spx';
-
-export class Component extends spx.Component {
-
-  static define = {
-    nodes: [ 'element', 'button'],
-    state: {
-      someString: String,     // The default value will be empty string
-      someBoolean: Boolean,   // The default value will be 0
-      someNumber: Number,     // The default value will be false
-      someObject: Object,     // The default value will be empty object, {}
-      someArray: Array        // The default value will be empty array, []
-    }
-  };
-
-  connect() {
-
-    // COMMON CONTEXTS
-
-    this.html                 // => The <html> element in the DOM
-    this.root                 // => The element using spx-component=""
-
-    // STATE DATA
-
-    this.state.someString       // => ''
-    this.state.someBoolean      // => false
-    this.state.someNumber       // => 0
-    this.state.someObject       // => {}
-    this.state.someArray        // => []
-
-    // DOM ELEMENTS
-
-    this.dom.elementNode     // => HTMLElement | undefined
-    this.dom.elementNodes    // => HTMLElement[] | []
-    this.dom.buttonNode      // => HTMLButtonElement | undefined
-    this.dom.buttonNode      // => HTMLButtonElement[] | []
-
-    // SPECIAL CONTEXT
-
-    this.component('id') // => Returns a component instance
-
-
-  }
-}
-```
-
-<br>
-
----
-
-# Existence
-
-All `state` and `nodes` provide `has` checks, returning a boolean value. These conditionals enable you to verify whether the component template contains or has defined the references:
-
-<!--prettier-ignore-->
-```ts
-import spx from 'spx';
-
-export class Component extends spx.Component {
-
-  static define = {
-    nodes: [ 'element', 'button'],
-    state: {
-      someString: String,     // The default value will be empty string
-      someBoolean: Boolean,   // The default value will be 0
-      someNumber: Number,     // The default value will be false
-      someObject: Object,     // The default value will be empty object, {}
-      someArray: Array        // The default value will be empty array, []
-    }
-  };
-
-  connect() {
-
-    // STATE EXISTENCE
-
-    this.state.hasSomeString    // => boolean
-    this.state.hasSomeBoolean   // => boolean
-    this.state.hasSomeNumber    // => boolean
-    this.state.hasSomeObject    // => boolean
-    this.state.hasSomeArray     // => boolean
-
-    // DOM ELEMENT EXISTENCE
-
-    this.dom.hasElementNode  // => boolean
-    this.dom.hasButtonNode   // => boolean
-
-  }
-}
-```
-
-<br>
-
----
-
-# Hooks
-
-All components provide lifecycle hooks which allow you to listen and track the status of a component in the DOM. Hooks are **reserved** and **exclusive** namespace methods which will trigger when a component connects, mounts or unmounts from the DOM.
-
-> Consult to the [hooks](/components/hooks/) section for an in-depth overview of the available lifecycle triggers.
+> For a comprehensive understanding of component lifecycle hooks, their application and how to leverage them effectively, consult the [hooks documentation](/components/hooks/) for a detailed overview.
 
 <!--prettier-ignore-->
 ```ts
@@ -146,5 +50,81 @@ export class Component extends spx.Component {
   onmount(page) {}    // Fires each time a page loads and component exists
   unmount(page) {}    // Fires each time a page exists and component is removed
 
+}
+```
+
+# Context Reference
+
+In each component, the references specified within the static define object are not only utilized within DOM structures but also become accessible inside the components scope. For instance, defining `state` and `nodes` allows these to be referenced directly within the `this` context of the component. The `{js} connect()` lifecycle method exemplifies how these defined references can be accessed.
+
+> For a more in-depth understanding and comprehensive overview of how component state and nodes function within SPX, refer to the respective sections on [component state](/components/state/) and [component nodes](/components/nodes/).
+
+<!--prettier-ignore-->
+```ts
+import spx from 'spx';
+
+export class Component extends spx.Component {
+
+  static define = {
+    nodes: [ 'element', 'button'],
+    state: {
+      someString: String,     // The default value will be empty string
+      someBoolean: Boolean,   // The default value will be 0
+      someNumber: Number,     // The default value will be false
+      someObject: Object,     // The default value will be empty object, {}
+      someArray: Array        // The default value will be empty array, []
+    }
+  };
+
+  connect() {
+
+    this.html                 // => The <html> element in the DOM
+    this.root                 // => The element using spx-component=""
+    this.state.someString     // => ''
+    this.state.someBoolean    // => false
+    this.state.someNumber     // => 0
+    this.state.someObject     // => {}
+    this.state.someArray      // => []
+    this.dom.elementNode     // => HTMLElement OR undefined
+    this.dom.elementNodes    // => HTMLElement[] OR []
+    this.dom.buttonNode      // => HTMLButtonElement OR undefined
+    this.dom.buttonNode      // => HTMLButtonElement[] OR []
+
+  }
+}
+```
+
+# Existence Checks
+
+In SPX, both `state` and `nodes` come equipped with `has` methods, which return boolean values to indicate whether the specified state properties or DOM nodes exist within the component. This structure allows for conditional logic based on the presence of defined state properties provided on component root elements and component nodes element/s contained within the DOM.
+
+<!--prettier-ignore-->
+```ts
+import spx from 'spx';
+
+export class Component extends spx.Component {
+
+  static define = {
+    nodes: [ 'element', 'button'],
+    state: {
+      someString: String,     // The default value will be empty string
+      someBoolean: Boolean,   // The default value will be 0
+      someNumber: Number,     // The default value will be false
+      someObject: Object,     // The default value will be empty object, {}
+      someArray: Array        // The default value will be empty array, []
+    }
+  };
+
+  connect() {
+
+    this.state.hasSomeString    // => boolean
+    this.state.hasSomeBoolean   // => boolean
+    this.state.hasSomeNumber    // => boolean
+    this.state.hasSomeObject    // => boolean
+    this.state.hasSomeArray     // => boolean
+    this.dom.hasElement         // => boolean
+    this.dom.hasButton          // => boolean
+
+  }
 }
 ```

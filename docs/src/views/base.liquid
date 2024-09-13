@@ -34,21 +34,21 @@
 
     <link
       type="font/woff2"
-      href="{{ '/assets/font/proxima-nova-regular.woff2' | url }}"
+      href="{{ '/assets/fonts/proxima-nova-regular.woff2' | url }}"
       as="font"
       crossorigin
       rel="stylesheet preload" />
 
     <link
       type="font/woff2"
-      href="{{ '/assets/font/proxima-nova-bold.woff2' | url }}"
+      href="{{ '/assets/fonts/proxima-nova-bold.woff2' | url }}"
       as="font"
       crossorigin
       rel="stylesheet preload" />
 
     <link
       type="font/woff2"
-      href="{{ '/assets/font/proxima-nova-light.woff2' | url }}"
+      href="{{ '/assets/fonts/proxima-nova-light.woff2' | url }}"
       as="font"
       crossorigin
       rel="stylesheet preload" />
@@ -56,7 +56,7 @@
     <style spx-eval="false">
       @font-face {
         font-family: 'Proxima Nova';
-        src: url('{{ '/assets/font/proxima-nova-regular.woff2' | url }}') format('woff2');
+        src: url('{{ '/assets/fonts/proxima-nova-regular.woff2' | url }}') format('woff2');
         font-weight: 300;
         font-style: normal;
         font-display: swap;
@@ -64,7 +64,7 @@
 
       @font-face {
         font-family: 'Proxima Nova';
-        src: url('{{ '/assets/font/proxima-nova-bold.woff2' | url }}') format('woff2');
+        src: url('{{ '/assets/fonts/proxima-nova-bold.woff2' | url }}') format('woff2');
         font-weight: 600;
         font-style: normal;
         font-display: swap;
@@ -72,7 +72,7 @@
 
       @font-face {
         font-family: 'Proxima Nova';
-        src: url('{{ '/assets/font/proxima-nova-light.woff2' | url }}') format('woff2');
+        src: url('{{ '/assets/fonts/proxima-nova-light.woff2' | url }}') format('woff2');
         font-weight: 100;
         font-style: normal;
         font-display: swap;
@@ -114,15 +114,17 @@
           id="content"
           class="row jc-center jc-md-between content-offset pl-xxl-5">
 
-          <main class="col-11 {{ grid | default: 'col-md-8' }} px-xl-3 pb-4">
-            {% include 'include/breadcrumb' %}
-            {{ content }}
-            {% include 'include/paginate' %}
+          <main class="col-11 {{ grid | default: 'col-md-9' }} pl-xl-2 pr-xl-5 pb-4">
+            <div class="pr-4">
+              {% include 'include/breadcrumb' %}
+              {{ content }}
+              {% include 'include/paginate' %}
+            </div>
           </main>
 
           {% if anchors %}
             <div
-              class="col-auto px-5 anchors"
+              class="col-auto pr-5 anchors"
               spx-component="scrollspy">
               <ul>
                 {% for name in anchors %}
@@ -139,12 +141,10 @@
       </div>
 
     {% endif %}
-
     {% sprite %}
-    {% search %}
+    {% search 'spx' %}
     <div
       class="drawer-backdrop"
       spx-node="drawer.backdrop"></div>
-
   </body>
 </html>

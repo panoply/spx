@@ -22,6 +22,7 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    */
   connect () {
 
+    window.onscroll = this.onScroll;
     this.anchors = [];
     this.options = {
       rootMargin: this.state.rootMargin,
@@ -35,8 +36,6 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
    */
   onmount () {
 
-    console.log('onmount');
-
     if (this.dom.hasHrefNode) {
 
       this.dom.hrefNode.classList.add('fc-blue');
@@ -46,12 +45,10 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
         this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
 
         a.onclick = () => {
-
           setTimeout(() => {
             this.dom.hrefNodes.forEach(j => j.classList.remove('fc-blue'));
             a.classList.add('fc-blue');
           }, 300);
-
         };
 
       }
@@ -60,7 +57,6 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
 
     this.onScroll();
 
-    window.onscroll = this.onScroll;
   }
 
   /**
@@ -78,7 +74,9 @@ export class ScrollSpy extends spx.Component<typeof ScrollSpy.define> {
       return this.anchors.includes(a.id);
     }).forEach((v, i) => {
 
-      v.style.paddingTop = '50px';
+      // if (i !== 0) return;
+
+      // v.style.paddingTop = '50px';
 
       const next = v.getBoundingClientRect().top;
 

@@ -3,8 +3,6 @@ import { IFrame } from './iframe';
 
 export class Counter extends spx.Component<typeof Counter.define> {
 
-  public countNode: HTMLElement;
-
   static define = {
     state: {
       count: Number
@@ -28,7 +26,6 @@ export class Counter extends spx.Component<typeof Counter.define> {
 
   connect () {
 
-    console.log('CONNECT');
     this.iframe.log('connect', 'counter component', 'fc-cyan');
 
   }

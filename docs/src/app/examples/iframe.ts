@@ -23,8 +23,8 @@ export class IFrame extends spx.Component<typeof IFrame.define> {
     element.ariaLabel = `${++this.state.count}`;
     element.innerHTML = `<span class="ff-code ${color}">${hook}()</span> ${message}`;
 
-    this.logNode.appendChild(element);
-    this.logNode.scrollTop = this.logNode.scrollHeight;
+    this.dom.logNode.appendChild(element);
+    this.dom.logNode.scrollTop = this.dom.logNode.scrollHeight;
 
   }
 

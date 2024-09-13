@@ -1,4 +1,14 @@
 {
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    // "**/node_modules": true,
+    "**/pnpm-lock.yaml": true,
+    //"**/public": true
+  },
   "npm.packageManager": "pnpm",
   "prettier.ignorePath": ".prettierignore",
   "stylelint.validate": [
@@ -27,6 +37,14 @@
       "decorations": [
         {
           "color": "#81D4FA",
+          "fontWeight": "900"
+        }
+      ]
+    },
+    "\\b(S)(?=\\.)": {
+      "decorations": [
+        {
+          "color": "#c881fa",
           "fontWeight": "900"
         }
       ]
@@ -73,16 +91,6 @@
   "[typescript]": {
     "editor.parameterHints.enabled": true,
     "editor.suggest.showModules": true,
-  },
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.DS_Store": true,
-    "**/node_modules": true,
-    "**/pnpm-lock.yaml": true,
-    //"**/public": true
   },
   "cSpell.words": [
     "Alexey",

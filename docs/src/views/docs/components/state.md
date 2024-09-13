@@ -2,6 +2,12 @@
 permalink: '/components/state/index.html'
 layout: base.liquid
 title: Component States
+anchors:
+  - State
+  - Type Constructors
+  - Default State
+  - Persisted State
+  - Shared State
 ---
 
 # State

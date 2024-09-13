@@ -20,6 +20,18 @@
     }
 
     .icon-github {
+      width: 42px;
+      height: 22px;
+      color: $white;
+    }
+
+    .icon-discord {
+      width: 22px;
+      height: 22px;
+      color: $white;
+    }
+
+    .icon-npm {
       width: 22px;
       height: 22px;
       color: $white;
@@ -61,7 +73,7 @@
       padding: 10px 15px 5px 20px;
       color: $link-color;
       font-weight: $font-weight-bolder;
-      font-size: 0.825rem;
+      font-size: 0.85rem;
       font-family: $font-family-heading;
       text-transform: uppercase;
       list-style: none;
@@ -98,7 +110,7 @@
 
         > a {
           margin: 0;
-          font-size: 0.925rem;
+          font-size: 1rem;
           color: $white;
 
           &:hover {

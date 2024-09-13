@@ -7,12 +7,22 @@
       {% svg 'logo', 'icon-logo' %}
     </a>
     <a
-      class="col-auto tr pr-0"
+      class="col-auto tr ml-auto"
       href="{{ navigation.github.url }}"
-      data-tooltip="right"
-      aria-label="{{ navigation.github.title }}"
       target="_blank">
       {% svg 'github', 'icon-github' %}
+    </a>
+    <a
+      class="col-auto tr"
+      href="{{ navigation.npm.url }}"
+      target="_blank">
+      {% svg 'npm', 'icon-npm' %}
+    </a>
+    <a
+      class="col-auto tr pr-0"
+      href="{{ navigation.discord.url }}"
+      target="_blank">
+      {% svg 'discord', 'icon-discord' %}
     </a>
   </div>
 </div>

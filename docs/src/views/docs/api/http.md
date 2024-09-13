@@ -2,7 +2,7 @@
 title: 'SPX Methods | Request - spx.request'
 layout: base.liquid
 group: api
-permalink: '/api/request/index.html'
+permalink: '/api/http/index.html'
 ---
 
-# spx.request
+# spx.http

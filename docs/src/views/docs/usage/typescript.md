@@ -2,19 +2,27 @@
 permalink: '/usage/typescript/index.html'
 layout: base.liquid
 title: 'Using TypeScript'
+anchors:
+  - TypeScript
+  - SPX Namespace
+  - Component State
+  - Type Constructors
+  - Component Nodes
+  - Component Events
+  - Event Utilities
 ---
 
 # TypeScript
 
-SPX is written in TypeScript and provides thorough type coverage. Each definition is accompanied by detailed JSDoc annotations, providing in-depth descriptions, documentation reference links and code examples. Incorporating SPX into TypeScript projects is straightforward.
+SPX is developed in TypeScript, ensuring comprehensive type safety and coverage. Every component and utility in SPX comes with extensive JSDoc annotations that include detailed descriptions, references to relevant documentation, and practical code examples. This makes integrating SPX into TypeScript projects seamless and enhances developer productivity with clear, type-safe interfaces.
 
-> SPX is at home in a TypeScript environment and it encompasses all specificities around intelliSense capabilities. Developers are encouraged to adopt and use SPX within a TS project.
+> SPX thrives within a TypeScript environment, fully leveraging TypeScript's IntelliSense capabilities for enhanced developer experience. The framework is designed to integrate smoothly into TypeScript projects, encouraging developers to utilize SPX for its robust type system.
 
 ---
 
 # SPX Namespace
 
-Accessible types are provided within the `SPX` namespace export. The exposed types are a combination of utilities and interface structures. The module itself is extensively typed, the available exports should cover most cases.
+The `SPX` namespace export provides a range of accessible types, encompassing both utility types and interface structures. This module, being extensively typed, ensures that its exports are comprehensive enough to handle most use cases within your TypeScript projects.
 
 <!-- prettier-ignore -->
 ```ts
@@ -27,13 +35,11 @@ SPX.Define        // The static component define object
 SPX.Event<T>      // Type inferred Event parameter utility
 ```
 
----
-
 # Component State
 
-Components will always extend the `spx.Component` subclass, which can be utilized for auto-typing. In TypeScript projects, type parameters can be inferred by passing `typeof` on the static `connect` object reference. This provision allows SPX to apply type completions and validations to the `this.state` reference.
+Components in SPX **always** extend the `spx.Component` subclass, which supports auto-typing. In TypeScript environments, you can leverage type inference passing the static define object reference, by asserting a `typeof` prefix. This technique enables SPX to provide type completions and validations for `{js} this.state`.
 
-> **TIP** Developers using the ESLint rule [no-use-before-define](https://eslint.org/docs/latest/rules/no-use-before-define) will need to either disable or turn it off in components when using the `spx.Component<T>` subclass due the `typeof` reference.
+> For developers employing the ESLint rule [no-use-before-define](https://eslint.org/docs/latest/rules/no-use-before-define), you might need to disable or adjust this rule within components that use the `spx.Component<T>` subclass, as the `typeof` reference can trigger this linting error.
 
 <!-- prettier-ignore -->
 ```ts
@@ -61,8 +67,9 @@ export class Example extends spx.Component<typeof Example.define> {
 }
 ```
 
-Type constructors can also accept inferred types, and the provision will behave in accordance with the definition passed. Applying _typed_ (Type) constructors is highly desirable when using `Object` or `Array` constructors in component state. Additionally, SPX extends support to literal unions for `String` type constructors which will resolve to `Record<T>` ensuring that known types of the
-string are shown as completions while unknown strings being error tolerant.
+# Type Constructors
+
+Type constructors can also accept inferred types, and the provision will behave in accordance with the definition passed. Applying _typed_ (Type) constructors is highly desirable when using `Object` or `Array` constructors in component state. Additionally, SPX extends support to literal unions for `String` type constructors which will resolve to `Record<T>` ensuring that known types of the string are shown as completions while unknown strings being error tolerant.
 
 <!-- prettier-ignore -->
 ```ts
@@ -92,13 +99,11 @@ export class Example extends spx.Component<typeof Example.define> {
 }
 ```
 
----
-
 # Component Nodes
 
-SPX Supports HTMLElement typing for all `nodes[]` provided on the static `define` configuration object. Nodes will be exposed and available via the {js `this.dom`} object. SPX will look at node name identifiers to determine element tag types, this results in auto-typing capabilities whenever a tag name expression is applied as a prefix in the identifier SPX will resolve that element.
+SPX provides robust support for HTMLElement typing for all `nodes[]` defined within the static `define` configuration object. These nodes become available through the `{js} this.dom` object, offering a direct interface to manipulate DOM elements within your component. SPX intelligently interprets the node identifiers to determine the appropriate element tag types. This means that by simply naming your nodes with a tag prefix (e.g., `button`, `div`, `input`), SPX can automatically infer and apply the correct typing for these elements. This feature significantly enhances developer productivity by reducing manual type annotations and ensuring type safety throughout your component interactions.
 
-> The `<const>` prefix type annotation provided to `nodes` is **required** and when omitted SPX will not apply DOM Node element typing.
+> The `<const>` prefix type annotation is **mandatory** when defining `nodes`. Omitting this annotation will prevent SPX from applying the specific DOM Node element typing, potentially leading to type errors or loss of IntelliSense support in your IDE.
 
 <!-- prettier-ignore -->
 ```ts
@@ -116,29 +121,19 @@ export class Example extends spx.Component<typeof Example.define> {
 
   connect () {
 
-
     this.dom.buttonFooNode      // => HTMLButtonElement
     this.dom.buttonFooNodes     // => HTMLButtonElement[]
-    this.dom.hasButtonFooNode   // => true or false
-
+    this.dom.hasButtonFoo       // => true or false
     this.dom.inputDemoNode      // => HTMLInputElement
     this.dom.inputDemoNodes     // => HTMLInputElement[]
-    this.dom.hasInputDemoNode   // => true or false
-
+    this.dom.hasInputDemo       // => true or false
     this.dom.exampleNode        // => HTMLElement
     this.dom.exampleNodes       // => HTMLElement[]
-    this.dom.hasExampleNode     // => true or false
+    this.dom.hasExample         // => true or false
 
   }
-
-  // Explicitly pass the following for completion support
-
 }
 ```
-
-_There are plans to bring completions support for nodes in [vscode-spx](https://github.com/panoply/vscode) in due time. Consider the explicit typing to be a temporary workaround until support is made available._
-
----
 
 # Component Events
 
@@ -154,20 +149,31 @@ export class Example extends spx.Component<typeof Example.define> {
     nodes: <const>['button']
   }
 
+  // We can pass attrs as first parameter and Element type second
+  //
   onPress (event: SPX.Event<{ foo: string bar: boolean }, HTMLButtonElement> ) {
-
     event.attrs.foo  // string
     event.attrs.bar  // boolean
     event.target     // HTMLButtonElement
-
   }
 
-  public buttonNode: HTMLButtonElement;
-  public buttonNodes: HTMLButtonElement[];
-  public hasButtonNode: boolean;
+  // We can optionally pass Element type are first parameter is no attrs
+  //
+  onClick(event: SPX.Event<HTMLAnchorElement>) {
+    event.target     // HTMLAnchorElement
+  }
+
+  // We can take advantage of the Event type utilities which automate handling
+  //
+  onInput(event: SPX.InputEvent<{ baz: number }>) {
+    event.attrs.baz  // number
+    event.target     // HTMLInputElement
+  }
 
 }
 ```
+
+# Event Utilities
 
 The `SPX.Event` type utilities merge with TypeScripts official DOMEvent declarations and will act in accordance with arguments provided. You can omit arguments in cases where an event callback does not include `attrs` and the inferred values will behave correctly. SPX provides the below list of event utilities:
 

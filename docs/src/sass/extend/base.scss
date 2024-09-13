@@ -2,12 +2,21 @@
   font-family: $font-family-heading;
 }
 
-blockquote + h1,
-blockquote + h2,
-blockquote + h3,
-blockquote + h4,
-blockquote + h5,
-blockquote + h6,
+pre.papyrus + :not(blockquote):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+  margin-bottom: $spacer-5 * 1.5;
+}
+
+pre.papyrus + blockquote + h1,
+pre.papyrus + blockquote + h2,
+pre.papyrus + blockquote + h3,
+pre.papyrus + blockquote + h4,
+pre.papyrus + blockquote + h5,
+pre.papyrus + blockquote + h6 {
+  margin-top: $spacer-5 * 1.5;
+}
+
+p + p,
+p + pre.papyrus + p,
 p + h1,
 p + h2,
 p + h4,
@@ -17,26 +26,24 @@ p + pre.papyrus {
   margin-top: $spacer-4;
 }
 
-pre.papyrus + blockquote,
-pre.papyrus + p,
 pre.papyrus + h1,
 pre.papyrus + h2,
 pre.papyrus + h3,
 pre.papyrus + h4,
 pre.papyrus + h5,
-pre.papyrus + h6,
-p + h3 {
-  margin-top: $spacer-5;
+pre.papyrus + h6 {
+  margin-top: $spacer-5 * 1.5;
 }
 
 pre.papyrus + blockquote {
-  margin-top: $spacer-5;
+  margin-top: $spacer-4;
+  margin-bottom: $spacer-5;
 }
 
 p + h1,
 ul + h1,
 pre + h1 {
-  margin-top: 40px !important;
+  margin-top: $spacer-5;
 }
 
 h1,
@@ -46,22 +53,12 @@ h4,
 h5,
 h6 {
   + p {
-    margin-bottom: 20px;
+    margin-bottom: $spacer-1;
   }
 }
 
-pre + h4 {
-  margin-top: 40px;
-}
-
-h5 {
-  margin-top: 40px;
-  margin-bottom: 20px;
-  font-family: $font-family-other;
-}
-
 hr {
-  margin: 40px 0 !important;
+  margin: $spacer-5 * 1.5 0 !important;
   padding: 0 20px;
 }
 
@@ -111,14 +108,16 @@ table {
 
 :not(pre) > code {
   word-wrap: break-word;
-  padding: 0.12rem 0.45rem 0.21rem 0.45rem;
-  border-radius: 0.25rem;
-  letter-spacing: 0.0225rem;
+  padding: 0.1rem 0.42rem 0.21rem 0.42rem;
+  margin: 0rem 0.2rem 0 0.2rem;
+  border-radius: 0.2rem;
+  letter-spacing: 0.0235rem;
   font-weight: 500;
-  font-size: 0.7rem;
+  line-height: 1.4rem;
+  font-size: 0.71rem;
   color: $white;
   font-family: $font-family-code;
-  text-shadow: 0px 0px 5px black;
+  text-shadow: 0px 0px 4px black;
   border: 0.01rem solid #5d5d70;
   //-webkit-font-smoothing: subpixel-antialiased;
 }
@@ -154,12 +153,16 @@ blockquote > p {
 }
 
 .breadcrumb {
-  font-size: 0.825rem;
+  font-size: 0.725rem;
+  font-family: $font-family-heading;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: $gray-500;
 
   .icon-right,
   .icon-home {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
   }
 }
 

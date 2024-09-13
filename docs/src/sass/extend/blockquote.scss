@@ -1,8 +1,8 @@
 blockquote {
   margin-top: 40px;
   margin-bottom: 40px;
-  padding: 10px;
-  padding-left: 75px !important;
+  padding: 5px;
+  padding-left: 65px !important;
   background-image: url(icon-info($gray-500));
   background-repeat: no-repeat no-repeat;
   background-position: 25px center;
@@ -22,7 +22,7 @@ blockquote {
   }
 
   &.note {
-    background-image: url(icon-info($gray-600));
+    background-image: url(icon-info(#9197a5));
     background-repeat: no-repeat no-repeat;
     background-position: 25px center;
     background-size: 2.5%;
@@ -40,11 +40,16 @@ blockquote {
     padding-top: 5px;
     padding-bottom: 5px;
     margin: 0;
-    width: 100% !important;
-    color: #b8b5b5;
-    font-size: $font-size-md;
+    width: 98% !important;
+    color: #a9acb2;
+    font-size: 0.895rem;
     font-weight: 100;
+    letter-spacing: 0.03rem;
     font-family: $font-family-base;
     -webkit-font-smoothing: subpixel-antialiased;
+
+    a {
+      font-weight: 100;
+    }
   }
 }

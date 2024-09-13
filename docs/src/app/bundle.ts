@@ -1,5 +1,4 @@
 import spx from 'spx';
-import relapse from 'relapse';
 import { Drawer } from './components/drawer';
 import { Dropdown } from './components/dropdown';
 import { Search } from './components/search';

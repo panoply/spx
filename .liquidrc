@@ -18,7 +18,7 @@
       "commentIndent": true,
       "commentNewline": true,
       "delimiterPlacement": "consistent",
-      "delimiterTrims": "never",
+      "delimiterTrims": "always",
       "lineBreakSeparator": "before",
       "indentAttribute": true,
       "normalizeSpacing": true,

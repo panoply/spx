@@ -3,6 +3,12 @@ title: 'Connection'
 layout: base.liquid
 group: usage
 permalink: '/usage/connection/index.html'
+anchors:
+  - Connection
+  - Example 1
+  - Example 2
+  - Example 3
+  - Example 4
 ---
 
 # Connection

@@ -2,4 +2,18 @@
   .token.operator + .token.operation + .token.maybe-class-name {
     color: $papyrus-ts-constant;
   }
+
+  .token.object + .token.punctuation-chars + .token.operator + .maybe-class-name {
+    color: $papyrus-ts-constant;
+  }
+}
+
+.language-bash {
+  padding: 0.8em !important;
+}
+
+h2 > code {
+  font-size: 1.1rem;
+  border: none;
+  padding-left: 0;
 }

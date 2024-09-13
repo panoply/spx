@@ -1,7 +1,10 @@
 ---
-permalink: '/usage/spx-components/index.html'
+permalink: '/usage/components/index.html'
 title: Components - Overview
 layout: base.liquid
+anchors:
+  - Components
+  - Markup
 ---
 
 # Components
