@@ -95,14 +95,12 @@ For more advanced cases, SPX provides component extendability. Connect component
 ```ts
 import spx from 'spx';
 
-class Counter extends spx.Component {
-
-  static define = {
-    nodes: <const>['count'],
-    state: {
-      clicks: Number
-    }
+class Counter extends spx.Component({
+  nodes: <const>['count'],
+  state: {
+    clicks: 0
   }
+}) {
 
   increment () {
     this.countNode.innerText = +this.state.clicks
