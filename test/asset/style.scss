@@ -3,7 +3,14 @@
 /* -------------------------------------------- */
 
 @import '../node_modules/@brixtol/bootstrap/variables';
-@import '../node_modules/papyrus/index';
+
+$enable-font-smoothing: true;
+
+/* -------------------------------------------- */
+/* EDITABLE OPTIONS                             */
+/* -------------------------------------------- */
+
+$enable-rfs: true;
 
 /* -------------------------------------------- */
 /* VENDORS                                      */
@@ -37,7 +44,7 @@ $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 /* FONT SIZES                                   */
 /* -------------------------------------------- */
 
-$font-size-base: 1rem;
+$font-size-base: 0.945rem;
 
 $font-size-xs: $font-size-base * 0.725; // 0.6875rem
 $font-size-md: 0.901rem; // 0.7771rem
@@ -87,7 +94,23 @@ $font-colors: (
 );
 
 @import '../node_modules/@brixtol/bootstrap/variation';
+
+@import '../node_modules/papyrus/index.scss';
+@import '../node_modules/papyrus/theme/languages/bash';
+@import '../node_modules/papyrus/theme/languages/html';
+@import '../node_modules/papyrus/theme/languages/liquid';
+@import '../node_modules/papyrus/theme/languages/javascript';
+@import '../node_modules/papyrus/theme/languages/typescript';
+@import '../node_modules/papyrus/theme/languages/xml';
+@import '../node_modules/papyrus/theme/languages/css';
+@import '../node_modules/papyrus/theme/languages/scss';
+@import '../node_modules/papyrus/theme/languages/json';
+@import '../node_modules/papyrus/theme/languages/treeview';
 @import './style/resize';
 @import './style/extend';
 @import './style/json-tree';
 @import './style/explorer';
+
+:root {
+  --papyrus-code-border-radius: 0;
+}

@@ -1,0 +1,47 @@
+---
+title: 'Merge - Page A'
+layout: views/base.liquid
+permalink: '/components/merge/page-a/index.html'
+shared: 'cases/component-merge/include/shared'
+---
+
+{% include 'cases/component-merge/include/pages' %}
+<h1 id="title">SPX Merge - Page A</h1>
+
+<div id="example">
+
+  {{ content }}
+
+  <div class="row ai-center jc-start my-5">
+    <div class="col-6">
+      <section
+        class="accordion"
+        spx-component="merge">
+        <details open>
+          <summary class="accordion-btn py-2 px-4">Foo A</summary>
+          <div class="accordion-content">
+            <div class="p-4 bg-gray">
+              Quo voluptatem cum error quidem necessitatibus, doloribus suscipit esse quasi nihil nemo laudantium, voluptatum eius magnam? Harum quis repellendus explicabo nobis. Officia?
+            </div>
+          </div>
+        </details>
+        <details>
+          <summary class="accordion-btn py-2 px-4">Bar A</summary>
+          <div class="accordion-content">
+            <div class="p-4 bg-gray">
+              Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quo voluptatem cum error quidem necessitatibus, doloribus suscipit esse quasi nihil nemo laudantium, voluptatum eius magnam? Harum quis repellendus explicabo nobis. Officia?
+            </div>
+          </div>
+        </details>
+        <details>
+          <summary class="accordion-btn py-2 px-4">Qux A</summary>
+          <div class="accordion-content">
+            <div class="p-4 bg-gray">
+              Lorem ipsum dolor sit amet consectetur
+            </div>
+          </div>
+        </details>
+      </section>
+    </div>
+  </div>
+</div>

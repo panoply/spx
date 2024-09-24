@@ -13,6 +13,27 @@ export const HTTP = /^(?:https?:)?\/\//;
 export const CacheValue: RegExp = /^(reset|clear|update)$/i;
 
 /**
+ * Character Entities
+ *
+ * Used to decode sequences from raw strings (like snapshot `<title>`)
+ */
+export const CharEntities: RegExp = /&(?:amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g;
+
+/**
+ * Invalid Component Name
+ *
+ * Validates component name identifier, ensuring all lowercase and camelCase format
+ */
+export const ComponentNameCheck: RegExp = /^[A-Z]|[_-]/;
+
+/**
+ * Pre Tag
+ *
+ * Used to when executing dom literals.
+ */
+export const PreTag: RegExp = /<pre[^<]*<\/pre\s*>/g;
+
+/**
  * URL Pathname
  *
  * Used to match first pathname from a URL.

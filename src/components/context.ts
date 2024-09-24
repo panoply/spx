@@ -1,14 +1,23 @@
 import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope } from 'types';
 import { $ } from '../app/session';
-import { CharCode, Hooks, HookStatus, Log } from '../shared/enums';
-import { b, nil, o } from '../shared/native';
+import { CharCode, Hooks, Log } from '../shared/enums';
+import { b, o } from '../shared/native';
 import { log } from '../shared/logs';
 import { walkElements } from '../morph/walk';
-import { setInstances } from './instances';
+import { setInstances } from './instance';
 import { snap } from './snapshot';
 import { isBoolean, isNumeric } from '../shared/regexp';
-import { attrJSON, camelCase, defineGetter, equalizeWS, escSelector, isEmpty, last, uuid } from '../shared/utils';
 import * as fragment from '../observe/fragment';
+import {
+  attrJSON,
+  camelCase,
+  defineGetter,
+  equalizeWS,
+  escSelector,
+  isEmpty,
+  last,
+  uuid
+} from '../shared/utils';
 
 /*
   SPX COMPONENT - ALGORITHM
@@ -20,34 +29,31 @@ import * as fragment from '../observe/fragment';
 
   DATASET REFERENCES
 
-  Component elements (root, events, binds and nodes) will be annotated with a data-spx="" value. The value is
+  Component elements (dom, events, binds and nodes) will be annotated with a data-spx="" value. The value is
   is mapped to instances. Each time we encounter an element of interest (component directive) we mark it with
-  an UUID reference via the data-spx="" attribute. The UUID value within that attribute use the following pattern:
+  an UUID reference via the data-spx="" attribute. The UUID value within that attribute uses the following pattern:
 
   c.a1b2c3  - Components begin with "c"
   b.fw32dk  - Binds begin with "b"
   e.tudhj2  - Events begin with "e"
-  n.xcnd34  - Nodes begins with "n"
 
   In situations where an element is annotated with multiple directives, for example:
 
   BEFORE:
     <div
       spx@mouseover="ref.callback"
-      spx-node="ref.id"
     ></div>
 
   AFTER:
     <div
       spx@mouseover="ref.callback"
-      spx-node="ref.id"
-      data-spx="e.tudhj2,n.xcnd34"  << Internal Reference
+      data-spx="e.tudhj2"  << Internal Reference
     ></div>
 
   Notice in the AFTER example, the data-spx="" value has comma separated UUID refs. The values UUIDs are important
   because these will determine elements of interest during morph operations and will be leveraged to acquire the related instances(see observe.ts).
 
-  CONTEXT > INSTANCE > SCOPE
+  CONTEXT > INSTANCE
 
   The functions on this page are responsible for composing context. Context is represented as a simple data-model
   and it is exposed on a read-only property of components using the name "scope". The scope is what we refer to
@@ -57,7 +63,7 @@ import * as fragment from '../observe/fragment';
 
   It's important to note that the algorithm updates snapshots in the cache. This ensures that subsequent visits
   can re-connect events and update nodes in the most effecient manner possible without having to walk the
-  entire tree. We use data-spx attributes specifically because our snapshots are DOM strings which we active with
+  entire tree. We use data-spx attributes specifically because our snapshots are DOM strings which we activate using
   DOM Parser when visiting new pages. The reference allow us to persist across visits in the session.
 
 */
@@ -102,11 +108,11 @@ export interface Context {
 /* DOM WALKS                                    */
 /* -------------------------------------------- */
 
-export const walkNode = (node: HTMLElement, context: Context): false | Context | void => {
+export const walkNode = (node: HTMLElement, context: Context, strict = true): false | Context | void => {
 
   // Quick check before proceeding to help prevent unnecessary inspection
   //
-  if (!isDirective(node.attributes)) return;
+  if (strict && !isDirective(node.attributes)) return;
 
   // The node is not "spx-component" but may be component related.
   // We will pass this to setAttrs for futher analysis to determine if
@@ -127,12 +133,15 @@ export const walkNode = (node: HTMLElement, context: Context): false | Context |
  * callback. The `instanceOf` represents component identifier, whereas `aliasName` represents
  * an alternative identifier passed as `indentifer as alias`
  */
-export const getComponentValues = (input: string, cb: (instanceOf: string, aliasName?: string) => void) => {
+const getComponentValues = (input: string, cb: (instanceOf: string, aliasName?: string) => void) => {
 
-  const names = input.trim().replace(/\s+/, ' ').split(/[|, ]/);
+  const names = input
+    .trim()
+    .replace(/\s+/, ' ')
+    .split(/[|, ]/);
 
   for (let i = 0, n = 0, s = names.length; i < s; i++) {
-    if (names[i] === nil) continue;
+    if (names[i] === '') continue;
     if ((n = i + 2) < s && names[i + 1] === 'as') {
       cb(camelCase(names[i]), camelCase(names[n]));
       i = n;
@@ -149,7 +158,9 @@ export const getComponentValues = (input: string, cb: (instanceOf: string, alias
  */
 export const getEventParams = (attributes: NamedNodeMap, event: ComponentEvent) => {
 
-  for (let i = 0, s = attributes.length; i < s; i++) {
+  const s = attributes.length;
+  let i = 0;
+  while (++i < s) {
 
     const { name, value } = attributes[i];
 
@@ -158,9 +169,9 @@ export const getEventParams = (attributes: NamedNodeMap, event: ComponentEvent) 
 
     const prop = name.slice($.config.schema.length).split(':').pop();
 
-    if (event.params === null) event.params = o();
+    if (event.attrs === null) event.attrs = o();
 
-    if (!(prop in event.params)) event.params[prop] = getAttrValueType(value);
+    if (!(prop in event.attrs)) event.attrs[prop] = getAttrValueType(value);
 
   }
 
@@ -185,23 +196,26 @@ export const isDirective = (attrs: string | NamedNodeMap) => {
     );
   }
 
-  let i = attrs.length - 1;
-  for (; i >= 0; i--) if (isDirective(attrs[i].name)) return true;
+  for (let i = attrs.length - 1; i >= 0; i--) if (isDirective(attrs[i].name)) return true;
 
   return false;
 
 };
 
 /**
- * Whether or not an element is a child of the root component node.
+ * Whether or not an element is a child of the view component node.
  * When {@link Scope.status} is set to `2` or `3` (MOUNT or MOUNTED)
- * then component root dom element has already been walked, so we check
+ * then component view dom element has already been walked, so we check
  * whether or not the `node` is a decedent of it. If {@link Scope.status}
  * is set to another enum value than we know we are not within bounds.
  */
 export const isChild = (scope: Scope, node: HTMLElement) => (
   scope.status === Hooks.MOUNT ||
-  scope.status === Hooks.MOUNTED) ? scope.root.contains(node) : false;
+  scope.status === Hooks.MOUNTED
+) ? scope.dom
+    ? scope.dom.contains(node)
+    : false
+  : false;
 
 /**
  * Whether or not DOM Nodes of {@link Scope.nodes}, {@link Scope.binds}
@@ -254,7 +268,9 @@ export const getAttrValueType = (input: string) => {
 
   const code = input.charCodeAt(0);
 
-  return code === CharCode.LCB || code === CharCode.LSB ? attrJSON(input) : input; // string value
+  return code === CharCode.LCB || code === CharCode.LSB
+    ? attrJSON(input)
+    : input; // string value
 
 };
 
@@ -300,13 +316,10 @@ export const getSelector = (node: HTMLElement, attrName: string, attrValue?: str
  * This function will also check aliases but is responsible for
  * obtaining scopes from aliases which follow a component instance.
  */
-export const getScope = (id: string, { $scopes, $aliases }: Context) => {
-
-  return id in $aliases ? last($scopes[$aliases[id]]) : id in $scopes
+export const getScope = (id: string, { $scopes, $aliases }: Context) =>
+  id in $aliases ? last($scopes[$aliases[id]]) : id in $scopes
     ? last($scopes[id])
     : ($scopes[id] = [ setScope([ id ]) ])[0];
-
-};
 
 /* -------------------------------------------- */
 /* SETTERS                                      */
@@ -331,11 +344,12 @@ export const defineDomRef = (node: HTMLElement, instance: string, ref: string, s
   $.components.$reference[ref] = instance;
 
   const value = node.getAttribute($.qs.$ref);
-  const suffix = value ? `${value},${ref}` : ref;
 
-  node.setAttribute($.qs.$ref, suffix);
+  node.setAttribute($.qs.$ref, value
+    ? `${value},${ref}`
+    : ref);
 
-  if (selector) snap.add(selector, ref);
+  selector && snap.add(selector, ref);
 
   return ref;
 
@@ -353,39 +367,29 @@ export const defineDomRef = (node: HTMLElement, instance: string, ref: string, s
  * pass through this function and a reference will be established. This operation
  * allows us to have scopes available whenever we encounter component related element.
  */
-export const setScope = ([ instanceOf, aliasOf = null ]: string[], root?: HTMLElement, context?: Context): Scope => {
+export const setScope = ([ instanceOf, aliasOf = null ]: string[], dom?: HTMLElement, context?: Context): Scope => {
 
-  const key = uuid();
-  const scope: Scope = o<Partial<Scope>>({
-    key,
-    instanceOf,
-    ref: `c.${key}`,
-    status: Hooks.UNMOUNTED,
-    snap: null,
-    snapshot: null,
-    define: o(),
-    state: o(),
-    nodes: o(),
-    events: o(),
-    binds: o(),
-    hooks: o()
-  });
+  const scope: Scope = o<Partial<Scope>>();
 
-  scope.hooks.connect = HookStatus.UNDEFINED;
-  scope.hooks.onmount = HookStatus.UNDEFINED;
-  scope.hooks.unmount = HookStatus.UNDEFINED;
-  scope.hooks.onmedia = HookStatus.UNDEFINED;
+  scope.key = uuid();
+  scope.ref = `c.${scope.key}`;
+  scope.status = Hooks.UNMOUNTED;
+  scope.state = o();
+  scope.nodes = o();
+  scope.binds = o();
+  scope.events = o();
 
   // Whenever a dom parameter exists it infers an spx-component
   // annotated element was detected
-  if (root) {
+  if (dom) {
 
+    scope.snap = null;
     scope.status = Hooks.MOUNT;
-    scope.inFragment = fragment.contains(root);
+    scope.inFragment = fragment.contains(dom);
     scope.alias = aliasOf || null;
+    scope.dom = dom;
 
-    defineGetter(scope, 'root', root, true);
-    defineDomRef(root, key, scope.ref, getSelector(root, $.qs.$component));
+    defineDomRef(dom, scope.key, scope.ref, getSelector(dom, $.qs.$component));
 
   }
 
@@ -408,27 +412,28 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], root?: HTMLEl
           // the related events, nodes or binds from the dormant context instance
           // to the instance we have currently scoped. The $reference proxy will
           // need to be aligned which is why we "for in" each property and re-assign.
-          for (const {
-            events,
-            nodes,
-            binds
-          } of context.$scopes[scope.alias]) {
+          for (const { events, nodes, binds } of context.$scopes[scope.alias]) {
 
-            for (const e in events) {
-              scope.events[e] = events[e];
-              $.components.$reference[e] = key;
+            if ('events' in scope) {
+              for (const e in events) {
+                scope.events[e] = events[e];
+                $.components.$reference[e] = scope.key;
+              }
             }
 
-            for (const n in nodes) {
-              scope.nodes[n] = nodes[n];
-              $.components.$reference[n] = key;
+            if ('nodes' in scope) {
+              for (const n in nodes) {
+                scope.nodes[n] = nodes[n];
+                $.components.$reference[n] = scope.key;
+              }
             }
 
-            for (const b in binds) {
-              scope.binds[b] = binds[b];
-              $.components.$reference[b] = key;
+            if ('binds' in scope) {
+              for (const b in binds) {
+                scope.binds[b] = binds[b];
+                $.components.$reference[b] = scope.key;
+              }
             }
-
           }
 
           // We can now dispose of the dormant aliases in scope as they
@@ -455,9 +460,7 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], root?: HTMLEl
       }
 
     } else {
-
       scope.alias = null;
-
     }
 
   } else {
@@ -477,6 +480,7 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], root?: HTMLEl
   }
 
   return scope;
+
 };
 
 export const setEvent = (node: HTMLElement, name: string, valueRef: string, context: Context) => {
@@ -486,22 +490,23 @@ export const setEvent = (node: HTMLElement, name: string, valueRef: string, cont
   const hasOptions = valueRef.indexOf('{');
   const values = valueRef.trim().split(hasOptions > -1 ? /(?<=[$_\w}])\s+(?=[$_\w])/ : /\s+/);
 
-  for (const value of values) {
+  for (let i = 0, s = values.length; i < s; i++) {
 
-    const event: ComponentEvent = o();
+    const value = values[i];
     const listener = new AbortController();
+    const ev: ComponentEvent = o();
 
     /* -------------------------------------------- */
     /* POPULATE MODEL                               */
     /* -------------------------------------------- */
 
-    event.key = `e.${uuid()}`;
-    event.isWindow = isWindow;
-    event.eventName = isWindow ? eventName.slice(7) : eventName;
-    event.attached = false;
-    event.selector = getSelector(node, escSelector(name), value, true);
-    event.params = null;
-    event.options = { signal: listener.signal };
+    ev.key = `e.${uuid()}`;
+    ev.isWindow = isWindow;
+    ev.eventName = isWindow ? eventName.slice(7) : eventName;
+    ev.attached = false;
+    ev.selector = getSelector(node, escSelector(name), value, true);
+    ev.attrs = null;
+    ev.options = { signal: listener.signal };
 
     let attrVal: string = value;
 
@@ -512,9 +517,9 @@ export const setEvent = (node: HTMLElement, name: string, valueRef: string, cont
         .match(/(passive|once|capture)/g);
 
       if (args !== null) {
-        if (args.indexOf('once') > -1) event.options.once = true;
-        if (args.indexOf('passive') > -1) event.options.passive = true;
-        if (args.indexOf('capture') > -1) event.options.capture = true;
+        ev.options.once = args.indexOf('once') > -1;
+        ev.options.passive = args.indexOf('passive') > -1;
+        ev.options.capture = args.indexOf('capture') > -1;
       }
 
       attrVal = value.slice(0, hasOptions);
@@ -525,28 +530,18 @@ export const setEvent = (node: HTMLElement, name: string, valueRef: string, cont
     /* EVENT METHOD                                 */
     /* -------------------------------------------- */
 
-    const eventValue = getAttrValueNotation(attrVal);
-
-    // We only allow one method to be passed per event
-    // Let's warn if more than 1 sequence is passed.
-    if (eventValue.length > 1) {
-
-      log(Log.WARN, `No more than 1 DOM Event listener method allowed in value: ${value}`);
-
-    }
-
     // Deconstruct event value, we use dot . notation, thus we split.
-    const [ instanceOf, method ] = eventValue[0].split('.');
+    const [ instanceOf, method ] = getAttrValueNotation(attrVal)[0].split('.');
     const scope: Scope = getScope(instanceOf, context);
 
-    event.listener = listener;
-    event.method = method.trim();
-    event.isChild = isChild(scope, node);
+    ev.listener = listener;
+    ev.method = method.trim();
+    ev.isChild = isChild(scope, node);
 
-    defineGetter(event, 'dom', node, true);
-    defineDomRef(node, scope.key, event.key, event.selector);
+    defineGetter(ev, 'dom', node, true);
+    defineDomRef(node, scope.key, ev.key, ev.selector);
 
-    scope.events[event.key] = event;
+    scope.events[ev.key] = ev;
 
   }
 };
@@ -557,19 +552,26 @@ export const setNodes = (node: HTMLElement, value: string, context: Context) => 
 
   for (const nodeValue of nodes) {
 
-    const [ instanceOf, keyProp ] = nodeValue.split('.');
+    const [ instanceOf, name ] = nodeValue.split('.');
     const scope: Scope = getScope(instanceOf, context);
-    const selector = `[${$.qs.$node}*="${value}"]`;
-    const key = defineDomRef(node, scope.key, `n.${uuid()}`, `${node.nodeName.toLowerCase()}${selector}`);
-    scope.nodes[key] = o<ComponentNodes>({
-      key,
-      keyProp,
-      selector,
-      dom: context.$element,
-      schema: `${keyProp}Nodes`,
-      live: true,
-      isChild: isChild(scope, node)
-    });
+
+    if (name in scope.nodes) {
+
+      scope.nodes[name].live++;
+      scope.nodes[name].isChild = isChild(scope, node);
+
+    } else {
+
+      scope.nodes[name] = o<ComponentNodes>({
+        name,
+        selector: `[${$.qs.$node}*="${value}"]`,
+        dom: o(),
+        key: `c.${scope.key}`,
+        live: 1,
+        isChild: isChild(scope, node)
+      });
+
+    }
 
   }
 
@@ -584,18 +586,18 @@ export const setBinds = (node: HTMLElement, value: string, context: Context) => 
     const selector = `[${$.qs.$bind}="${value}"]`;
     const key = defineDomRef(node, scope.key, `b.${uuid()}`, `${node.nodeName.toLowerCase()}${selector}`);
 
-    if (!(stateKey in scope.binds)) scope.binds[stateKey] = o();
-
+    scope.binds[stateKey] ||= o();
     scope.binds[stateKey][key] = o<ComponentBinds>({
       key,
       stateKey,
       selector,
       value: node.innerText,
-      dom: context.$element,
       live: true,
       stateAttr: `${$.config.schema}${instanceOf}:${stateKey}`,
       isChild: isChild(scope, node)
     });
+
+    defineGetter(scope.binds[stateKey][key], 'dom', node);
 
   }
 };
@@ -651,7 +653,7 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
 
     if (!$.components.$registry.has(instanceOf)) {
 
-      log(Log.ERROR, `Component does not exist in registry: ${instanceOf}`);
+      log(Log.WARN, `Component does not exist in registry: ${instanceOf}`);
 
     } else {
 
@@ -666,14 +668,14 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
         // Status of UNMOUNTED signals that a scope exists and was already created
         // before reaching the component element. In this cases, we can proceed to
         // setting the DOM Reference identifier (i.e, data-spx) and we will also go
-        // around and assign the root node getter.
+        // around and assign the dom node getter.
         //
         if (scope.status === Hooks.UNMOUNTED) {
 
           scope.status = Hooks.MOUNT;
           scope.inFragment = fragment.contains(node);
+          scope.dom = node;
 
-          defineGetter(scope, 'root', node, true);
           defineDomRef(node, scope.key, scope.ref, getSelector(node, $.qs.$component));
 
         } else {
@@ -742,9 +744,7 @@ export const getComponents = (nodes?: Set<HTMLElement> | HTMLElement) => {
 
     walkElements(b(), node => walkNode(node, context));
 
-    if (isEmpty(context.$scopes)) return;
-
-    setInstances(context, snapshot);
+    isEmpty(context.$scopes) || setInstances(context, snapshot.ownerDocument);
 
   } else if (nodes instanceof Set) {
 

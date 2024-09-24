@@ -1,29 +1,24 @@
 import spx from 'spx';
 
-export class Nesting extends spx.Component<typeof Nesting.define> {
+export class Nesting extends spx.Component({
+  name: 'nesting',
+  sugar: true,
+  nodes: <const>[ 'foo', 'bar', 'buttonBaz' ],
+  state: {
+    foo: '',
+    count: 0
+  }
+}) {
 
-  static define = {
-    state: {
-      name: Number,
-      count: Number
-    },
-    nodes: <const>[
-      'demo'
-    ]
-  };
+  method () {
+
+    this.bar();
+  }
 
   onClick () {
 
-    console.log(this.state.count);
     ++this.state.count;
 
   }
-
-  /* -------------------------------------------- */
-  /* NODES                                        */
-  /* -------------------------------------------- */
-
-  public demoNode: HTMLElement;
-  public counterNode: HTMLElement;
 
 }

@@ -1,3 +1,51 @@
+.icon-logo {
+  color: #363d49;
+  width: 150px;
+  height: 50px;
+}
+
+.bg-code {
+  background-color: #16181c;
+}
+
+.sidebar {
+  position: absolute;
+  left: 0;
+  width: 170px;
+  a:hover {
+    text-decoration: underline;
+  }
+
+  &::after {
+    position: absolute;
+    left: 170px;
+    height: 98.8vh;
+    min-height: 98.8vh;
+    top: 0;
+    bottom: 0;
+    border-right: $border-width solid $border-color;
+    content: '';
+  }
+
+  strong {
+    font-size: 0.8rem;
+  }
+}
+
+.offset-left {
+  margin-left: 170px;
+}
+
+.version {
+  left: 0;
+  font-family: $font-family-heading;
+  font-size: 0.55rem;
+  font-weight: 600;
+  width: 170px;
+  color: $gray-500;
+  display: flex;
+}
+
 .ff-code {
   font-family: $headings-font-family;
 }
@@ -33,9 +81,12 @@
   position: sticky;
 }
 
-.compare {
+.snap,
+.compare,
+.prism-code-editor {
   height: 100%;
-  height: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 
   > pre {
     margin-top: 0;

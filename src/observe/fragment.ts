@@ -54,8 +54,10 @@ export const connect = () => {
 
   if ($.page.target.length > 0) {
 
+    console.log($.page);
+
     directive = $.qs.$target;
-    selector = $.page.target.join(',');
+    selector = $.page.target.join();
     aliases = nodeSet(dom.querySelectorAll<HTMLElement>(`[id][${$.qs.$component}]`));
 
   } else {
@@ -124,7 +126,9 @@ export const setFragmentElements = (page: Page) => {
     forNode(targets, (node, index) => {
 
       if (contains(node)) {
+
         log(Log.WARN, 'The fragment or target is a decedent of an element which morphs', node);
+
       } else {
 
         if (!node.hasAttribute('id')) {

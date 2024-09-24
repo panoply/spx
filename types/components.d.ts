@@ -1,9 +1,10 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import type { CamelCase, Except, LiteralUnion, Merge, StringSlice, KebabCase, Split, Constructor } from 'type-fest';
+import type { LiteralUnion, Merge, KebabCase, Split, LastArrayElement, IsAny, EmptyObject } from 'type-fest';
 import type { Page } from './page';
+import type { setInstances } from '../src/components/instance';
 import { SPX } from './global';
-import { Identity } from 'types';
+import { Identity, Match } from 'types';
 
 declare enum Hooks {
   /**
@@ -48,6 +49,14 @@ declare enum HookStatus {
   EXECUTED = 3,
 }
 
+export type NativeTypes= (
+  | string
+  | boolean
+  | number
+  | object
+  | unknown[]
+)
+
 /**
  * Type Constructors
  *
@@ -66,16 +75,15 @@ export type TypeOf<T extends TypeConstructors> = (
   T extends StringConstructor ? string :
   T extends NumberConstructor ? number :
   T extends ArrayConstructor ? T :
-  T extends ObjectConstructor ? { [key: string]: unknown } : never
+  T extends ObjectConstructor ? Record<string, unknown> : never
 )
 
 /**
  * **SPX State Interface**
  *
- * Type represents the static `connect.define` structure of type contstructors
+ * Type represents the static `define` structure of type contstructors
  */
-export type Types = {
-  [key: string]:
+export type Types = Record<string,
   | StringConstructor
   | BooleanConstructor
   | ObjectConstructor
@@ -86,7 +94,7 @@ export type Types = {
   | TypeOf<NumberConstructor>
   | TypeOf<ArrayConstructor>
   | TypeOf<ObjectConstructor>
-}
+>
 
 export type TypeState<T extends TypeConstructors> = {
   /**
@@ -127,6 +135,21 @@ export type TypePersist<T extends TypeConstructors> = {
   persist: boolean;
 }
 
+export type TypeShared<T extends TypeConstructors> = {
+  /**
+   * The state type
+   */
+  typeof: T;
+  /**
+   * Default value to use
+   */
+  default?: TypeOf<T>;
+  /**
+   * Whether or not the state reference is shared
+   */
+  shared: boolean;
+}
+
 export type TypeEvent<E, T, A> = Merge<E, {
   /**
    * Event Target
@@ -156,7 +179,6 @@ interface DOMEvents {
   FormDataEvent: FormDataEvent;
 }
 
-type Attrs = { [key: string]: unknown; }
 type Selector<T extends SPX.Define> = { [K in T['nodes'][number]]: HTMLElement }
 type HasNode<E extends SPX.Define> = { [K in E['nodes'][number] as K extends string ? K : never]?: boolean; }
 type GetNode<T extends SPX.Define> = T['nodes'][number] extends string ? T['nodes'][number] : string;
@@ -169,27 +191,29 @@ type GetNode<T extends SPX.Define> = T['nodes'][number] extends string ? T['node
  * ```ts
  * import spx, { SPX } from 'spx';
  *
- * class Example extends spx.Component {
- *
- *    public state: SPX.State<typeof Example.define>;
- *
- *    static define = {}
+ * class Example extends spx.Component({ state: SPX.State }) {
  *
  * }
  * ```
  */
 export type State<T extends SPX.Define> = Merge<{
-  [K in keyof T['state']]?:
-  T['state'][K] extends BooleanConstructor ? boolean :
-  T['state'][K] extends NumberConstructor ? number :
-  T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
-  T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
-  T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
-  T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
-  T['state'][K] extends TypeState<NumberConstructor> ? number :
-  T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
-  T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
-  T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> : never
+  [K in keyof T['state']]: (
+    T['state'][K] extends BooleanConstructor ? boolean :
+    T['state'][K] extends NumberConstructor ? number :
+    T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
+    T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
+    T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
+    T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
+    T['state'][K] extends TypeState<NumberConstructor> ? number :
+    T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
+    T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
+    T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> :
+    T['state'][K] extends boolean ? boolean :
+    T['state'][K] extends unknown[] ? unknown[] :
+    T['state'][K] extends object ? object :
+    T['state'][K] extends string ? string :
+    T['state'][K] extends number ? number :never
+  )
 }, {
   /**
    * **Has Reference**
@@ -199,25 +223,268 @@ export type State<T extends SPX.Define> = Merge<{
   [K in keyof T['state'] as K extends string ? `has${Capitalize<K>}` : never]: boolean;
 }>
 
-/**
- * DOM Element
- *
- * Returns the HTMLElement tag based on the nodes[] name entry.
- */
-type DOMElement<T extends string> = T extends SPX.TagNames ? SPX.TagNodes[T] : HTMLElement
+/* -------------------------------------------- */
+/* DOM                                          */
+/* -------------------------------------------- */
 
 /**
- * First Array Item
+ * DOM Select
  *
- * Extracts the first item in an array list.
+ * Returns the HTMLElement nodes, `this.dom` utilities and array list iterators.
  */
-type First<T extends readonly [...unknown[]]> = T extends readonly [infer H, ...unknown[] ] ? H : never;
+declare type DOMSelect<T extends string> = Lowercase<T> extends SPX.TagNames
+  ? SPX.TagNodes[Lowercase<T>]
+    & Identity<typeof DOMExtend>
+    & DOMArray<SPX.TagNodes[Lowercase<T>]>
+  : HTMLElement
+    & Identity<typeof DOMExtend>
+    & DOMArray<HTMLElement>
+
+/**
+ * DOM Select
+ *
+ * Returns the HTMLElement nodes, `this.dom` utilities and array list iterators.
+ */
+declare type DOMTag<T extends string> = Lowercase<T> extends SPX.TagNames
+  ? SPX.TagNodes[Lowercase<T>] & Identity<typeof DOMExtend>
+  : HTMLElement & Identity<typeof DOMExtend>
+
+declare class ToNode {
+
+  /**
+   * #### toNode
+   *
+   * Returns the Element itself.
+   *
+   * > **IMPORTANT**
+   * >
+   * > **Use this method to return the raw HTMLElement**
+   *
+   * @example
+   *
+   * this.dom.node.off('click') // => boolean
+   * this.dom.node.off(1,2,3)   // => boolean
+   */
+  static toNode(): HTMLElement;
+
+}
+/**
+ * DOM Extends
+ *
+ * Exposes sugar DOM Node methods that will extend each node of a component for
+ * quick and effective operations.
+ */
+declare class DOMExtend {
+
+  /**
+   * #### hasClass
+   *
+   * Check whether or not this node element contains the provided class names.
+   *
+   * @example
+   *
+   * this.dom.node.hasClass('a')       // => boolean (string)
+   * this.dom.node.hasClass('b,c')     // => boolean (separator)
+   * this.dom.node.hasClass('d','e')   // => boolean (...spread)
+   */
+  static hasClass(...className: string[]): boolean;
+  /**
+   * #### setClass
+   *
+   * Add a class or multiple classes to the node element. The classList
+   * will be checked before addition and skipped if class exists.
+   *
+   * @example
+   *
+   * this.dom.node.addClass('a')     // => void
+   * this.dom.node.addClass('b,c')   // => void
+   * this.dom.node.addClass('d','e') // => void
+   */
+  static addClass(...className: string[]): void;
+  /**
+   * #### removeClass
+   *
+   * Remove a class or multiple classes contained on this node element.
+   * The classList will be checked before removal, only classes which exist
+   * will be removed.
+   *
+   * @example
+   *
+   * this.dom.node.removeClass('a')     // => void
+   * this.dom.node.removeClass('b,c')   // => void
+   * this.dom.node.removeClass('d','e') // => void
+   */
+  static removeClass(...className: string[]): boolean;
+
+  /**
+   * #### toggleClass
+   *
+   * Toggle a class or multiple classes contained on this node. The classList
+   * will be checked for the existence of the class value, adding the class
+   * value/s if they do not exists, and removing if the do.
+   *
+   * @example
+   *
+   * this.dom.node.toggleClass('a')     // => void
+   * this.dom.node.toggleClass('b,c')   // => void
+   * this.dom.node.toggleClass('d','e') // => void
+   */
+  static toggleClass(fromClass: string | string[], className?: string | string[]): boolean;
+
+  /**
+   * #### hasAttr
+   *
+   * Check whether or not this node element contains the provided attributes.
+   *
+   * @example
+   *
+   * this.dom.node.hasAttr('value')     // => boolean
+   * this.dom.node.hasAttr('id,name')   // => boolean
+   * this.dom.node.hasAttr('type','id') // => boolean
+   */
+  static hasAttr(...attrName: string[]): boolean;
+
+  /**
+   * #### removeAttr
+   *
+   * Remove an attribute or multiple attributes contained on this node element.
+   * Attributes will be checked before removal, only those which exist
+   * will be removed.
+   *
+   * @example
+   *
+   * this.dom.node.removeClass('a')     // => void
+   * this.dom.node.removeClass('b,c')   // => void
+   * this.dom.node.removeClass('d','e') // => void
+   */
+  static removeAttr(...attrName: string[]): boolean;
+
+  /**
+   * #### setAttr
+   *
+   * Creates or resets an attribute or multiple attributes contained on this node.
+   *
+   * @example
+   *
+   * this.dom.node.setAttr({ name: 'value' }) // => void
+   * this.dom.node.setAttr('name', 'value')   // => void
+   */
+  static setAttr(attribute: Record<string, any>): void;
+
+  /**
+   * #### getAttr
+   *
+   * Returns an attribute value or multiple attribute values contained on this node.
+   *
+   * @example
+   *
+   * this.dom.node.getAttr('data-value') // => string
+   * this.dom.node.getAttr('id','value') // => { id: string, type: string }
+   */
+  static getAttr<A extends readonly string[]>(...attribute: A): Record<A[number], string>;
+
+  /**
+   * #### on
+   *
+   * Attach an event or multiple events to this dom node. This method is curried and will
+   * automatically assign context to callbacks. The event returns an object with integer value
+   * that can be used to remove event listeners.
+   *
+   * @example
+   *
+   * this.dom.node.on('keypress')(e => {})       // => { keypress: number }
+   * this.dom.node.on('click','focus')(e => {})  // => { click: number, focus: number }
+   */
+  static on(eventName: string):((this: typeof Class, event: Event) => void);
+  /**
+   * #### off
+   *
+   * Removes an attached event listener that was created using `on`.
+   *
+   * @example
+   *
+   * this.dom.node.off('click') // => boolean
+   * this.dom.node.off(1,2,3)   // => boolean
+   */
+  static off(eventName: string): boolean;
+
+  /**
+   * #### watch
+   *
+   * Observes the provided node for mutations via the `MutationObserver` and will
+   * callback to the curried function of the method. This method will automatically
+   * bind component context to scope.
+   *
+   * @example
+   *
+   * this.dom.node.watch({ subTree: true })((mutation) => {}) // => boolean
+   */
+  static watch(options: MutationObserverInit): (this: typeof Class, event: Event) => void;
+
+}
+
+/**
+ * DOM Array
+ *
+ * Callback functions for iterating and cycling through component nodes.
+ * Available on the `this.dom` scope only.
+ */
+interface DOMArray<T> {
+  /**
+   * List Nodes
+   *
+   * Returns an array list of all the nodes using the identifier.
+   */
+  (): T[];
+  /**
+   * ### Get Node
+   *
+   * Pass an index number to return the DOM element.
+   */
+  (index: number): T & Identity<typeof DOMExtend>;
+  /**
+   * ### Each
+   *
+   * Iterates over all DOM nodes like `forEach` with an `undefined` or `void`
+   * return value. If values have been returned, this will behave like a map.
+   */
+  <U extends void | undefined>(map: (node: T & Identity<typeof DOMExtend>, index: number) => U): U;
+  /**
+   * ### Map
+   *
+   * Iterates over all DOM nodes and generates a new array based on the return value.
+   * This is the same callback as `each`, only difference is return value types.
+   */
+  <U>(map: (node: T & Identity<typeof DOMExtend>, index: number) => U): U[];
+  /**
+   * ### Reduce
+   *
+   * Iterate as a reducer, return a new value.
+   */
+  <U extends unknown[] | object | number | string>(
+    initial: U,
+    reduce: (acc: U, node: T & Identity<typeof DOMExtend>, index: number) => U): U;
+  /**
+   * ### Filter
+   *
+   * Iterate as a filter, return a boolean `false` or `true` for each node
+   * in the callback and the resulting value will be a filtered list.
+   *
+   * > **NOTE**
+   * >
+   * > **Pass a `boolean` value as the first parameter to signal filter iteration.**
+   * > **When the first parameter is not a `boolean` type, the reducer will be used.**
+   * > **You must return a `boolean` value for every item in the array.**
+   */
+ <U extends boolean>(filter: U, each: (node: T & Identity<typeof DOMExtend>, index: number) => U): T[];
+
+}
 
 /**
  * DOM Node
  *
  * Determines whether or not the node identifier should return a specific Element tag or
- * default to HTMLElement. Node identifiers which use prefixed HTMLElement tag names
+ * default to HTMLElement. Node identifiers which use suffixed HTMLElement tag names
  * will return the referenced HTML Element.
  *
  * @example
@@ -228,105 +495,339 @@ type First<T extends readonly [...unknown[]]> = T extends readonly [infer H, ...
  *
  * // camelCase expression are supported
  *
- * 'inputFoo' // => HTMLInputElement
- * 'labelBar' // => HTMLLabelElement
- * 'hrefBaz'  // => HTMLAnchorElement
+ * 'fooInput' // => HTMLInputElement
+ * 'barLabel' // => HTMLLabelElement
+ * 'bazHref'  // => HTMLAnchorElement
  */
-type DOMNode<T extends string> = DOMElement<First<Split<KebabCase<T>, '-'>>>;
+type DOMElement<T extends string> = DOMSelect<LastArrayElement<Split<KebabCase<T>, '-'>>>;
 
-export type DOM<T extends readonly string[] = readonly string[]> = {
- /**
-   * Dom Element/s
-   *
-   * As per the static **define** `nodes` method.
-   */
-  [K in T[number] as `${K}Node` ]: DOMNode<K>;
-} & {
-  /**
-   * Returns an array list of DOM Elements marked with `spx-dom=""`
-   */
-  [K in T[number] as `${K}Nodes` ]: DOMNode<K>[];
-} & {
-  /**
-   * Returns a boolean signaling whether or not DOM has been defined
-   */
-  [K in T[number] as `has${Capitalize<K>}Node` ]: boolean;
+/**
+ * Interface State
+ *
+ * Provides custom component state interfaces be provided and matches against types.
+ */
+type InterfaceState<T extends SPX.Define, U extends SPX.Define> = {
+  [K in keyof T['state']]: Match<T['state'][K], U['state'][K]> extends true ? State<T['state']>[K] : T['state'][K]
 }
 
-export declare class Class<T extends SPX.Define = SPX.Define> {
+/**
+ * Interface DOM
+ *
+ * Provides custom component DOM Node map interfaces be provided and matches against types.
+ */
+type InterfaceDOM<T extends SPX.Define['nodes']> = {
+  [K in T[number]]?: HTMLElement
+}
 
+/**
+ * DOM
+ *
+ * The `this.dom` type reference
+ */
+export type DOM<T extends readonly string[] = readonly string[]> = (
   /**
-   * **SPX Scope**
+   * Element
    *
-   * Holds scope reference information about the instance, elements which pertain to the instance
-   * and event reference handling.
+   * Returns the DOM Element.
    */
-  public readonly scope?: Scope;
+  & { readonly [K in T[number] as `${K}Node`]: DOMElement<K> }
+  /**
+   * Elements
+   *
+   * Returns an array list elements
+   */
+  & { readonly [K in T[number] as `${K}Nodes`]: ReadonlyArray<DOMElement<K>> }
+  /**
+   * Exists
+   *
+   * Returns a boolean signaling whether or not the element exists in the DOM.
+   */
+  & { readonly [K in T[number] as `has${Capitalize<K>}`]: boolean; }
 
-  /**
-   * **SPX Component Connection**
-   *
-   * Define the component presets
-   */
-  static readonly define?: SPX.Define;
+)
 
+/**
+ * DOM
+ *
+ * The `this.dom` type reference
+ */
+export type DOMSugar<T extends readonly string[] = readonly string[]> = (
   /**
-   * **SPX State**
+   * Element
    *
-   * An auto-generated workable object of `connect.state` and component attribute state references.
+   * Returns the DOM Element.
    */
-  public readonly state?: State<T>;
+ & { readonly [K in T[number] as `${K}`]: DOMElement<K> & Identity<typeof ToNode> }
+  /**
+   * Exists
+   *
+   * Returns a boolean signaling whether or not the element exists in the DOM.
+   */
+ & { readonly [K in T[number] as `has${Capitalize<K>}`]: boolean; }
 
-  /**
-   * **SPX Document Element**
-   *
-   * Holds a reference to the DOM Document element `<html>` node.
-   */
-  public readonly html: HTMLElement;
+)
 
-  /**
-   * **SPX Component Element**
-   *
-   * Holds a reference to the SPX Element annotated with `spx-component`.
-   */
-  public root: HTMLElement;
-
-  /**
-   * **SPX Dom**
-   *
-   * Holds a reference to the SPX Element annotated with `spx-component`.
-   */
-  public readonly dom: DOM<T['nodes']>;
+export declare class ClassHooks {
 
   /**
    * **SPX `connect`**
    *
    * An SPX component lifecycle callback that will be triggered on component register.
    * This event will on fire once for each instance occurance throughout an SPX session.
+   *
+   * [SPX Documentation](https://spx.js.org/components/hooks/)
    */
-  connect(session?: { page: Page }): any;
+  public connect<U extends Page>(page?: U): any;
+
   /**
    * **SPX `onmount`**
    *
    * SPX lifecycle hook triggered each time the component is present in the DOM.
+   *
+   * [SPX Documentation](https://spx.js.org/components/hooks/)
    */
-  onmount(session?: { page: Page }): any;
+  public onmount<U extends Page>(page?: U): any;
+
   /**
    * **SPX `unmount`**
    *
    * SPX lifecycle hook that executes when a component is removed from the DOM.
    *
+   * [SPX Documentation](https://spx.js.org/components/hooks/)
    */
-  unmount(session?: { page: Page }): any;
+  public unmount<U extends Page>(page?: U): any;
 
   /**
    * **SPX `onmedia`**
    *
    * SPX lifecycle hook which fire upon media query breakpoint changes.
    *
+   * [SPX Documentation](https://spx.js.org/components/hooks/)
    */
-  onmedia(screen: 'xs' | 'sm' | 'md' | 'lg' | 'xl'): any;
+  public onmedia(screen: 'xs' | 'sm' | 'md' | 'lg' | 'xl'): any;
 
+}
+
+/**
+ * Component Class
+ *
+ * The base class of a component from which all components will extend.
+ */
+export declare class Class<T extends HTMLElement = HTMLElement> {
+
+  /**
+   * **SPX Ref**
+   *
+   * The instance UUID reference key. This is non-writable and is used internally.
+   */
+  public readonly ref: string;
+
+  /**
+   * **SPX Scope**
+   *
+   * Holds scope reference information about the instance (internal usage).
+   */
+  public readonly scope: Scope;
+
+  /* PUBLIC ------------------------------------- */
+
+  /**
+   * **SPX Document Element**
+   *
+   * Holds a reference to the DOM Document element `<html>` node.
+   */
+  public readonly root: HTMLElement;
+
+  /**
+   * **SPX Document Element**
+   *
+   * Holds a reference to the DOM Document element `<html>` node.
+   */
+  public get dom(): T;
+  public set dom(dom: T);
+
+}
+
+type ComponentScope<T extends SPX.Define> = {
+
+  new (context: Class): (
+    & Class
+    & {
+      /**
+       * ### SPX State
+       *
+       * Component state references the structure provided on the `spx.Component({ state: {} })` object.
+       * Entries will be matched and merged with the DOM state directives provided on component views.
+       *
+       * [SPX Documentation](https://spx.js.org/components/state/)
+       */
+      state: State<T>;
+    }
+    & DOM<T['nodes']>
+  )
+}
+
+type ComponentSugar<T extends SPX.Define> = {
+
+  new (context: Class): (
+    & Class
+    & {
+      /**
+       * ### SPX State
+       *
+       * Component state references the structure provided on the `spx.Component({ state: {} })` object.
+       * Entries will be matched and merged with the DOM state directives provided on component views.
+       *
+       * [SPX Documentation](https://spx.js.org/components/state/)
+       */
+      state?: State<T>;
+    }
+    & DOMSugar<T['nodes']>
+  )
+}
+
+export interface Component {
+  <T extends SPX.Define = SPX.Define> (define?: T & {
+    /**
+     * ### Component Name
+     *
+     * Component identifier for DOM association. If left undefined, SPX will use the name
+     * provided upon component registration converted to `kebab-case`. Providing a `name`
+     * value results in a strict match, meaning it will run precedence over registry names,
+     * however aliases will still be respected.
+     *
+     * [SPX Documentation](https://spx.js.org/components/register/)
+     *
+     * ```js
+     *
+     * // Using default, will convert to kebab-case
+     * class FooBar extends spx.Component() {}
+     *
+     * // Using name, will override Example
+     * class Example extends spx.Component({ name: 'demo' }) {}
+     *
+     * // Register Components
+     * spx({ component: { FooBar, Example }})
+     *
+     *
+     * ```
+     *
+     * #### Directive Association:
+     *
+     * ```html
+     *
+     * <!-- Example -->
+     * <div spx-component="demo"></div>
+     *
+     * <!-- FooBar -->
+     * <div spx-component="foo-bar"></div>
+     *
+     * ```
+     */
+    name?: string;
+    /**
+     * ### Component State
+     *
+     * Define the component state references to be accessible via the `this.state` object.
+     * State directives that are provided via attribute annotation must be declared here and
+     * when undefined SPX will throw. This option accepts multiple structures, including
+     * Constructor types or `typeof` and `default` object presets.
+     *
+     * [SPX Documentation](https://spx.js.org/components/register/)
+     *
+     * ```js
+     *
+     * class Example extends spx.Component({ state: { animal: 'dog' } }) {
+     *
+     *  onmount() {
+     *    this.state.animal     // string (defaults to 'dog')
+     *    this.state.hasAnimal  // boolean
+     *  }
+     * }
+     *
+     *
+     * ```
+     *
+     * #### Directive Association:
+     *
+     * ```html
+     *
+     * <div
+     *   spx-component="example"
+     *   spx-example:animal="cat"></div>
+     *
+     * ```
+     */
+    state?: T['state'];
+   /**
+     * ### Component Nodes
+     *
+     * Define the Node identifier references used to associate elements in the DOM with
+     * this component. Component nodes will be matched via `spx-node` directive values.
+     *
+     * [SPX Documentation](https://spx.js.org/components/nodes/)
+     *
+     * ```ts
+     *
+     * class Example extends spx.Component({ nodes: <const>['foo'] }) {
+     *
+     *  onmount() {
+     *    this.fooNode    // HTMLElement
+     *    this.fooNodes   // HTMLElement[]
+     *    this.hasFoo     // boolean
+     *  }
+     * }
+     *
+     *
+     * ```
+     *
+     * #### Directive Association:
+     *
+     * ```html
+     *
+     * <div spx-node="example.foo"></div>
+     *
+     * ```
+     */
+    nodes?: ReadonlyArray<string>;
+    /**
+     * ### Node Sugars
+     *
+     * SPX provides sugar extendabilities for interfacing with associated nodes.
+     * When enabled, nodes are accessible using a different structure and expose
+     * additional utilities for executing common tasks.
+     *
+     * The main differences with sugar enabled is node access. You cannot obtain
+     * an element/s using `this.nameNode` or `this.nameNodes` but instead access
+     * is made using `this.name` and `this.name()`.
+     *
+     * [SPX Documentation](https://spx.js.org/components/sugar/)
+     *
+     * ```ts
+     *
+     * class Example extends spx.Component({ sugar: true, nodes: ['foo'] }) {
+     *
+     *  onmount() {
+     *    this.foo    // Primitive
+     *    this.foo()  // HTMLElement[]
+     *    this.hasFoo // boolean
+     *  }
+     * }
+     *
+     *
+     * ```
+     *
+     * #### Directive Association:
+     *
+     * ```html
+     *
+     * <div spx-node="example.foo"></div>
+     *
+     * ```
+     */
+    sugar?: boolean;
+
+  }): T['sugar'] extends true ? ComponentSugar<T> : ComponentScope<T>;
 }
 
 export interface ComponentEventOptions {
@@ -371,57 +872,58 @@ export interface ComponentEventOptions {
 
 export interface ComponentEvent {
   /**
-   * #### Key Identifier
+   * ### dom
+   *
+   * This is a getter which references the DOM Element that the event listener will be or is
+   * attached. The getter is created in the {@link addEvent} function during {@link setInstances}.
+   *
+   * @example
+   *
+   * scope.event['e.6x9e7z'].dom // => HTMLElement
+   */
+  get dom(): HTMLElement;
+  /**
+   * ### key
    *
    * The UUID reference key identifier. This value is identical to the property key
-   * which this model is contained within.
+   * which of the `events` scope model.
    *
    * @example
    * { 'e.6x9e7z': { key: 'e.6x9e7z' } } // Identical to the key property
    */
   key: string;
   /**
-   * #### Element Key
+   * ### isChild
    *
-   * The key identifier reference which points to the DOM element of the Component Session
-   * {@link ComponentSession $elements} Map cache. The value will point to the element we
-   * retrive from the cache using this identifier.
-   *
-   * @example 'e3q4w1'
-   */
-  get dom(): HTMLElement;
-  /**
-   * #### Within Component
-   *
-   * Whether or not the event node is child of the component template. When `true` the event element is
-   * contained within the component. The value signals on the location of the element within
+   * Whether or not the event node is a child of the component view. When `true` the event element is
+   * contained within the component element. The value signals on the location of the node within
    * the DOM. When `false` it signals to SPX that this event element exists outside of the component
    * element.
    *
-   * > **NOTE**
-   * >
-   * > The `dom` getter will query from component root level if this is true, otherwise from body.
+   * > This value will determine from which point the {@link ComponentEvent.dom} getter obtains the
+   * > event node element via `querySelector`. When it is `true`, query selection uses the component view
+   * > element, whereas `false` will result in query selection using `document.body`.
    */
   isChild: boolean;
   /**
-   * #### DOM Selector
+   * #### selector
    *
-   * A query selector string which can be used to find matching elements within
-   * the snapshot record. This will be the schema attribute reference.
+   * The `querySelector` string used to find the event nodes. The {@link ComponentEvent.dom} getter
+   * will rely on this value for query selection.
    *
    * @example
    * 'button[spx@click="component.onClick"]'
    */
   selector: string;
   /**
-   * #### Event Parameters
+   * ### attrs
    *
-   * DOM defined state provided via the event argument. This value isaccessible using the
-   * `attrs` property of event parameter within component methods.
+   * An **immutable** object representing defined event parameter states provided on the event nodes.
+   * This value will be provided to the component callback methods `event` parameter, accessible via
+   * an `attrs` property.
    *
-   * > **NOTE**
-   * >
-   * > The value is automatically type converted accordion to attribute entries.
+   * > The object values are automatically type converted, in accordance with the dom directives values
+   * > provided on the event node element.
    *
    * @default
    * {}
@@ -429,28 +931,31 @@ export interface ComponentEvent {
    * @example
    * { num: 200 } // <button spx@click="demo.onClick" spx-demo:str="200">
    */
-  params: object;
+  attrs: object;
   /**
-   * #### Window Reference
+   * ### isWindow
    *
-   * Whether or not the event target is targeting `globalThis` having passed `window`. When
-   * `true`, the event will be handled in accordance.
+   * Whether or not the event should be attached to `window` or not. Event directives can signal `globalThis`
+   * events by passing a `spx@window:<event>` structure. When this is `true`, the event listener will be
+   * attached globally.
    *
-   * > **NOTE**
-   * >
-   * > Targeting `window` will adhere to colon prefix on the attribute, for example:
-   * >
-   * > - `spx@window:click` _signals to trigger if window is clicked_
-   * > - `spx@window:scroll` _signals to trigger if window is scrolled_
+   * **Directive Example**
+   *
+   * ```html
+   * <!-- signals to trigger if window is clicked -->
+   * <div spx@window:click></div>
+   *
+   * <!-- signals to trigger if window is scrolled -->
+   * <div spx@window:scroll></div>
+   * ```
    *
    * @default false
    */
   isWindow: boolean;
   /**
-   * #### Component Method
+   * ### method
    *
-   * The class method name that the event will be attached and a callback will be invoked.
-   * This value will be assigned on the DOM level.
+   * The component method name that the event will be attached and the callback will be invoked.
    *
    * @example
    * 'onClick'  // <button spx@click="demo.onClick">
@@ -458,17 +963,19 @@ export interface ComponentEvent {
    */
   method: string;
   /**
-   * #### Attachment Status
+   * ### attached
    *
-   * Whether or not the event has been attached and is listening. When `true`, the event
-   * has been established, when `false` the event is not enabled.
+   * Whether or not the event listener is attached or not. When `true`, it signals that the event
+   * has been established and actions will invoke method callback on the class. A value of `false`
+   * signals that the event listener has either been removed or yet setup.
+   *
+   * @default false
    */
   attached: boolean;
   /**
-   * #### Event Name
+   * ### eventName
    *
-   * The event name to start listening for. This will be obtained via the directive name
-   * and will be used to attach the listener.
+   * The name of the event for which we attach a listener.
    *
    * @example
    * 'click'  // <button spx@click="demo.onClick"> click event
@@ -476,29 +983,48 @@ export interface ComponentEvent {
    */
   eventName: string;
   /**
-   * #### Abort Controller
+   * ### listener
    *
-   * The Abort Controller Instance. This will be used when disconnecting to remove the attached
-   * event and to prevent any listeners being applied outside of mounted status.
+   * Despite the name ("listener") this value holds reference to an instance of
+   * [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+   * Events use Abort Controller to remove attached listeners and will prevent additional
+   * listeners being applied when component is not mounted.
    */
   listener: AbortController
   /**
-   * #### Event Options
+   * ### options
    *
-   * Event Listener options to be attached to the event. This is will default to using the `signal`
-   * from `AbortController`, however if an event directive value contains {@link ComponentEventOptions}
-   * those entries will also be present here.
+   * Event Listener options to be attached to the event. Event directive values accept
+   * {@link ComponentEventOptions} and if provided, they will be present on here. This
+   * will default to using the `signal` from `AbortController` instance of {@link ComponentEvent.listener},
+   * and any directive level options passed will merged.
+   *
+   * **Directive Example**
+   *
+   * ```html
+   * <!-- Existence of "once" will apply a value of true -->
+   * <button spx@click="component.method { once }">
+   *   Hello World!
+   * </button>
+   * ```
    *
    * @default
    * { signal: event.listner.signal }
-   *
-   * @example
-   * 'spx@click="demo.onClick { once }"' // { once: true }
    */
   options: ComponentEventOptions;
 }
 
-interface ComponentBinds {
+export interface ComponentBinds {
+  /**
+   * ### dom
+   *
+   * This is a getter references the DOM Element/s that state values will be bound.
+   *
+   * @example
+   *
+   * scope.bind['b.4u7i2k'].dom // => HTMLElement[]
+   */
+  readonly dom?: HTMLElement;
   /**
    * #### Key Identifier
    *
@@ -510,32 +1036,16 @@ interface ComponentBinds {
    */
   key: string;
   /**
-   * #### Element Key
-   *
-   * The key identifier reference which points to the DOM element of the Component Session
-   * {@link ComponentSession $elements} Map cache. The value will point to element we
-   * retrive from the cache using this identifier.
-   *
-   * @example 'x4t9c9'
-   */
-  dom: string
-  /**
-   * #### Live Node
-   *
-   * Whether or not the bind node element is present in the current DOM.
-   */
-  live: boolean;
-  /**
-   * #### DOM Selector
+   * ### selector
    *
    * A query selector string which can be used to find matching elements within
    * the snapshot record. This will be the schema attribute reference.
    *
-   * @example 'div[spx-bind="ref.stateKey"]'
+   * @example '[spx-bind="ref.stateKey"]'
    */
   selector: string;
  /**
-  * #### State Key
+  * ### stateKey
   *
   * The name of the state property as per the components `define.state` record. This value
   * is used within the DOM directive and maps to a key within state.
@@ -546,7 +1056,7 @@ interface ComponentBinds {
   */
   stateKey: string;
   /**
-   * #### State Attribute
+   * #### stateAttr
    *
    * The DOM state attribute directive. This value will reflect the schema used to define
    * state on the component element.
@@ -557,14 +1067,20 @@ interface ComponentBinds {
    */
   stateAttr: string;
   /**
-   * #### State Value
+   * ### value
    *
    * The current state value. This will typically reflect the `innerText` of the element
    * and the real-time component state value.
    */
   value: string;
   /**
-   * #### Within Component
+   * ### live
+   *
+   * Whether or not the bind node element is present in the current DOM.
+   */
+  live: boolean;
+  /**
+   * ### isChild
    *
    * Whether or not the binding node is child of the component template. When `true` the bind/s are
    * contained within the component. The value signals on the location of the element within
@@ -573,14 +1089,14 @@ interface ComponentBinds {
    *
    * > **NOTE**
    * >
-   * > Because there can be multiple bindins, this value is used as a determinator.
+   * > Because there can be multiple bindings, this value is used as a determinator.
    */
   isChild: boolean;
 }
 
-interface ComponentNodes {
+export interface ComponentNodes {
   /**
-   * #### Key Identifier
+   * ### key
    *
    * The UUID reference key identifier. This value is identical to the property key
    * which this model is contained within.
@@ -588,34 +1104,64 @@ interface ComponentNodes {
    * @example
    * { 'n.f8i4b2': { key: 'n.f8i4b2' } } // Identical to the key property
    */
-  key: string;
+  key: LiteralUnion<`n.${string}`, string>;
   /**
-   * #### Element Key
+   * ### dom
    *
-   * The key identifier reference which points to the DOM element of the Component Session
-   * {@link ComponentSession $elements} Map cache. The `schema` value will point to element we
-   * retrive from the cache using this identifier.
-   *
-   * @example 'e3u5c7'
+   * Holds getter references to query selected elements in the DOM. This value is
+   * created during {@link setInstances} These will be proxied
+   * within component classes.
    */
-  dom: string;
+  dom: {
+    /**
+     * ### Node Element
+     *
+     * Holds reference to a single DOM Elements marked with the node name identifier.
+     * Accessible within class components via `this.dom.<name>` on the `this.dom` object.
+     *
+     * @example
+     *
+     * // Assuming the node name is "foo"
+     *
+     * this.dom.foo // Returns HTMLElement
+     * this.dom.foo.childNodes // Returns childNodes of HTMLElement
+     */
+    get node(): HTMLElement;
+    /**
+     * ### Node Elements
+     *
+     * Holds reference to all DOM Elements marked with the node name identifier.
+     * Accessible within class components by calling the name identifier as a
+     * function (`this.dom.<name>()`) on the `this.dom` object.
+     *
+     * @example
+     *
+     * // Assuming the node name is "foo"
+     *
+     * this.dom.foo() // Returns HTMLElement[]
+     */
+    get nodes(): HTMLElement[];
+  }
   /**
-   * #### Live Node
+   * ### live
    *
-   * Whether or not the node is present in the current DOM.
+   * The number of node occurences in the document. The value define here will
+   * be used to check for the existence of nodes via `this.dom.has<Name>` on the
+   * `this.dom` object.
    */
-  live: boolean;
+  live: number;
   /**
-   * #### DOM Selector
+   * #### selector
    *
-   * A query selector string which can be used to find matching elements within
-   * the snapshot record. This will be the schema attribute reference.
+   * The `querySelector` string used to find the event nodes. The {@link ComponentNodes.dom} getters
+   * will rely on this value for query selection.
    *
-   * @example 'div[spx-node="ref.identifier"]'
+   * @example
+   * '[spx-node="component.<name>"]'
    */
   selector: string;
   /**
-   * #### Property Key
+   * ### name
    *
    * The name of the property identifier. This value will be used as the mapping
    * reference identifier within DOM directives.
@@ -624,21 +1170,9 @@ interface ComponentNodes {
    * 'foo' // <div spx-node="component.foo"> value is "foo"
    * 'bar' // <div spx-node="component.bar"> value is "bar"
    */
-  keyProp: string;
+  name: string;
   /**
-   * #### Property Name
-   *
-   * The components instance getter property name. This value is the accessor made
-   * available within component `this` context. The property name is suffixed with
-   * `Node` and references an element within the Component {@link Session} Map.
-   *
-   * @example
-   * this.fooNode // <div spx-node="component.foo">
-   * this.barNode // <div spx-node="component.bar">
-   */
-  schema: LiteralUnion<`${string}Node`, string>;
-  /**
-   * #### Within Component
+   * ### isChild
    *
    * Whether or not the node is child of the component template. When `true` the node/s are
    * contained within the component. The value signals on the location of the node within
@@ -659,9 +1193,10 @@ interface ComponentNodes {
  * The keys of this interface represent `static` attrs of user components.
  */
 export interface ComponentRegister extends Class {
-  define: Merge<SPX.Define, {
-    id: string
-  }>
+  /**
+   * Define Reference
+   */
+  define: Merge<SPX.Define, { name: string }>
 }
 
 /**
@@ -672,7 +1207,14 @@ export interface ComponentRegister extends Class {
  */
 export interface Scope {
   /**
-   * #### Alias Identifier
+   * #### DOM
+   *
+   * Holds reference to the component element and accessible via `this.dom` within
+   * component classes.
+   */
+  dom: HTMLElement
+  /**
+   * ### alias
    *
    * The component alias identifier name. This represents the `id=""` value of a component
    * element. Aliases provide alternate references to be expressed.
@@ -681,7 +1223,7 @@ export interface Scope {
    */
   alias: string;
   /**
-   * #### Instance Name
+   * ### instanceOf
    *
    * The component instance name. This value represents the `spx-component=""` value and is
    * used to access components in the {@link ComponentSession Registry}.
@@ -691,34 +1233,30 @@ export interface Scope {
    */
   instanceOf: string;
   /**
-   * #### Component Definition
+   * ### define
    *
    * Immutable copy of the **static** `define` object provided to the Component.
    *
    */
   define: SPX.Define;
   /**
+   * ### snapshot
+   *
    * DOM string snapshot of the component to be merged.
    *
    * @default null
    */
   snapshot: string;
   /**
+   * ### snap
+   *
    * The snapshot UUID of the page the component was mounted within
    *
    * @default null
    */
   snap: string;
   /**
-   * #### Element Key
-   *
-   * The key identifier reference which points to the DOM element of the Component Session
-   * {@link $elements} Map cache. All active component elements are accessible from this store.
-   *
-   */
-  root: HTMLElement
-  /**
-   * #### Instance Key
+   * ### key
    *
    * The component UUID key identifier. This will be annotated to elements in the DOM and
    * is used to match elements to instances. The value is also used as the suffix within
@@ -730,7 +1268,7 @@ export interface Scope {
    */
   key: string;
   /**
-   * #### Reference Key
+   * ### ref
    *
    * This is the `key` identifier value prefixed with a `c.` to represent `component`. The
    * identifier is used as the value of `data-spx="*"` attributes.
@@ -743,7 +1281,7 @@ export interface Scope {
    */
   ref: string;
   /**
-   * #### Within Fragment
+   * ### inFragment
    *
    * Whether or not the component is contained within page fragments. When this is `false`
    * we will need to update snapshots nodes with ref marks which are not applied due to
@@ -753,7 +1291,7 @@ export interface Scope {
    */
   inFragment: boolean;
   /**
-   * #### Component Hooks
+   * ### hooks
    *
    * Holds a reference to method hooks exposed within the component
    */
@@ -784,7 +1322,7 @@ export interface Scope {
     onmedia: HookStatus
   };
   /**
-   * #### Mount Status
+   * ### status
    *
    * The current mount status of the component. The status of component is determined using the
    * {@link Hooks} `enum` and is controls the connection and disconnection actions to be execute.
@@ -810,14 +1348,14 @@ export interface Scope {
    */
   status: Hooks;
   /**
-   * #### Component State
+   * ### state
    *
    * The DOM State references, in alignment with the `define.state` static definitions.
    * This value is persisted via Proxy once the component instance is established.
    */
-  state: any;
+  state: Record<string, string | number | object | any[] | boolean>;
   /**
-   * #### Component Binds
+   * ### binds
    *
    * {@link ComponentBinds Component Bindings} reflect state values of a component. These
    * associated references will update the `innerText` of annotated elements in the DOM with
@@ -831,9 +1369,9 @@ export interface Scope {
    *
    * @example 'b.w6y71e'
    */
-  binds: { [stateKey: string]: { [key: string]: ComponentBinds; } };
+  binds: { [stateKey: string]: Record<string, ComponentBinds> };
   /**
-   * #### Component Events
+   * ### events
    *
    * {@link ComponentEvent Component Event} listener associated nodes of the component.
    * Events represent different elements that are will be used to trigger methods within
@@ -847,9 +1385,9 @@ export interface Scope {
    *
    * @example 'e.r2n0h7'
    */
-  events: { [key: string]: ComponentEvent; };
+  events: Record<string, ComponentEvent>;
   /**
-   * #### Component Nodes
+   * ### nodes
    *
    * Associated nodes of the component. Nodes represent different elements that are made
    * available within a components `this` context. The model is expressed as an object,
@@ -862,7 +1400,7 @@ export interface Scope {
    *
    * @example 'n.f8i4b2'
    */
-  nodes: { [key: string]: ComponentNodes; };
+  nodes: Record<string, ComponentNodes>;
 }
 
 export enum ElementType {
@@ -885,45 +1423,50 @@ export enum ElementType {
 }
 
 /**
- * Component Class
- *
- * The raw component as a class type.
- */
-export type ComponentClass = Class<Class>
-
-/**
  * Component Sessions
  *
  * This interface represents the `$.component` value.
  */
 export interface ComponentSession {
   /**
-   * #### Components register
+   * ### Register
    *
    * This contains raw class references that will be used to invoke instances.
+   * The SPX Component registry is populated within {@link registerComponents}
+   * at runtime intialization. The entires of the map are called upon during the
+   * {@link setInstances} operations to establish a component instance.
    */
   $registry: Map<string, any>;
   /**
-   * #### Connected Instances
+   * ### Instances
    *
    * Initialised component instances. This reference will hold all components
-   * that have connected throughout the SPX session. We use this store to in
-   * subsequent actions (i.e, returning to page where a component was mounted).
+   * instances which have been established throughout the SPX session. We use this
+   * store in subsequent actions (i.e, returning to page where a component was mounted).
+   *
+   * > Instances will **persist** and their lifespan is infinite during an SPX Session.
+   * > Existing instances can be purged using `spx.disconnect()` or `spx.reset()` methods,
+   * > but cannot be killed or destroyed in isolation.
    */
   $instances: Map<string, Class>;
   /**
-   * #### Instance References
+   * ### Reference
    *
-   * SPX Component instance UUID's existing on the page. Each entry points to an
-   * instance scope on {@link ComponentSession}.
+   * Holds a `key > value` mapping reference of UUIDs and uses a Proxy to return a Component
+   * instance. This is used during morph observation to obtain instances on a per associated
+   * element basis.
+   *
+   * > The `data-spx` value (`ref`) records will be the **key** entries that allow
+   * > the {@link ComponentSession} to be acquired.
    */
-  $reference: ProxyHandler<{ [key: string]: Class }>;
+  $reference: ProxyHandler<Record<string, Class>>;
   /**
-   * #### Connected Elements
+   * ### Mounted
    *
-   * A Set data store which maintains a reference of elements that have been walked.
-   * References represent the DOM `data-spx=""` UUIDs. This is Proxy which returns
-   * component instances as per `$instances` store.
+   * A (`Set`) containing Component UUID **ref** identifier instances which are
+   * currently mounted and live on the current page. The entries will _typically_ change
+   * between navigations (depending on fragment morphs) and will always accurately reflect
+   * which mounted component instances.
    */
   $mounted: Set<string>;
 }

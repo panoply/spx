@@ -17,6 +17,7 @@ pre.papyrus + blockquote + h6 {
 
 p + p,
 p + pre.papyrus + p,
+pre.papyrus + h4,
 p + h1,
 p + h2,
 p + h4,
@@ -29,7 +30,6 @@ p + pre.papyrus {
 pre.papyrus + h1,
 pre.papyrus + h2,
 pre.papyrus + h3,
-pre.papyrus + h4,
 pre.papyrus + h5,
 pre.papyrus + h6 {
   margin-top: $spacer-5 * 1.5;

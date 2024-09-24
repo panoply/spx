@@ -1,9 +1,9 @@
-{% assign refs = 'Foo,Bar,Baz' | split: ',' %}
+{%- assign refs = 'Foo,Bar,Baz' | split: ',' -%}
 
 <div class="row">
-  {% for ref in refs %}
+  {%- for ref in refs -%}
 
-    {% assign click = ref | prepend: 'on' | append: 'Press' %}
+    {%- assign click = ref | prepend: 'on' | append: 'Press' -%}
 
     <div
       spx-component="refs1"
@@ -12,8 +12,8 @@
         class="row jc-center ai-center tc mb-5"
         spx-component="refs2">
         <h5 class="col-auto fs-sm mb-3 {{ color }}">
-          {{ ref }} Component
-          <small class="mt-2 fc-gray d-block">{{ id }}</small>
+          {{- ref -}} Component
+          <small class="mt-2 fc-gray d-block">{{- id -}}</small>
         </h5>
         <button
           class="col-12 fs-sm upper fw-bold p-1 px-2 ml-3"
@@ -24,7 +24,11 @@
         <div
           class="col-12 fs-sm upper fw-bold p-1 px-2 ml-3"
           spx-node="refs1.xxx"></div>
+
+        <span spx-node="refs2.foo"></span>
+        <span spx-node="refs2.bar"></span>
+        <span spx-node="refs2.baz"></span>
       </div>
     </div>
-  {% endfor %}
+  {%- endfor -%}
 </div>

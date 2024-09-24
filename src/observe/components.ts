@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { $ } from '../app/session';
 import { getComponents } from '../components/context';
-import { setInstances } from '../components/instances';
+import { setInstances } from '../components/instance';
 import { removeEvent } from '../components/listeners';
 import { context, resetContext } from '../components/observe';
 import { Hooks, HookStatus, Log, VisitType } from '../shared/enums';
@@ -16,13 +16,13 @@ export type Lifecycle = (
   | 'unmount'
 )
 
-type LifecycleHooks = [
+export type LifecycleHooks = [
   ref: string,
   firsthook: string,
   finalhook?: string
 ][]
 
-export const hargs = () => o({ page: o($.page) });
+export const hargs = () => o(o($.page));
 
 export const teardown = () => {
 
@@ -70,9 +70,7 @@ export const mount = (promises: LifecycleHooks) => {
           }
         }
 
-        instance.scope.status = instance.scope.status === Hooks.UNMOUNT
-          ? Hooks.UNMOUNTED
-          : Hooks.MOUNTED;
+        instance.scope.status = instance.scope.status === Hooks.UNMOUNT ? Hooks.UNMOUNTED : Hooks.MOUNTED;
 
         if (instance.scope.hooks.connect === HookStatus.DEFINED) {
           instance.scope.hooks.connect = HookStatus.EXECUTED;

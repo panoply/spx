@@ -175,7 +175,7 @@
       margin: 0;
       background-color: $code-bg;
 
-      &:first-of-type {
+      &.selected {
         background-color: $body-bg;
 
         a {

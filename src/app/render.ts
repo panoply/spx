@@ -2,7 +2,7 @@ import type { Page } from 'types';
 import { $ } from './session';
 import { emit } from './events';
 import { Log, VisitType } from '../shared/enums';
-import { d, b, h, nil, s } from '../shared/native';
+import { b, h, nil, s } from '../shared/native';
 import { canEval, hasProp } from '../shared/utils';
 import { progress } from './progress';
 import { context, mark } from '../components/observe';
@@ -92,7 +92,7 @@ const morphHead = async (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Pr
  * This function is also responsible for handling append,
  * prepend and tracked replacements of element in the dom.
  */
-const morphNodes = (page: Page, snapDom: Document) => {
+const morphDom = (page: Page, snapDom: Document) => {
 
   const pageDom = b();
 
@@ -141,13 +141,8 @@ const morphNodes = (page: Page, snapDom: Document) => {
 
   }
 
-  if (context) {
-    snap.sync(snapDom.body);
-  }
-
-  if (page.type !== VisitType.VISIT) {
-    patch('type', VisitType.VISIT);
-  }
+  context && snap.sync(snapDom, page.snap);
+  page.type !== VisitType.VISIT && patch('type', VisitType.VISIT);
 
   // Lets check whether or not location points to an anchor.
   // When page hash has a value, we will scroll to the point of the page.
@@ -158,7 +153,7 @@ const morphNodes = (page: Page, snapDom: Document) => {
   }
 
   // We mark the document <html> element
-  d().id = page.snap;
+  // d().id = page.snap;
 
   scrollTo(page.scrollX, page.scrollY);
 
@@ -183,7 +178,7 @@ export const update = (page: Page): Page => {
   const snapDom = getSnapDom(page.snap);
 
   morphHead(h(), snapDom.head);
-  morphNodes(page, snapDom);
+  morphDom(page, snapDom);
 
   progress.done();
 

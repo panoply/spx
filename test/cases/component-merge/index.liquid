@@ -1,12 +1,12 @@
 ---
-layout: views/index.liquid
+layout: views/base.liquid
+shared: 'cases/component-merge/include/shared'
 ---
 
+{% include 'cases/component-merge/include/pages' %}
 <div id="example">
 
-  {{
-    content
-  }}
+  {{ content }}
 
   <div class="row ai-center jc-start my-5">
     <div class="col-6">

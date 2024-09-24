@@ -117,14 +117,14 @@ XHR.$transit = m();
 XHR.$timeout = {};
 
 // src/app/session.ts
-var $ = o({
+var $ = {
   index: "",
   eval: true,
   patched: false,
   loaded: false,
   logLevel: 2,
   qs: o(),
-  config: o({
+  config: {
     fragments: ["body"],
     timeout: 3e4,
     globalThis: true,
@@ -136,26 +136,26 @@ var $ = o({
     reverse: true,
     preload: null,
     annotate: false,
-    eval: o({
+    eval: {
       script: null,
       style: null,
       link: null,
       meta: false
-    }),
-    hover: o({
+    },
+    hover: {
       trigger: "href",
       threshold: 250
-    }),
-    intersect: o({
+    },
+    intersect: {
       rootMargin: "0px 0px 0px 0px",
       threshold: 0
-    }),
-    proximity: o({
+    },
+    proximity: {
       distance: 75,
       threshold: 250,
       throttle: 500
-    }),
-    progress: o({
+    },
+    progress: {
       bgColor: "#111",
       barHeight: "3px",
       minimum: 0.08,
@@ -164,27 +164,31 @@ var $ = o({
       threshold: 500,
       trickle: true,
       trickleSpeed: 200
-    })
-  }),
+    }
+  },
   fragments: m(),
-  components: o({
+  components: {
     $mounted: s(),
     $registry: m(),
     $instances: m(),
     $reference: p({
       get: (map, key) => $.components.$instances.get(map[key])
     })
-  }),
+  },
   events: o(),
   observe: o(),
   memory: o(),
   pages: o(),
   snaps: o(),
   resources: s()
-});
+};
 
 // src/shared/logs.ts
 var PREFIX = "SPX ";
+var START = "\x1B[";
+var END = "\x1B[0m";
+var R = (text) => START + "31m" + text + END;
+var C = (text) => START + "36m" + text + END;
 var log = (type, message, context2) => {
   const LEVEL = $.logLevel;
   if (LEVEL > 2 /* INFO */ && type <= 2 /* INFO */) return;
@@ -214,15 +218,50 @@ var log = (type, message, context2) => {
   }
 };
 
+// src/shared/regexp.ts
+var CharEntities = /&(?:amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g;
+var ComponentNameCheck = /^[A-Z]|[_-]/;
+var isPender = /\b(?:append|prepend)/;
+var Whitespace = /\s+/g;
+var isBoolean = /^\b(?:true|false)$/i;
+var isNumber = /^\d*\.?\d+$/;
+var isNumeric = /^(?:[.-]?\d*\.?\d+|NaN)$/;
+var isPrefetch = /\b(?:intersect|hover|proximity)\b/;
+var isResourceTag = /\b(?:SCRIPT|STYLE|LINK)\b/;
+var isArray = /\[(['"]?.*['"]?,?)\]/;
+var inPosition = /[xy]\s*|\d*\.?\d+/gi;
+
+// src/shared/const.ts
+var Identifiers = s();
+var Entities = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&#39;": "'",
+  "&#x2F;": "/",
+  "&#x60;": "`",
+  "&#x3D;": "="
+};
+
 // src/shared/utils.ts
-var splitAttrArrayValue = (input2) => {
-  let value = input2.replace(/\s+,/g, ",").replace(/,\s+/g, ",").replace(/['"]/g, "");
-  if (value.charCodeAt(0) === 91 /* LSB */) {
-    if (/^\[\s*\[/.test(value) || /,/.test(value) && /\]$/.test(value)) {
-      value = value.replace(/^\[/, "").replace(/\]$/, "");
-    }
+function forEach(cb, array) {
+  if (arguments.length === 1) return (a) => forEach(cb, a);
+  const s2 = array.length;
+  if (s2 === 0) return;
+  let r, i = -1;
+  while (++i < s2) {
+    r = cb(array[i], i, array);
+    if (r === false) break;
   }
-  return value.split(/,|\|/);
+  return r;
+}
+var splitAttrArrayValue = (input2) => {
+  let v = input2.replace(/\s+,/g, ",").replace(/,\s+/g, ",").replace(/['"]/g, "");
+  if (v.charCodeAt(0) === 91 /* LSB */ && (/^\[\s*\[/.test(v) || /,/.test(v) && /\]$/.test(v))) {
+    v = v.replace(/^\[/, "").replace(/\]$/, "");
+  }
+  return v.split(/,|\|/);
 };
 var attrJSON = (attr, string) => {
   try {
@@ -240,38 +279,47 @@ var last = (input2) => input2[input2.length - 1];
 var equalizeWS = (input2) => input2.replace(/\s+/g, " ").trim();
 var escSelector = (input2) => input2.replace(/\./g, "\\.").replace(/@/g, "\\@").replace(/:/g, "\\:");
 var onNextTickResolve = () => new Promise((resolve) => setTimeout(() => resolve(), 1));
-var onNextTick = (callback, timeout = 1, bind) => setTimeout(
-  () => callback(),
-  timeout
-);
+var onNextTick = (cb, timeout = 1, bind) => setTimeout(() => cb(), timeout);
 var promiseResolve = () => Promise.resolve();
 var canEval = (element2) => {
-  const nn = element2.nodeName;
-  if (nn === "SCRIPT") {
-    return element2.matches($.qs.$script);
-  } else if (nn === "STYLE") {
-    return element2.matches($.qs.$style);
-  } else if (nn === "META") {
-    return element2.matches($.qs.$meta);
-  } else if (nn === "LINK") {
-    return element2.matches($.qs.$link);
+  switch (element2.nodeName) {
+    case "SCRIPT":
+      return element2.matches($.qs.$script);
+    case "STYLE":
+      return element2.matches($.qs.$script);
+    case "META":
+      return element2.matches($.qs.$meta);
+    case "LINK":
+      return element2.matches($.qs.$link);
+    default:
+      return element2.getAttribute($.qs.$eval) !== "false";
   }
-  return element2.getAttribute($.qs.$eval) !== "false";
 };
-var decodeEntities = (string) => {
-  const textarea2 = document.createElement("textarea");
-  textarea2.innerHTML = string;
-  return textarea2.value;
-};
+var decodeEntities = (input2) => input2.replace(CharEntities, (m2) => Entities[m2] || m2);
 var ts = () => (/* @__PURE__ */ new Date()).getTime();
 var hasProps = (object2) => {
   const typeOf = typeof object2 === "object";
-  return (property) => {
-    return typeOf ? !property ? false : typeof property === "string" ? property in object2 : property.every((p2) => p2 in object2) : false;
-  };
+  return (property) => typeOf ? !property ? false : typeof property === "string" ? property in object2 : property.every((p2) => p2 ? p2 in object2 : false) : false;
 };
-var hasProp = (object2, property) => object2 ? property in object2 : false;
+var hasProp = (object2, property) => typeof object2 === "object" ? property in object2 : false;
+var convertValue = (type, value) => {
+  switch (type) {
+    case String:
+      return value || "";
+    case Boolean:
+      return value === "true" || false;
+    case Number:
+      return Number(value) || 0;
+    case Object:
+      return typeof value === "object" ? value : {};
+    case Array:
+      return Array.isArray(value) ? value : [];
+    default:
+      return value;
+  }
+};
 var defineGetter = (object2, name, value, configurable = null) => configurable !== null ? name in object2 ? object2 : Object.defineProperty(object2, name, { get: () => value, configurable }) : Object.defineProperty(object2, name, { get: () => value });
+var defineGetterProps = (object2, props) => forEach(([name, get2]) => Object.defineProperty(object2, name, { get: get2 }), props);
 var targets = (page) => {
   if ("target" in page) {
     if (page.target.length === 1 && page.target[0] === "body") return page.target;
@@ -294,14 +342,17 @@ var isEmpty = (input2) => {
   }
   return T === "string" ? input2[0] === void 0 : Array.isArray(input2) ? input2.length > 0 : null;
 };
-var glue = (...input2) => input2.join(nil);
-var uuid = function uuid2(s2 = 5) {
-  const k = Math.random().toString(36).slice(-s2);
-  if (uuid2.$cache.has(k)) return uuid2(s2);
-  uuid2.$cache.add(k);
+var uid = (k = Math.floor(Math.random() * 89999 + 1e4)) => {
+  if (Identifiers.has(k)) return uid();
+  Identifiers.add(k);
   return k;
 };
-uuid.$cache = s();
+var uuid = function uuid2(s2 = 5) {
+  const k = Math.random().toString(36).slice(-s2);
+  if (Identifiers.has(k)) return uuid2(s2);
+  Identifiers.add(k);
+  return k;
+};
 var chunk = (size2 = 2) => (acc, value) => {
   const length = acc.length;
   const chunks = length < 1 || acc[length - 1].length === size2 ? acc.push([value]) : acc[length - 1].push(value);
@@ -315,19 +366,39 @@ var camelCase = (input2) => /[_-]/.test(downcase(input2)) ? input2.replace(/([_-
 var nodeSet = (nodes) => s([].slice.call(nodes));
 var forNode = (selector2, cb) => {
   const nodes = typeof selector2 === "string" ? b().querySelectorAll(selector2) : selector2;
-  const count = nodes.length;
-  if (count === 0) return;
-  for (let i = 0; i < count; i++) if (cb(nodes[i], i) === false) break;
+  const size2 = nodes.length;
+  if (size2 === 0) return;
+  let i = -1;
+  while (++i < size2) if (cb(nodes[i], i) === false) break;
 };
-function forEach(cb, array) {
-  if (arguments.length === 1) return (array2) => forEach(cb, array2);
-  const s2 = array.length;
-  if (s2 === 0) return;
-  for (let i = 0; i < s2; i++) cb(array[i], i, array);
-}
 var empty = (object2) => {
   for (const prop in object2) delete object2[prop];
 };
+var parse = (HTMLString) => new DOMParser().parseFromString(HTMLString, "text/html");
+var takeSnapshot = (dom2) => (dom2 || document).documentElement.outerHTML;
+var getTitle = (dom2) => {
+  const title = dom2.indexOf("<title");
+  if (title === -1 || dom2.slice(0, title).indexOf("<svg") > -1) return nil;
+  const begin = dom2.indexOf(">", title) + 1;
+  const ender = dom2.indexOf("</title", begin);
+  if (ender === -1) return nil;
+  return decodeEntities(dom2.slice(begin, ender).trim());
+};
+var element = (selector2, el) => el.querySelector(selector2);
+var elements = (selector2, el) => [].slice.call(el.querySelectorAll(selector2)) || [];
+var enqueue = /* @__PURE__ */ ((queue) => {
+  const promise = (fn) => new Promise((resolve) => resolve(fn()));
+  const process = async (batch = 2, delay = 200) => {
+    while (queue.length > 0) {
+      for (const fn of queue.splice(0, batch)) await promise(fn);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  };
+  return (...fn) => {
+    fn.forEach((cb) => queue.push(cb));
+    onNextTick(() => process(), 50);
+  };
+})([]);
 
 // src/shared/patch.ts
 var patchSetAttribute = () => {
@@ -352,37 +423,24 @@ var progress = (() => {
   let timeout;
   let element2 = null;
   const style = ({ bgColor, barHeight, speed, easing }) => {
-    node.style.cssText = glue(
-      "pointer-events:none;",
-      `background-color:${bgColor};`,
-      `height:${barHeight};`,
-      "position:fixed;",
-      "display:block;",
-      "z-index:2147483647;",
-      "top:0;",
-      "left:0;",
-      "width:100%;",
-      "will-change:opacity,transform;",
-      `transition:transform ${speed}ms ${easing};`
-    );
+    node.style.cssText = `pointer-events:none;background:${bgColor};height:${barHeight};position:fixed;display:block;z-index:2147483647;top:0;left:0;width:100%;will-change:opacity,transform;transition:${speed}ms ${easing};`;
   };
   const percent = (n) => (-1 + n) * 100;
-  const current = (n, min, max) => n < min ? min : n > max ? max : n;
+  const current = (n, min, max) => Math.max(min, Math.min(max, n));
   const render2 = () => {
     if (element2) return element2;
-    node.style.setProperty("transform", `translateX(${percent(status || 0)}%)`);
+    node.style.transform = `translateX(${percent(status || 0)}%)`;
     element2 = b().appendChild(node);
     return node;
   };
   const remove = () => {
-    const dom = b();
-    if (dom.contains(element2)) {
-      const animate = element2.animate(
+    const dom2 = b();
+    if (dom2.contains(element2)) {
+      element2.animate(
         { opacity: ["1", "0"] },
         { easing: "ease-out", duration: 100 }
-      );
-      animate.onfinish = () => {
-        dom.removeChild(element2);
+      ).onfinish = () => {
+        dom2.removeChild(element2);
         element2 = null;
       };
     } else {
@@ -393,53 +451,32 @@ var progress = (() => {
     const update3 = pending.shift();
     if (update3) update3(dequeue);
   };
-  const enqueue = (call) => {
+  const enqueue2 = (call) => {
     pending.push(call);
-    if (pending.length === 1) dequeue();
+    pending.length === 1 && dequeue();
   };
   const set2 = (amount) => {
     amount = current(amount, $.config.progress.minimum, 1);
     status = amount === 1 ? null : amount;
     const progress2 = render2();
-    enqueue((update3) => {
-      progress2.style.setProperty("transform", `translateX(${percent(amount)}%)`);
-      if (amount === 1) {
-        setTimeout(() => {
-          remove();
-          update3();
-        }, $.config.progress.speed * 2);
-      } else {
-        setTimeout(update3, $.config.progress.speed);
-      }
+    enqueue2((update3) => {
+      progress2.style.transform = `translateX(${percent(amount)}%)`;
+      setTimeout(() => amount === 1 ? (remove(), update3()) : update3(), $.config.progress.speed * (amount === 1 ? 2 : 1));
     });
   };
   const inc = (amount) => {
-    let n = status;
-    if (!n) return start();
-    if (n < 1) {
-      if (typeof amount !== "number") {
-        if (n >= 0 && n < 0.2) amount = 0.1;
-        else if (n >= 0.2 && n < 0.5) amount = 0.04;
-        else if (n >= 0.5 && n < 0.8) amount = 0.02;
-        else if (n >= 0.8 && n < 0.99) amount = 5e-3;
-        else amount = 0;
-      }
-      n = current(n + amount, 0, 0.994);
-      return set2(n);
+    if (!status) return start();
+    if (status < 1) {
+      if (!amount) amount = status < 0.2 ? 0.1 : status < 0.5 ? 0.04 : status < 0.8 ? 0.02 : 5e-3;
+      set2(current(status + amount, 0, 0.994));
     }
   };
-  const doTrickle = () => {
-    setTimeout(() => {
-      if (!status) return;
-      inc();
-      doTrickle();
-    }, $.config.progress.trickleSpeed);
-  };
+  const doTrickle = () => setTimeout(() => status && (inc(), doTrickle()), $.config.progress.trickleSpeed);
   const start = (threshold) => {
     if (!$.config.progress) return;
     timeout = setTimeout(() => {
       if (!status) set2(0);
-      if ($.config.progress.trickle) doTrickle();
+      $.config.progress.trickle && doTrickle();
     }, threshold || 0);
   };
   const done = (force) => {
@@ -448,23 +485,21 @@ var progress = (() => {
     inc(0.3 + 0.5 * Math.random());
     set2(1);
   };
-  return {
-    start,
-    done,
-    style
-  };
+  return { start, done, style };
 })();
 
 // src/components/register.ts
 var getComponentId = (instance, identifier) => {
+  if (instance.define.name !== "") return instance.define.name;
   const name = instance.name;
   const original = identifier;
-  identifier = downcase(identifier || name);
-  instance.define = Object.assign({ id: identifier, merge: false, state: {}, nodes: [] }, instance.define);
-  if (identifier !== instance.define.id) identifier = camelCase(instance.define.id);
-  if (name !== original && /^[A-Z]|[_-]/.test(instance.define.id)) {
+  const hasName = "define" in instance && "name" in instance.define;
+  console.log(instance.name, identifier);
+  instance.define.name = downcase(identifier || name);
+  if (identifier !== instance.define.name) identifier = camelCase(instance.define.name);
+  if (hasName && name !== original && ComponentNameCheck.test(instance.define.name)) {
     log(3 /* WARN */, [
-      `Component identifer id "${instance.define.id}" must use camelCase format.`,
+      `Component identifer id "${instance.define.name}" must use camelCase format.`,
       `The identifer has been converted to "${identifier}"`
     ]);
   }
@@ -480,22 +515,10 @@ var registerComponents = (components, isValidID = false) => {
       log(1 /* VERBOSE */, `Component ${instance.name} registered using id: ${identifier}`, "#F48FB1" /* PINK */);
     }
   }
-  if (!$.config.components) $.config.components = true;
+  if (!$.config.components) {
+    $.config.components = true;
+  }
 };
-
-// src/shared/dom.ts
-var parse = (HTMLString) => new DOMParser().parseFromString(HTMLString, "text/html");
-var takeSnapshot = (dom) => (dom || document).documentElement.outerHTML;
-var getTitle = (dom) => {
-  const title = dom.indexOf("<title");
-  if (title === -1) return nil;
-  if (dom.slice(0, title).indexOf("<svg") > -1) return nil;
-  const start = dom.indexOf(">", title) + 1;
-  const end = dom.indexOf("</title", start);
-  return decodeEntities(dom.slice(start, end).trim());
-};
-var element = (selector2) => b().querySelector(selector2);
-var elements = (selector2) => [].slice.call(b().querySelectorAll(selector2)) || [];
 
 // src/app/events.ts
 function emit(name, ...args) {
@@ -528,18 +551,18 @@ var off = (name, callback) => {
       log(2 /* INFO */, `Removed ${name} event listener (id: ${callback})`);
       if (events.length === 0) delete $.events[name];
     } else {
-      const live = [];
+      const live2 = [];
       if (events && callback) {
         for (let i = 0, s2 = events.length; i < s2; i++) {
           if (events[i] !== callback) {
-            live.push(events[i]);
+            live2.push(events[i]);
           } else if (name !== "x") {
             log(2 /* INFO */, `Removed ${name} event listener (id: ${i})`);
           }
         }
       }
-      if (live.length) {
-        $.events[name] = live;
+      if (live2.length) {
+        $.events[name] = live2;
       } else {
         delete $.events[name];
       }
@@ -578,11 +601,8 @@ var isValidEvent = (eventName, node) => {
 };
 var eventAttrs = (instance, event) => {
   const method = instance[event.method];
-  return (e) => {
-    if (event.params) {
-      if (e && !("attrs" in e)) Object.defineProperty(e, "attrs", { get: () => o() });
-      Object.assign(e.attrs, event.params);
-    }
+  return function handle2(e) {
+    if (event.attrs) e.attrs = event.attrs;
     method.call(instance, e);
   };
 };
@@ -594,187 +614,252 @@ var removeEvent = (instance, event) => {
   event.attached = false;
   log(1 /* VERBOSE */, [
     `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
-    `${instance.scope.define.id}: ${instance.scope.key}`
+    `${instance.scope.define.name}: ${instance.scope.key}`
   ]);
 };
 var addEvent = (instance, event, node) => {
   if (event.attached) return;
   if (!(event.method in instance)) {
-    log(3 /* WARN */, `Undefined callback method: ${instance.scope.define.id}.${event.method}()`);
+    log(3 /* WARN */, `Undefined callback method: ${instance.scope.define.name}.${event.method}()`);
     return;
   }
-  const dom = node ? defineGetter(event, "dom", node).dom : event.dom;
-  getEventParams(dom.attributes, event);
+  const dom2 = node ? defineGetter(event, "dom", node).dom : event.dom;
+  getEventParams(dom2.attributes, event);
   if (event.isWindow) {
     if (isValidEvent(event.eventName, window)) {
       addEventListener(event.eventName, eventAttrs(instance, event));
     }
   } else {
-    if (isValidEvent(event.eventName, dom)) {
-      dom.addEventListener(event.eventName, eventAttrs(instance, event), event.options);
+    if (isValidEvent(event.eventName, dom2)) {
+      dom2.addEventListener(event.eventName, eventAttrs(instance, event), event.options);
     }
   }
   event.attached = true;
   log(1 /* VERBOSE */, [
     `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
-    `${instance.scope.define.id}: ${instance.scope.key}`
+    `${instance.scope.define.name}: ${instance.scope.key}`
   ]);
 };
 
-// src/components/extends.ts
-var _a;
-var Component = (_a = class {
-  /**
-   * Constructor
-   *
-   * Creates the component instance
-   */
-  constructor(key) {
-    /**
-     * DOM Nodes
-     *
-     * Element sector for `spx-node` directions
-     */
-    this.dom = o();
-    /**
-     * Component State
-     *
-     * The digested static `state` references of components that have
-     * extended this base class.
-     */
-    this.state = o();
-    const { scope } = defineGetter(this, "scope", Component.scopes.get(key));
-    const prefix = `${$.config.schema}${scope.instanceOf}`;
-    this.state = p({
-      set: (target, key2, value) => {
-        const preset = scope.define.state[key2];
-        const domValue = typeof value === "object" || Array.isArray(value) ? JSON.stringify(value) : `${value}`;
-        target[key2] = typeof preset === "object" && "persist" in preset && preset.persist ? scope.state[key2] = value : value;
-        if (domValue.trim() !== nil && this.root) {
-          const attrName = this.root.hasAttribute(`${prefix}:${key2}`) ? `${prefix}:${key2}` : `${prefix}:${kebabCase(key2)}`;
-          if (domValue !== this.root.getAttribute(`${prefix}:${key2}`)) {
-            this.root.setAttribute(attrName, domValue);
-          }
-        }
-        if (key2 in scope.binds) {
-          for (const id in scope.binds[key2]) {
-            if (!scope.binds[key2][id].live) continue;
-            scope.binds[key2][id].value = domValue;
-            b().querySelectorAll(scope.binds[key2][id].selector).forEach((node) => {
-              node.innerText = domValue;
-            });
-          }
-        }
-        return true;
-      }
-    });
-    if (isEmpty(scope.state)) {
-      for (const prop in scope.define.state) {
+// src/components/dom.ts
+var forStr = (fn, nodes, every = false, m2 = []) => {
+  const s2 = nodes.length;
+  const x = s2 === 1 ? nodes[0].split(",") : nodes;
+  let i = -1;
+  while (++i < s2) {
+    const v = m2[m2.push(fn(x[i])) - 1];
+    if (every && !v) return false;
+  }
+  return every || m2;
+};
+var DoM = {
+  toNode(node) {
+    return node;
+  },
+  getAttr(node, ...args) {
+    return args.length === 1 ? node.getAttribute(args[0]) : args.reduce((a, v) => Object.assign(a, { [v]: node.getAttribute(a) }), o());
+  },
+  setAttr(node, ...args) {
+    typeof args[0] === "object" ? Object.keys(args[0]).forEach((k) => node.setAttribute(k, args[0][k])) : node.setAttribute(args[0], args[1]);
+    return this;
+  },
+  hasAttr(node, ...args) {
+    return forStr((a) => node.hasAttribute(a), args, true);
+  },
+  removeAttr(node, ...args) {
+    forStr((a) => !node.hasAttribute(a) || node.removeAttribute(a), args);
+    return this;
+  },
+  addClass(node, ...args) {
+    forStr((c) => node.classList.add(c), args);
+    console.log(node, args);
+    return this;
+  },
+  hasClass(node, ...args) {
+    return forStr((c) => node.classList.contains(c), args, true);
+  },
+  removeClass(node, ...args) {
+    forStr((c) => node.classList.remove(c), args);
+    return this;
+  },
+  toggleClass(node, from, ...to) {
+    this.hasClass(node, from) ? this.removeClass(node, from).addClass(node, ...to) : this.addClass(node, from);
+    return this;
+  },
+  on() {
+  },
+  off() {
+  },
+  watch() {
+  },
+  update() {
+  }
+};
+
+// src/components/proxies.ts
+var stateProxy = (scope, dom2) => {
+  const prefix = $.config.schema + scope.instanceOf;
+  const initialState = (prop, attr, typeCheck = false) => {
+    let type = attr;
+    let value = "";
+    if (typeof attr === "object" && "typeof" in attr) {
+      type = attr.typeof;
+      value = attr.default;
+    }
+    scope.state[prop] = convertValue(type, value);
+  };
+  if (isEmpty(scope.state)) {
+    for (const prop in scope.define.state) {
+      initialState(prop, scope.define.state[prop]);
+    }
+  } else {
+    for (const prop in scope.define.state) {
+      prop in scope.state || initialState(prop, scope.define.state[prop]);
+      const attrName = kebabCase(prop);
+      const attrValue = dom2.getAttribute(`${prefix}:${attrName}`) || dom2.getAttribute(`${prefix}:${prop}`);
+      const defined = attrValue !== null && attrValue !== "";
+      const hasState = `has${upcase(prop)}`;
+      hasState in scope.state || Object.defineProperty(scope.state, hasState, { get: () => defined });
+      if (attrValue && attrValue.startsWith("window.")) {
+        scope.state[prop] = window[attrValue.slice(7)];
+      } else {
         const attr = scope.define.state[prop];
-        let type;
-        let value;
-        if (typeof attr === "object") {
-          type = attr.typeof;
-          value = attr.default;
-        } else {
-          type = attr;
-        }
-        if (type === String) {
-          this.state[prop] = value || nil;
-        } else if (type === Boolean) {
-          this.state[prop] = typeof value === "boolean" ? value : value === "true" || false;
-        } else if (type === Number) {
-          this.state[prop] = value ? Number(value) : 0;
-        } else if (type === Array) {
-          this.state[prop] = Array.isArray(value) ? value : [];
-        } else if (type === Object) {
-          this.state[prop] = typeof value === "object" ? value : {};
-        }
-        scope.state[prop] = this.state[prop];
-      }
-    } else {
-      for (const prop in scope.define.state) {
-        if (!(prop in scope.state)) {
-          if (typeof scope.define.state[prop] === "object") {
-            scope.state[prop] = scope.define.state[prop].default;
-          } else {
-            switch (scope.define.state[prop]) {
-              case String:
-                scope.state[prop] = nil;
-                break;
-              case Boolean:
-                scope.state[prop] = false;
-                break;
-              case Number:
-                scope.state[prop] = 0;
-                break;
-              case Object:
-                scope.state[prop] = {};
-                break;
-              case Array:
-                scope.state[prop] = [];
-                break;
-            }
-          }
-        }
-        const attr = scope.define.state[prop];
-        const attrName = kebabCase(prop);
-        const hasProp2 = `has${upcase(prop)}`;
-        let type;
-        let value = this.root.hasAttribute(`${prefix}:${attrName}`) ? this.root.getAttribute(`${prefix}:${attrName}`) : this.root.getAttribute(`${prefix}:${prop}`);
-        const defined = value !== null && value !== nil;
-        if (typeof attr === "object") {
-          type = attr.typeof;
-          if (!defined) value = attr.default;
-        } else {
-          type = attr;
-        }
-        hasProp2 in this.state || defineGetter(this.state, hasProp2, defined);
-        if (typeof value === "string" && value.startsWith("window.")) {
-          this.state[prop] = window[value.slice(7)];
-        } else if (type === String) {
-          this.state[prop] = value || nil;
-        } else if (type === Boolean) {
-          this.state[prop] = typeof value === "boolean" ? value : value === "true" || false;
-        } else if (type === Number) {
-          this.state[prop] = value ? Number(value) : 0;
-        } else if (type === Array) {
-          this.state[prop] = defined ? attrJSON(value) : value || [];
-        } else if (type === Object) {
-          this.state[prop] = defined ? attrJSON(value) : value || {};
-        }
-        scope.state[prop] = this.state[prop];
+        const type = typeof attr === "object" ? attr.typeof : attr;
+        const value = defined ? attrValue : typeof attr === "object" ? attr.default : "";
+        scope.state[prop] = type === Object || type === Array ? defined ? attrJSON(value) : value : convertValue(type, value);
       }
     }
   }
-  /**
-   * **SPX Document Element**
+  return new Proxy(scope.state, {
+    get: Reflect.get,
+    set: (target, key, value, receiver) => {
+      const domValue = typeof value === "object" || Array.isArray(value) ? JSON.stringify(value) : String(value);
+      if (dom2 && domValue.trim() !== "") {
+        const camelCase2 = `${prefix}:${key}`;
+        const attrName = dom2.hasAttribute(camelCase2) ? camelCase2 : `${prefix}:${kebabCase(key)}`;
+        domValue === dom2.getAttribute(attrName) || dom2.setAttribute(attrName, domValue);
+      }
+      if (key in scope.binds) {
+        for (const id in scope.binds[key]) {
+          if (!scope.binds[key][id].live) continue;
+          scope.binds[key][id].value = domValue;
+          forNode(scope.binds[key][id].selector, (node) => {
+            node.innerText = domValue;
+          });
+        }
+      }
+      return Reflect.set(target, key, value, receiver);
+    }
+  });
+};
+var nodeProxy = (node) => {
+  return new Proxy(node, {
+    get: (_, prop) => prop in DoM ? (...args) => DoM[prop](node, ...args) : node[prop]
+  });
+};
+var sugarProxy = ({ dom: dom2, name }) => {
+  return new Proxy(() => dom2.nodes, {
+    get(target, prop, receiver) {
+      const { node } = dom2;
+      if (prop === Symbol.toPrimitive) {
+        log(5 /* ERROR */, `Sugar Error: Use ${C(`this.${name}.toNode()`)} for raw element: ${R(`this.${name}`)}`);
+        return () => "";
+      }
+      if (prop in DoM) {
+        return (...args) => DoM[prop](node, ...args);
+      } else if (prop in node) {
+        const prototype = Reflect.getPrototypeOf(node);
+        const descriptor = Reflect.getOwnPropertyDescriptor(prototype, prop);
+        if (descriptor && descriptor.get) return Reflect.get(prototype, prop, node);
+        const value = Reflect.get(node, prop);
+        return typeof value === "function" ? value.bind(node) : value;
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+    set(target, prop, value, receiver) {
+      const { node } = dom2;
+      return prop in node ? Reflect.set(node, prop, value) : Reflect.set(target, prop, value, receiver);
+    },
+    apply(target, thisArg, args) {
+      const { nodes } = dom2;
+      if (args.length === 2) return nodes.reduce(args[1], args[0]);
+      const length = nodes.length;
+      const callback = args[0];
+      const typeOf = args[0];
+      if (typeOf === "number") return nodeProxy(nodes[callback]);
+      if (typeOf === "string") return nodes.filter((el) => el.matches(callback));
+      if (typeOf === "function") {
+        let index = -1;
+        const map = Array(length);
+        while (++index < length) map[index] = callback(nodeProxy(nodes[index]), index);
+        return map;
+      }
+      return Reflect.apply(target, thisArg, args);
+    }
+  });
+};
+
+// src/components/class.ts
+Component.scopes = m();
+function Component(define) {
+  var _a;
+  return _a = class {
+    /**
+     * **SPX Document Element**
+     *
+     * Holds a reference to the DOM Document element `<html>` node.
+     */
+    get root() {
+      return d();
+    }
+    /**
+     * **SPX Component Element**
+     *
+     * Holds a reference to the DOM Document element `<div spx-component="">` node.
+     */
+    get dom() {
+      return this.scope.dom;
+    }
+    set dom(dom2) {
+      Component.scopes.get(this.ref).dom = dom2;
+    }
+    /**
+     * Constructor
+     *
+     * Creates the component instance
+     */
+    constructor(value) {
+      Reflect.defineProperty(this, "scope", {
+        get: () => Component.scopes.get(value)
+      });
+      Reflect.defineProperty(this, "ref", {
+        value,
+        configurable: false,
+        enumerable: false,
+        writable: false
+      });
+      console.log(Component.scopes);
+      this.state = stateProxy(this.scope, this.dom);
+    }
+  }, /**
+   * Static Definition
    *
-   * Holds a reference to the DOM Document element `<html>` node.
+   * The define object
    */
-  get html() {
-    return d();
-  }
-  get root() {
-    return this.scope.root;
-  }
-  set root(node) {
-    defineGetter(this.scope, "root", node);
-  }
-}, /**
- * Component Scopes
- *
- * Isolated store of all component instance scopes. Available to component instances
- * via the getter `scope` property. This reference acts as the generation guideline
- * for component instances.
- */
-_a.scopes = m(), _a);
+  _a.define = Object.assign({
+    name: "",
+    merge: false,
+    sugar: false,
+    state: {},
+    nodes: []
+  }, define), _a;
+}
 
 // src/observe/components.ts
 var components_exports = {};
 __export(components_exports, {
   connect: () => connect2,
-  disconnect: () => disconnect2,
+  disconnect: () => disconnect,
   hargs: () => hargs,
   hook: () => hook,
   mount: () => mount,
@@ -792,13 +877,16 @@ var connect = (node, refs) => {
     const ref = id.charCodeAt(0);
     if (ref === 99 /* COMPONENT */) {
       $.components.$mounted.add(instance.scope.key);
-      instance.root = node;
+      console.log(node);
+      instance.dom = node;
       instance.scope.status = 2 /* MOUNT */;
-      log(1 /* VERBOSE */, `Component ${instance.scope.define.id} mounted: ${instance.scope.key}`, "#6DD093" /* GREEN */);
+      log(1 /* VERBOSE */, `Component ${instance.scope.define.name} mounted: ${instance.scope.key}`, "#6DD093" /* GREEN */);
     } else if (ref === 101 /* EVENT */) {
       addEvent(instance, instance.scope.events[id], node);
     } else if (ref === 110 /* NODE */) {
-      instance.scope.nodes[id].live = true;
+      for (const k in instance.scope.nodes) {
+        ++instance.scope.nodes[k].live;
+      }
     } else if (ref === 98 /* BINDING */) {
       for (const k in instance.scope.binds) {
         if (id in instance.scope.binds[k]) {
@@ -810,7 +898,7 @@ var connect = (node, refs) => {
     }
   }
 };
-var disconnect = (curNode, refs, newNode) => {
+var unmount = (curNode, refs) => {
   for (const id of refs) {
     if (!$.components.$reference[id]) continue;
     const instance = $.components.$reference[id];
@@ -820,10 +908,10 @@ var disconnect = (curNode, refs, newNode) => {
       $.components.$mounted.delete(instance.scope.key);
       if (instance.scope.define.merge) {
         instance.scope.snapshot = curNode.innerHTML;
-        log(1 /* VERBOSE */, `Component ${instance.scope.define.id} snapshot: ${instance.scope.key}`, "#999" /* GRAY */);
+        log(1 /* VERBOSE */, `Component ${instance.scope.define.name} snapshot: ${instance.scope.key}`, "#999" /* GRAY */);
       }
       for (const k in instance.scope.nodes) {
-        instance.scope.nodes[k].live = false;
+        instance.scope.nodes[k].live = 0;
       }
       for (const k in instance.scope.binds) {
         for (const uuid3 in instance.scope.binds[k]) {
@@ -834,11 +922,13 @@ var disconnect = (curNode, refs, newNode) => {
         removeEvent(instance, instance.scope.events[key]);
       }
       instance.scope.status = 5 /* UNMOUNTED */;
-      log(1 /* VERBOSE */, `Component ${instance.scope.define.id} unmounted: ${instance.scope.key}`, "#7b97ca" /* PURPLE */);
+      log(1 /* VERBOSE */, `Component ${instance.scope.define.name} unmounted: ${instance.scope.key}`, "#7b97ca" /* PURPLE */);
     } else if (ref === 101 /* EVENT */) {
       removeEvent(instance, instance.scope.events[id]);
     } else if (ref === 110 /* NODE */) {
-      instance.scope.nodes[id].live = false;
+      for (const k in instance.scope.nodes) {
+        --instance.scope.nodes[k].live;
+      }
     } else if (ref === 98 /* BINDING */) {
       for (const k in instance.scope.binds) {
         if (id in instance.scope.binds[k]) {
@@ -849,12 +939,12 @@ var disconnect = (curNode, refs, newNode) => {
     }
   }
 };
-function removeNode(node) {
+var removeNode = (node) => {
   if (node.nodeType !== 1 /* ELEMENT_NODE */ && node.nodeType !== 11 /* FRAGMENT_NODE */) return;
   const attrs = node.getAttribute($.qs.$ref);
-  attrs && disconnect(node, attrs.split(","));
-}
-function addedNode(node) {
+  attrs && unmount(node, attrs.split(","));
+};
+var addedNode = (node) => {
   const attrs = node.getAttribute($.qs.$ref);
   if (attrs) {
     connect(node, attrs.split(","));
@@ -864,21 +954,25 @@ function addedNode(node) {
       walkNode(node, context);
     }
   }
-}
-function updateNode(curNode, newNode, cRef, nRef) {
+};
+var readNode = (newNode) => {
+  context ? context.$morph = newNode : context = getContext(newNode);
+  walkNode(newNode, context, false);
+};
+var updateNode = (curNode, newNode, cRef, nRef) => {
   if (cRef) cRef = cRef.split(",");
   if (nRef) nRef = nRef.split(",");
   if (cRef && nRef) {
-    disconnect(curNode, cRef);
+    unmount(curNode, cRef);
     connect(curNode, nRef);
   } else if (!cRef && nRef) {
     connect(curNode, nRef);
   } else {
     context ? context.$morph = curNode : context = getContext(curNode, newNode);
-    cRef && !nRef && disconnect(curNode, cRef);
-    isDirective(newNode.attributes) && walkNode(curNode, context);
+    if (cRef && !nRef) unmount(curNode, cRef);
+    if (isDirective(newNode.attributes)) walkNode(curNode, context);
   }
-}
+};
 
 // src/morph/snapshot.ts
 var patchComponentSnap = (scope, scopeKey) => onNextTick(() => {
@@ -892,11 +986,11 @@ var patchComponentSnap = (scope, scopeKey) => onNextTick(() => {
   }
 });
 var morphHead = (method, newNode) => {
-  const { page, dom } = get($.page.key);
+  const { page, dom: dom2 } = get($.page.key);
   const operation = method.charCodeAt(0) === 114 ? "removed" : "appended";
-  if (dom.head.contains(newNode)) {
-    dom.head[method](newNode);
-    $.snaps[page.snap] = dom.documentElement.outerHTML;
+  if (dom2.head.contains(newNode)) {
+    dom2.head[method](newNode);
+    $.snaps[page.snap] = dom2.documentElement.outerHTML;
     log(1 /* VERBOSE */, `Snapshot record was updated. Node ${operation} from <head>`, newNode);
   } else {
     log(3 /* WARN */, "Node does not exist in the snapshot record, no mutation applied", newNode);
@@ -904,7 +998,7 @@ var morphHead = (method, newNode) => {
 };
 
 // src/observe/components.ts
-var hargs = () => o({ page: o($.page) });
+var hargs = () => o(o($.page));
 var teardown = () => {
   for (const ref in $.components.$reference) {
     delete $.components.$reference[ref];
@@ -958,11 +1052,11 @@ var hook = () => {
     if (!$instances.has(ref)) continue;
     const instance = $instances.get(ref);
     if (instance.scope.status !== 3 /* MOUNTED */ && instance.scope.status !== 5 /* UNMOUNTED */) {
-      const unmount = instance.scope.status === 4 /* UNMOUNT */;
-      const trigger = unmount ? "unmount" : "onmount";
+      const unmount2 = instance.scope.status === 4 /* UNMOUNT */;
+      const trigger = unmount2 ? "unmount" : "onmount";
       if (trigger in instance) {
         trigger === "onmount" && "connect" in instance && instance.scope.hooks.connect === 2 /* DEFINED */ ? promises.push([ref, "connect", trigger]) : promises.push([ref, trigger]);
-      } else if (unmount) {
+      } else if (unmount2) {
         instance.scope.define.merge && patchComponentSnap(instance.scope, ref);
         instance.scope.status = 5 /* UNMOUNTED */;
       }
@@ -987,152 +1081,159 @@ var connect2 = () => {
   }
   $.observe.components = true;
 };
-var disconnect2 = () => {
+var disconnect = () => {
   if (!$.observe.components) return;
   hook();
   $.observe.components = false;
 };
 
 // src/components/snapshot.ts
-var snap = /* @__PURE__ */ ((cache) => {
-  let record;
+var snap = ((cache) => {
+  let record = m();
+  const attr = (dom2, refs) => dom2.setAttribute($.qs.$ref, dom2.hasAttribute($.qs.$ref) ? `${dom2.getAttribute($.qs.$ref)},${refs.shift()}` : refs.shift());
   const set2 = (element2) => {
     cache.push([element2, m()]);
     record = cache[cache.length - 1][1];
     return element2;
   };
   const add = (selector2, ref, incremental = false) => record.has(selector2) ? record.get(selector2).push(ref) : record.set(selector2, [ref]);
-  const sync = (snapshot) => onNextTick(() => {
+  const sync = (snapshot, key) => enqueue(() => {
     while (cache.length > 0) {
-      const [dom, marks] = cache.shift();
+      const [dom2, marks] = cache.shift();
       for (const [selector2, refs] of marks) {
-        forNode(
-          dom.querySelectorAll(selector2),
-          (node) => node.setAttribute($.qs.$ref, node.hasAttribute($.qs.$ref) ? `${node.getAttribute($.qs.$ref)},${refs.shift()}` : refs.shift())
-        );
+        dom2.matches(selector2) && attr(dom2, refs);
+        dom2.querySelectorAll(selector2).forEach((child) => attr(child, refs));
       }
       marks.clear();
     }
-    setSnap(snapshot.ownerDocument.documentElement.outerHTML);
+    setSnap(snapshot.documentElement.outerHTML, key);
     log(1 /* VERBOSE */, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
-  }, 250);
+  });
   return { set: set2, add, sync };
 })([]);
 
-// src/components/instances.ts
-var setInstances = ({ $scopes, $aliases, $morph }, snapshot) => {
-  const mounted2 = mounted();
-  const isMounted = hasProps(mounted2);
-  const isReverse = $.page.type === 4 /* REVERSE */;
+// src/components/instance.ts
+var setLifecyles = (scope, instance) => {
+  scope.hooks = o();
+  forEach((hook2) => {
+    scope.hooks[hook2] = hook2 in instance ? 2 /* DEFINED */ : 1 /* UNDEFINED */;
+  }, [
+    "connect",
+    "onmount",
+    "unmount",
+    "onmedia"
+  ]);
+};
+var setTriggers = (hooks, isMorph, isMount) => (instance, scope) => {
+  if (isMorph === false || isMount && scope.status === 2 /* MOUNT */) {
+    $.components.$mounted.add(scope.key);
+    $.components.$instances.set(scope.key, instance);
+    log(1 /* VERBOSE */, `Component "${scope.instanceOf}" connected: ${scope.key}`, "#2cc9ee" /* CYAN */);
+    let promise = -1;
+    if (scope.hooks.connect === 2 /* DEFINED */) {
+      promise = hooks.push([scope.key, "connect"]) - 1;
+      scope.status = 1 /* CONNNECT */;
+    }
+    if (scope.hooks.onmount === 2 /* DEFINED */) {
+      promise = (promise > -1 ? hooks[promise].push("onmount") : hooks.push([scope.key, "onmount"])) - 1;
+    }
+    if (promise < 0) {
+      scope.status = 3 /* MOUNTED */;
+    }
+  }
+};
+var setEvents = (scope, instance, isMorph) => {
+  for (const key in scope.events) {
+    if (isMorph !== null && scope.status === 3 /* MOUNTED */) {
+      $.components.$reference[key] = scope.key;
+      instance.scope.events[key] = scope.events[key];
+    }
+    addEvent(instance, scope.events[key]);
+  }
+};
+var setNodes = (nodes, instance) => {
+  const { scope } = instance;
+  for (const key in nodes) {
+    const node = nodes[key];
+    const hasNode = `has${upcase(key)}`;
+    if (hasNode in instance) {
+      key in scope && ++scope[key].live;
+      return;
+    }
+    Object.defineProperty(instance, hasNode, { get: () => node.live > 0 });
+    const getNode = () => element(node.selector, node.isChild ? instance.dom : b());
+    const getNodes = () => elements(node.selector, node.isChild ? instance.dom : b());
+    if (scope.define.sugar) {
+      Object.defineProperties(node.dom, { node: { get: getNode }, nodes: { get: getNodes } });
+      instance[key] = sugarProxy(node);
+    } else {
+      Object.defineProperties(instance, {
+        [`${key}Node`]: { get: getNode },
+        [`${key}Nodes`]: { get: getNodes }
+      });
+    }
+  }
+};
+var defineInstances = (promises, mounted2, isMorph) => {
+  const isMount = isMorph || $.page.type === 4 /* REVERSE */;
+  const setHook = setTriggers(promises, isMorph, isMount);
+  return (scope, instance) => {
+    if (instance) {
+      setNodes(scope.nodes, instance);
+      setEvents(scope, instance, isMorph);
+    } else {
+      scope.define = o();
+      const Register = $.components.$registry.get(scope.instanceOf);
+      Component.scopes.set(scope.key, defineGetter(scope, "define", Register.define));
+      const Instance = new Register(scope.key);
+      setLifecyles(scope, Instance);
+      setNodes(scope.nodes, Instance);
+      setEvents(scope, Instance, isMorph);
+      setHook(Instance, scope);
+    }
+  };
+};
+var setInstances = (context2, snapshot) => {
+  const { $scopes, $aliases, $morph } = context2;
   const promises = [];
-  const { $mounted, $instances, $registry, $reference } = $.components;
+  const mounted2 = mounted();
+  const define = defineInstances(promises, mounted2, $morph !== null);
   for (const instanceOf in $scopes) {
+    if (!$.components.$registry.has(instanceOf) && !mounted2.has(instanceOf)) {
+      log(3 /* WARN */, `Component does not exist in registry: ${instanceOf}`, $scopes[instanceOf]);
+      continue;
+    }
     for (const scope of $scopes[instanceOf]) {
-      if (scope.instanceOf === null) {
+      if (scope.instanceOf == null) {
         if (instanceOf in $aliases) {
           scope.instanceOf = $aliases[instanceOf];
-        } else if (isMounted(instanceOf)) {
-          scope.instanceOf = mounted2[instanceOf][0].scope.instanceOf;
         } else {
           continue;
         }
       }
-      let Component2;
-      let instance;
-      if (scope.status === 5 /* UNMOUNTED */ && ($morph !== null || isReverse)) {
-        if (scope.alias !== null) {
-          if (isMounted(scope.alias)) {
-            instance = mounted2[scope.alias][0];
-            Component2 = instance.scope.define;
-          }
-        } else {
-          if (isMounted(scope.instanceOf)) {
-            if (mounted2[scope.instanceOf].length === 1) {
-              instance = mounted2[scope.instanceOf][0];
-              Component2 = scope.define;
-            } else {
-              log(5 /* ERROR */, [
-                "Incremental component update failed because more than 1 instance exists.",
-                `Provide an an alias "id" identifer on component: ${scope.instanceOf} (alias: ${scope.alias})`
-              ]);
-            }
-          }
+      if (mounted2.has(instanceOf)) {
+        for (const instance of mounted2.get(instanceOf)) {
+          if (instance.scope.instanceOf === instanceOf) define(scope, instance);
         }
-        if (!instance) {
-          log(5 /* ERROR */, "Incremental component update failed as instance was undefined", scope);
-          continue;
-        }
-        scope.key = instance.scope.key;
-        scope.ref = instance.scope.ref;
-        scope.status = instance.scope.status = 3 /* MOUNTED */;
       } else {
-        Component2 = $registry.get(scope.instanceOf);
-        Component.scopes.set(scope.key, defineGetter(scope, "define", Component2.define));
-        instance = new Component2(scope.key);
-        for (const hook2 in scope.hooks) {
-          scope.hooks[hook2] = hook2 in instance ? 2 /* DEFINED */ : 1 /* UNDEFINED */;
-        }
-      }
-      for (const key in scope.nodes) {
-        const { schema, isChild: isChild2, selector: selector2 } = scope.nodes[key];
-        if (schema in instance.dom) continue;
-        const domNode = schema.slice(0, -1);
-        Object.defineProperties(instance.dom, {
-          [domNode]: { get: () => isChild2 ? instance.root.querySelector(selector2) : element(selector2) },
-          [schema]: { get: () => elements(selector2) },
-          [`has${upcase(domNode)}`]: { get: () => isLive(schema, scope.nodes) }
-        });
-      }
-      for (const key in scope.events) {
-        let event;
-        if ($morph !== null && scope.status === 3 /* MOUNTED */) {
-          event = instance.scope.events[key] = scope.events[key];
-          $reference[key] = scope.key;
-        } else {
-          event = scope.events[key];
-        }
-        addEvent(instance, event);
-      }
-      if ($morph === null || ($morph !== null || isReverse) && scope.status === 2 /* MOUNT */) {
-        $mounted.add(scope.key);
-        $instances.set(scope.key, instance);
-        log(1 /* VERBOSE */, `Component ${scope.define.id} (connect) mounted: ${scope.key}`, "#6DD093" /* GREEN */);
-        let i = -1;
-        if (scope.hooks.connect === 2 /* DEFINED */) {
-          promises.push([scope.key, "connect"]);
-          instance.scope.status = 1 /* CONNNECT */;
-          i = promises.length - 1;
-        }
-        if (scope.hooks.onmount === 2 /* DEFINED */) {
-          i > -1 ? promises[i].push("onmount") : promises.push([scope.key, "onmount"]);
-        }
+        define(scope);
       }
     }
   }
-  $.page.type === 0 /* INITIAL */ && snap.sync(snapshot);
+  onNextTick(() => [mounted2.clear()]);
+  $.page.type === 0 /* INITIAL */ && snap.sync(snapshot, $.page.snap);
   return promises.length > 0 ? mount(promises) : Promise.resolve();
 };
 
-// src/shared/regexp.ts
-var isPender = /\b(?:append|prepend)/;
-var Whitespace = /\s+/g;
-var isBoolean = /^\b(?:true|false)$/i;
-var isNumber = /^\d*\.?\d+$/;
-var isNumeric = /^(?:[.-]?\d*\.?\d+|NaN)$/;
-var isPrefetch = /\b(?:intersect|hover|proximity)\b/;
-var isResourceTag = /\b(?:SCRIPT|STYLE|LINK)\b/;
-var isArray = /\[(['"]?.*['"]?,?)\]/;
-var inPosition = /[xy]\s*|\d*\.?\d+/gi;
-
 // src/components/context.ts
-var walkNode = (node, context2) => {
-  if (!isDirective(node.attributes)) return;
+var walkNode = (node, context2, strict = true) => {
+  if (strict && !isDirective(node.attributes)) return;
   node.hasAttribute($.qs.$component) ? setComponent(node, node.getAttribute($.qs.$component), context2) : setAttrs(node, context2, null, null);
 };
 var getComponentValues = (input2, cb) => {
   const names = input2.trim().replace(/\s+/, " ").split(/[|, ]/);
   for (let i = 0, n = 0, s2 = names.length; i < s2; i++) {
-    if (names[i] === nil) continue;
+    if (names[i] === "") continue;
     if ((n = i + 2) < s2 && names[i + 1] === "as") {
       cb(camelCase(names[i]), camelCase(names[n]));
       i = n;
@@ -1142,30 +1243,24 @@ var getComponentValues = (input2, cb) => {
   }
 };
 var getEventParams = (attributes, event) => {
-  for (let i = 0, s2 = attributes.length; i < s2; i++) {
+  const s2 = attributes.length;
+  let i = 0;
+  while (++i < s2) {
     const { name, value } = attributes[i];
     if (!$.qs.$param.test(name) || name.startsWith($.qs.$data) || !value) continue;
     const prop = name.slice($.config.schema.length).split(":").pop();
-    if (event.params === null) event.params = o();
-    if (!(prop in event.params)) event.params[prop] = getAttrValueType(value);
+    if (event.attrs === null) event.attrs = o();
+    if (!(prop in event.attrs)) event.attrs[prop] = getAttrValueType(value);
   }
 };
 var isDirective = (attrs) => {
   if (typeof attrs === "string") {
     return attrs.indexOf("@") > -1 || attrs === $.qs.$component || attrs === $.qs.$node || attrs === $.qs.$bind;
   }
-  let i = attrs.length - 1;
-  for (; i >= 0; i--) if (isDirective(attrs[i].name)) return true;
+  for (let i = attrs.length - 1; i >= 0; i--) if (isDirective(attrs[i].name)) return true;
   return false;
 };
-var isChild = (scope, node) => scope.status === 2 /* MOUNT */ || scope.status === 3 /* MOUNTED */ ? scope.root.contains(node) : false;
-var isLive = (schema, input2) => {
-  for (const k in input2) {
-    if (input2[k].schema !== schema) continue;
-    if (input2[k].live) return true;
-  }
-  return false;
-};
+var isChild = (scope, node) => scope.status === 2 /* MOUNT */ || scope.status === 3 /* MOUNTED */ ? scope.dom ? scope.dom.contains(node) : false : false;
 var getAttrValueNotation = (input2) => {
   return equalizeWS(input2.replace(/\s \./g, ".")).replace(/\s+/g, " ").trim().split(/[ ,]/);
 };
@@ -1189,65 +1284,54 @@ var getSelector = (node, attrName, attrValue, contains2) => {
   attrValue || (attrValue = node.getAttribute(attrName));
   return `${node.nodeName.toLowerCase()}[${attrName}${contains2 ? "*=" : "="}"${attrValue}"]`;
 };
-var getScope = (id, { $scopes, $aliases }) => {
-  return id in $aliases ? last($scopes[$aliases[id]]) : id in $scopes ? last($scopes[id]) : ($scopes[id] = [setScope([id])])[0];
-};
+var getScope = (id, { $scopes, $aliases }) => id in $aliases ? last($scopes[$aliases[id]]) : id in $scopes ? last($scopes[id]) : ($scopes[id] = [setScope([id])])[0];
 var defineDomRef = (node, instance, ref, selector2) => {
   $.components.$reference[ref] = instance;
   const value = node.getAttribute($.qs.$ref);
-  const suffix = value ? `${value},${ref}` : ref;
-  node.setAttribute($.qs.$ref, suffix);
-  if (selector2) snap.add(selector2, ref);
+  node.setAttribute($.qs.$ref, value ? `${value},${ref}` : ref);
+  selector2 && snap.add(selector2, ref);
   return ref;
 };
-var setScope = ([instanceOf, aliasOf = null], root, context2) => {
-  const key = uuid();
-  const scope = o({
-    key,
-    instanceOf,
-    ref: `c.${key}`,
-    status: 5 /* UNMOUNTED */,
-    snap: null,
-    snapshot: null,
-    define: o(),
-    state: o(),
-    nodes: o(),
-    events: o(),
-    binds: o(),
-    hooks: o()
-  });
-  scope.hooks.connect = 1 /* UNDEFINED */;
-  scope.hooks.onmount = 1 /* UNDEFINED */;
-  scope.hooks.unmount = 1 /* UNDEFINED */;
-  scope.hooks.onmedia = 1 /* UNDEFINED */;
-  if (root) {
+var setScope = ([instanceOf, aliasOf = null], dom2, context2) => {
+  const scope = o();
+  scope.key = uuid();
+  scope.ref = `c.${scope.key}`;
+  scope.status = 5 /* UNMOUNTED */;
+  scope.state = o();
+  scope.nodes = o();
+  scope.binds = o();
+  scope.events = o();
+  if (dom2) {
+    scope.snap = null;
     scope.status = 2 /* MOUNT */;
-    scope.inFragment = contains(root);
+    scope.inFragment = contains(dom2);
     scope.alias = aliasOf || null;
-    defineGetter(scope, "root", root, true);
-    defineDomRef(root, key, scope.ref, getSelector(root, $.qs.$component));
+    scope.dom = dom2;
+    defineDomRef(dom2, scope.key, scope.ref, getSelector(dom2, $.qs.$component));
   }
   if ($.components.$registry.has(instanceOf)) {
     scope.instanceOf = instanceOf;
     if (scope.alias) {
       if (!$.components.$registry.has(scope.alias)) {
         if (scope.alias in context2.$scopes) {
-          for (const {
-            events,
-            nodes,
-            binds
-          } of context2.$scopes[scope.alias]) {
-            for (const e in events) {
-              scope.events[e] = events[e];
-              $.components.$reference[e] = key;
+          for (const { events, nodes, binds } of context2.$scopes[scope.alias]) {
+            if ("events" in scope) {
+              for (const e in events) {
+                scope.events[e] = events[e];
+                $.components.$reference[e] = scope.key;
+              }
             }
-            for (const n in nodes) {
-              scope.nodes[n] = nodes[n];
-              $.components.$reference[n] = key;
+            if ("nodes" in scope) {
+              for (const n in nodes) {
+                scope.nodes[n] = nodes[n];
+                $.components.$reference[n] = scope.key;
+              }
             }
-            for (const b2 in binds) {
-              scope.binds[b2] = binds[b2];
-              $.components.$reference[b2] = key;
+            if ("binds" in scope) {
+              for (const b2 in binds) {
+                scope.binds[b2] = binds[b2];
+                $.components.$reference[b2] = scope.key;
+              }
             }
           }
           delete context2.$scopes[scope.alias];
@@ -1276,75 +1360,75 @@ var setEvent = (node, name, valueRef, context2) => {
   const isWindow = eventName.startsWith("window:");
   const hasOptions = valueRef.indexOf("{");
   const values = valueRef.trim().split(hasOptions > -1 ? new RegExp("(?<=[$_\\w}])\\s+(?=[$_\\w])") : /\s+/);
-  for (const value of values) {
-    const event = o();
+  for (let i = 0, s2 = values.length; i < s2; i++) {
+    const value = values[i];
     const listener = new AbortController();
-    event.key = `e.${uuid()}`;
-    event.isWindow = isWindow;
-    event.eventName = isWindow ? eventName.slice(7) : eventName;
-    event.attached = false;
-    event.selector = getSelector(node, escSelector(name), value, true);
-    event.params = null;
-    event.options = { signal: listener.signal };
+    const ev = o();
+    ev.key = `e.${uuid()}`;
+    ev.isWindow = isWindow;
+    ev.eventName = isWindow ? eventName.slice(7) : eventName;
+    ev.attached = false;
+    ev.selector = getSelector(node, escSelector(name), value, true);
+    ev.attrs = null;
+    ev.options = { signal: listener.signal };
     let attrVal = value;
     if (hasOptions > -1) {
       const args = value.slice(hasOptions, value.lastIndexOf("}", hasOptions)).match(/(passive|once|capture)/g);
       if (args !== null) {
-        if (args.indexOf("once") > -1) event.options.once = true;
-        if (args.indexOf("passive") > -1) event.options.passive = true;
-        if (args.indexOf("capture") > -1) event.options.capture = true;
+        ev.options.once = args.indexOf("once") > -1;
+        ev.options.passive = args.indexOf("passive") > -1;
+        ev.options.capture = args.indexOf("capture") > -1;
       }
       attrVal = value.slice(0, hasOptions);
     }
-    const eventValue = getAttrValueNotation(attrVal);
-    if (eventValue.length > 1) {
-      log(3 /* WARN */, `No more than 1 DOM Event listener method allowed in value: ${value}`);
-    }
-    const [instanceOf, method] = eventValue[0].split(".");
+    const [instanceOf, method] = getAttrValueNotation(attrVal)[0].split(".");
     const scope = getScope(instanceOf, context2);
-    event.listener = listener;
-    event.method = method.trim();
-    event.isChild = isChild(scope, node);
-    defineGetter(event, "dom", node, true);
-    defineDomRef(node, scope.key, event.key, event.selector);
-    scope.events[event.key] = event;
+    ev.listener = listener;
+    ev.method = method.trim();
+    ev.isChild = isChild(scope, node);
+    defineGetter(ev, "dom", node, true);
+    defineDomRef(node, scope.key, ev.key, ev.selector);
+    scope.events[ev.key] = ev;
   }
 };
-var setNodes = (node, value, context2) => {
+var setNodes2 = (node, value, context2) => {
   const nodes = getAttrValueNotation(value);
   for (const nodeValue of nodes) {
-    const [instanceOf, keyProp] = nodeValue.split(".");
+    const [instanceOf, name] = nodeValue.split(".");
     const scope = getScope(instanceOf, context2);
-    const selector2 = `[${$.qs.$node}*="${value}"]`;
-    const key = defineDomRef(node, scope.key, `n.${uuid()}`, `${node.nodeName.toLowerCase()}${selector2}`);
-    scope.nodes[key] = o({
-      key,
-      keyProp,
-      selector: selector2,
-      dom: context2.$element,
-      schema: `${keyProp}Nodes`,
-      live: true,
-      isChild: isChild(scope, node)
-    });
+    if (name in scope.nodes) {
+      scope.nodes[name].live++;
+      scope.nodes[name].isChild = isChild(scope, node);
+    } else {
+      scope.nodes[name] = o({
+        name,
+        selector: `[${$.qs.$node}*="${value}"]`,
+        dom: o(),
+        key: `c.${scope.key}`,
+        live: 1,
+        isChild: isChild(scope, node)
+      });
+    }
   }
 };
 var setBinds = (node, value, context2) => {
+  var _a;
   for (const bindValue of getAttrValueNotation(value)) {
     const [instanceOf, stateKey] = bindValue.split(".");
     const scope = getScope(instanceOf, context2);
     const selector2 = `[${$.qs.$bind}="${value}"]`;
     const key = defineDomRef(node, scope.key, `b.${uuid()}`, `${node.nodeName.toLowerCase()}${selector2}`);
-    if (!(stateKey in scope.binds)) scope.binds[stateKey] = o();
+    (_a = scope.binds)[stateKey] || (_a[stateKey] = o());
     scope.binds[stateKey][key] = o({
       key,
       stateKey,
       selector: selector2,
       value: node.innerText,
-      dom: context2.$element,
       live: true,
       stateAttr: `${$.config.schema}${instanceOf}:${stateKey}`,
       isChild: isChild(scope, node)
     });
+    defineGetter(scope.binds[stateKey][key], "dom", node);
   }
 };
 var setAttrs = (node, context2, instanceOf, alias) => {
@@ -1365,14 +1449,14 @@ var setAttrs = (node, context2, instanceOf, alias) => {
     } else if (name === $.qs.$bind) {
       setBinds(node, value, context2);
     } else if (name === $.qs.$node) {
-      setNodes(node, value, context2);
+      setNodes2(node, value, context2);
     }
   }
 };
 var setComponent = (node, value, context2) => {
   getComponentValues(value, (instanceOf, aliasOf) => {
     if (!$.components.$registry.has(instanceOf)) {
-      log(5 /* ERROR */, `Component does not exist in registry: ${instanceOf}`);
+      log(3 /* WARN */, `Component does not exist in registry: ${instanceOf}`);
     } else {
       let scope;
       if (instanceOf in context2.$scopes) {
@@ -1380,7 +1464,7 @@ var setComponent = (node, value, context2) => {
         if (scope.status === 5 /* UNMOUNTED */) {
           scope.status = 2 /* MOUNT */;
           scope.inFragment = contains(node);
-          defineGetter(scope, "root", node, true);
+          scope.dom = node;
           defineDomRef(node, scope.key, scope.ref, getSelector(node, $.qs.$component));
         } else {
           context2.$scopes[instanceOf].push(setScope([instanceOf, aliasOf], node, context2));
@@ -1408,8 +1492,7 @@ var getComponents = (nodes) => {
   if (!nodes) {
     const snapshot = snap.set($.snapDom.body);
     walkElements(b(), (node) => walkNode(node, context2));
-    if (isEmpty(context2.$scopes)) return;
-    setInstances(context2, snapshot);
+    isEmpty(context2.$scopes) || setInstances(context2, snapshot.ownerDocument);
   } else if (nodes instanceof Set) {
     nodes.forEach((node) => walkNode(node, context2));
     nodes.clear();
@@ -1433,11 +1516,12 @@ var connect3 = () => {
   let selector2;
   let directive;
   let aliases;
-  const dom = b();
+  const dom2 = b();
   if ($.page.target.length > 0) {
+    console.log($.page);
     directive = $.qs.$target;
-    selector2 = $.page.target.join(",");
-    aliases = nodeSet(dom.querySelectorAll(`[id][${$.qs.$component}]`));
+    selector2 = $.page.target.join();
+    aliases = nodeSet(dom2.querySelectorAll(`[id][${$.qs.$component}]`));
   } else {
     directive = $.qs.$fragment;
     selector2 = $.config.fragments.length === 1 && $.config.fragments[0] === "body" ? $.qs.$fragments : `${$.config.fragments.join()},${$.qs.$fragments}`;
@@ -1471,9 +1555,9 @@ var setFragmentElements = (page) => {
   if (page.type === 6 /* VISIT */ || page.selector === "body" || page.selector === null) return;
   onNextTick(() => {
     const snapDom = getSnapDom(page.snap);
-    const targets3 = snapDom.body.querySelectorAll($.qs.$targets);
+    const targets2 = snapDom.body.querySelectorAll($.qs.$targets);
     const domNode = b().querySelectorAll($.qs.$targets);
-    forNode(targets3, (node, index) => {
+    forNode(targets2, (node, index) => {
       if (contains(node)) {
         log(3 /* WARN */, "The fragment or target is a decedent of an element which morphs", node);
       } else {
@@ -1498,7 +1582,7 @@ var create = (page) => {
   page.selector = selector(page.target);
   if ($.config.cache) {
     has3("cache") || (page.cache = $.config.cache);
-    page.snap || (page.snap = uuid());
+    page.snap || (page.snap = uid());
   }
   if ($.config.hover !== false && page.type === 10 /* HOVER */) {
     page.threshold || (page.threshold = $.config.hover.threshold);
@@ -1515,7 +1599,6 @@ var create = (page) => {
   page.scrollX || (page.scrollX = 0);
   page.fragments || (page.fragments = $.config.fragments);
   page.visits || (page.visits = 0);
-  page.components || (page.components = []);
   page.location || (page.location = getLocation(page.key));
   $.pages[page.key] = page;
   return $.pages[page.key];
@@ -1556,7 +1639,7 @@ var patch = (prop, value, key = $.history.key) => {
 };
 var set = (page, snapshot) => {
   const event = emit("before:cache", page, snapshot);
-  const dom = typeof event === "string" ? event : snapshot;
+  const dom2 = typeof event === "string" ? event : snapshot;
   if (page.type > 5 /* POPSTATE */) {
     if (page.type > 9 /* RELOAD */) {
       page.type = 1 /* PREFETCH */;
@@ -1564,9 +1647,9 @@ var set = (page, snapshot) => {
   }
   page.title = getTitle(snapshot);
   if (!$.config.cache || event === false) return page;
-  if (page.type !== 0 /* INITIAL */ && !hasProp(page, "snap")) return update(page, dom);
+  if (page.type !== 0 /* INITIAL */ && !hasProp(page, "snap")) return update(page, dom2);
   $.pages[page.key] = page;
-  $.snaps[page.snap] = dom;
+  $.snaps[page.snap] = dom2;
   setFragmentElements(page);
   emit("after:cache", page);
   return page;
@@ -1580,7 +1663,7 @@ var update = (page, snapshot = null) => {
   return Object.assign(state, page);
 };
 var setSnap = (snapshot, key) => {
-  const snap2 = key = key ? key.charCodeAt(0) === 47 /* FWD */ ? key in $.pages ? $.pages[key].snap : null : key : $.page.snap;
+  const snap2 = key = typeof key === "number" ? key : null;
   if (snap2) {
     $.snaps[snap2] = snapshot;
   } else {
@@ -1596,34 +1679,32 @@ var get = (key) => {
     key = $.history.key;
   }
   if (key in $.pages) {
-    return {
-      get page() {
-        return $.pages[key];
-      },
-      get dom() {
-        return parse($.snaps[$.pages[key].snap]);
-      }
-    };
+    return defineGetterProps(o(), [
+      ["page", () => $.pages[key]],
+      ["dom", () => parse($.snaps[$.pages[key].snap])]
+    ]);
   }
   log(5 /* ERROR */, `No record exists: ${key}`);
 };
 var getSnapDom = (key) => {
-  const uuid3 = key ? key.charCodeAt(0) === 47 /* FWD */ ? $.pages[key].snap : key : $.page.snap;
+  const uuid3 = typeof key === "string" ? key.charCodeAt(0) === 47 /* FWD */ ? $.pages[key].snap : key : $.page.snap;
   return parse($.snaps[uuid3]);
 };
-var mounted = ({ mounted: mounted2 = null } = {}) => {
-  const mounts = o();
+var mounted = () => {
+  const live2 = m();
   const { $instances, $mounted } = $.components;
-  for (const instance of $instances.values()) {
-    if (!$mounted.has(instance.scope.key)) continue;
-    if (mounted2 !== null && instance.scope.status === mounted2) continue;
-    const has3 = hasProps(mounts);
-    if (instance.scope.alias !== null && !has3(instance.scope.alias)) {
-      mounts[instance.scope.alias] = [instance];
+  for (const key of $mounted) {
+    if (!$instances.has(key)) continue;
+    const instance = $instances.get(key);
+    const { scope } = instance;
+    if (scope.status === 2 /* MOUNT */) {
+      if (scope.alias !== null) {
+        live2.has(scope.alias) ? live2.get(scope.alias).push(instance) : live2.set(scope.alias, [instance]);
+      }
+      live2.has(scope.instanceOf) ? live2.get(scope.instanceOf).push(instance) : live2.set(scope.instanceOf, [instance]);
     }
-    has3(instance.scope.instanceOf) ? mounts[instance.scope.instanceOf].push(instance) : mounts[instance.scope.instanceOf] = [instance];
   }
-  return mounts;
+  return live2;
 };
 var getPage = (key) => {
   if (!key) {
@@ -1883,19 +1964,14 @@ var getRoute = (link, type = 6 /* VISIT */) => {
 var http = (key, {
   method = "GET",
   body = null,
-  headers = null,
+  headers = [["spx-http", "href"]],
   type = "text"
-} = {}) => new Promise(function(resolve, reject) {
+} = {}) => new Promise((resolve, reject) => {
   const xhr = new XHR();
   xhr.key = key;
   xhr.responseType = type;
   xhr.open(method, key, true);
-  xhr.setRequestHeader("spx-request", "true");
-  if (headers !== null) {
-    for (const prop in headers) {
-      xhr.setRequestHeader(prop, headers[prop]);
-    }
-  }
+  for (const [hk, hv] of headers) xhr.setRequestHeader(hk, hv);
   xhr.onloadstart = function() {
     XHR.$request.set(this.key, xhr);
   };
@@ -1962,11 +2038,7 @@ var reverse = async (state) => {
   const page = create(getRoute(state.rev, 4 /* REVERSE */));
   await onNextTickResolve();
   fetch(page).then((page2) => {
-    if (page2) {
-      log(2 /* INFO */, `Reverse fetch completed: ${page2.rev}`);
-    } else {
-      log(3 /* WARN */, `Reverse fetch failed: ${state.rev}`);
-    }
+    page2 ? log(2 /* INFO */, `Reverse fetch completed: ${page2.rev}`) : log(3 /* WARN */, `Reverse fetch failed: ${state.rev}`);
   });
 };
 var wait = async (state) => {
@@ -2038,6 +2110,7 @@ var morphAttributes = (curNode, newNode) => {
   }
   const curNodeAttrs = curNode.attributes;
   for (let o2 = curNodeAttrs.length - 1; o2 >= 0; o2--) {
+    if (curNodeAttrs[o2] === void 0) continue;
     attrNode = curNodeAttrs[o2];
     attrName = attrNode.name;
     attrValue = attrNode.value;
@@ -2051,15 +2124,13 @@ var morphAttributes = (curNode, newNode) => {
       if (!newNode.hasAttribute(attrName)) {
         curNode.removeAttribute(attrName);
       }
+      if (!attrDirective) {
+        attrDirective = isDirective(attrName);
+      }
     }
   }
   if (cRef || nRef || attrDirective) {
-    updateNode(
-      curNode,
-      newNode,
-      cRef,
-      nRef
-    );
+    updateNode(curNode, newNode, cRef, nRef);
   }
 };
 
@@ -2137,7 +2208,7 @@ var matchName = (curNodeName, newNodeName) => {
   const newCodeStart = newNodeName.charCodeAt(0);
   return curCodeStart <= 90 && newCodeStart >= 97 ? curNodeName === newNodeName.toUpperCase() : newCodeStart <= 90 && curCodeStart >= 97 ? newNodeName === curNodeName.toUpperCase() : false;
 };
-function formNodes(curElement, newElement) {
+var formNodes = (curElement, newElement) => {
   switch (curElement.nodeName) {
     case "INPUT":
       input(
@@ -2164,7 +2235,7 @@ function formNodes(curElement, newElement) {
       );
       break;
   }
-}
+};
 var getKey2 = (node) => node ? "getAttribute" in node ? node.getAttribute("id") : void 0 : void 0;
 var moveChildren = (curElement, newElement) => {
   let firstChild = curElement.firstChild;
@@ -2178,8 +2249,15 @@ var moveChildren = (curElement, newElement) => {
 };
 var removeNode2 = (curNode, parentNode, context2, skipKeys = true) => {
   removeNode(curNode);
-  if (parentNode) parentNode.removeChild(curNode);
+  parentNode && parentNode.removeChild(curNode);
   walkNodes(curNode, skipKeys, context2);
+};
+var morphEqual = (curElement) => {
+  if (curElement.nodeType === 1 /* ELEMENT_NODE */) {
+    if (curElement.hasAttribute($.qs.$node)) {
+      readNode(curElement);
+    }
+  }
 };
 var morphChildren = (curElement, newElement, context2) => {
   let newNode = newElement.firstChild;
@@ -2196,6 +2274,7 @@ var morphChildren = (curElement, newElement, context2) => {
     while (curNode) {
       curNextSibling = curNode.nextSibling;
       if (newNode.isEqualNode(curNode)) {
+        morphEqual(curNode);
         newNode = newNextSibling;
         curNode = curNextSibling;
         continue outer;
@@ -2247,9 +2326,7 @@ var morphChildren = (curElement, newElement, context2) => {
           }
         } else if (curNodeType === 3 /* TEXT_NODE */ || curNodeType === 8 /* COMMENT_NODE */) {
           isCompatible = true;
-          if (curNode.nodeValue !== newNode.nodeValue) {
-            curNode.nodeValue = newNode.nodeValue;
-          }
+          if (curNode.nodeValue !== newNode.nodeValue) curNode.nodeValue = newNode.nodeValue;
         }
       }
       if (isCompatible) {
@@ -2270,18 +2347,11 @@ var morphChildren = (curElement, newElement, context2) => {
     }
     if (newKey && (curMatch = context2.$lookup.get(newKey)) && matchName(curMatch.nodeName, newNode.nodeName)) {
       curElement.appendChild(curMatch);
-      morphElement(
-        curMatch,
-        newNode,
-        context2
-      );
+      morphElement(curMatch, newNode, context2);
     } else {
       if (newNode.actualize) newNode = newNode.actualize(curElement.ownerDocument || document);
       curElement.appendChild(newNode);
-      addedNode2(
-        newNode,
-        context2
-      );
+      addedNode2(newNode, context2);
     }
     newNode = newNextSibling;
     curNode = curNextSibling;
@@ -2299,28 +2369,12 @@ var morphChildren = (curElement, newElement, context2) => {
 };
 var morphElement = (curElement, newElement, context2) => {
   const newKey = getKey2(newElement);
-  if (newKey) context2.$lookup.delete(newKey);
+  newKey && context2.$lookup.delete(newKey);
   if (curElement.isEqualNode(newElement)) return;
   const morphAttr = curElement.getAttribute($.qs.$morph);
   if (morphAttr === "false") return;
-  if (morphAttr !== "children") {
-    morphAttributes(
-      curElement,
-      newElement
-    );
-  }
-  if (curElement.nodeName !== "TEXTAREA") {
-    morphChildren(
-      curElement,
-      newElement,
-      context2
-    );
-  } else {
-    textarea(
-      curElement,
-      newElement
-    );
-  }
+  morphAttr !== "children" && morphAttributes(curElement, newElement);
+  curElement.nodeName === "TEXTAREA" ? textarea(curElement, newElement) : morphChildren(curElement, newElement, context2);
 };
 var walkNodes = (curNode, skipKeys, context2) => {
   if (curNode.nodeType !== 1 /* ELEMENT_NODE */) return;
@@ -2331,21 +2385,13 @@ var walkNodes = (curNode, skipKeys, context2) => {
       context2.$remove.add(key);
     } else {
       removeNode(curChild);
-      if (curChild.firstChild) {
-        walkNodes(
-          curChild,
-          skipKeys,
-          context2
-        );
-      }
+      curChild.firstChild && walkNodes(curChild, skipKeys, context2);
     }
     curChild = curChild.nextSibling;
   }
 };
 var addedNode2 = (curElement, context2) => {
-  if (curElement.nodeType === 1 /* ELEMENT_NODE */ || curElement.nodeType === 11 /* FRAGMENT_NODE */) {
-    addedNode(curElement);
-  }
+  (curElement.nodeType === 1 /* ELEMENT_NODE */ || curElement.nodeType === 11 /* FRAGMENT_NODE */) && addedNode(curElement);
   let curChild = curElement.firstChild;
   while (curChild) {
     const nextSibling = curChild.nextSibling;
@@ -2353,26 +2399,13 @@ var addedNode2 = (curElement, context2) => {
     if (curKey) {
       const unmatchElement = context2.$lookup.get(curKey);
       if (unmatchElement && matchName(curChild.nodeName, unmatchElement.nodeName)) {
-        curChild.parentNode.replaceChild(
-          unmatchElement,
-          curChild
-        );
-        morphElement(
-          unmatchElement,
-          curChild,
-          context2
-        );
+        curChild.parentNode.replaceChild(unmatchElement, curChild);
+        morphElement(unmatchElement, curChild, context2);
       } else {
-        addedNode2(
-          curChild,
-          context2
-        );
+        addedNode2(curChild, context2);
       }
     } else {
-      addedNode2(
-        curChild,
-        context2
-      );
+      addedNode2(curChild, context2);
     }
     curChild = nextSibling;
   }
@@ -2383,11 +2416,7 @@ var cleanNode = (curElement, curNode, curKey, context2) => {
     if (curKey = getKey2(curNode)) {
       context2.$remove.add(curKey);
     } else {
-      removeNode2(
-        curNode,
-        curElement,
-        context2
-      );
+      removeNode2(curNode, curElement, context2);
     }
     curNode = curNextSibling;
   }
@@ -2397,33 +2426,17 @@ var indexNode = (fromNode, context2) => {
     let childNode = fromNode.firstChild;
     while (childNode) {
       const key = getKey2(childNode);
-      if (key) {
-        context2.$lookup.set(
-          key,
-          childNode
-        );
-      }
-      indexNode(
-        childNode,
-        context2
-      );
+      key && context2.$lookup.set(key, childNode);
+      indexNode(childNode, context2);
       childNode = childNode.nextSibling;
     }
   }
 };
 var morph = (curNode, snapNode) => {
   let newNode = snapNode.cloneNode(true);
-  const context2 = o({
-    $remove: s(),
-    $lookup: m()
-  });
-  if (newNode.nodeType === 11 /* FRAGMENT_NODE */) {
-    newNode = newNode.firstElementChild;
-  }
-  indexNode(
-    curNode,
-    context2
-  );
+  const context2 = o({ $remove: s(), $lookup: m() });
+  newNode.nodeType === 11 /* FRAGMENT_NODE */ && (newNode = newNode.firstElementChild);
+  indexNode(curNode, context2);
   let morphedNode = curNode;
   const curNodeType = morphedNode.nodeType;
   const newNodeType = newNode.nodeType;
@@ -2433,10 +2446,7 @@ var morph = (curNode, snapNode) => {
         removeNode(curNode);
         morphedNode = moveChildren(
           curNode,
-          createElementNS(
-            newNode.nodeName,
-            newNode.namespaceURI
-          )
+          createElementNS(newNode.nodeName, newNode.namespaceURI)
         );
       }
     } else {
@@ -2456,21 +2466,12 @@ var morph = (curNode, snapNode) => {
     removeNode(curNode);
   } else {
     if (newNode.isEqualNode(morphedNode)) return morphedNode;
-    morphElement(
-      morphedNode,
-      newNode,
-      context2
-    );
+    morphElement(morphedNode, newNode, context2);
     if (context2.$remove.size > 0) {
       for (const key of context2.$remove) {
         if (context2.$lookup.has(key)) {
           const node = context2.$lookup.get(key);
-          removeNode2(
-            node,
-            node.parentNode,
-            context2,
-            false
-          );
+          removeNode2(node, node.parentNode, context2, false);
         }
       }
     }
@@ -2498,32 +2499,32 @@ var canFetch = (target) => {
   return key === null ? 2 /* NO */ : has(key) ? 2 /* NO */ : 1 /* YES */;
 };
 var getNodeTargets = (selector2, hrefs) => {
-  const targets3 = [];
+  const targets2 = [];
   forNode(
     selector2,
     (targetNode) => {
       if (targetNode.nodeName !== "A") {
         forNode(
           hrefs,
-          (linkNode) => canFetch(linkNode) === 1 /* YES */ ? targets3.push(linkNode) : null
+          (linkNode) => canFetch(linkNode) === 1 /* YES */ ? targets2.push(linkNode) : null
         );
       } else {
         if (targetNode.hasAttribute("href") && validKey(targetNode.href)) {
           const key = getKey(targetNode.href);
-          if (getKey(key) !== null && has(key) === false) targets3.push(targetNode);
+          if (getKey(key) !== null && has(key) === false) targets2.push(targetNode);
         }
       }
     }
   );
-  return targets3;
+  return targets2;
 };
 var getTargets = (selector2) => {
-  const targets3 = [];
+  const targets2 = [];
   forNode(
     selector2,
-    (linkNode) => canFetch(linkNode) === 1 /* YES */ ? targets3.push(linkNode) : null
+    (linkNode) => canFetch(linkNode) === 1 /* YES */ ? targets2.push(linkNode) : null
   );
-  return targets3;
+  return targets2;
 };
 
 // src/observe/hovers.ts
@@ -2560,7 +2561,7 @@ var connect4 = () => {
   forEach(addListener, getTargets($.qs.$hover));
   $.observe.hover = true;
 };
-var disconnect3 = () => {
+var disconnect2 = () => {
   if (!$.observe.hover) return;
   forEach(removeListener, getTargets($.qs.$hover));
   $.observe.hover = false;
@@ -2585,63 +2586,52 @@ var connect5 = () => {
   if (!$.config.intersect || $.observe.intersect) return;
   if (!entries) entries = new IntersectionObserver(forEach(onIntersect), $.config.intersect);
   const observe = forEach((target) => entries.observe(target));
-  const targets3 = getNodeTargets($.qs.$intersector, $.qs.$intersect);
-  observe(targets3);
+  const targets2 = getNodeTargets($.qs.$intersector, $.qs.$intersect);
+  observe(targets2);
   $.observe.intersect = true;
 };
-var disconnect4 = () => {
+var disconnect3 = () => {
   if (!$.observe.intersect) return;
   entries.disconnect();
   $.observe.intersect = false;
 };
 
 // src/observe/mutations.ts
-var nodeOutsideTarget = (node) => {
-  const targets3 = b().querySelectorAll(`${$.page.target.join(",")},[${$.qs.$target}]`);
-  for (let i = 0, s2 = targets3.length; i < s2; i++) {
-    if (targets3[i].contains(node)) return false;
+var outsideTarget = (node) => {
+  const targets2 = b().querySelectorAll(`${$.page.target.join()},[${$.qs.$target}]`);
+  for (let i = 0, s2 = targets2.length; i < s2; i++) {
+    if (targets2[i].contains(node)) return false;
   }
   return true;
 };
-var resources = new MutationObserver(function([mutation]) {
+var resources = new MutationObserver(([mutation]) => {
   if (mutation.type !== "childList") return;
+  if (mutation.addedNodes.length === 0 && mutation.removedNodes.length === 0) return;
   const isAdded = mutation.addedNodes.length;
-  if (isAdded || mutation.removedNodes.length > 0) {
-    const node = isAdded ? mutation.addedNodes[0] : mutation.removedNodes[0];
-    if (node.nodeType !== 1 /* ELEMENT_NODE */) return;
-    if ($.eval && isResourceTag.test(node.nodeName)) {
-      if (node.parentNode.nodeName === "HEAD") {
-        if (isAdded) {
-          morphHead("appendChild", node);
-        } else {
-          morphHead("removeChild", node);
-        }
-      } else {
-        if (nodeOutsideTarget(node) && !$.resources.has(node)) {
-          $.resources.add(node);
-        } else {
-          $.resources.delete(node);
-        }
-      }
-    } else if (node instanceof HTMLElement) {
-      if (isAdded && !node.hasAttribute($.qs.$ref)) {
-        getComponents(node);
-      }
+  const node = isAdded ? mutation.addedNodes[0] : mutation.removedNodes[0];
+  if (node.nodeType !== 1 /* ELEMENT_NODE */) return;
+  if ($.eval && isResourceTag.test(node.nodeName)) {
+    if (node.parentNode.nodeName === "HEAD") {
+      isAdded ? morphHead("appendChild", node) : morphHead("removeChild", node);
+    } else {
+      outsideTarget(node) && $.resources.has(node) ? $.resources.delete(node) : $.resources.add(node);
+    }
+  } else if (node instanceof HTMLElement) {
+    const ref = node.getAttribute($.qs.$ref);
+    if (isAdded && ref === null) {
+      getComponents(node);
+    } else if (ref) {
+      unmount(node, ref.split(","));
     }
   }
 });
 var connect6 = () => {
-  if (!$.observe.mutations) return;
-  resources.observe(document.head, {
-    childList: true
-  });
-  resources.observe(b(), {
-    childList: true,
-    subtree: true
-  });
+  if ($.observe.mutations) return;
+  resources.observe(document.head, { childList: true });
+  resources.observe(b(), { childList: true, subtree: true });
   $.observe.mutations = true;
 };
-var disconnect5 = () => {
+var disconnect4 = () => {
   if (!$.observe.mutations) return;
   resources.takeRecords();
   resources.disconnect();
@@ -2669,27 +2659,27 @@ var setBounds = (target) => {
     right: rect.right + distance
   };
 };
-var observer = (targets3, wait2 = false) => (event) => {
+var observer = (targets2, wait2 = false) => (event) => {
   if (wait2) return;
   wait2 = true;
-  const node = targets3.findIndex((node2) => inRange(event, node2));
+  const node = targets2.findIndex((node2) => inRange(event, node2));
   if (node === -1) {
     onNextTick(() => wait2 = false, $.config.proximity.throttle);
   } else {
-    const { target } = targets3[node];
+    const { target } = targets2[node];
     if (canFetch(target) === 2 /* NO */) {
-      targets3.splice(node, 1);
+      targets2.splice(node, 1);
     } else {
       const page = create(getRoute(target, 12 /* PROXIMITY */));
       const delay = page.threshold || $.config.proximity.threshold;
       throttle(page.key, async () => {
-        if (!emit("prefetch", target, page)) return disconnect6();
+        if (!emit("prefetch", target, page)) return disconnect5();
         const prefetch2 = await fetch(page);
         if (prefetch2) {
-          targets3.splice(node, 1);
+          targets2.splice(node, 1);
           wait2 = false;
-          if (targets3.length === 0) {
-            disconnect6();
+          if (targets2.length === 0) {
+            disconnect5();
             log(2 /* INFO */, "Proximity observer disconnected");
           }
         }
@@ -2701,14 +2691,14 @@ var entries2;
 var connect7 = () => {
   if (!$.config.proximity || $.observe.proximity) return;
   const target = getTargets($.qs.$proximity);
-  const targets3 = target.map(setBounds);
-  if (targets3.length > 0) {
-    entries2 = observer(targets3);
+  const targets2 = target.map(setBounds);
+  if (targets2.length > 0) {
+    entries2 = observer(targets2);
     addEventListener(`${pointer}move`, entries2, { passive: true });
     $.observe.proximity = true;
   }
 };
-var disconnect6 = () => {
+var disconnect5 = () => {
   if (!$.observe.proximity) return;
   removeEventListener(`${pointer}move`, entries2);
   $.observe.proximity = false;
@@ -2758,7 +2748,7 @@ var morphHead2 = async (curHead, newHead) => {
   }
   await Promise.allSettled(promises);
 };
-var morphNodes = (page, snapDom) => {
+var morphDom = (page, snapDom) => {
   const pageDom = b();
   if (page.selector === "body" || page.fragments.length === 0) {
     morph(pageDom, snapDom.body);
@@ -2779,30 +2769,25 @@ var morphNodes = (page, snapDom) => {
       }
     }
   }
-  if (context) {
-    snap.sync(snapDom.body);
-  }
-  if (page.type !== 6 /* VISIT */) {
-    patch("type", 6 /* VISIT */);
-  }
+  context && snap.sync(snapDom, page.snap);
+  page.type !== 6 /* VISIT */ && patch("type", 6 /* VISIT */);
   if (page.location.hash !== nil) {
     const anchor = pageDom.querySelector(page.location.hash);
     anchor && anchor.scrollIntoView();
   }
-  d().id = page.snap;
   scrollTo(page.scrollX, page.scrollY);
 };
 var update2 = (page) => {
-  disconnect3();
-  disconnect4();
-  disconnect6();
-  disconnect5();
   disconnect2();
+  disconnect3();
+  disconnect5();
+  disconnect4();
+  disconnect();
   connect3();
   $.eval === false && (document.title = page.title);
   const snapDom = getSnapDom(page.snap);
   morphHead2(h(), snapDom.head);
-  morphNodes(page, snapDom);
+  morphDom(page, snapDom);
   progress.done();
   connect4();
   connect5();
@@ -2917,7 +2902,7 @@ var connect8 = (page) => {
   }
   return page;
 };
-var disconnect7 = () => {
+var disconnect6 = () => {
   if (!$.observe.history) return;
   if (api.scrollRestoration) api.scrollRestoration = "auto";
   removeEventListener("popstate", pop, false);
@@ -3080,10 +3065,8 @@ var configure = (options2 = o()) => {
 };
 
 // src/observe/hrefs.ts
-function linkEvent(event) {
-  return !// @ts-ignore
-  (event.target && event.target.isContentEditable || event.defaultPrevented || event.button > 1 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
-}
+var linkEvent = (event) => !// @ts-ignore
+(event.target && event.target.isContentEditable || event.defaultPrevented || event.button > 1 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
 var handle = function(event) {
   if (!linkEvent(event)) return;
   const target = getLink(event.target, $.qs.$href);
@@ -3122,9 +3105,9 @@ var handle = function(event) {
       }
     }
   };
+  disconnect2();
+  disconnect5();
   disconnect3();
-  disconnect6();
-  disconnect4();
   if (has(key)) {
     const attrs = getAttributes(target, $.pages[key]);
     const page = update(attrs);
@@ -3197,7 +3180,7 @@ var connect9 = () => {
   }
   $.observe.hrefs = true;
 };
-var disconnect8 = () => {
+var disconnect7 = () => {
   if (!$.observe.hrefs) return;
   if (deviceType === "mouseOnly") {
     removeEventListener(`${pointer}down`, handle, false);
@@ -3214,14 +3197,13 @@ var disconnect8 = () => {
 var initialize2 = () => {
   const route2 = getRoute(0 /* INITIAL */);
   const state = connect8(create(route2));
-  Object.defineProperties($, {
-    prev: { get: () => $.pages[$.history.rev] },
-    page: { get: () => $.pages[$.history.key] },
-    snapDom: { get: () => parse($.snaps[$.page.snap]) }
-  });
+  defineGetterProps($, [
+    ["prev", () => $.pages[$.history.rev]],
+    ["page", () => $.pages[$.history.key]],
+    ["snapDom", () => parse($.snaps[$.page.snap])]
+  ]);
   const DOMContentLoaded = () => {
     const page = set(state, takeSnapshot());
-    d().id = page.snap;
     connect9();
     connect3();
     connect4();
@@ -3229,26 +3211,26 @@ var initialize2 = () => {
     connect7();
     connect2();
     connect6();
-    onNextTick(() => {
-      patch("type", 6 /* VISIT */);
-      reverse(page);
-      preload(page);
-    }, 500);
+    enqueue(
+      () => patch("type", 6 /* VISIT */),
+      async () => await reverse(page),
+      async () => await preload(page)
+    );
     return page;
   };
   return new Promise((resolve) => {
     document.readyState === "loading" ? addEventListener("DOMContentLoaded", () => resolve(DOMContentLoaded())) : resolve(DOMContentLoaded());
   });
 };
-var disconnect9 = () => {
-  disconnect7();
-  disconnect8();
-  disconnect5();
-  disconnect3();
-  disconnect4();
+var disconnect8 = () => {
   disconnect6();
+  disconnect7();
+  disconnect4();
+  disconnect2();
+  disconnect3();
+  disconnect5();
   if ($.config.components) {
-    disconnect2();
+    disconnect();
     teardown();
     $.components.$registry.clear();
   }
@@ -3291,8 +3273,7 @@ spx.Component = Component;
 spx.on = on;
 spx.off = off;
 spx.component = component;
-spx.registed = register;
-spx.component = component;
+spx.live = live;
 spx.capture = capture;
 spx.form = form;
 spx.render = render;
@@ -3303,13 +3284,14 @@ spx.clear = clear;
 spx.hydrate = hydrate;
 spx.prefetch = prefetch;
 spx.route = route;
-spx.disconnect = disconnect9;
+spx.disconnect = disconnect8;
 spx.register = register;
+spx.dom = dom;
 spx.supported = supported();
 Object.defineProperties(spx, {
   $: { get: () => $ },
   history: {
-    value: o({
+    value: {
       get state() {
         return $.history;
       },
@@ -3318,15 +3300,30 @@ Object.defineProperties(spx, {
       replace,
       has: has2,
       reverse: reverse2
-    })
+    }
   }
 });
 function supported() {
   return !!(isBrowser && window.history.pushState && window.requestAnimationFrame && window.DOMParser && window.Proxy);
 }
-function component(identifer) {
-  const mounts = mounted();
-  return mounts[identifer][0];
+function live(identifers = null, ...rest) {
+  const ids = identifers ? [identifers, ...rest].flat() : null;
+  const mounted2 = {};
+  for (const { scope: { alias, instanceOf } } of $.components.$instances.values()) {
+    const id = ids ? ids.includes(alias) ? alias : ids.includes(instanceOf) ? instanceOf : null : null;
+    mounted2[id || !ids && (alias || instanceOf)] = Array.isArray(mounted2[id || !ids && instanceOf]) ? [...mounted2[id || !ids && instanceOf], component] : component;
+  }
+  return mounted2;
+}
+function component(identifer, callback) {
+  const instances = [];
+  for (const instance of $.components.$instances.values()) {
+    const { scope } = instance;
+    if (scope.instanceOf === identifer || scope.alias === identifer) {
+      instances.push(instance);
+    }
+  }
+  return callback ? forEach(callback, instances) : instances[0];
 }
 function register(...classes) {
   if (typeof classes[0] === "string") {
@@ -3348,6 +3345,7 @@ function register(...classes) {
           }
         }
       } else {
+        console.log(component2);
         if (typeof component2 === "function") {
           registerComponents({ [getComponentId(component2)]: component2 }, true);
         } else if (typeof component2 === "object") {
@@ -3384,41 +3382,57 @@ async function fetch2(url) {
   if (link.location.origin !== origin) {
     log(5 /* ERROR */, "Cross origin fetches are not allowed");
   }
-  const dom = await http(link.key);
-  if (dom) return dom;
+  const dom2 = await http(link.key);
+  if (dom2) return dom2;
+}
+function dom(strings, ...values) {
+  let result = strings[0];
+  for (let i = 0, s2 = values.length; i < s2; i++) result += values[i] + strings[i + 1];
+  const raw = result;
+  const dom2 = document.createElement("div");
+  dom2.innerHTML = raw;
+  const len = dom2.children.length;
+  if (len === 0) return null;
+  if (len === 1) return defineGetter(dom2.children[0], "raw", raw);
+  const arr = defineGetter([], "raw", raw);
+  while (dom2.firstChild) {
+    const child = dom2.firstElementChild;
+    child && arr.push(child);
+    dom2.removeChild(dom2.firstChild);
+  }
 }
 async function render(url, pushState, fn) {
   const page = $.page;
   const route2 = getRoute(url);
   if (route2.location.origin !== origin) log(5 /* ERROR */, "Cross origin fetches are not allowed");
-  const dom = await http(route2.key, { type: "document" });
-  if (!dom) log(5 /* ERROR */, `Fetch failed for: ${route2.key}`, dom);
-  await fn.call(page, dom);
+  const dom2 = await http(route2.key, { type: "document" });
+  if (!dom2) log(5 /* ERROR */, `Fetch failed for: ${route2.key}`, dom2);
+  await fn.call(page, dom2);
   if (pushState === "replace") {
-    page.title = dom.title;
-    const state = update(Object.assign(page, route2), takeSnapshot(dom));
+    page.title = dom2.title;
+    const state = update(Object.assign(page, route2), takeSnapshot(dom2));
     replace(state);
     return state;
   } else {
-    return update2(set(route2, takeSnapshot(dom)));
+    return update2(set(route2, takeSnapshot(dom2)));
   }
 }
-function capture(targets3) {
+function capture(targets2) {
   const page = getPage();
   if (!page) return;
-  const dom = getSnapDom();
-  targets3 = Array.isArray(targets3) ? targets3 : page.target;
-  if (targets3.length === 1 && targets3[0] === "body") {
-    morph(dom.body, b());
-    update(page, takeSnapshot(dom));
+  const dom2 = getSnapDom();
+  targets2 = Array.isArray(targets2) ? targets2 : page.target;
+  if (targets2.length === 1 && targets2[0] === "body") {
+    morph(dom2.body, b());
+    update(page, takeSnapshot(dom2));
     return;
   }
-  const selector2 = targets3.join(",");
+  const selector2 = targets2.join(",");
   const current = b().querySelectorAll(selector2);
-  forNode(dom.body.querySelectorAll(selector2), (node, i) => {
+  forNode(dom2.body.querySelectorAll(selector2), (node, i) => {
     morph(node, current[i]);
   });
-  update(page, takeSnapshot(dom));
+  update(page, takeSnapshot(dom2));
 }
 async function prefetch(link) {
   const path = getRoute(link, 1 /* PREFETCH */);

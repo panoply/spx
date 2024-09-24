@@ -1,7 +1,22 @@
+.tabs {
+  .left {
+    border-top-right-radius: 5px;
+  }
+  .btn {
+    font-family: $font-family-heading;
+    font-weight: 600;
+    color: $white;
+    background-color: #363d49;
+  }
+  .active {
+    background-color: $papyrus-code-bg;
+  }
+}
 .explorer {
   color: $white;
   font-size: 1rem;
   min-width: 465px;
+  background-color: #16181c;
 
   .bg-foreground {
     background-color: #1c2028;

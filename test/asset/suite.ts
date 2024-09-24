@@ -4,16 +4,18 @@ import { Alias } from '../cases/component-aliases/index.test';
 import { Async } from '../cases/component-hooks/index.test';
 import { Types } from '../cases/component-types/index.test';
 import { Incremental } from '../cases/component-incremental/index.test';
+import { Literal } from '../cases/component-literal/index.test';
 import { Merge } from '../cases/component-merge/index.test';
 import { Lifecycle } from '../cases/component-lifecycle/index.test';
 import { Nesting } from '../cases/component-nesting/index.test';
 import { Refs1, Refs2 } from '../cases/component-refs/index.test';
+import { MorphNodes } from '../cases/morph-nodes/index.test';
 
 /* INTERNAL ----------------------------------- */
 
-import { code } from './suite/resize';
-import { Logger } from './suite/logger';
-import { Explorer } from './suite/explorer';
+// import { code } from './suite/resize';
+// import { Logger } from './suite/logger';
+// import { Explorer } from './suite/explorer';
 // import { Refs } from './suite/refs';
 
 spx({
@@ -30,8 +32,9 @@ spx({
     bgColor: 'red'
   },
   components: {
-    Logger,
-    Explorer,
+    // Logger,
+    // Explorer,
+    Literal,
     Alias,
     Async,
     Types,
@@ -40,11 +43,8 @@ spx({
     Lifecycle,
     Nesting,
     Refs1,
-    Refs2
-    // Refs
+    Refs2,
+    MorphNodes
+
   }
-})(() => {
-
-  code();
-
 });

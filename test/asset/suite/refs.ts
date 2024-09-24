@@ -53,8 +53,8 @@ export class Refs extends spx.Component<typeof Refs.define> {
       const valid = this.page.join('\n');
       const format = dom.join('\n');
 
-      papyrus.render(valid, this.dom.markNode, { language: 'html' });
-      papyrus.render(format, this.dom.snapNode, { language: 'html' });
+      papyrus.render(valid, this.dom.mark, { language: 'html' });
+      papyrus.render(format, this.dom.snap, { language: 'html' });
 
     }, 300);
   }

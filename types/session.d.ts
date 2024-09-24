@@ -44,10 +44,7 @@ export interface Session {
   /**
    * Configuration
    *
-   * Initialization settings applied upon Pjax connection.
-   * These are instance options, informing upon how the
-   * pjax instance should run. The options defined here are
-   * the defaults applied at runtime.
+   * User settings applied upon SPX Connections
    */
   readonly config: Merge<Config, { components: any }>;
 
@@ -225,7 +222,7 @@ export interface Session {
    * Each document is stored in string type. The key values
    * are unique ids and exist on each page model.
    */
-  readonly snaps: { [uuid: string]: string; };
+  readonly snaps: { [uuid: number]: string; };
 
   /**
    * Fragments

@@ -692,7 +692,7 @@ export const JSONTree = (function () {
     this.wrapper = document.createElement('ul');
     this.wrapper.className = 'json-tree-tree clearfix';
 
-    this.rootNode = null;
+    this.viewNode = null;
     this.tooltips = tooltips;
 
     this.sourceJSONObj = jsonObj;
@@ -717,9 +717,9 @@ export const JSONTree = (function () {
       }
 
       this.sourceJSONObj = jsonObj;
-      this.rootNode = new Node(null, jsonObj, 'last');
+      this.viewNode = new Node(null, jsonObj, 'last');
       this.wrapper.innerHTML = '';
-      this.wrapper.appendChild(this.rootNode.el);
+      this.wrapper.appendChild(this.viewNode.el);
 
     },
 
@@ -739,15 +739,15 @@ export const JSONTree = (function () {
        */
     expand: function (filterFunc: (arg0: any) => any) {
 
-      if (this.rootNode.isComplex) {
+      if (this.viewNode.isComplex) {
         if (typeof filterFunc === 'function') {
-          this.rootNode.childNodes.forEach(function (item: { isComplex: any; expand: () => void; }, i: any) {
+          this.viewNode.childNodes.forEach(function (item: { isComplex: any; expand: () => void; }, i: any) {
             if (item.isComplex && filterFunc(item)) {
               item.expand();
             }
           });
         } else {
-          this.rootNode.expand('recursive');
+          this.viewNode.expand('recursive');
         }
       }
     },
@@ -757,8 +757,8 @@ export const JSONTree = (function () {
        */
     collapse: function () {
 
-      if (typeof this.rootNode.collapse === 'function') {
-        this.rootNode.collapse('recursive');
+      if (typeof this.viewNode.collapse === 'function') {
+        this.viewNode.collapse('recursive');
       }
     },
 
@@ -786,14 +786,14 @@ export const JSONTree = (function () {
        * Find all nodes that match some conditions and handle it
        */
     findAndHandle: function (matcher: any, handler: any) {
-      this.rootNode.findChildren(matcher, handler, 'isRecursive');
+      this.viewNode.findChildren(matcher, handler, 'isRecursive');
     },
 
     /**
        * Unmark all nodes
        */
     unmarkAll: function () {
-      this.rootNode.findChildren(function (node: any) {
+      this.viewNode.findChildren(function (node: any) {
         return true;
       }, function (node: { unmark: () => void; }) {
         node.unmark();

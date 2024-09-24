@@ -5,16 +5,10 @@
 import { Log } from '../shared/enums';
 import { $ } from '../app/session';
 import { m } from '../shared/native';
-import { forNode, onNextTick } from '../shared/utils';
+import { enqueue } from '../shared/utils';
 import { setSnap } from '../app/queries';
 import { log } from '../shared/logs';
 
-/**
- * Reference Marker
- *
- * Tracks component elements within the snapshot. This class
- * will mark snapshots with `data-spx="*"` identifier references.
- */
 export const snap = ((cache: Array<[element: HTMLElement, Map<string, string[]>]>) => {
 
   /**
@@ -24,7 +18,19 @@ export const snap = ((cache: Array<[element: HTMLElement, Map<string, string[]>]
    * The Map **key** is a selector whereas the `string[]` **value** represents
    * each reference to be assigned.
    */
-  let record: Map<string, string[]>;
+  let record: Map<string, string[]> = m();
+
+  /**
+   * Set Attribute
+   *
+   * Applies the `data-spx` ref attribute to the snapshot record.
+   * If ref already exists it will be concatenated.
+   */
+  const attr = (dom: HTMLElement, refs: string[]) =>
+
+    dom.setAttribute($.qs.$ref, dom.hasAttribute($.qs.$ref)
+      ? `${dom.getAttribute($.qs.$ref)},${refs.shift()}`
+      : refs.shift());
 
   /**
    * Set Record
@@ -58,29 +64,26 @@ export const snap = ((cache: Array<[element: HTMLElement, Map<string, string[]>]
    * created to update the snapshot DOM. This operation executes outside
    * the event loop 250ms after its triggered.
    */
-  const sync = (snapshot: HTMLElement) => onNextTick(() => {
+  const sync = (snapshot: Document, key: string) => enqueue(() => {
 
     while (cache.length > 0) {
 
       const [ dom, marks ] = cache.shift();
 
       for (const [ selector, refs ] of marks) {
-        forNode(
-          dom.querySelectorAll<HTMLElement>(selector),
-          node => node.setAttribute($.qs.$ref, node.hasAttribute($.qs.$ref)
-            ? `${node.getAttribute($.qs.$ref)},${refs.shift()}`
-            : refs.shift())
-        );
+        dom.matches(selector) && attr(dom, refs);
+        dom.querySelectorAll<HTMLElement>(selector).forEach(child => attr(child, refs));
       }
 
       marks.clear();
+
     }
 
-    setSnap(snapshot.ownerDocument.documentElement.outerHTML);
+    setSnap(snapshot.documentElement.outerHTML, key);
 
     log(Log.VERBOSE, `Snapshot ${$.page.key} updated for: ${$.page.snap}`);
 
-  }, 250);
+  });
 
   return { set, add, sync };
 

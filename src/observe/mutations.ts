@@ -4,49 +4,58 @@ import { getComponents } from '../components/context';
 import { morphHead } from '../morph/snapshot';
 import { Nodes } from '../shared/enums';
 import { isResourceTag } from '../shared/regexp';
+import { unmount } from 'src/components/observe';
 
-const nodeOutsideTarget = (node: Node) => {
+const outsideTarget = (node: Node) => {
 
-  const targets = b().querySelectorAll(`${$.page.target.join(',')},[${$.qs.$target}]`);
+  const targets = b().querySelectorAll(`${$.page.target.join()},[${$.qs.$target}]`);
 
   for (let i = 0, s = targets.length; i < s; i++) {
+
     if (targets[i].contains(node)) return false;
+
   }
 
   return true;
 
 };
 
-const resources = new MutationObserver(function ([ mutation ]: MutationRecord[]) {
+const resources = new MutationObserver(([ mutation ]: MutationRecord[]) => {
 
   if (mutation.type !== 'childList') return;
+  if (mutation.addedNodes.length === 0 && mutation.removedNodes.length === 0) return;
 
   const isAdded = mutation.addedNodes.length;
+  const node = isAdded ? mutation.addedNodes[0] : mutation.removedNodes[0];
 
-  if (isAdded || mutation.removedNodes.length > 0) {
+  if (node.nodeType !== Nodes.ELEMENT_NODE) return;
 
-    const node = isAdded ? mutation.addedNodes[0] : mutation.removedNodes[0];
+  if ($.eval && isResourceTag.test(node.nodeName)) {
 
-    if (node.nodeType !== Nodes.ELEMENT_NODE) return;
+    if (node.parentNode.nodeName === 'HEAD') {
 
-    if ($.eval && isResourceTag.test(node.nodeName)) {
-      if (node.parentNode.nodeName === 'HEAD') {
-        if (isAdded) {
-          morphHead('appendChild', node);
-        } else {
-          morphHead('removeChild', node);
-        }
-      } else {
-        if (nodeOutsideTarget(node) && !$.resources.has(node)) {
-          $.resources.add(node);
-        } else {
-          $.resources.delete(node);
-        }
-      }
-    } else if (node instanceof HTMLElement) {
-      if (isAdded && !node.hasAttribute($.qs.$ref)) {
-        getComponents(node);
-      }
+      isAdded ? morphHead('appendChild', node) : morphHead('removeChild', node);
+
+    } else {
+
+      (outsideTarget(node) && $.resources.has(node))
+        ? $.resources.delete(node)
+        : $.resources.add(node);
+
+    }
+
+  } else if (node instanceof HTMLElement) {
+
+    const ref = node.getAttribute($.qs.$ref);
+
+    if (isAdded && ref === null) {
+
+      getComponents(node);
+
+    } else if (ref) {
+
+      unmount(node, ref.split(','));
+
     }
 
   }
@@ -55,16 +64,10 @@ const resources = new MutationObserver(function ([ mutation ]: MutationRecord[])
 
 export const connect = () => {
 
-  if (!$.observe.mutations) return;
+  if ($.observe.mutations) return;
 
-  resources.observe(document.head, {
-    childList: true
-  });
-
-  resources.observe(b(), {
-    childList: true,
-    subtree: true
-  });
+  resources.observe(document.head, { childList: true });
+  resources.observe(b(), { childList: true, subtree: true });
 
   $.observe.mutations = true;
 

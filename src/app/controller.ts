@@ -3,9 +3,8 @@ import { $ } from './session';
 import { VisitType, Log } from '../shared/enums';
 import { getRoute } from './location';
 import { log } from '../shared/logs';
-import { onNextTick } from '../shared/utils';
-import { d } from '../shared/native';
-import { parse, takeSnapshot } from '../shared/dom';
+import { defineGetterProps, enqueue, parse, takeSnapshot } from '../shared/utils';
+
 import * as q from './queries';
 import * as hrefs from '../observe/hrefs';
 import * as hover from '../observe/hovers';
@@ -33,11 +32,11 @@ export const initialize = (): Promise<Page> => {
   //
   const state = history.connect(q.create(route));
 
-  Object.defineProperties($, {
-    prev: { get: () => $.pages[$.history.rev] },
-    page: { get: () => $.pages[$.history.key] },
-    snapDom: { get: () => parse($.snaps[$.page.snap]) }
-  });
+  defineGetterProps($, [
+    [ 'prev', () => $.pages[$.history.rev] ],
+    [ 'page', () => $.pages[$.history.key] ],
+    [ 'snapDom', () => parse($.snaps[$.page.snap]) ]
+  ]);
 
   /**
    * DOM Ready
@@ -50,7 +49,7 @@ export const initialize = (): Promise<Page> => {
     const page = q.set(state, takeSnapshot());
 
     // We mark the document <html> element
-    d().id = page.snap;
+    // d().id = page.snap;
 
     hrefs.connect();
     fragment.connect();
@@ -60,11 +59,11 @@ export const initialize = (): Promise<Page> => {
     components.connect();
     mutations.connect();
 
-    onNextTick(() => {
-      q.patch('type', VisitType.VISIT);
-      request.reverse(page);
-      request.preload(page);
-    }, 500);
+    enqueue(
+      () => q.patch('type', VisitType.VISIT),
+      async () => await request.reverse(page),
+      async () => await request.preload(page)
+    );
 
     return page;
 

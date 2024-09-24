@@ -139,7 +139,8 @@ export interface Page<T = any> {
    *   state.data.baz;      // => true
    *   state.data.qux.prop; // => 'value'
    *
-   *});
+   * });
+   *
    *```
    *
    * ---
@@ -229,11 +230,6 @@ export interface Page<T = any> {
   fragments: string[];
 
   /**
-   * Component instances which belong to this page.
-   */
-  components?: string[];
-
-  /**
    * The element selector to use when targeting fragments between page visits.
    * This value will apply a `join(',')` of `page.target[]` entries. When no
    * `spx-target="[]"` is defined, then `fragments[]` are applied.
@@ -279,7 +275,7 @@ export interface Page<T = any> {
    * @example
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  append?: Array<[from: string, to: string]>;
+  append?: Array<[ from: string, to: string ]>;
 
   /**
    * List of fragments to be prepend from and to. Accepts multiple.
@@ -287,7 +283,7 @@ export interface Page<T = any> {
    * @example
    * [['#main', '.header'], ['[data-attr]', 'header']]
    */
-  prepend?: Array<[from: string, to: string]>;
+  prepend?: Array<[ from: string, to: string ]>;
 
   /**
    * Define proximity prefetch distance from which fetching should

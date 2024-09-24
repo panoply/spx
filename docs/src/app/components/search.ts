@@ -4,21 +4,20 @@ import type { SearchContent, SearchHeading, SearchIndex, SearchPage } from '@e11
 import spx, { SPX } from 'spx';
 import { matchSorter } from 'match-sorter';
 
-export class Search extends spx.Component<typeof Search.define> {
-
-  /** Component definition */
-  static define = {
-    id: 'search',
-    state: {
-      active: Boolean,
-      query: String,
-      source: String
-    },
-    nodes: <const>[
-      'list',
-      'input'
-    ]
-  };
+export class Search extends spx.Component({
+  name: 'search',
+  sugar: true,
+  nodes: <const>[
+    'list',
+    'input'
+  ],
+  state: {
+    active: Boolean,
+    query: String,
+    source: String,
+    result: Number
+  }
+}) {
 
   /** Component connect lifecyle method */
   public async connect () {
@@ -33,7 +32,7 @@ export class Search extends spx.Component<typeof Search.define> {
     if (!this.state.active) {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault();
-        this.dom.inputNode.focus();
+        this.input.focus();
         this.onFocus();
         this.getResults(this.index.content.map(item => this.getItem(item)));
         this.show();
@@ -42,6 +41,21 @@ export class Search extends spx.Component<typeof Search.define> {
       if (event.key === 'Escape') {
         event.preventDefault();
         this.close();
+      } else if (event.key === 'ArrowDown') {
+        if (this.list.childElementCount - 1 === this.state.result) this.state.result = 0;
+        this.selected.classList.remove('selected');
+        this.list.children.item(++this.state.result).classList.add('selected');
+        this.selected.scrollIntoView();
+      } else if (event.key === 'ArrowUp') {
+        if (this.state.result === 0) {
+          this.selected.classList.remove('selected');
+          this.state.result = this.list.childElementCount - 1;
+          this.selected.scrollIntoView();
+        } else if (this.list.childElementCount > 1) {
+          this.selected.classList.remove('selected');
+          this.list.children.item(--this.state.result).classList.add('selected');
+          this.selected.scrollIntoView();
+        }
       }
     }
 
@@ -50,8 +64,8 @@ export class Search extends spx.Component<typeof Search.define> {
   /** Focus event via `spx@focus` */
   public onFocus () {
 
-    this.dom.inputNode.classList.add('is-active');
-    this.dom.inputNode.addEventListener('transitionend', this.show.bind(this));
+    this.input.addClass('is-active');
+    this.input.addEventListener('transitionend', this.show.bind(this));
     this.open();
 
   }
@@ -61,14 +75,14 @@ export class Search extends spx.Component<typeof Search.define> {
 
     const input = this.state.query = event.target.value.trim();
 
-    if (input.length > 1) {
+    if (input.length > 0) {
 
       this.result = matchSorter(this.index.content, input, this.match);
 
       if (this.result.length === 0) {
-        this.dom.listNode.innerHTML = '';
-        this.dom.listNode.classList.add('no-results');
-        this.dom.listNode.appendChild(this.noResults);
+        this.list.innerHTML = '';
+        this.list.classList.add('no-results');
+        this.list.appendChild(this.noResults);
       } else {
         this.getResults(this.result.sort((a, b) => a.sort - b.sort).map(item => this.getItem(item)));
       }
@@ -76,8 +90,8 @@ export class Search extends spx.Component<typeof Search.define> {
       this.show();
 
     } else if (input.length === 0) {
-      this.dom.inputNode.classList.remove('is-results');
-      this.dom.listNode.classList.replace('d-block', 'd-none');
+      this.input.removeClass('is-results');
+      this.list.toggleClass('d-block', 'd-none');
     }
 
   }
@@ -92,9 +106,9 @@ export class Search extends spx.Component<typeof Search.define> {
   /** Close and contract the `<input>` element */
   private close () {
 
-    this.html.removeEventListener('click', this.hide);
-    this.dom.listNode.classList.replace('d-block', 'd-none');
-    this.dom.inputNode.classList.remove('is-active', 'is-results');
+    this.root.removeEventListener('click', this.hide);
+    this.list.toggleClass('d-block', 'd-none');
+    this.input.removeClass('is-active', 'is-results');
     this.state.active = false;
 
   }
@@ -103,7 +117,7 @@ export class Search extends spx.Component<typeof Search.define> {
   private open () {
 
     this.state.active = !this.state.active;
-    this.state.active && this.html.addEventListener('click', this.hide.bind(this));
+    this.state.active && this.root.addEventListener('click', this.hide.bind(this));
 
   }
 
@@ -111,16 +125,16 @@ export class Search extends spx.Component<typeof Search.define> {
   private show () {
 
     if (this.state.active) {
-      this.result.length > 0 && !this.dom.listNode.classList.contains('d-block') &&
-      this.dom.listNode.classList.replace('d-none', 'd-block');
-      this.dom.inputNode.classList.add('is-results');
+      this.result.length > 0 && !this.list.classList.contains('d-block') &&
+      this.list.toggleClass('d-none', 'd-block');
+      this.input.addClass('is-results');
     }
   }
 
   /** Hide the search results list */
   private hide (event: Event) {
 
-    this.dom.listNode !== event.target && this.dom.inputNode !== event.target && this.close();
+    this.list.toNode() !== event.target && this.input.toNode() !== event.target && this.close();
 
   }
 
@@ -143,10 +157,10 @@ export class Search extends spx.Component<typeof Search.define> {
 
     const before = text.slice(0, offset);
     const words = before.trim().split(/\s+/);
-    const dot = before.lastIndexOf('.', offset);
+    const dot = before.lastIndexOf(' ', offset);
     const line = words.length >= R && dot !== -1 && dot >= before.length - R * words[words.length - 1].length
       ? text.slice(dot + 1)
-      : text.slice(offset);
+      : text.slice(text.indexOf(' ', offset));
 
     return line.trim().replace(this.onMatch, '<strong>$1</strong>');
 
@@ -155,19 +169,20 @@ export class Search extends spx.Component<typeof Search.define> {
   /** Renders the search results to the list */
   private getResults (result: { page: SearchPage; heading: SearchHeading; content: SearchContent; }[]) {
 
-    this.dom.listNode.classList.remove('no-results');
-    this.dom.listNode.innerHTML = '';
+    this.list.classList.remove('no-results');
+    this.list.innerHTML = '';
 
     const nodes = result.map((
       {
         content,
         page,
         heading
-      }
+      },
+      index
     ) => {
 
       return spx.dom`
-      <li>
+      <li tabindex="-1" class="${index === 0 ? 'selected' : ''}">
         <a href="${heading.anchor}" class="d-flex ai-center">
           <div class="w-icon">
             <svg class="icon">
@@ -196,8 +211,13 @@ export class Search extends spx.Component<typeof Search.define> {
     `;
     });
 
-    this.dom.listNode.append(...nodes);
+    this.state.result = 0;
+    this.list.append(...nodes);
 
+  }
+
+  get selected () {
+    return this.list.children[this.state.result];
   }
 
   /** Regular expression match of current `<input>` value */

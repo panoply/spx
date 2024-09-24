@@ -1,6 +1,6 @@
 ---
 title: 'Incremental - Page B'
-layout: views/index.liquid
+layout: views/base.liquid
 permalink: '/components/incremental/page-b/index.html'
 base: /components/incremental/
 ---
@@ -19,14 +19,14 @@ base: /components/incremental/
   <button
     type="button"
     class="col-auto"
-    spx@click="increment.decrement">
+    spx@click="incremental.decrement">
     Decrement
   </button>
 
   <button
     type="button"
     class="col-auto ml-3"
-    spx@click="increment.labelValue"
+    spx@click="incremental.labelValue"
     spx-incremental:text="Example Value!">
     Update Label
   </button>

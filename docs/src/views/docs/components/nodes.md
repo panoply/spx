@@ -25,15 +25,15 @@ Component nodes can be defined in the `nodes[]` setting within the static `defin
 ```js
 import spx from 'spx';
 
-export class Example extends spx.Component {
+export class Example extends spx.Component({
+  nodes: [
+    'button',
+    'counter',
+    'feedback'
+  ]
+}) {
 
-  static define = {
-    nodes: [
-      'button',
-      'counter',
-      'feedback'
-    ]
-  }
+  // component methods
 
 }
 ```
@@ -59,31 +59,28 @@ In this setup, the `spx-node` attribute connects each DOM element to its corresp
 
 ---
 
-# Using Nodes
+# Accessing Nodes
 
-In our component, nodes can be easily accessed through the `this.dom` object, which is available in all components. The `dom` object not only provides direct access to the defined nodes but also includes additional references that facilitate interaction with associated elements. This makes it straightforward to manipulate DOM elements directly from within a component. Here's an example of how we can access our defined nodes:
+In our component, nodes can be easily accessed through the `this` context, which is available in all components. The `dom` object not only provides direct access to the defined nodes but also includes additional references that facilitate interaction with associated elements. This makes it straightforward to manipulate DOM elements directly from within a component. Here's an example of how we can access our defined nodes:
 
 <!-- prettier-ignore -->
 ```js
 import spx from 'spx';
 
-export class Example extends spx.Component {
-
-  static define = {
-    nodes: [
-      'button',
-      'counter',
-      'feedback'
-    ]
-  };
+export class Example extends spx.Component({
+  nodes: [
+    'button',
+    'counter',
+    'feedback'
+  ]
+}) {
 
   connect() {
-
-    this.dom.buttonNode;   // Returns the <button> element
-    this.dom.counterNode;  // Returns the <span> element
-    this.dom.feedbackNode; // Returns the <div> element
-
+    this.buttonNode       // Returns the <button> element
+    this.counterNode      // Returns the <span> element
+    this.feedbackNode;    // Returns the <div> element
   }
+
 }
 ```
 
@@ -93,32 +90,30 @@ You might be wondering why the node identifiers are suffixed with `Node`. This i
 ```js
 import spx from 'spx';
 
-export class Example extends spx.Component {
-
-  static define = {
-    nodes: [
-      'button',
-      'counter',
-      'feedback'
-    ]
-  };
+export class Example extends spx.Component({
+  nodes: [
+    'button',
+    'counter',
+    'feedback'
+  ]
+}) {
 
   connect() {
 
     // Single Elements
-    this.dom.buttonNode          // Returns the <button> element or null
-    this.dom.counterNode         // Returns the <span> element or null
-    this.dom.feedbackNode        // Returns the <div> element or null
+    this.buttonNode             // Returns the <button> element or null
+    this.counterNode            // Returns the <span> element or null
+    this.feedbackNode           // Returns the <div> element or null
 
     // Multiple Elements
-    this.dom.buttonNodes         // Returns an array of <button> elements or []
-    this.dom.counterNodes        // Returns an array of <span> elements or []
-    this.dom.feedbackNodes       // Returns an array of <div> elements or []
+    this.buttonNodes           // Returns an array of <button> elements or []
+    this.counterNodes          // Returns an array of <span> elements or []
+    this.feedbackNodes         // Returns an array of <div> elements or []
 
     // Element Existence
-    this.dom.hasButtonNode       // Returns a boolean indicating if <button> exists
-    this.dom.hasCounterNode      // Returns a boolean indicating if <span> exists
-    this.dom.hasFeedbackNode     // Returns a boolean indicating if <div> exists
+    this.buttonExists          // Returns a boolean indicating if <button> exists
+    this.counterExists         // Returns a boolean indicating if <span> exists
+    this.feedbackExists        // Returns a boolean indicating if <div> exists
 
   }
 }

@@ -2,12 +2,25 @@ import type { Class, Page } from 'types';
 import { $ } from './session';
 import { emit } from './events';
 import { log } from '../shared/logs';
-import { empty, uuid, hasProp, forEach, hasProps, targets, ts, selector } from '../shared/utils';
-import { o } from '../shared/native';
-import { CharCode, Log, VisitType } from '../shared/enums';
-import { parse, getTitle } from '../shared/dom';
+import { m, o } from '../shared/native';
+import { CharCode, Hooks, Log, VisitType } from '../shared/enums';
 import * as fragments from '../observe/fragment';
 import { getLocation } from './location';
+import {
+  empty,
+  hasProp,
+  forEach,
+  hasProps,
+  targets,
+  ts,
+  selector,
+  defineGetterProps,
+  uid,
+  parse,
+  getTitle
+} from '../shared/utils';
+
+export type Mounted = Map<string, Class[]>
 
 /**
  * Create Session Page
@@ -34,7 +47,7 @@ export const create = (page: Page): Page => {
 
   if ($.config.cache) {
     has('cache') || (page.cache = $.config.cache);
-    page.snap ||= uuid();
+    page.snap ||= uid();
   }
 
   if ($.config.hover !== false && page.type === VisitType.HOVER) {
@@ -56,7 +69,6 @@ export const create = (page: Page): Page => {
   page.scrollX ||= 0;
   page.fragments ||= $.config.fragments;
   page.visits ||= 0;
-  page.components ||= [];
   page.location ||= getLocation(page.key);
 
   $.pages[page.key] = page;
@@ -203,13 +215,9 @@ export const update = (page: Page, snapshot: string = null): Page => {
  * (fragments) etc etc. Call to this function are typically occurring outside the
  * event loop.
  */
-export const setSnap = (snapshot: string, key?: string) => {
+export const setSnap = (snapshot: string, key?: number | string) => {
 
-  const snap = key = key
-    ? key.charCodeAt(0) === CharCode.FWD
-      ? key in $.pages ? $.pages[key].snap : null
-      : key
-    : $.page.snap;
+  const snap = key = typeof key === 'number' ? key : null;
 
   if (snap) {
     $.snaps[snap] = snapshot;
@@ -241,10 +249,10 @@ export const get = (key?: string): { page: Page, dom: Document } => {
 
   if (key in $.pages) {
 
-    return {
-      get page () { return $.pages[key]; },
-      get dom () { return parse($.snaps[$.pages[key].snap]); }
-    };
+    return defineGetterProps(o(), [
+      [ 'page', () => $.pages[key] ],
+      [ 'dom', () => parse($.snaps[$.pages[key].snap]) ]
+    ]);
 
   }
 
@@ -260,7 +268,7 @@ export const get = (key?: string): { page: Page, dom: Document } => {
  */
 export const getSnapDom = (key?: string): Document => {
 
-  const uuid = key
+  const uuid = typeof key === 'string'
     ? key.charCodeAt(0) === CharCode.FWD
       ? $.pages[key].snap
       : key
@@ -276,29 +284,39 @@ export const getSnapDom = (key?: string): Document => {
  * Returns an array list of component intances which are currently
  * mounted (active) on the page.
  */
-export const mounted = ({ mounted = null } = {}): { [instanceOf: string]: Class[] } => {
+export const mounted = <T extends Map<string, Class[]>>(): T => {
 
-  const mounts: { [instanceOf: string]: Class[] } = o();
+  const live = m<string, Class[]>();
   const { $instances, $mounted } = $.components;
 
-  for (const instance of $instances.values()) {
+  for (const key of $mounted) {
 
-    if (!$mounted.has(instance.scope.key)) continue;
-    if (mounted !== null && instance.scope.status === mounted) continue;
+    if (!$instances.has(key)) continue;
 
-    const has = hasProps(mounts);
+    const instance = $instances.get(key);
+    const { scope } = instance;
 
-    if (instance.scope.alias !== null && !has(instance.scope.alias)) {
-      mounts[instance.scope.alias] = [ instance ];
+    if (scope.status === Hooks.MOUNT) {
+
+      // We will populate aliases incase an alias is being used
+      if (scope.alias !== null) {
+
+        live.has(scope.alias)
+          ? live.get(scope.alias).push(instance)
+          : live.set(scope.alias, [ instance ]);
+      }
+
+      // We always populate instanceOf
+      live.has(scope.instanceOf)
+        ? live.get(scope.instanceOf).push(instance)
+        : live.set(scope.instanceOf, [ instance ]);
+
     }
-
-    has(instance.scope.instanceOf)
-      ? mounts[instance.scope.instanceOf].push(instance)
-      : mounts[instance.scope.instanceOf] = [ instance ];
 
   }
 
-  return mounts;
+  return <T>live;
+
 };
 
 /**

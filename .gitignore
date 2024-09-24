@@ -1,6 +1,7 @@
 # DIRECTORIES
 node_modules
 public
+!types/public
 docs/.netlify
 docs/netlify/functions/search/**
 !docs/netlify/functions/search/index.js

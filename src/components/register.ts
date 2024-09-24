@@ -3,12 +3,14 @@ import { $ } from '../app/session';
 import { camelCase, downcase } from '../shared/utils';
 import { Colors, Log } from '../shared/enums';
 import { log } from '../shared/logs';
+import { ComponentNameCheck } from '../shared/regexp';
 
 type Register = Merge<ComponentRegister, {
   /**
    * Component class name
    */
   name?: string
+
 }>
 
 /**
@@ -23,18 +25,21 @@ type Register = Merge<ComponentRegister, {
  */
 export const getComponentId = (instance: Register, identifier?: string) => {
 
+  if (instance.define.name !== '') return instance.define.name;
+
   const name = instance.name;
   const original = identifier;
+  const hasName = 'define' in instance && 'name' in instance.define;
 
-  identifier = downcase(identifier || name);
+  console.log(instance.name, identifier);
 
-  instance.define = Object.assign({ id: identifier, merge: false, state: {}, nodes: [] }, instance.define);
+  instance.define.name = downcase(identifier || name);
 
-  if (identifier !== instance.define.id) identifier = camelCase(instance.define.id);
+  if (identifier !== instance.define.name) identifier = camelCase(instance.define.name);
 
-  if (name !== original && /^[A-Z]|[_-]/.test(instance.define.id)) {
+  if (hasName && name !== original && ComponentNameCheck.test(instance.define.name)) {
     log(Log.WARN, [
-      `Component identifer id "${instance.define.id}" must use camelCase format.`,
+      `Component identifer id "${instance.define.name}" must use camelCase format.`,
       `The identifer has been converted to "${identifier}"`
     ]);
   }
@@ -62,11 +67,17 @@ export const registerComponents = (components: { [id: string]: Register }, isVal
     const identifier = isValidID ? id : getComponentId(instance, id);
 
     if (!$registry.has(identifier)) {
+
       $registry.set(identifier, instance);
+
       log(Log.VERBOSE, `Component ${instance.name} registered using id: ${identifier}`, Colors.PINK);
+
     }
   }
 
-  if (!$.config.components) $.config.components = true;
+  if (!$.config.components) {
 
+    $.config.components = true;
+
+  }
 };

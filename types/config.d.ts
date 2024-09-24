@@ -2,24 +2,22 @@ import type { Options, Proximity, Hover, Intersect, Progress } from './options';
 import type { Page } from './page';
 
 /**
- * Hovers
+ * #### Hovers
  *
  * Configuration specific hover observer
  * model which applied the selector.
  */
 export interface HoverConfig extends Hover {
   /**
-   * Href selctor for hovers that applies
-   * the correct schema.
+   * Href selctor for hovers that applies the correct schema.
    */
   selector: string
 }
 
 /**
- * Intersection
+ * #### Intersection
  *
- * Configuration specific intersect observer
- * model which applied the selector.
+ * Configuration specific intersect observer model which applied the selector.
  */
 export interface IntersectConfig extends Intersect {
   /**
@@ -30,12 +28,11 @@ export interface IntersectConfig extends Intersect {
 }
 
 /**
- * Intersection
+ * #### Proximity
  *
- * Configuration specific intersect observer
- * model which applied the selector.
+ * Configuration specific Proximity configuration
  */
-export interface IProximitConfig extends Proximity {
+export interface IProximityConfig extends Proximity {
   /**
    * Href selctor for proximity that applies
    * the correct schema.
@@ -43,11 +40,10 @@ export interface IProximitConfig extends Proximity {
   selector: string
 }
 /**
- * Memory
+ * #### Memory
  *
- * Object reference which holds the storage memory
- * record throughout the SPX session. This is accessible
- * for every page.
+ * Object reference which holds the storage memory record throughout the SPX session.
+ * This is accessible for every page.
  */
 export interface Memory {
   /**
@@ -76,10 +72,9 @@ export interface Memory {
 }
 
 /**
- * Observers
+ * #### Observers
  *
- * Conditional reference object for observers.
- * Assigns a connection status to each observer.
+ * Conditional reference object for observers. Assigns a connection status to each observer.
  */
 export interface Observers {
   /**
@@ -129,10 +124,9 @@ export interface Observers {
 }
 
 /**
- * Selectors
+ * #### Selectors
  *
- * String `key > value` references to DOM attributes
- * selectors used in the SPX instance.
+ * String `key > value` references to DOM attributes selectors used in the SPX instance.
  */
 export interface Selectors {
   /**
@@ -383,9 +377,10 @@ export interface Selectors {
 }
 
 /**
- * Configuration is internal, observers differ
- * from options. Observers either use a boolean
- * `false` when disabled of the merged defaults.
+ * #### Config
+ *
+ * Configuration is internal, observers differ from options. Observers either use a boolean
+ * `false` when disabled or the merged defaults.
  */
 export interface Config extends Options {
   /**
@@ -411,7 +406,7 @@ export interface Config extends Options {
 }
 
 /**
- * History State
+ * #### History State
  *
  * Partial references extracted from the
  * page store. Written to the history stack API.
@@ -426,7 +421,7 @@ type HistoryState = Pick<Page, (
 )>
 
 /**
- * History State SPX
+ * #### History State SPX
  *
  * Assigned to history state
  */
@@ -435,14 +430,12 @@ interface HistoryStateSPX {
    * SPX History State
    */
   spx: HistoryState;
-
 }
 
 /**
- * History API
+ * #### History API
  *
- * An overwrite of the History API. Applied to
- * the native exports using `as` type.
+ * An overwrite of the History API. Applied to the native exports using `as` type.
  */
 export type HistoryAPI = {
   /**

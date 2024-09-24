@@ -1,7 +1,7 @@
 import { getKey, validKey } from '../app/location';
 import { has } from '../app/queries';
 import { CanFetch } from './enums';
-import { forNode, targets } from './utils';
+import { forNode } from './utils';
 
 /**
  * Locted the closest link when click bubbles.

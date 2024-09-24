@@ -1,6 +1,6 @@
 ---
 title: 'Incremental - Page C'
-layout: views/index.liquid
+layout: views/base.liquid
 group: 'directive'
 permalink: '/components/incremental/page-c/index.html'
 base: /components/incremental/
@@ -20,7 +20,7 @@ base: /components/incremental/
   <button
     type="button"
     class="col-auto"
-    spx@click="increment.reset">
+    spx@click="incremental.reset">
     Reset Counter
   </button>
 
@@ -28,6 +28,6 @@ base: /components/incremental/
     type="text"
     class="col-auto ml-3"
     placeholder="Change Label"
-    spx@input="increment.labelInput">
+    spx@input="incremental.labelInput">
 
 </section>

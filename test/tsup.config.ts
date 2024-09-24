@@ -9,6 +9,7 @@ export default defineConfig(
     outExtension: () => ({ js: '.js' }),
     clean: false,
     treeshake: false,
+    bundle: true,
     minify: false,
     minifyIdentifiers: false,
     minifySyntax: false,

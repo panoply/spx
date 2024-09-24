@@ -20,22 +20,18 @@ import * as q from '../app/queries';
 /**
  * Handles a clicked link, prevents special click types.
  */
-function linkEvent (event: MouseEvent): boolean {
-
-  return !(
-    (
-      // @ts-ignore
-      (event.target && event.target.isContentEditable) ||
-      event.defaultPrevented ||
-      event.button > 1 ||
-      event.altKey ||
-      event.ctrlKey ||
-      event.metaKey ||
-      event.shiftKey
-    )
-  );
-
-}
+const linkEvent = (event: MouseEvent): boolean => !(
+  (
+    // @ts-ignore
+    (event.target && event.target.isContentEditable) ||
+    event.defaultPrevented ||
+    event.button > 1 ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey
+  )
+);
 
 /**
  * Triggers a page fetch

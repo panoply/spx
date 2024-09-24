@@ -1,5 +1,4 @@
 import type { ComponentEvent, Merge, Class } from 'types';
-import { o } from '../shared/native';
 import { Log } from '../shared/enums';
 import { getEventParams } from './context';
 import { log } from '../shared/logs';
@@ -37,15 +36,9 @@ export const eventAttrs = (instance: Class, event: ComponentEvent) => {
    */
   const method: () => void = instance[event.method];
 
-  return (e: Merge<Event, { attrs: object }>) => {
-
-    if (event.params) {
-      if (e && !('attrs' in e)) Object.defineProperty(e, 'attrs', { get: () => o() });
-      Object.assign(e.attrs, event.params);
-    }
-
+  return function handle (e: Merge<Event, { attrs: object }>) {
+    if (event.attrs) e.attrs = event.attrs;
     method.call(instance, e);
-
   };
 };
 
@@ -66,7 +59,7 @@ export const removeEvent = (instance: Class, event: ComponentEvent) => {
 
   log(Log.VERBOSE, [
     `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
-    `${instance.scope.define.id}: ${instance.scope.key}`
+    `${instance.scope.define.name}: ${instance.scope.key}`
   ]);
 
 };
@@ -82,7 +75,7 @@ export const addEvent = (instance: Class, event: ComponentEvent, node?: HTMLElem
   if (event.attached) return;
 
   if (!(event.method in instance)) {
-    log(Log.WARN, `Undefined callback method: ${instance.scope.define.id}.${event.method}()`);
+    log(Log.WARN, `Undefined callback method: ${instance.scope.define.name}.${event.method}()`);
     return;
   }
 
@@ -104,7 +97,7 @@ export const addEvent = (instance: Class, event: ComponentEvent, node?: HTMLElem
 
   log(Log.VERBOSE, [
     `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
-    `${instance.scope.define.id}: ${instance.scope.key}`
+    `${instance.scope.define.name}: ${instance.scope.key}`
   ]);
 
 };

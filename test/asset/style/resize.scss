@@ -11,6 +11,8 @@ flex {
 
 flex.h {
   flex-direction: row;
+  background-color: $white;
+  z-index: 1;
 }
 
 flex.v {
@@ -30,6 +32,7 @@ flex > flex-resizer {
   background-repeat: no-repeat;
   background-position: center;
   border-bottom: 2px solid $papyrus-code-bg;
+  z-index: 1;
 }
 
 flex.h > flex-resizer {

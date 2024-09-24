@@ -118,6 +118,10 @@
         {
           "title": "VSCode Extension",
           "url": "/usage/vscode-extension/"
+        },
+        {
+          "title": "Methods List",
+          "url": "/usage/methods-list/"
         }
       ]
     },
@@ -139,6 +143,10 @@
         {
           "title": "Nodes",
           "url": "/components/nodes/"
+        },
+        {
+          "title": "DOM",
+          "url": "/components/dom/"
         },
         {
           "title": "Events",

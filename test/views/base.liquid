@@ -2,6 +2,15 @@
 {
   "menu": [
     {
+      "title": "Testing",
+      "links": [
+        {
+          "title": "Overview",
+          "url": "/"
+        }
+      ]
+    },
+    {
       "title": "Options",
       "links": [
         {
@@ -20,6 +29,15 @@
       ]
     },
     {
+      "title": "Morphs",
+      "links": [
+        {
+          "title": "Nodes",
+          "url": "/morph/nodes/"
+        }
+      ]
+    },
+    {
       "title": "Components",
       "links": [
         {
@@ -29,6 +47,10 @@
         {
           "title": "Lifecycle",
           "url": "/components/lifecycle/"
+        },
+        {
+          "title": "Literal",
+          "url": "/components/literal/"
         },
         {
           "title": "Types",
@@ -65,7 +87,7 @@
 
   <head>
     <title>
-      {{ title }}
+      {{- title -}}
     </title>
 
     <meta charset="UTF-8">
@@ -78,20 +100,16 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0">
-
     <link
       href="https://fonts.googleapis.com"
       rel="preconnect">
-
     <link
       href="https://fonts.gstatic.com"
       crossorigin
       rel="preconnect">
-
     <link
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap"
-      rel="stylesheet"
-      spx-eval="false">
+      rel="stylesheet">
 
     <link
       href="{{'/style.css' | url }}"
@@ -103,19 +121,14 @@
       spx-eval="false"
       async></script>
 
-    <script
-      src="{{ script | url }}"
-      spx-eval="false"
-      async></script>
-
   </head>
   <body>
 
-    {% if iframe %}
+    {%- if iframe -%}
 
-      {{ content }}
+      {{- content -}}
 
-    {% else %}
+    {%- else -%}
 
       <flex
         class="v"
@@ -127,19 +140,25 @@
           <flex-item
             class="content"
             style="flex: 1;">
-            <div class="container-fluid h-100 pr-5 fixed-width">
-              <div class="row rel">
-                {% include 'views/include/cases' %}
+            <div class="container-fluid h-100 fixed-width">
+              <div class="row h-100 rel">
+                {%- include 'views/include/cases' -%}
                 <main
-                  class="col offset-2 px-5 py-5"
-                  id="main">
-                  {{ content }}
+                  class="col h-100 p-5 offset-left "
+                  {%- unless no_main -%}
+                    id="main"
+                  {%- endunless -%}>
+                  {{- content -}}
+
+                  {%- if shared -%}
+                    {%- include shared -%}
+                  {%- endif -%}
                 </main>
               </div>
             </div>
           </flex-item>
           <flex-resizer></flex-resizer>
-          {% include 'views/include/explorer' %}
+          {%- include 'views/include/explorer' -%}
         </flex>
         <flex-resizer></flex-resizer>
         <flex
@@ -163,7 +182,8 @@
         </flex>
       </flex>
 
-    {% endif %}
+    {%- endif -%}
+    {%- sprite -%}
 
   </body>
 </html>

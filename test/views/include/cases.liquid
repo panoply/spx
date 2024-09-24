@@ -1,20 +1,20 @@
 <aside
-  class="col-auto vh-100 br abs pt-5 px-5"
+  class="col-auto pt-5 pl-4 sidebar"
   id="sidebar">
   <div
-    class=" sticky"
-    style="top: 20px">
+    class="sticky"
+    style="top: 30px">
     {% for item in menu %}
-      <strong class="upper">
+      <strong class="ff-head upper fw-bolder">
         {{ item.title }}
       </strong>
-      <ul class="list-dash my-3">
+      <ul class="my-3">
         {% for link in item.links %}
-          <li>
+          <li class="pb-0">
             <a
               href="{{ link.url }}"
               {% if page.url == link.url or link.url == base %}
-                class="fw-bold"
+                class="fc-pink"
               {% else %}
                 class="fc-dark-gray"
               {% endif %}>
@@ -25,4 +25,5 @@
       </ul>
     {% endfor %}
   </div>
+
 </aside>

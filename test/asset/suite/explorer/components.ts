@@ -1,4 +1,3 @@
-import relapse from 'relapse';
 import m from 'mithril';
 import { state, DataScope, Data } from './state';
 
@@ -94,19 +93,6 @@ const Nodes: m.Component<{ scope: DataScope }> = {
     }
   }) => keys(nodes).length === 0 ? null : m(
     '.d-block.node-accordion'
-    , {
-      id: `nodes-${reference.key}`,
-      oncreate: (
-        {
-          dom,
-          attrs
-        }
-      ) => {
-        if (!attrs.relapse) {
-          attrs.relapse = relapse(dom as HTMLElement);
-        }
-      }
-    }
     , keys(nodes).map(key => m(
       'details'
       , m(
@@ -147,25 +133,11 @@ const Binds: m.Component<{ scope: DataScope }> = {
   view: ({
     attrs: {
       scope: {
-        reference,
         binds
       }
     }
   }) => keys(binds).length === 0 ? null : m(
     '.node-accordion.bc-code'
-    , {
-      id: `binded-state-key-${reference.key}`,
-      oncreate: (
-        {
-          dom,
-          attrs
-        }
-      ) => {
-        if (!attrs.relapse) {
-          attrs.relapse = relapse(dom as HTMLElement);
-        }
-      }
-    }
     , keys(binds).map(key => m(
       'details.bc-code'
       , m(
@@ -179,20 +151,7 @@ const Binds: m.Component<{ scope: DataScope }> = {
         '.d-block.py-3'
         , m(
           '.pl-2.bc-code'
-          , {
-            id: `binded-ref-key-${reference.key}-${key}`,
-            oncreate: (
-              {
-                dom,
-                attrs
-              }
-            ) => {
-              if (!attrs.relapse) {
-                attrs.relapse = relapse(dom as HTMLElement);
-              }
-            }
-          },
-          keys(binds[key]).map(bind => m(
+          , keys(binds[key]).map(bind => m(
             'details'
             , m(
               'summary.ai-center'
@@ -235,19 +194,6 @@ const Events: m.Component<{ scope: DataScope }> = {
     }
   }) => keys(events).length === 0 ? null : m(
     '.d-block.node-accordion'
-    , {
-      id: `event-${reference.key}`,
-      oncreate: (
-        {
-          dom,
-          attrs
-        }
-      ) => {
-        if (!attrs.relapse) {
-          attrs.relapse = relapse(dom as HTMLElement);
-        }
-      }
-    }
     , keys(events).map(key => m(
       'details'
       , m(
@@ -286,35 +232,20 @@ const Events: m.Component<{ scope: DataScope }> = {
 
 export const Components = () => {
 
-  state.get();
+  setInterval(() => {
+    state.get();
+    m.redraw.sync();
+  }, 500);
 
   const isActive = (scope: Data[string]) => values(scope).some((
     {
       reference
     }
-  ) => (
-    reference.status === 3 ||
-    reference.status === 2
-  ));
+  ) => (reference.status === 3));
 
   return {
-    onupdate: () => relapse.reinit(),
     view: () => m(
       'section.explorer-accordion'
-      , {
-        id: 'main-relapse',
-        onupdate: () => relapse.reinit('main-relapse'),
-        oncreate: (
-          {
-            dom,
-            attrs
-          }
-        ) => {
-          if (!attrs.relapse) {
-            attrs.relapse = relapse(dom as HTMLElement);
-          }
-        }
-      }
       , keys(state.data).flatMap((name) => m(
         'details'
         , m(
@@ -335,21 +266,7 @@ export const Components = () => {
         , m(
           '.container-fluid.p-3.bg-darker'
           , m(
-            '.explorer-accordion.by.bx.bc-code.rd.hidden'
-            , {
-              id: `component-${name}`,
-              onupdate: () => relapse.reinit(`component-${name}`),
-              oncreate: (
-                {
-                  dom,
-                  attrs
-                }
-              ) => {
-                if (!attrs.relapse) {
-                  attrs.relapse = relapse(dom as HTMLElement);
-                }
-              }
-            }
+            `#component-${name}.explorer-accordion.by.bx.bc-code.rd.hidden`
             , values(state.data[name]).map(scope => m(
               'details'
               , m(
@@ -358,10 +275,7 @@ export const Components = () => {
                   '.fs-lg.pr-3'
                   , {
                     style: { lineHeight: '1' },
-                    class: (
-                      scope.reference.status === 3 ||
-                      scope.reference.status === 2
-                    ) ? 'fc-green' : 'fc-orange'
+                    class: (scope.reference.status === 3) ? 'fc-green' : 'fc-orange'
                   }
                   , '•'
                 )
@@ -395,8 +309,8 @@ export const Components = () => {
                     }
                     , (
                       key === 'events' ||
-                        key === 'nodes' ||
-                        key === 'binds'
+                      key === 'nodes' ||
+                     key === 'binds'
                     ) ? `${keys(scope[key]).length} ${key}` : key
                   ))
                 )

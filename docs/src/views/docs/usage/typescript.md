@@ -14,9 +14,9 @@ anchors:
 
 # TypeScript
 
-SPX is developed in TypeScript, ensuring comprehensive type safety and coverage. Every component and utility in SPX comes with extensive JSDoc annotations that include detailed descriptions, references to relevant documentation, and practical code examples. This makes integrating SPX into TypeScript projects seamless and enhances developer productivity with clear, type-safe interfaces.
+SPX is written in TypeScript, which means it's designed with a strong emphasis on type safety from the ground up. This choice ensures that developers working with SPX benefit from TypeScript's static typing, with full support for IntelliSense in IDEs, auto-completions and real-time error checking. Every piece of SPX, from its core components to utility functions, is annotated with JSDoc comments that include detailed descriptions, references to relevant documentation, and practical code examples.
 
-> SPX thrives within a TypeScript environment, fully leveraging TypeScript's IntelliSense capabilities for enhanced developer experience. The framework is designed to integrate smoothly into TypeScript projects, encouraging developers to utilize SPX for its robust type system.
+> SPX thrives within a TypeScript environment, its recommended that developers choose to leverage SPX within a TS Runtime.
 
 ---
 
@@ -35,9 +35,9 @@ SPX.Define        // The static component define object
 SPX.Event<T>      // Type inferred Event parameter utility
 ```
 
-# Component State
+# Component Auto-typing
 
-Components in SPX **always** extend the `spx.Component` subclass, which supports auto-typing. In TypeScript environments, you can leverage type inference passing the static define object reference, by asserting a `typeof` prefix. This technique enables SPX to provide type completions and validations for `{js} this.state`.
+In SPX, every component is derived from the `spx.Component` subclass, which facilitates auto-typing. Within TypeScript environments, this feature allows developers to utilize type inference. By applying the `typeof` prefix to the static `define` object, SPX can infer and enforce types upon the `{js} this.state` context, providing type completions and validations automatically.
 
 > For developers employing the ESLint rule [no-use-before-define](https://eslint.org/docs/latest/rules/no-use-before-define), you might need to disable or adjust this rule within components that use the `spx.Component<T>` subclass, as the `typeof` reference can trigger this linting error.
 
@@ -47,7 +47,7 @@ import spx from 'spx';
 
 export class Example extends spx.Component<typeof Example.define> {
 
-  static define {
+  static define = {
     state: {
       foo: String,
       bar: Boolean,
@@ -64,6 +64,38 @@ export class Example extends spx.Component<typeof Example.define> {
     this.state.qux  // => object
     this.state.arr  // => any[]
   }
+}
+```
+
+# Customized Typing
+
+There are scenarios where you might want to customize the auto-typing mechanism provided by SPX components. The `{js} spx.Component` class offers flexibility by allowing you to define custom interfaces for component state and specify different types of `HTMLElement` for DOM elements within your component.
+
+<!-- prettier-ignore -->
+```ts
+interface IExample {
+  /** Lorem Ipsum */
+  text: string;
+}
+
+interface IElements {
+  /** Open Button */
+  toggle: HTMLButtonElement;
+}
+
+spx.Component<typeof Example.define, IExample, IElements> {
+
+  static define = {
+    state: {
+      text: String
+    }
+  }
+
+  connect () {
+    this.state.text  // => string
+    this.dom.toggle  // => HTMLButtonElement
+  }
+
 }
 ```
 
@@ -99,9 +131,9 @@ export class Example extends spx.Component<typeof Example.define> {
 }
 ```
 
-# Component Nodes
+# Component DOM
 
-SPX provides robust support for HTMLElement typing for all `nodes[]` defined within the static `define` configuration object. These nodes become available through the `{js} this.dom` object, offering a direct interface to manipulate DOM elements within your component. SPX intelligently interprets the node identifiers to determine the appropriate element tag types. This means that by simply naming your nodes with a tag prefix (e.g., `button`, `div`, `input`), SPX can automatically infer and apply the correct typing for these elements. This feature significantly enhances developer productivity by reducing manual type annotations and ensuring type safety throughout your component interactions.
+Component `dom[]` elements which are defined on the static `define` configuration object will default to using `HTMLElement`. These DOM identifier entires will be made available on the `{js} this.dom` object, offering a direct interface to manipulate elements within your component. SPX intelligently interprets the node identifiers to determine the appropriate element tag types. This means that DOM identifier names suffixed with an valid element name (e.g., `button`, `div`, `input`) will automatically infer and apply the element type.
 
 > The `<const>` prefix type annotation is **mandatory** when defining `nodes`. Omitting this annotation will prevent SPX from applying the specific DOM Node element typing, potentially leading to type errors or loss of IntelliSense support in your IDE.
 
@@ -113,23 +145,23 @@ export class Example extends spx.Component<typeof Example.define> {
 
   static define {
     nodes: <const>[
-      'buttonFoo',
-      'inputDemo',
+      'fooButton',
+      'demoInput',
       'example'
     ]
   }
 
   connect () {
 
-    this.dom.buttonFooNode      // => HTMLButtonElement
-    this.dom.buttonFooNodes     // => HTMLButtonElement[]
-    this.dom.hasButtonFoo       // => true or false
-    this.dom.inputDemoNode      // => HTMLInputElement
-    this.dom.inputDemoNodes     // => HTMLInputElement[]
-    this.dom.hasInputDemo       // => true or false
-    this.dom.exampleNode        // => HTMLElement
-    this.dom.exampleNodes       // => HTMLElement[]
-    this.dom.hasExample         // => true or false
+    this.dom.fooButton         // => HTMLButtonElement
+    this.dom.fooButton()       // => HTMLButtonElement[]
+    this.dom.fooButtonExists   // => true or false
+    this.dom.demoInput         // => HTMLInputElement
+    this.dom.demoInput()       // => HTMLInputElement[]
+    this.dom.demoInputExists   // => true or false
+    this.dom.example           // => HTMLElement
+    this.dom.example()         // => HTMLElement[]
+    this.dom.exampleExists     // => true or false
 
   }
 }
@@ -137,7 +169,7 @@ export class Example extends spx.Component<typeof Example.define> {
 
 # Component Events
 
-Event methods for components are inferred at the parameter level. SPX provides a subset of event type utilities to address most cases and event types. Events which pass [State Directives](/components/events) will include an `attrs` parameter and SPX will automatically generates definitions from the utilities, eliminating the need for conditional checks to determine availability. Using these inferred event types ensures that the expected interfaces are returned consistently.
+Event methods for components are inferred at the parameter level. SPX provides a subset of event type utilities to address most cases and event types. Events which pass [State Directives](/components/events/) will include an `attrs` parameter and SPX will automatically generates definitions from the utilities, eliminating the need for conditional checks to determine availability. Using these inferred event types ensures that the expected interfaces are returned consistently.
 
 <!-- prettier-ignore -->
 ```ts

@@ -1,6 +1,6 @@
 import spx from 'spx';
 
-spx.connect(
+spx(
   {
     logLevel: 1,
     fragments: [

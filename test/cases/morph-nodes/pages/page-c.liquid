@@ -1,0 +1,54 @@
+---
+title: 'Basic'
+layout: views/base.liquid
+permalink: '/morph/nodes/page-c/index.html'
+---
+<h1 id="title">Moprh Nodes</h1>
+
+{% include 'cases/morph-nodes/include/pages' %}
+<div spx-component="morphNodes">
+
+  <div class="row ai-center">
+    <div class="col-3">
+      <div class="row ai-center ml-1">
+        <div class="col-12 py-3 bg-ivory rd my-4 bd tc">
+          <h6 class="fw-bold pb-3 mb-4 bb">
+            Persist the
+            <code>data-spx</code>
+          </h6>
+          <div
+            spx-node="morphNodes.alpha"
+            class="p-4 d-block w-100 rd-2">
+            Third
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-3">
+      <div class="row ai-center ml-1">
+        <div class="col-12 py-3 bg-ivory rd my-4 bd tc">
+          <h6 class="fw-bold pb-3 mb-4 bb">
+            Changes the
+            <code>data-spx</code>
+          </h6>
+          <div
+            spx-node="morphNodes.omega"
+            class="p-4 d-block w-100 bg-white rd-2">
+            Third
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="row ml-1"
+  spx-morph="false">
+  <div class="col-9 bd rd-2">
+    <div class="p-4 fs-sm">
+      {{ content }}
+    </div>
+  </div>
+</div>

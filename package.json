@@ -87,10 +87,11 @@
     "esbuild": "^0.23.1",
     "eslint": "^8.56.0",
     "gzip-size-cli": "^5.1.0",
+    "spx-typescript": "link:tsplugin",
     "terser": "^5.31.6",
     "tsup": "^8.2.4",
     "type-fest": "^4.25.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.2"
   },
   "optionalDependencies": {
     "@types/node": "^22.5.0",

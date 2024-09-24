@@ -1,7 +1,7 @@
-import type { Config, Page, LiteralUnion } from 'types';
+import type { Config, Page, LiteralUnion, Class } from 'types';
 import { $ } from './app/session';
 import { log } from './shared/logs';
-import { defineGetter, forNode, size } from './shared/utils';
+import { defineGetter, forEach, forNode, size, takeSnapshot } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute } from './app/location';
 import { Log, VisitType } from './shared/enums';
@@ -10,9 +10,8 @@ import { initialize, disconnect } from './app/controller';
 import { clear } from './app/queries';
 import { on, off } from './app/events';
 import { morph } from './morph/morph';
-import { Component } from './components/extends';
+import { Component } from './components/class';
 import { registerComponents, getComponentId } from './components/register';
-import { takeSnapshot } from './shared/dom';
 import * as q from './app/queries';
 import * as hrefs from './observe/hrefs';
 import * as request from './app/fetch';
@@ -69,8 +68,7 @@ spx.Component = Component;
 spx.on = on;
 spx.off = off;
 spx.component = component;
-spx.registed = register;
-spx.component = component;
+spx.live = live;
 spx.capture = capture;
 spx.form = form;
 spx.render = render;
@@ -83,19 +81,20 @@ spx.prefetch = prefetch;
 spx.route = route;
 spx.disconnect = disconnect;
 spx.register = register;
+spx.dom = dom;
 spx.supported = supported();
 
 Object.defineProperties(spx, {
   $: { get: () => $ },
   history: {
-    value: o({
+    value: {
       get state () { return $.history; },
       api: history.api,
       push: history.push,
       replace: history.replace,
       has: history.has,
       reverse: history.reverse
-    })
+    }
   }
 });
 
@@ -109,11 +108,45 @@ function supported () {
   );
 }
 
-function component (identifer: string) {
+function live (identifers: string | string[] = null, ...rest: string[]) {
 
-  const mounts = q.mounted();
+  const ids = identifers ? [ identifers, ...rest ].flat() : null;
+  const mounted = {};
 
-  return mounts[identifer][0];
+  for (const { scope: { alias, instanceOf } } of $.components.$instances.values()) {
+
+    const id = ids ? (ids.includes(alias)
+      ? alias
+      : ids.includes(instanceOf) ? instanceOf : null) : null;
+
+    mounted[id || (!ids && (alias || instanceOf))] = Array.isArray(mounted[id || (!ids && instanceOf)])
+      ? [ ...mounted[id || (!ids && instanceOf)], component ]
+      : component;
+
+  }
+
+  return mounted;
+
+}
+
+function component (identifer: string, callback?: (instance: any) => any) {
+
+  const instances: Class[] = [];
+
+  for (const instance of $.components.$instances.values()) {
+
+    const { scope } = instance;
+
+    if (
+      scope.instanceOf === identifer ||
+      scope.alias === identifer) {
+
+      instances.push(instance);
+
+    }
+  }
+
+  return callback ? forEach(callback, instances) : instances[0];
 
 }
 
@@ -142,6 +175,8 @@ function register (...classes: any[]) {
           }
         }
       } else {
+
+        console.log(component);
         if (typeof component === 'function') {
           registerComponents({ [getComponentId(component)]: component }, true);
         } else if (typeof component === 'object') {
@@ -232,6 +267,40 @@ async function fetch (url: string) {
   if (dom) return dom;
 
 }
+
+/**
+ * DOM Literal
+ *
+ * Generates a DOM from string literal. Returns either
+ * an array list of elements or element, depending on
+ * the provided literal structure.
+ */
+function dom (strings: TemplateStringsArray, ...values: Array<string>) {
+
+  // Perform interpolation
+  let result = strings[0];
+
+  for (let i = 0, s = values.length; i < s; i++) result += values[i] + strings[i + 1];
+
+  const raw: string = result;
+  const dom: HTMLElement = document.createElement('div');
+
+  dom.innerHTML = raw;
+
+  const len: number = dom.children.length;
+
+  if (len === 0) return null;
+  if (len === 1) return defineGetter(dom.children[0], 'raw', raw);
+
+  const arr: Element[] = defineGetter([], 'raw', raw);
+
+  while (dom.firstChild) {
+    const child = dom.firstElementChild;
+    child && arr.push(child);
+    dom.removeChild(dom.firstChild); // Remove the child after pushing to avoid infinite loop
+  }
+
+};
 
 async function render (url: string, pushState: 'intersect' | 'replace' | 'push', fn: (
   this: Page,

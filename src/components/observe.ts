@@ -43,10 +43,11 @@ const connect = (node: HTMLElement, refs: string[]) => {
 
       $.components.$mounted.add(instance.scope.key);
 
-      instance.root = node;
+      console.log(node);
+      instance.dom = node;
       instance.scope.status = Hooks.MOUNT;
 
-      log(Log.VERBOSE, `Component ${instance.scope.define.id} mounted: ${instance.scope.key}`, Colors.GREEN);
+      log(Log.VERBOSE, `Component ${instance.scope.define.name} mounted: ${instance.scope.key}`, Colors.GREEN);
 
     } else if (ref === Refs.EVENT) {
 
@@ -55,7 +56,9 @@ const connect = (node: HTMLElement, refs: string[]) => {
     } else if (ref === Refs.NODE) {
 
       // $elements.set(instance.scope.nodes[id].dom, node);
-      instance.scope.nodes[id].live = true;
+      for (const k in instance.scope.nodes) {
+        ++instance.scope.nodes[k].live;
+      }
 
     } else if (ref === Refs.BINDING) {
 
@@ -71,7 +74,7 @@ const connect = (node: HTMLElement, refs: string[]) => {
 
 };
 
-const disconnect = (curNode: HTMLElement, refs: string[], newNode?: HTMLElement) => {
+export const unmount = (curNode: HTMLElement, refs: string[]) => {
 
   for (const id of refs) {
 
@@ -89,12 +92,12 @@ const disconnect = (curNode: HTMLElement, refs: string[], newNode?: HTMLElement)
       if (instance.scope.define.merge) {
 
         instance.scope.snapshot = curNode.innerHTML;
-        log(Log.VERBOSE, `Component ${instance.scope.define.id} snapshot: ${instance.scope.key}`, Colors.GRAY);
+        log(Log.VERBOSE, `Component ${instance.scope.define.name} snapshot: ${instance.scope.key}`, Colors.GRAY);
 
       }
 
       for (const k in instance.scope.nodes) {
-        instance.scope.nodes[k].live = false;
+        instance.scope.nodes[k].live = 0;
       }
 
       for (const k in instance.scope.binds) {
@@ -109,7 +112,7 @@ const disconnect = (curNode: HTMLElement, refs: string[], newNode?: HTMLElement)
 
       instance.scope.status = Hooks.UNMOUNTED;
 
-      log(Log.VERBOSE, `Component ${instance.scope.define.id} unmounted: ${instance.scope.key}`, Colors.PURPLE);
+      log(Log.VERBOSE, `Component ${instance.scope.define.name} unmounted: ${instance.scope.key}`, Colors.PURPLE);
 
     } else if (ref === Refs.EVENT) {
 
@@ -117,7 +120,9 @@ const disconnect = (curNode: HTMLElement, refs: string[], newNode?: HTMLElement)
 
     } else if (ref === Refs.NODE) {
 
-      instance.scope.nodes[id].live = false;
+      for (const k in instance.scope.nodes) {
+        --instance.scope.nodes[k].live;
+      }
 
     } else if (ref === Refs.BINDING) {
 
@@ -132,16 +137,16 @@ const disconnect = (curNode: HTMLElement, refs: string[], newNode?: HTMLElement)
 
 };
 
-export function removeNode (node: HTMLElement) {
+export const removeNode = (node: HTMLElement) => {
 
   if (node.nodeType !== Nodes.ELEMENT_NODE && node.nodeType !== Nodes.FRAGMENT_NODE) return;
 
   const attrs = node.getAttribute($.qs.$ref);
-  attrs && disconnect(node, attrs.split(','));
+  attrs && unmount(node, attrs.split(','));
 
-}
+};
 
-export function addedNode (node: HTMLElement) {
+export const addedNode = (node: HTMLElement) => {
 
   const attrs = node.getAttribute($.qs.$ref);
 
@@ -152,21 +157,31 @@ export function addedNode (node: HTMLElement) {
   } else {
 
     if (isDirective(node.attributes)) {
+
       context ? context.$morph = node : context = getContext(node);
+
       walkNode(node, context);
     }
 
   }
-}
+};
 
-export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: any, nRef: any) {
+export const readNode = (newNode: HTMLElement) => {
+
+  context ? context.$morph = newNode : context = getContext(newNode);
+
+  walkNode(newNode, context, false);
+
+};
+
+export const updateNode = (curNode: HTMLElement, newNode: HTMLElement, cRef: any, nRef: any) => {
 
   if (cRef) cRef = cRef.split(',');
   if (nRef) nRef = nRef.split(',');
 
   if (cRef && nRef) {
 
-    disconnect(curNode, cRef);
+    unmount(curNode, cRef);
     connect(curNode, nRef);
 
   } else if (!cRef && nRef) {
@@ -176,9 +191,10 @@ export function updateNode (curNode: HTMLElement, newNode: HTMLElement, cRef: an
   } else {
 
     context ? context.$morph = curNode : context = getContext(curNode, newNode);
-    cRef && !nRef && disconnect(curNode, cRef, newNode);
 
-    isDirective(newNode.attributes) && walkNode(curNode, context);
+    if (cRef && !nRef) unmount(curNode, cRef);
+
+    if (isDirective(newNode.attributes)) walkNode(curNode, context);
 
   }
-}
+};

@@ -1,8 +1,7 @@
 /* eslint-disable no-redeclare */
 /* eslint-disable no-unused-expressions */
-import spx from 'spx';
-import papyrus from 'papyrus';
-import relapse from 'relapse';
+import spx, { SPX } from 'spx';
+import papyrus, { Papyrus } from 'papyrus';
 import m from 'mithril';
 import esthetic from 'esthetic';
 import { state } from './explorer/state';
@@ -21,53 +20,76 @@ esthetic.rules({
   }
 });
 
-export class Explorer extends spx.Component<typeof Explorer.define> {
+export class Explorer extends spx.Component({
+  nodes: <const>[
+    'content',
+    'components',
+    'snapshot',
+    'document',
+    'logger',
+    'tab'
 
-  static define = {
-    nodes: <const>[
-      'inputFoo',
-      'aBar',
-      'areaBaz',
-      'content',
-      'components',
-      'snapshot',
-      'document'
-    ],
-    state: {
-      count: Number,
-      bar: Object<{ foo: string }>,
-      foo: String<'foo'>,
-      baz: Array<{ bar: string }>
-    }
-  };
+  ],
+  state: {
+    count: Number,
+    mounted: Boolean
+  }
+}) {
+
+  public papyrusDoc: Papyrus.Model;
+  public papyrusSnap: Papyrus.Model;
 
   connect () {
 
+    this.papyrusDoc = papyrus.mount(this.documentNode, { language: 'html' });
+    this.papyrusSnap = papyrus.mount(this.snapshotNode, { language: 'html' });
     this.setComponents();
-    this.setSnapshot();
-    this.setDocument();
+
+  }
+
+  onmount () {
+
+    this.setComponents();
+
+    // this.setDocument();
+    // this.setSnapshot();
+
   }
 
   setDocument () {
 
-    const format = this.format(state.document.getElementById('main').outerHTML);
+    const input = this.format(state.document.getElementById('main').outerHTML);
 
-    papyrus.render(format, this.dom.documentNode, {
-      language: 'html',
-      showSpace: true
-    });
+    this.papyrusDoc.update(input);
 
+  }
+
+  logger (event: SPX.Event) {
+
+    this.componentsNode.classList.add('d-none');
+    this.loggerNode.classList.remove('d-none');
+    // this.dom.tab(tab => tab.removeClass('active'));
+    event.target.classList.add('active');
+
+  }
+
+  session (event: SPX.Event) {
+
+    this.dom.logger.addClass('d-none');
+    this.dom.components.removeClass('d-none');
+    this.dom.tab(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
   }
 
   setSnapshot () {
 
-    const format = this.format(state.snapshot.getElementById('main').outerHTML);
-
-    papyrus.render(format, this.dom.snapshotNode, {
-      language: 'html',
-      showSpace: true
-    });
-
+    setTimeout(() => {
+      const input = this.format(state.snapshot.getElementById('main').outerHTML);
+      this.papyrusSnap.update(input);
+      this.papyrusDoc.onscroll((position) => {
+        this.papyrusSnap.scroll(position);
+      });
+    }, 500);
   }
 
   format (code: string) {
@@ -77,31 +99,22 @@ export class Explorer extends spx.Component<typeof Explorer.define> {
 
   setComponents () {
 
-    m.mount(this.dom.componentsNode, Components);
+    m.mount(this.dom.components, Components);
 
-    spx.on('load', () => {
-      setTimeout(() => {
-
-        state.get();
-        m.redraw();
-        relapse.reinit();
-
-      }, 100);
-    });
   }
 
   /**
    * Rolling logs which will print the hook messages
    */
-  log (log: HTMLElement, hook: string, message: string, color: string) {
+  log (message: string) {
 
     const element = document.createElement('div');
-    element.className = `d-block pb-1 message ${color}`;
+    element.className = 'd-block pb-1 message';
     element.ariaLabel = `${++this.state.count}`;
-    element.innerHTML = `<span class="ff-code ${color}">${hook}</span> ${message}`;
+    element.innerHTML = `${message}`;
 
-    log.appendChild(element);
-    log.scrollTop = log.parentElement.scrollHeight;
+    this.dom.logger.appendChild(element);
+    this.dom.logger.scrollTop = this.dom.logger.parentElement.scrollHeight;
 
   }
 

@@ -1,32 +1,30 @@
 import spx from 'spx';
 
-export class Async extends spx.Component<typeof Async.define> {
+export class Async extends spx.Component({
+  id: 'async',
+  state: {
+    syncTime: Number,
+    connectDelay: Number,
+    connectText: String,
+    onmountDelay: Number,
+    fetchExample: Boolean,
+    fetchedData: Array,
+    firstRun: {
+      typeof: Boolean,
+      default: true
+    }
+  },
+  nodes: <const>[
+    'connect',
+    'mounted'
+  ]
+}) {
 
   static delay (time: number) {
 
     return new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
   }
-
-  static define = {
-    id: 'async',
-    state: {
-      syncTime: Number,
-      connectDelay: Number,
-      connectText: String,
-      onmountDelay: Number,
-      fetchExample: Boolean,
-      fetchedData: Array,
-      firstRun: {
-        typeof: Boolean,
-        default: true
-      }
-    },
-    nodes: <const>[
-      'connect',
-      'mounted'
-    ]
-  };
 
   async connect () {
 
@@ -80,22 +78,23 @@ export class Async extends spx.Component<typeof Async.define> {
       if (!this.state.hasConnectDelay && !this.state.hasOnmountDelay) {
         const finish = performance.now();
         const time = `${Math.abs(this.state.syncTime - finish)}`.split('.')[0];
-        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.mountedNode.innerText = `Mounted in ${time}ms`;
       } else {
         const time = `${Math.abs((this.state.connectDelay + this.state.onmountDelay) / 10)}`.split('.')[0];
-        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.mountedNode.innerText = `Mounted in ${time}ms`;
       }
 
       this.state.firstRun = false;
+
     } else {
 
       if (!this.state.hasConnectDelay && !this.state.hasOnmountDelay) {
         const finish = performance.now();
         const time = `${Math.abs(begin - finish)}`.split('.')[0];
-        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.mountedNode.innerText = `Mounted in ${time}ms`;
       } else {
         const time = this.state.onmountDelay / 10;
-        this.dom.mountedNode.innerText = `Mounted in ${time}ms`;
+        this.mountedNode.innerText = `Mounted in ${time}ms`;
       }
     }
 

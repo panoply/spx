@@ -1,15 +1,15 @@
-{% if page.url == '/' %}
-  {% assign drawer = '' %}
-{% else %}
-  {% assign drawer = 'drawer-active' %}
-{% endif %}
+{%- if page.url == '/' -%}
+  {%- assign drawer = '' -%}
+{%- else -%}
+  {%- assign drawer = 'drawer-active' -%}
+{%- endif -%}
 
 <!DOCTYPE html>
 <html lang="en">
 
   <head>
     <title>
-      {{ title | prepend: 'SPX | ' }}
+      {{- title | prepend: 'SPX | ' -}}
     </title>
     <meta charset="UTF-8">
     <meta
@@ -91,14 +91,14 @@
 
   <body>
 
-    {% if page.url == '/' %}
+    {%- if page.url == '/' -%}
 
-      {% include 'include/landing' %}
+      {%- include 'include/landing' -%}
 
-    {% else %}
+    {%- else -%}
 
-      {% include 'include/navbar' %}
-      {% include 'include/search' %}
+      {%- include 'include/navbar' -%}
+      {%- include 'include/search' -%}
 
       <div class="container-fluid container-wrapper">
 
@@ -107,7 +107,7 @@
           spx-component="drawer"
           spx-drawer:direction="left"
           spx-drawer:width="280">
-          {% include 'include/sidebar' %}
+          {%- include 'include/sidebar' -%}
         </aside>
 
         <div
@@ -116,33 +116,33 @@
 
           <main class="col-11 {{ grid | default: 'col-md-9' }} pl-xl-2 pr-xl-5 pb-4">
             <div class="pr-4">
-              {% include 'include/breadcrumb' %}
-              {{ content }}
-              {% include 'include/paginate' %}
+              {%- include 'include/breadcrumb' -%}
+              {{- content -}}
+              {%- include 'include/paginate' -%}
             </div>
           </main>
 
-          {% if anchors %}
+          {%- if anchors -%}
             <div
               class="col-auto pr-5 anchors"
               spx-component="scrollspy">
               <ul>
-                {% for name in anchors %}
+                {%- for name in anchors -%}
                   <li>
                     <a
                       href="{{ name | anchor }}"
-                      spx-node="scrollspy.href">{{ name }}</a>
+                      spx-node="scrollspy.href">{{- name -}}</a>
                   </li>
-                {% endfor %}
+                {%- endfor -%}
               </ul>
             </div>
-          {% endif %}
+          {%- endif -%}
         </div>
       </div>
 
-    {% endif %}
-    {% sprite %}
-    {% search 'spx' %}
+    {%- endif -%}
+    {%- sprite -%}
+    {%- search 'spx' -%}
     <div
       class="drawer-backdrop"
       spx-node="drawer.backdrop"></div>

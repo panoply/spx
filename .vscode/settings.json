@@ -109,5 +109,6 @@
     "Wanstrath",
     "worktree",
     "Спасибі"
-  ]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

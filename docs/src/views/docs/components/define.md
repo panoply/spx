@@ -79,16 +79,16 @@ export class Component extends spx.Component {
   connect() {
 
     this.html                 // => The <html> element in the DOM
-    this.root                 // => The element using spx-component=""
+    this.view                 // => The element using spx-component=""
     this.state.someString     // => ''
     this.state.someBoolean    // => false
     this.state.someNumber     // => 0
     this.state.someObject     // => {}
     this.state.someArray      // => []
-    this.dom.elementNode     // => HTMLElement OR undefined
-    this.dom.elementNodes    // => HTMLElement[] OR []
-    this.dom.buttonNode      // => HTMLButtonElement OR undefined
-    this.dom.buttonNode      // => HTMLButtonElement[] OR []
+    this.dom.element          // => HTMLElement OR undefined
+    this.dom.element()        // => HTMLElement[] OR []
+    this.dom.button           // => HTMLButtonElement OR undefined
+    this.dom.button()         // => HTMLButtonElement[] OR []
 
   }
 }

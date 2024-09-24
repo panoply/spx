@@ -1,5 +1,5 @@
 ---
-layout: views/index.liquid
+layout: views/base.liquid
 aliases:
   - foo
   - bar
@@ -41,8 +41,7 @@ aliases:
 
   <div
     class="col-8"
-    id="n1"
-    spx-component="nesting">
+    spx-component="nesting as n1">
     <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 1 (N1)</h2>
     <div class="row ai-center mb-3">
       <button
@@ -62,8 +61,7 @@ aliases:
 
     <div
       class="col-11 offset-1"
-      id="n2"
-      spx-component="nesting">
+      spx-component="nesting as n2">
       <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 2 (N2)</h2>
       <div class="row ai-center mb-3">
         <button
@@ -85,20 +83,19 @@ aliases:
         <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 3 (N3)</h2>
         <div
           class="row ai-center mb-3"
-          id="n3"
-          spx-component="nesting">
+          spx-component="nesting as n3">
           <button
             class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
             type="button"
-            spx@click="nesting.onClick">Click Me (N3)</button>
+            spx@click="n3.onClick">Click Me (N3)</button>
           <code
             class="col-auto fs-lg"
-            spx-bind="nesting.count">0</code>
+            spx-bind="n3.count">0</code>
         </div>
         <button
           class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1"
           type="button"
-          spx@click="nesting.onClick">Click Me (N3)</button>
+          spx@click="n3.onClick">Click Me (N3)</button>
       </div>
     </div>
 

@@ -3,6 +3,33 @@ import { Colors, LogLevel, Log } from './enums';
 import { info, warn, error } from './native';
 
 const PREFIX = 'SPX ';
+const START = '\x1b[';
+const END = '\x1b[0m';
+
+/**
+ * Dimmed Gray Text
+ */
+export const D = (text: string) => START + '90m' + text + END;
+
+/**
+ * Green Text
+ */
+export const G = (text: string) => START + '32m' + text + END;
+
+/**
+ * Red text
+ */
+export const R = (text: string) => START + '31m' + text + END;
+
+/**
+ * Yellow text
+ */
+export const Y = (text: string) => START + '33m' + text + END;
+
+/**
+ * Cyan text
+ */
+export const C = (text: string) => START + '36m' + text + END;
 
 /**
  * Type Error

@@ -1,4 +1,5 @@
-import { Scope } from 'types';
+import spx, { SPX } from 'spx';
+import m from 'mithril';
 
 interface Tabs {
   [instanceOf: string]: {
@@ -12,21 +13,19 @@ interface Tabs {
 
 export interface DataScope {
   reference: {
+    root: any
     status: any
     alias:any
     instanceOf:any
     key:any
     ref:any
-    dom:any
-    selector:any
     snap:any
     inFragment:any
-    connected: any
   },
-  state: Scope['state']
-  binds: Scope['binds']
-  events: Scope['events']
-  nodes: Scope['nodes']
+  state: SPX.Scope['state']
+  binds: SPX.Scope['binds']
+  events: SPX.Scope['events']
+  nodes: SPX.Scope['nodes']
 }
 
 export interface Data {
@@ -81,11 +80,9 @@ export const state = new class {
           instanceOf: scope.instanceOf,
           key: scope.key,
           ref: scope.ref,
-          dom: scope.dom,
-          selector: scope.selector,
           snap: scope.snap,
           inFragment: scope.inFragment,
-          connected: scope.connected
+          root: `${scope.view}`
         },
         binds: scope.binds,
         events: scope.events,
@@ -94,6 +91,7 @@ export const state = new class {
       };
     }
 
+    m.redraw();
   }
 
 }();

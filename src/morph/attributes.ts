@@ -8,7 +8,6 @@ import * as observe from '../components/observe';
  * Set or Remove boolean attribute annotations, specifically used for Form elements
  */
 export const setBooleanAttribute = (curElement: Element, newElement: Element, name: string) => {
-
   if (curElement[name] !== newElement[name]) {
     curElement[name] = newElement[name];
     curElement[name] ? curElement.setAttribute(name, nil) : curElement.removeAttribute(name);
@@ -94,6 +93,8 @@ export const morphAttributes = (curNode: HTMLElement, newNode: HTMLElement) => {
 
   for (let o = curNodeAttrs.length - 1; o >= 0; o--) {
 
+    if (curNodeAttrs[o] === undefined) continue;
+
     attrNode = curNodeAttrs[o];
     attrName = attrNode.name;
     attrValue = attrNode.value;
@@ -113,16 +114,15 @@ export const morphAttributes = (curNode: HTMLElement, newNode: HTMLElement) => {
         curNode.removeAttribute(attrName);
       }
 
+      if (!attrDirective) {
+        attrDirective = isDirective(attrName);
+      }
+
     }
   }
 
   if (cRef || nRef || attrDirective) {
-    observe.updateNode(
-      curNode,
-      newNode,
-      cRef,
-      nRef
-    );
+    observe.updateNode(curNode, newNode, cRef, nRef);
   }
 
 };

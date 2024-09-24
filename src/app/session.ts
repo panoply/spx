@@ -1,14 +1,14 @@
-import type { Session, Selectors, Config, Hover, Progress, Intersect, Proximity } from 'types';
+import type { Session } from 'types';
 import { m, o, p, s } from '../shared/native';
 
-export const $: Session = o<Session>({
+export const $: Session = {
   index: '',
   eval: true,
   patched: false,
   loaded: false,
   logLevel: 2,
-  qs: o<Selectors>(),
-  config: o<Config>({
+  qs: o(),
+  config: {
     fragments: [ 'body' ],
     timeout: 30000,
     globalThis: true,
@@ -20,26 +20,26 @@ export const $: Session = o<Session>({
     reverse: true,
     preload: null,
     annotate: false,
-    eval: o({
+    eval: {
       script: null,
       style: null,
       link: null,
       meta: false
-    }),
-    hover: o<Hover>({
+    },
+    hover: {
       trigger: 'href',
       threshold: 250
-    }),
-    intersect: o<Intersect>({
+    },
+    intersect: {
       rootMargin: '0px 0px 0px 0px',
       threshold: 0
-    }),
-    proximity: o<Proximity>({
+    },
+    proximity: {
       distance: 75,
       threshold: 250,
       throttle: 500
-    }),
-    progress: o<Progress>({
+    },
+    progress: {
       bgColor: '#111',
       barHeight: '3px',
       minimum: 0.08,
@@ -48,10 +48,10 @@ export const $: Session = o<Session>({
       threshold: 500,
       trickle: true,
       trickleSpeed: 200
-    })
-  }),
+    }
+  },
   fragments: m(),
-  components: o({
+  components: {
     $mounted: s(),
     $registry: m(),
     $instances: m(),
@@ -61,11 +61,11 @@ export const $: Session = o<Session>({
         key: string
       ) => $.components.$instances.get(map[key])
     })
-  }),
+  },
   events: o(),
   observe: o(),
   memory: o(),
   pages: o(),
   snaps: o(),
   resources: s()
-});
+};

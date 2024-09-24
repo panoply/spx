@@ -1,5 +1,5 @@
 ---
-layout: views/index.liquid
+layout: views/base.liquid
 aliases:
   - foo
   - bar
@@ -17,8 +17,7 @@ aliases:
           <h2 class="fs-sm mb-3">{{ alias }} Alias {{ forloop.index }}</h2>
           <div
             class="row ai-center mb-5"
-            id="{{ alias }}"
-            spx-component="alias"
+            spx-component="alias as {{ alias }}"
             spx-alias:qty="0"
             spx-alias:min="0"
             spx-alias:max="{{ 5 | plus: forloop.index }}">

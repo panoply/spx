@@ -7,7 +7,7 @@ import type { LiteralUnion } from 'type-fest';
 import type { Page } from './page';
 import type { IObserverOptions, Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
-import type { ComponentSession, Class } from './components';
+import type { ComponentSession, Class, Component } from './components';
 import type { Session } from './session';
 import type { Attrs, DOMEvents, Identity, Merge, TypeConstructors, TypeEvent, TypeOf, TypeState } from 'types';
 export * from './components';
@@ -24,33 +24,26 @@ export * from './page';
  */
 export declare namespace SPX {
 
-  export { Page, Options };
+  export { Page, Options, Class };
 
   export abstract class Methods {
 
     /**
-    * #### SPX Component
+    * ### Component (Base Class)
     *
-    * An extends `class` applied to SPX Components.
+    * The **extends** base class for SPX Components.
     *
     * ---
     *
     * #### TypeScript Example
     *
     * ```ts
-    * import spx, { SPX } from 'spx';
+    * import spx from 'spx';
     *
-    * class Demo extends spx.Component<typeof Demo.define> {
-    *
-    *  // Define Options
-    *  static define = {}
-    *
-    *  // Event Types with attrs
-    *  onClick (event: SPX.Event<{ foo: 'bar' }>) {
-    *
-    *    event.attrs.foo // => 'bar'
-    *
-    *  }
+    * class Demo extends spx.Component<HTMLElement>({
+    *   state: {},
+    *   nodes: <const>[] // Using <const> for intelliSense
+    * }) {
     *
     * }
     * ```
@@ -60,25 +53,30 @@ export declare namespace SPX {
     * ```ts
     * import spx from 'spx';
     *
-    * class Example extends spx.Component {
+    * class Example extends spx.Component({
+    *   state: {},
+    *   nodes: []
+    * }) {
     *
     *   // SPX Component logic here
     *
     * }
-    *```
+    * ```
     */
-    static Component: typeof Class;
+    static Component: Component;
 
     /**
-    * #### Supported
+    * ### Supported
     *
-    * Boolean to determine whether or the browser supports
-    * this module.
+    * Boolean to determine whether or not the browser supports SPX. You can use this
+    * to load in polyfills if you plan on supporting legacy browsers.
+    *
+    * [SPX Documentation](https://spx.js.org/misc/polyfills/)
     */
     static readonly supported: boolean;
 
     /**
-    * #### Session
+    * ### Session
     *
     * Returns the current session instance. This includes all state, snapshots, options and settings
     * which exists in memory. If you intend
@@ -86,15 +84,23 @@ export declare namespace SPX {
     * > **Note**
     * >
     * > This is the internal data model, from which SPX operates. Treat this as **read only** and
-    * avoid manipulating the model, use the available methods if you wish to carry out session manipulation.
+    * > avoid manipulating the model, use the available methods if you wish to carry out session manipulation.
     */
     static readonly $: Session;
 
     /**
-    * #### Component
+    * ### Component
     *
-    * Returns a component instance. Provide the component identifier name or
-    * its alias (`id="alias"`) name.
+    * This method retrieves, iterates and interface with component instances. You have the option to
+    * specify and filter components by passing name/s or an alias identifier. The method is flexible,
+    * it allows you to obtain specific instances, observe mounts and perform actions on components globally.
+    *
+    * > **NOTE**
+    * >
+    * > This differs from the capitilized `spx.Component` method. The `spx.Component` method is used
+    * > for class extends, where this method is used for interfacing.
+    *
+    * [SPX Documentation](https://spx.js.org/api/component/)
     *
     * ---
     *
@@ -103,17 +109,38 @@ export declare namespace SPX {
     * ```js
     * import spx from 'spx';
     *
-    * spx.component('identifier')
+    * // Returns component named "foo"
+    * spx.component('foo')
+    *
+    * // Return a live component name "foo" otherwise false
+    * spx.component('foo', { live: true })
+    *
+    * // Iteration over all components named "foo"
+    * spx.component('foo', instance => instance.method())
+    *
+    * // Observe component name foo, callback if or when live
+    * spx.component('foo', { observe: true }, instance => instance.method())
+    *
+    * // Iterate over all components
+    * spx.component(instance => instance.method())
+    *
+    * // Iterate over all live components
+    * spx.component({ live: true }, instance => instance.method())
+    *
     * ```
     */
-    static component<T = Class>(id: string): T;
+    static component: {
+      <T = Class>(id: string): T;
+      <T = Class>(id: string, callback: (instance: T) => void): void;
+    };
 
     /**
-    * #### Globals
+    * ### Global
     *
-    * Define global dataset to be exposed within hooks and lifecycle events. You'd typically leverage
-    * this within a `<script>` tag when you need context of data. Global data is **READ ONLY** and once
-    * defined it cannot be overwritten.
+    * Define a global dataset to be exposed and made available within all contexts. You'd typically leverage
+    * this within a `<script>` tag and it can be used as store for references.
+    *
+    * > Global data is **READ ONLY** and once defined it cannot be overwritten.
     *
     * ---
     *
@@ -124,11 +151,11 @@ export declare namespace SPX {
     * ```html
     * <script>
     *   spx.global({
-    *    foo: 'string',
-    *    bar: true,
-    *    baz: {
-    *      qux: 100
-    *    }
+    *     foo: 'string',
+    *     bar: true,
+    *     baz: {
+    *       qux: 100
+    *     }
     *   })
     * </script>
     * ```
@@ -143,7 +170,7 @@ export declare namespace SPX {
     * })
     * ```
     */
-    static global(model?: { [key: string]: any }): Class;
+    static global<T extends { [key: string]: any }>(model: T): T;
 
     /**
     * #### Session
@@ -185,6 +212,8 @@ export declare namespace SPX {
     * >
     * > You can also choose to pass components upon connection via the `components{}` option.
     *
+    * [SPX Documentation](https://spx.js.org/components/register/)
+    *
     * ---
     *
     * #### Example
@@ -216,17 +245,17 @@ export declare namespace SPX {
     * // Option 4 - Register as an object map
     * //
     * spx.register({
-    *  Foo,       // identifier will be: foo
-    *  Bar,       // identifier will be: bar
-    *  qux: Baz   // identifier will be: qux
+    *   Foo,       // identifier will be: foo
+    *   Bar,       // identifier will be: bar
+    *   qux: Baz   // identifier will be: qux
     * })
     *
     * // Option 5 - Register as an array map
     * //
     * spx.register([
-    *  ['foo', Foo]
-    *  ['bar', Bar],       // identifier will be: bar
-    *  ['qux', Baz]   // identifier will be: qux
+    *   ['foo', Foo]
+    *   ['bar', Bar],  // identifier will be: bar
+    *   ['qux', Baz]   // identifier will be: qux
     * ])
     * ```
     */
@@ -234,14 +263,14 @@ export declare namespace SPX {
       | [ ...any ]
       | [ identifer: string, component: any ]
       | [{ [identifier: string]: any }]
-      | Array<[identifier: string, component: any ]>
-    ): void
+      | Array<[identifier: string, component: any ]>): void
 
     /**
     * #### Reload
     *
     * Triggers a reload of the current page. The page will be re-fetched over HTTP and re-cached.
     *
+    * [SPX Documentation](https://spx.js.org/api/reload/)
     * ---
     *
     * #### Example
@@ -249,7 +278,7 @@ export declare namespace SPX {
     * ```js
     * import spx from 'spx';
     *
-    * spx.reload();
+    * spx.reload().then(page => {});
     * ```
     */
     static reload(): Promise<Page>;
@@ -292,7 +321,10 @@ export declare namespace SPX {
     *
     *   console.log(this.foo) // => value will be "bar"
     *
-    * }, { foo: 'bar', baz: 'qux' });
+    * }, {
+    *   foo: 'bar',
+    *   baz: 'qux'
+    * });
     *
     * ```
     */
@@ -324,9 +356,7 @@ export declare namespace SPX {
     * // EXAMPLE 2
     * // Using the callback function
     *
-    * const load = () => {
-    *  console.log('Lorem Ipsum');
-    * }
+    * const load = () => console.log('Lorem Ipsum');
     *
     * spx.on('load', load);
     * spx.off('load', load); // Pass function to remove event
@@ -345,7 +375,7 @@ export declare namespace SPX {
     /**
     * #### Render
     *
-    * Programmatic rendering. Allows document
+    * Programmatic rendering
     */
     static render <T = any>(url: string, pushState: 'replace' | 'push', fn: (
       this: {
@@ -359,25 +389,16 @@ export declare namespace SPX {
         dom: Document;
       },
       /**
-        * The fetched document
-        */
+       * The fetched document
+       */
       dom: Document
     ) => Document, context?: T): Promise<Page>
 
     /**
-    * #### Observe
-    *
-    * Either activates or restarts interception observers. Use this method if you are connecting
-    * with the `manual` option set to `true` to have SPX begin observing.
-    */
-    static observe(options?: IObserverOptions): void
-
-    /**
     * #### Capture
     *
-    * Performs a snapshot modification to the current document. Use
-    * this to align a snapshot cache record between navigations. This
-    * is helpful in situations where the dom is augmented and you want
+    * Performs a snapshot modification to the current document. Use this to align a snapshot cache
+    * record between navigations. This is helpful in situations where the dom is augmented and you want
     * to preserve the current DOM.
     */
     static capture(targets?: string[]): void
@@ -385,8 +406,8 @@ export declare namespace SPX {
     /**
     * #### Form
     *
-    * Programmatic form submission. This method will simulus form requests and returning
-    * the response document reference
+    * Programmatic form submission. This method will submit form requests and return
+    * the response document reference.
     *
     * ---
     *
@@ -398,13 +419,13 @@ export declare namespace SPX {
     * // This would hydrate the <main> element but
     * // preserve the <div id="navbar"> element.
     * spx.form('/submission', {
-    *  method: 'POST',
-    *  hydrate: ["main", "!#navbar"],
-    *  data: {
-    *   name: 'Marvin Hagler',
-    *   profession: 'Professional Boxer',
-    *   age: 35,
-    *   champion: true
+    *   method: 'POST',
+    *   hydrate: ["main", "!#navbar"],
+    *   data: {
+    *    name: 'Marvin Hagler',
+    *    profession: 'Professional Boxer',
+    *    age: 35,
+    *    champion: true
     *  }
     * })
     *
@@ -463,32 +484,101 @@ export declare namespace SPX {
     * Executes a programmatic visit. The method optionally
     * accepts a page state modifier as second argument.
     */
-    static route(link: string, state?: Page): Promise<Page>;
+    static visit(link: string, state?: Page): Promise<Page>;
 
     /**
-    * #### Fetch
-    *
-    * Executes a programmatic fetch. The XHR request response is not
-    * cached and no state references are touched. The XHR response is
-    * returned as DOM.
-    *
-    * ---
-    *
-    * #### Example
-    *
-    * ```js
-    * import spx from 'spx';
-    *
-    * spx.fetch('/some/path').then(dom => {
-    *
-    *   dom.querySelector('.el').classList.add('active')
-    *
-    *   return dom // Return DOM to update snapshot
-    *
-    * })
-    * ```
-    */
-    static fetch(url: string): Promise<Document>
+     * #### Dom
+     *
+     * Expects a HTML String Literal and will return either an `HTMLElement`
+     * or an `HTMLElement[]` array list depending on the markup structure
+     * provided by the literal.
+     *
+     * > **NOTE**
+     * >
+     * > You can access the original literal via the `raw` getter on
+     * > the returning `HTMLElement` or `HTMLElement[]`.
+     *
+     * ---
+     *
+     * @example
+     *
+     * // Creating a button
+     * //
+     * const button = spx.dom<HTMLButtonElement>`
+     *  <button type="button">
+     *    Hello World!
+     *  </button>
+     * `
+     * button     // Returns the <button> element
+     * button.raw // Returns literal string
+     *
+     * // Creating several list items
+     * //
+     * const items = spx.dom<HTMLLIElement[]>`
+     *  <li>foo</li>
+     *  <li>bar</li>
+     *  <li>baz</li>
+     * `
+     * items     // Returns an array if <li> elements.
+     * items.raw // Returns literal string
+     * items[0]  // <li>foo</li>
+     * items[1]  // <li>bar</li>
+     * items[2]  // <li>baz</li>
+     */
+    static dom<T extends HTMLElement>(markup: TemplateStringsArray, ...values: string[]): T
+
+    /**
+     * #### Http
+     *
+     * HTTP Request client for fetching a resource from the network using **XHR**
+     * instead of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch).
+     *
+     * SPX uses the [XMLHttpRequest](https://developer.mozilla.org/docs/Web/API/XMLHttpRequest) API
+     * under the hood and you can optionally have SPX handle all data and resource requests within
+     * your web application.
+     *
+     * ---
+     *
+     * #### Example
+     *
+     * ```js
+     * import spx from 'spx';
+     *
+     * spx.http('/some/path').then(dom => {
+     *
+     *   dom.querySelector('.el').classList.add('active')
+     *
+     *   return dom // Return DOM to update snapshot
+     *
+     * })
+     * ```
+     */
+    static http(url: string): Promise<Document>;
+
+    /**
+     * #### Fetch
+     *
+     * Executes a programmatic fetch. The XHR request response is not
+     * cached and no state references are touched. The XHR response is
+     * returned as DOM.
+     *
+     * ---
+     *
+     * #### Example
+     *
+     * ```js
+     * import spx from 'spx';
+     *
+     * spx.fetch('/some/path').then(dom => {
+     *
+     *   dom.querySelector('.el').classList.add('active')
+     *
+     *   return dom // Return DOM to update snapshot
+     *
+     * })
+     * ```
+     */
+    static fetch(url: string): Promise<Document>;
 
     /**
     * #### Clear
@@ -548,7 +638,7 @@ export declare namespace SPX {
    * ```html
    *
    * <input
-   *  export type="text"
+   *  type="text"
    *  spx@input="component.method" />
    *
    * ```
@@ -564,7 +654,7 @@ export declare namespace SPX {
    * ```html
    *
    * <input
-   *  export type="text"
+   *  type="text"
    *  spx@keydown="component.method" />
    *
    * ```
@@ -581,7 +671,7 @@ export declare namespace SPX {
    * ```html
    *
    * <input
-   *  export type="text"
+   *  type="text"
    *  spx@keydown="component.method" />
    *
    * ```
@@ -596,10 +686,8 @@ export declare namespace SPX {
    *
    * ```html
    *
-   * <button
-   *  export type="button"
-   *  spx@click="component.method">
-   *  Click
+   * <button type="button" spx@click="component.method">
+   *   Click
    * </button>
    *
    * ```
@@ -640,11 +728,23 @@ export declare namespace SPX {
    */
   export type TagNames = keyof TagNodes;
 
-  export type Define = {
+  /**
+   * State object where `T` returns optional object.
+   */
+  export type State<T extends object> = {
+    state: { [K in keyof T]?: T[K] }
+  }
+
+  /**
+   * #### Component Definition
+   *
+   * The static `define` property of component classes
+   */
+  export interface Define {
     /**
      * Identifier Name
      */
-    id?: string;
+    name?: string;
     /**
      * Media Query
      */
@@ -654,19 +754,30 @@ export declare namespace SPX {
       'md',
       'lg',
       'xl'
-    ]
+    ];
     /**
      * Whether or not to merge on mount
      */
     merge?: boolean;
     /**
-     * **State Interface**
+     * ### Sugar
+     *
+     * Whether or not nodes should use sugar methods
+     */
+    readonly sugar?: boolean;
+    /**
+     * #### State
      *
      * Attribute state references used to connect DOM states with component `this.state`.
      * Accepts Constructor types or `typeof` and `default` object presets.
      */
-    state?: {
+    readonly state?: {
       [key: `${Lowercase<string>}${string}`]: (
+        | number
+        | string
+        | boolean
+        | any[]
+        | object
         | TypeConstructors
         | TypeOf<BooleanConstructor>
         | TypeOf<StringConstructor>
@@ -681,12 +792,12 @@ export declare namespace SPX {
       )
     };
     /**
-     * **Nodes Reference**
+     * #### Nodes
      *
      * DOM Node identifier references used to connect elements in the DOM with component
-     * `this.<name>Node` values.
+     * `this.dom.<node>` values.
      */
-    nodes?: readonly string[];
+    readonly nodes?: ReadonlyArray<string>;
   }
 
 }

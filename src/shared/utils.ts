@@ -1,29 +1,62 @@
-import type { Page, LiteralUnion } from 'types';
+import type { Page, LiteralUnion, TypeConstructors, NativeTypes } from 'types';
 import { $ } from '../app/session';
 import { CharCode, Log } from './enums';
 import { b, nil, s } from './native';
 import { log } from '../shared/logs';
+import { CharEntities } from './regexp';
+import { Entities, Identifiers } from './const';
+
+/**
+ * Synchronous forEach iterator wrapper. Provides curried support.
+ * It's using the `for` iterator which is best for records under
+ * 1000 (which is the standard for this library).
+ *
+ * **Features**
+ *
+ * 1. Cancel the loop by returning `false` in the callback
+ * 2. Returns the last known return value from the callback
+ * 3. Can be curried
+ */
+export function forEach <T, R = any> (
+  cb: (item: T, index?: number, array?: T[]) => R,
+  array?: Array<T>
+): R | ((array: T[]) => R) {
+
+  // curried expression
+  if (arguments.length === 1) return (a: Array<T>) => forEach(cb, a) as any;
+
+  const s = array.length;
+
+  // Ensure we can iterate the list
+  if (s === 0) return;
+
+  // Loop over the items in the array
+
+  // eslint-disable-next-line one-var
+  let r: R, i = -1;
+
+  while (++i < s) {
+    r = cb(array[i], i, array);
+    if (r === false) break;
+  }
+
+  return r;
+
+}
 
 /**
  * Get the fragment Selector and teturns the query selector reference
  */
-export const qsTarget = (targets: string[]) => {
-
-  const suffix = `,[${$.qs.$target}]`;
-
-  return targets.length === 0
+export const qsTarget = (targets: string[], suffix = `,[${$.qs.$target}]`) =>
+  targets.length === 0
     ? $.config.fragments.join(',') + suffix
-    : targets.join(',') + suffix;
-};
+    : targets.join() + suffix;
 
 /**
  * Get SPX Selector and teturns an element selector for SPX Component node morphs
  */
-export const qsNode = (
-  node: HTMLElement,
-  key: string,
-  value: string
-) => `${node.nodeName.toLowerCase()}[${key}*=${escSelector(value)}]`;
+export const qsNode = (node: HTMLElement, key: string, value: string) =>
+  `${node.nodeName.toLowerCase()}[${key}*=${escSelector(value)}]`;
 
 /**
  * Split Attribute Array Value. Some SPX attribute value accept array pattern
@@ -38,28 +71,24 @@ export const qsNode = (
  */
 export const splitAttrArrayValue = (input: string) => {
 
-  let value: string = input
+  /** v = value */
+  let v: string = input
     .replace(/\s+,/g, ',')
     .replace(/,\s+/g, ',')
     .replace(/['"]/g, '');
 
-  if (value.charCodeAt(0) === CharCode.LSB) {
-
-    // Value might be an attribute selector within an array
-    // let's quickly determine, pattern would be: spx-target="[[data-foo]]"
-    //
-    // If the pattern does not match, we will look for a comma separator
-    // contained within the value, if one is found, it infers that the
-    // value is an data attribute selector.
-    //
-    if (/^\[\s*\[/.test(value) || (/,/.test(value) && /\]$/.test(value))) {
-      value = value
-        .replace(/^\[/, '')
-        .replace(/\]$/, '');
-    }
+  // Value might be an attribute selector within an array
+  // let's quickly determine, pattern would be: spx-target="[[data-foo]]"
+  //
+  // If the pattern does not match, we will look for a comma separator
+  // contained within the value, if one is found, it infers that the
+  // value is an data attribute selector.
+  //
+  if (v.charCodeAt(0) === CharCode.LSB && (/^\[\s*\[/.test(v) || (/,/.test(v) && /\]$/.test(v)))) {
+    v = v.replace(/^\[/, '').replace(/\]$/, '');
   }
 
-  return value.split(/,|\|/);
+  return v.split(/,|\|/);
 
 };
 
@@ -118,16 +147,14 @@ export const escSelector = (input: string) => input.replace(/\./g, '\\.').replac
 /**
  *Resolves a promise outside the of the event loop.
  */
-export const onNextTickResolve = () => new Promise<void>((resolve) => setTimeout(() => resolve(), 1));
+export const onNextTickResolve = () => new Promise<void>(resolve => setTimeout(() => resolve(), 1));
 
 /**
  * Executes the provided `callback()` parameter outside of the event loop.
  */
-export const onNextTick = (callback: () => void, timeout = 1, bind?: any) => setTimeout(
-  () => bind
-    ? callback.bind(bind)()
-    : callback(), timeout
-);
+export const onNextTick = (cb: () => void, timeout = 1, bind?: any) => setTimeout(() => bind
+  ? cb.bind(bind)()
+  : cb(), timeout);
 
 /**
  * Returns `Promise.resolve()` and used to ensure async actions conclude
@@ -146,19 +173,13 @@ export const tagOpener = (script: string) => script.slice(0, script.indexOf('>',
  */
 export const canEval = (element: Element) => {
 
-  const nn = element.nodeName;
-
-  if (nn === 'SCRIPT') {
-    return element.matches($.qs.$script);
-  } else if (nn === 'STYLE') {
-    return element.matches($.qs.$style);
-  } else if (nn === 'META') {
-    return element.matches($.qs.$meta);
-  } else if (nn === 'LINK') {
-    return element.matches($.qs.$link);
+  switch (element.nodeName) {
+    case 'SCRIPT': return element.matches($.qs.$script);
+    case 'STYLE': return element.matches($.qs.$script);
+    case 'META': return element.matches($.qs.$meta);
+    case 'LINK': return element.matches($.qs.$link);
+    default: return element.getAttribute($.qs.$eval) !== 'false';
   }
-
-  return element.getAttribute($.qs.$eval) !== 'false';
 
 };
 
@@ -170,13 +191,7 @@ export const delay = (timeout: number) => new Promise<void>((resolve) => setTime
 /**
  * Used to ensure entries are correctly handled
  */
-export const decodeEntities = (string: string) => {
-
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = string;
-  return textarea.value;
-
-};
+export const decodeEntities = (input: string): string => input.replace(CharEntities, m => Entities[m] || m);
 
 /**
  * Returns the current time value in milliseconds
@@ -192,23 +207,35 @@ export const hasProps = <T extends object> (object: T) => {
 
   const typeOf = typeof object === 'object';
 
-  return <S extends keyof T, A extends Array<S>, P extends S | A> (property: P) => {
-
-    return typeOf ? !property ? false : typeof property === 'string'
+  return <S extends keyof T, A extends Array<S>, P extends S | A> (property: P) =>
+    typeOf ? !property ? false : typeof property === 'string'
       ? property in object
-      : (<string[]>property).every(p => p in object) : false;
-
-  };
+      : (<string[]>property).every(p => p ? p in object : false) : false;
 
 };
 
 /**
  * Used to validate the `null` prototype objects used in the module.
  */
-export const hasProp = <T extends object> (object: T, property: keyof T | string) => object
-  ? property in object
-  : false;
+export const hasProp = <T extends object> (object: T, property: keyof T | string | number) =>
+  typeof object === 'object'
+    ? property in object
+    : false;
 
+/**
+ * Converts Type Constructor values to default types. This is used to setup
+ * component state references
+ */
+export const convertValue = (type: TypeConstructors, value: NativeTypes) => {
+  switch (type) {
+    case String: return value || '';
+    case Boolean: return value === 'true' || false;
+    case Number: return Number(value) || 0;
+    case Object: return typeof value === 'object' ? value : {};
+    case Array: return Array.isArray(value) ? value : [];
+    default: return value;
+  }
+};
 /**
  * Creates a getter on an object and be used to redefine a getter.
  * The `configurable` parameter when undefined signals a refine operation,
@@ -225,6 +252,16 @@ export const defineGetter = <T extends object> (
     ? object
     : Object.defineProperty(object, name, { get: () => value, configurable })
     : Object.defineProperty(object, name, { get: () => value });
+
+/**
+ * Sugar helper for defining getter properties on an object.
+ */
+export const defineGetterProps = <T>(
+  object: T,
+  props: Array<[
+    name: string,
+    get: () => any
+  ]>) => forEach(([ name, get ]) => Object.defineProperty(object, name, { get }), props);
 
 /**
  * Returns a concated string list of `target` selectors.
@@ -293,21 +330,31 @@ export const isEmpty = (input: any) => {
 export const glue = (...input: string[]) => input.join(nil);
 
 /**
+ * Creates a random integer. Ensure unique generation be referencing Set cache
+ */
+export const uid = (k = Math.floor(Math.random() * 89999 + 10000)) => {
+
+  if (Identifiers.has(k)) return uid();
+
+  Identifiers.add(k);
+
+  return k;
+};
+
+/**
  * Creates a UUID string. Ensure unique generation be referencing Set cache
  */
-export const uuid: { (size?: 1 | 2 | 3 | 4 | 5): string; $cache: Set<string>; } = function uuid (s = 5) {
+export const uuid: { (size?: 1 | 2 | 3 | 4 | 5): string; } = function uuid (s = 5) {
 
   const k = Math.random().toString(36).slice(-s);
 
-  if (uuid.$cache.has(k)) return uuid(s);
+  if (Identifiers.has(k)) return uuid(s);
 
-  uuid.$cache.add(k);
+  Identifiers.add(k);
 
   return k;
 
 };
-
-uuid.$cache = s();
 
 /**
  * Creates a hash from string.
@@ -383,35 +430,17 @@ export const forNode = <T extends HTMLElement> (
 ) => {
 
   const nodes = typeof selector === 'string' ? b().querySelectorAll<T>(selector) : selector;
-  const count = nodes.length;
+  const size = nodes.length;
 
   // Ensure we can iterate the list
-  if (count === 0) return;
+  if (size === 0) return;
+
+  let i = -1;
 
   // Loop over the items in the array
-  for (let i = 0; i < count; i++) if (cb(nodes[i], i) === false) break;
+  while (++i < size) if (cb(nodes[i], i) === false) break;
 
 };
-
-/**
- * Synchronous forEach iterator wrapper. Provides curried support.
- * It's using the `for` iterator which is best for records under
- * 1000 (which is the standard for this library).
- */
-export function forEach <T> (cb: (item: T, index?: number, array?: Array<T>) => void, array?: Array<T>) {
-
-  // curried expression
-  if (arguments.length === 1) return (array: Array<T>) => forEach(cb, array);
-
-  const s = array.length;
-
-  // Ensure we can iterate the list
-  if (s === 0) return;
-
-  // Loop over the items in the array
-  for (let i = 0; i < s; i++) cb(array[i], i, array);
-
-}
 
 /**
  * Clears an object of all its properties and values
@@ -421,3 +450,72 @@ export const empty = <T> (object: T) => {
   for (const prop in object) delete object[prop];
 
 };
+
+/**
+ * Parse HTML document string from request response
+ * using `parser()` method. Cached pages will pass
+ * the saved response here.
+ */
+export const parse = (HTMLString: string): Document => new DOMParser().parseFromString(HTMLString, 'text/html');
+
+/**
+ * Returns a snapshot of the current document, including `<!DOCTYPE html>`
+ * reference. Optionally accepts a `dom` Document, if none provided uses `document`
+ */
+export const takeSnapshot = (dom?: Document) => (dom || document).documentElement.outerHTML;
+
+/**
+ * Extract the document title text from the `<title>` tag of a dom string.
+ */
+export const getTitle = (dom: string) => {
+
+  const title = dom.indexOf('<title');
+
+  if (title === -1 || dom.slice(0, title).indexOf('<svg') > -1) return nil;
+
+  const begin = dom.indexOf('>', title) + 1;
+  const ender = dom.indexOf('</title', begin);
+
+  if (ender === -1) return nil;
+
+  return decodeEntities(dom.slice(begin, ender).trim());
+
+};
+
+/**
+ * Element
+ *
+ * Returns a single element
+ */
+export const element = <T extends HTMLElement = HTMLElement> (selector: string, el: HTMLElement): T =>
+  el.querySelector<T>(selector);
+
+/**
+ * Elements Array
+ *
+ * Returns an array list of elements from a selector
+ */
+export const elements = <T extends HTMLElement = HTMLElement> (selector: string, el: HTMLElement): T[] =>
+  [].slice.call(el.querySelectorAll<T>(selector)) || [];
+
+/**
+ * Queue utility for executing tasks in a non-blocking manner
+ */
+export const enqueue = ((queue) => {
+
+  const promise = <T extends Function>(fn: T) => new Promise(resolve => resolve(fn()));
+
+  // Function to process the main queue in small batches asynchronously
+  const process = async (batch = 2, delay = 200) => {
+    while (queue.length > 0) {
+      for (const fn of queue.splice(0, batch)) await promise(fn);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  };
+
+  return <T = any>(...fn: T[]) => {
+    fn.forEach(cb => queue.push(cb));
+    onNextTick(() => process(), 50);
+  };
+
+})([]);

@@ -33,7 +33,7 @@ interface RequestParams {
    *
    * @default null
    */
-  headers?: { [key: string]: string };
+  headers?: Array<[ key: string, value: string ]>;
 }
 
 /**
@@ -42,47 +42,34 @@ interface RequestParams {
 export const http = <T> (key: string, {
   method = 'GET',
   body = null,
-  headers = null,
+  headers = [ [ 'spx-http', 'href' ] ],
   type = 'text'
-}: RequestParams = {}) => new Promise<T extends string ? string : Document>(function (resolve, reject) {
+}: RequestParams = {}) => new Promise<T extends string ? string : Document>((resolve, reject) => {
 
   const xhr = new XHR();
 
   xhr.key = key;
   xhr.responseType = type;
   xhr.open(method, key, true);
-  xhr.setRequestHeader('spx-request', 'true');
 
-  if (headers !== null) {
-    for (const prop in headers) {
-      xhr.setRequestHeader(prop, headers[prop]);
-    }
-  }
+  for (const [ hk, hv ] of headers) xhr.setRequestHeader(hk, hv);
 
   xhr.onloadstart = function (this: XHR) {
-
     XHR.$request.set(this.key, xhr);
-
   };
 
   xhr.onload = function (this: XHR) {
-
     resolve(this.response);
-
   };
 
   xhr.onerror = function (this: XHR) {
-
     reject(this.statusText);
-
   };
 
   xhr.onabort = function (this: XHR) {
-
     delete XHR.$timeout[this.key];
     XHR.$transit.delete(this.key);
     XHR.$request.delete(this.key);
-
   };
 
   xhr.onloadend = function (this: XHR, event: ProgressEvent<EventTarget>) {
@@ -210,15 +197,9 @@ export const reverse = async (state: Page | HistoryState): Promise<void> => {
   await onNextTickResolve();
 
   fetch(page).then(page => {
-    if (page) {
-
-      log(Log.INFO, `Reverse fetch completed: ${page.rev}`);
-
-    } else {
-
-      log(Log.WARN, `Reverse fetch failed: ${state.rev}`);
-
-    }
+    page
+      ? log(Log.INFO, `Reverse fetch completed: ${page.rev}`)
+      : log(Log.WARN, `Reverse fetch failed: ${state.rev}`);
   });
 
 };

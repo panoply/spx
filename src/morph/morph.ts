@@ -87,7 +87,7 @@ const matchName = (curNodeName: string, newNodeName: string): boolean => {
 /**
  * Form element handling
  */
-function formNodes (curElement: Element, newElement: Element) {
+const formNodes = (curElement: Element, newElement: Element) => {
 
   switch (curElement.nodeName) {
     case 'INPUT':
@@ -116,7 +116,7 @@ function formNodes (curElement: Element, newElement: Element) {
       break;
   }
 
-}
+};
 
 /**
  * Get default node key
@@ -156,10 +156,19 @@ const removeNode = (curNode: any, parentNode: Node, context: MorphContext, skipK
 
   observe.removeNode(curNode);
 
-  if (parentNode) parentNode.removeChild(curNode);
+  parentNode && parentNode.removeChild(curNode);
 
   walkNodes(curNode, skipKeys, context);
 
+};
+
+const morphEqual = (curElement: Element) => {
+
+  if (curElement.nodeType === Nodes.ELEMENT_NODE) {
+    if (curElement.hasAttribute($.qs.$node)) {
+      observe.readNode(curElement as HTMLElement);
+    }
+  }
 };
 
 /**
@@ -190,6 +199,8 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
       curNextSibling = curNode.nextSibling;
 
       if (newNode.isEqualNode(curNode)) {
+        // handle spx node occurence matches
+        morphEqual(curNode as Element);
         newNode = newNextSibling;
         curNode = curNextSibling;
         continue outer;
@@ -309,9 +320,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
 
           // Simply update nodeValue on the original node to change the text value
           //
-          if (curNode.nodeValue !== newNode.nodeValue) {
-            curNode.nodeValue = newNode.nodeValue;
-          }
+          if (curNode.nodeValue !== newNode.nodeValue) curNode.nodeValue = newNode.nodeValue;
 
         }
       }
@@ -364,12 +373,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
       (curMatch = context.$lookup.get(newKey) as Element) && matchName(curMatch.nodeName, newNode.nodeName)) {
 
       curElement.appendChild(curMatch);
-
-      morphElement(
-        curMatch,
-        newNode as Element,
-        context
-      );
+      morphElement(curMatch, newNode as Element, context);
 
     } else {
 
@@ -386,12 +390,9 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
 
       // MORPH
       //
-      // Original: addedNode(element, newNode as Element);
+      // Original:  handleNodeAdded(curToNodeChild)
       //
-      addedNode(
-        newNode,
-        context
-      );
+      addedNode(newNode, context);
 
     }
 
@@ -424,7 +425,7 @@ const morphElement = (curElement: any, newElement: Element, context: MorphContex
   // If an element with an ID is being morphed then it will be in the final
   // DOM so clear it out of the saved elements collection
   //
-  if (newKey) context.$lookup.delete(newKey);
+  newKey && context.$lookup.delete(newKey);
 
   if (curElement.isEqualNode(newElement)) return; // spec - https://dom.spec.whatwg.org/#concept-node-equals
 
@@ -433,32 +434,15 @@ const morphElement = (curElement: any, newElement: Element, context: MorphContex
   // SPX Morph attribute handling
   //
   if (morphAttr === 'false') return;
-  if (morphAttr !== 'children') {
-    morphAttributes(
-      curElement as HTMLElement,
-      newElement as HTMLElement
-    );
-  }
+
+  morphAttr !== 'children' && morphAttributes(curElement as HTMLElement, newElement as HTMLElement);
 
   // onElUpdated(curElement); // optional
   // if (onBeforeElChildrenUpdated(curElement, newElement) === false) return;
 
-  if (curElement.nodeName !== 'TEXTAREA') {
-
-    morphChildren(
-      curElement,
-      newElement,
-      context
-    );
-
-  } else {
-
-    forms.textarea(
-      curElement as HTMLTextAreaElement,
-      newElement as HTMLTextAreaElement
-    );
-
-  }
+  curElement.nodeName === 'TEXTAREA'
+    ? forms.textarea(curElement as HTMLTextAreaElement, newElement as HTMLTextAreaElement)
+    : morphChildren(curElement, newElement, context);
 
 };
 
@@ -490,16 +474,7 @@ const walkNodes = (curNode: ChildNode, skipKeys: boolean, context: MorphContext)
       // and then discard them in one final pass.
 
       observe.removeNode(curChild as HTMLElement); // onNodeDiscarded(curChild);
-
-      if (curChild.firstChild) {
-
-        walkNodes(
-          curChild,
-          skipKeys,
-          context
-        );
-
-      }
+      curChild.firstChild && walkNodes(curChild, skipKeys, context);
 
     }
 
@@ -518,11 +493,12 @@ const addedNode = (curElement: Node, context: MorphContext) => {
 
   // Lets check our component observer to determine whether or
   // not this node is component related.
-  if (curElement.nodeType === Nodes.ELEMENT_NODE || curElement.nodeType === Nodes.FRAGMENT_NODE) {
-
-    observe.addedNode(curElement as HTMLElement);
-
-  }
+  (
+    curElement.nodeType === Nodes.ELEMENT_NODE ||
+    curElement.nodeType === Nodes.FRAGMENT_NODE
+  ) && (
+    observe.addedNode(curElement as HTMLElement)
+  );
 
   let curChild = curElement.firstChild as Element;
 
@@ -538,23 +514,12 @@ const addedNode = (curElement: Node, context: MorphContext) => {
       // If we find a duplicate #id node in cache, replace `el` with cache value and morph it to the child node.
       if (unmatchElement && matchName(curChild.nodeName, unmatchElement.nodeName)) {
 
-        curChild.parentNode.replaceChild(
-          unmatchElement,
-          curChild
-        );
-
-        morphElement(
-          unmatchElement,
-          curChild,
-          context
-        );
+        curChild.parentNode.replaceChild(unmatchElement, curChild);
+        morphElement(unmatchElement, curChild, context);
 
       } else {
 
-        addedNode(
-          curChild,
-          context
-        );
+        addedNode(curChild, context);
 
       }
 
@@ -562,10 +527,7 @@ const addedNode = (curElement: Node, context: MorphContext) => {
 
       // Recursively call for curChild and it's children to see if we find something
       //
-      addedNode(
-        curChild,
-        context
-      );
+      addedNode(curChild, context);
 
     }
 
@@ -597,11 +559,7 @@ const cleanNode = (curElement: Element, curNode: ChildNode, curKey: string, cont
 
       // NOTE: We skip nested keyed nodes from being removed since there is
       // still a chance they will be matched up later
-      removeNode(
-        curNode,
-        curElement,
-        context
-      );
+      removeNode(curNode, curElement, context);
 
     }
 
@@ -620,19 +578,11 @@ const indexNode = (fromNode: Element | ChildNode, context: MorphContext) => {
 
       const key = getKey(childNode);
 
-      if (key) {
-        context.$lookup.set(
-          key,
-          childNode
-        );
-      }
+      key && context.$lookup.set(key, childNode);
 
       // Walk recursively
       //
-      indexNode(
-        childNode,
-        context
-      );
+      indexNode(childNode, context);
 
       childNode = childNode.nextSibling;
 
@@ -656,19 +606,11 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
    *
    * Models used for the id (keyed) operations in post-cycle.
    */
-  const context: MorphContext = o({
-    $remove: s(),
-    $lookup: m()
-  });
+  const context: MorphContext = o({ $remove: s(), $lookup: m() });
 
-  if (newNode.nodeType === Nodes.FRAGMENT_NODE) {
-    newNode = newNode.firstElementChild as HTMLElement;
-  }
+  newNode.nodeType === Nodes.FRAGMENT_NODE && (newNode = newNode.firstElementChild as HTMLElement);
 
-  indexNode(
-    curNode,
-    context
-  );
+  indexNode(curNode, context);
 
   /**
    * Old Node references the last known `curNode`
@@ -694,10 +636,7 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
 
         morphedNode = moveChildren(
           curNode,
-          createElementNS(
-            newNode.nodeName,
-            newNode.namespaceURI
-          )
+          createElementNS(newNode.nodeName, newNode.namespaceURI)
         );
       }
 
@@ -737,11 +676,7 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
     //
     if (newNode.isEqualNode(morphedNode)) return morphedNode;
 
-    morphElement(
-      morphedNode,
-      newNode,
-      context
-    );
+    morphElement(morphedNode, newNode, context);
 
     // We now need to loop over any keyed nodes that might need to be
     // removed. We only do the removal if we know that the keyed node
@@ -749,20 +684,10 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
     // it out of curNodesLookup and we use curNodesLookup to determine
     // if a keyed node has been matched up or not
     if (context.$remove.size > 0) {
-
       for (const key of context.$remove) {
-
         if (context.$lookup.has(key)) {
-
           const node = context.$lookup.get(key);
-
-          removeNode(
-            node,
-            node.parentNode,
-            context,
-            false
-          );
-
+          removeNode(node, node.parentNode, context, false);
         }
       }
     }

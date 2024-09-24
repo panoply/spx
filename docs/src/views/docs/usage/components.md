@@ -7,22 +7,23 @@ anchors:
   - Markup
 ---
 
-# Components
+# SPX Components
 
-SPX components serve as a fundamental DOM enhancement and enable the creation of interactive logic within web applications. Below illustrates the basic context provided in an SPX component.
+SPX components serve as a bridge between JavaScript logic and the Document Object Model (DOM), enhancing interactivity in web applications. They are defined by a unique name, associated DOM elements, state, and event bindings. The `name` identifies the component within the application, while `nodes` specify which DOM elements the component interacts with. The `state` holds data that the component manages, which can include various data types like numbers, strings, booleans, objects, or arrays.
 
 <!-- prettier-ignore -->
 ```ts
 import spx from 'spx';
 
+
 export class Demo extends spx.Component {
 
   static define = {
-    id: 'demo',             // Define an identifier (optional)
-    merge: false,           // Define whether component snapshot merges apply
+    name: 'demo',           // Define an identifier (optional)
     nodes: ['foo'],         // Define elements associated with components
     state: {}               // Define component state interface
   }
+
 
   connect({ page }) {}      // Component lifecycle event when component connects
   onmount({ page }) {}      // Component lifecycle event when component rendered
@@ -30,32 +31,33 @@ export class Demo extends spx.Component {
 
   method() {
 
-    this.html               // DocumentElement reference: <html>
-    this.root               // HTMLElement reference for: <div spx-component="demo">
     this.state              // State object as per define.state
-
-    this.dom.hasFooNode     // Whether or not <div spx-node="demo.foo"> exists in dom
-    this.dom.fooNode        // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
-    this.dom.fooNodes       // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
+    this.dom.root           // DocumentElement reference: <html>
+    this.dom.view           // HTMLElement reference for: <div spx-component="demo">
+    this.dom.foo            // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
+    this.dom.foo()          // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
+    this.dom.fooExists      // Whether or not <div spx-node="demo.foo"> exists in dom
 
   }
 
   callback (event) {
-
     event.preventDefault()   // Event argument from callback trigger
     event.attrs              // Event callback parameters that where passed
-
   }
 }
 ```
 
----
+# Hooks
+
+Components support lifecycle hooks like `onmount` for initialization when rendered, and `unmount` for cleanup before removal from the DOM. These hooks are essential for managing resources efficiently, ensuring components clean up after themselves when no longer needed.
+
+# Events
+
+Events are crucial for interactivity. For instance, a click event can be bound directly in HTML using `spx@click="demo.open"`, where `open` is a method defined within the component. This method receives an event object with methods like `preventDefault()` to stop default browser behavior and properties like `attrs` for accessing attributes passed with the event.
 
 # Markup
 
-SPX Components establish connections with DOM elements through attribute (directive) annotations. Assigning a component identifier name to the `spx-component` directive initializes a component instance which will persist throughout an SPX session. Defining component `state` using the DOM is achieved through [state directives](/components/state) and should be applied on the same element where an `spx-component` is declared.
-
-Component [nodes](/components/nodes) and [events](/components/events) can be defined anywhere in the DOM using the corresponding directive patterns provided by SPX as long as the component exists. The persisted nature of SPX Components allow for incremental node or event based attachments to occur across different pages when leveraging dynamically targeted [fragment](/key-concepts) rendering.
+SPX components connect with DOM elements via attribute annotations. Initializing a component involves assigning its name to the `spx-component` attribute on an HTML element. Component state is defined using state directives on the same element where the component is declared. Nodes and events can be defined anywhere in the DOM using SPX directives, allowing for dynamic attachments across different pages. This flexibility is due to SPX's component persistence throughout a session, which means components can be referenced and interacted with even as the user navigates through different parts of the application.
 
 <!--prettier-ignore-->
 ```html
@@ -83,23 +85,21 @@ Component [nodes](/components/nodes) and [events](/components/events) can be def
     Click Me
   </button>
   <!--
-    Component node reference which be available to: "this.fooNode"
+    Component dom element reference which be available to: "this.dom.foo"
     This will be index 0 as we have 2 node references
   -->
-  <div spx-node="demo.foo">
+  <div spx-dom="demo.foo">
     Lorem Ipsum
   </div>
 </section>
 <!--
-  Additional Component node reference placed outside of the
-  components tree which will be index 1 in the array list: "this.fooNodes"
+  Additional Component doom element reference placed outside of the
+  components tree which will be index 1 in the array list: "this.dom.foo()"
 -->
-<div spx-node="demo.foo">
+<div spx-dom="demo.foo">
   Hello World!
 </div>
 ```
-
-<br>
 
 To ensure SPX is aware of their existence, all components must be registered. This can be achieved either through the [spx.register](/api/register) methods or by passing them to the [components](/usage/options#components) option upon connection, offering flexibility in your approach. Registered components are stored in the session and become available to SPX at runtime. However, components remain dormant until an `spx-component` directive is encountered. At that point, SPX establishes an instance using the registered component. Once created, this instance persists throughout the SPX session, enduring until a hard-refresh occurs. This incremental approach ensures a structured execution flow.
 

@@ -1,13 +1,26 @@
 <flex
   class="v bg-code event-logger"
-  style="flex: .45">
+  style="flex: 0">
   <flex-item style="flex: 1;">
-
+    <div class="row gx-0 tabs">
+      <button
+        spx@click="explorer.logger"
+        spx-node="explorer.tab"
+        class="btn col active">CONSOLE</button>
+      <button
+        spx@click="explorer.session"
+        spx-node="explorer.tab"
+        class="btn col active">SCOPES</button>
+    </div>
     <div class="row g-0 explorer">
       <div
-        class="col-12"
+        class="col-12  d-none"
         spx-node="explorer.components"></div>
-    </div>
 
+      <div
+        class="col-12 d-none"
+        spx-node="explorer.logger"></div>
+
+    </div>
   </flex-item>
 </flex>

@@ -1,20 +1,18 @@
 import spx, { SPX } from 'spx';
 
-export class Indicator extends spx.Component<typeof Indicator.define> {
-
-  static define: SPX.Define = {
-    nodes: <const>[
-      'marker'
-    ]
-  };
+export class Indicator extends spx.Component({
+  nodes: <const>[
+    'marker'
+  ]
+}) {
 
   toggle ({ attrs: { list } }: SPX.Event<{ list: number }>) {
 
-    console.log(this.dom.markerNodes);
+    console.log(this.markerNode);
 
-    this.dom.markerNode.style.setProperty(
+    this.markerNode.style.setProperty(
       'transform',
-      `translateY(${this.root.offsetTop}px)`
+      `translateY(${this.dom.offsetTop}px)`
     );
 
   }

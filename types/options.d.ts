@@ -2,15 +2,13 @@ export type Key = '/' | `${'/' | '?'}${string}`
 
 export interface Hover {
   /**
-   * How mousover prefetches should be triggered. By default this option is set
+   * How mousover prefetches should be triggered. By default, this option is set
    * to trigger on all `<a>` href link elements. You can instead use the `attribute`
    * option and only prefetch on href link elements that are annotated with a
    * `spx-hover` or `spx-hover="true"` attribute.
    *
    * > If you set the trigger to `href` you can annotate links you wish to exclude
    * from prefetch with `spx-hover="false"`.
-   *
-   * ---
    *
    * @default 'href'
    */
@@ -21,7 +19,6 @@ export interface Hover {
    * only when the mouse is both within range and the threshold
    * time limit defined here has exceeded.
    *
-   * ---
    * @default 100
    */
   threshold?: number;
@@ -32,14 +29,12 @@ export interface Intersect {
   /**
    * An offset rectangle applied to the root's href bounding box.
    *
-   * ---
    * @default '0px 0px 0px 0px'
    */
   rootMargin?: string;
   /**
    * Threshold limit passed to the intersection observer instance
    *
-   * ---
    * @default 0
    */
   threshold?: number;
@@ -57,7 +52,6 @@ export interface Proximity {
    * SPX to begin fetching when the mouse is within 50px of the
    * element.
    *
-   * ---
    * @default 75
    */
   distance?: number;
@@ -66,7 +60,6 @@ export interface Proximity {
    * only when the mouse is both within range and the threshold
    * time limit defined here has exceeded.
    *
-   * ---
    * @default 100
    */
   threshold?: number;
@@ -74,10 +67,6 @@ export interface Proximity {
    * Controls the mouseover trigger throttle. This helps limit the amount of
    * times an internal callback fires once cursor is in range. It is highly
    * discouraged to set this to a limit less than 250ms.
-   *
-   * _Generally speaking, leave this the fuck alone._
-   *
-   * ---
    *
    * @default 500
    */
@@ -132,7 +121,6 @@ export interface Progress {
    * Controls the progress bar preset threshold. Defines the amount of
    * time to delay before the progress bar is shown.
    *
-   * ---
    * @default 350
    */
   threshold?: number;
@@ -166,7 +154,6 @@ export interface IEval {
    * > Prevents script evalution from occurring between visits. The `spx-eval` directive can
    * > still be used to override and perform evaluation.
    *
-   * ---
    *
    * @default ['script:not(script[src])']
    */
@@ -187,7 +174,6 @@ export interface IEval {
    * >
    * > Passing a `string[]` list will overwrite defaults
    *
-   * ---
    * @default ['style']
    */
   style?: string[] | boolean;
@@ -199,7 +185,6 @@ export interface IEval {
    * Setting this to `true` is discouraged, given that meta type tags are typically not of
    * importance.
    *
-   * ---
    * @default false
    */
   meta?: string[] | boolean;
@@ -214,8 +199,6 @@ export interface IEval {
    * >
    * > Linked externals are only ever evaluated once. Please keep in mind that
    * > passing a `string[]` list will overwrite defaults.
-   *
-   * ---
    *
    * @default ['link[rel=stylesheet]', 'link[rel~=preload]']
    */
@@ -235,8 +218,6 @@ export interface IObserverOptions {
    *
    * > If `cache` is disabled then prefetches will be dispatched using HTML5 `<link>` prefetches,
    * else when cache is enabled it uses XHR.
-   *
-   * ---
    *
    * @default true
    */
@@ -258,8 +239,6 @@ export interface IObserverOptions {
    * > Annotate any `<a>` links you wish to exclude from intersection prefetching
    * using the `spx-intersect="false"`
    *
-   * ---
-   *
    * @default true
    */
   intersect?: boolean | Intersect;
@@ -277,7 +256,6 @@ export interface IObserverOptions {
    * > Annotate any `<a>` links you wish to exclude from intersection prefetching
    * using the `spx-proximity="false"`
    *
-   * ---
    * @default true
    */
   proximity?: boolean | Proximity;
@@ -310,10 +288,7 @@ export interface Options extends IObserverOptions {
    * <a data-spx-hover="true"></a>
    * ```
    *
-   * ---
-   *
    * @default 'spx'
-   *
    */
   schema?: string;
 
@@ -336,10 +311,7 @@ export interface Options extends IObserverOptions {
    *
    * ```
    *
-   * ---
-   *
    * @default true
-   *
    */
   globalThis?: boolean;
   /**
@@ -367,8 +339,6 @@ export interface Options extends IObserverOptions {
    * >
    * > Suppress trace, info and warning logs, only errors will be printed to the browser console.
    *
-   * ---
-   *
    * @default 3
    */
   logLevel?: 1 | 2 | 3 | 4;
@@ -387,8 +357,6 @@ export interface Options extends IObserverOptions {
    * SPX will swap the entire `<body>` fragment, but it is **highly recommended**
    * that you define targets.
    *
-   * ---
-   *
    * @default ['body']
    */
   fragments?: string[];
@@ -397,8 +365,6 @@ export interface Options extends IObserverOptions {
    *
    * The timeout limit that **OTW** (over the wire) XHR requests. When the timeout limit is
    * exceeded a normal page visit will be carried out.
-   *
-   * ---
    *
    * @default 30000
    */
@@ -409,8 +375,6 @@ export interface Options extends IObserverOptions {
    * When `true` SPX visits will only trigger on `<a>` href elements annotated with an `spx`
    * attribute. When set to `false`, SPX will trigger on all `<a>` link elements, excluding
    * those annotated with `spx-disable`. Defaults to `false`.
-   *
-   * ---
    *
    * @default false
    */
@@ -427,8 +391,6 @@ export interface Options extends IObserverOptions {
    * >
    * > It is **highly recommended** to keep caching enabled for optimal performance.
    *
-   * ---
-   *
    * @default true
    */
   cache?: boolean;
@@ -438,8 +400,6 @@ export interface Options extends IObserverOptions {
    * Maximum cache (snapshot) size limit. SPX limits cache to `100mb` and when size
    * is exceeded, the snapshot records will be removed starting from the earliest point
    * of the cached entries.
-   *
-   * ---
    *
    * @default 100
    */
@@ -473,10 +433,8 @@ export interface Options extends IObserverOptions {
    *  }
    * })
    * ```
-   * ---
    *
    * @default null
-   *
    */
   preload?: Key[] | { [key: Key]: Key[] };
   /**
@@ -484,8 +442,6 @@ export interface Options extends IObserverOptions {
    *
    * Whether or not SPX should apply reverse fetching upon connection. If history state holds an SPX reference
    * then a reverse fetch is carried out on the last known (backward) location.
-   *
-   * ---
    *
    * @default true
    */
@@ -497,8 +453,6 @@ export interface Options extends IObserverOptions {
    * This option allows you to customize its CSS style and the rendering rules to be applied. Setting
    * this to a boolean value of `false` will prevent the progress bar from showing, whereas a value of
    * `true` will tell SPX to use the defaults (see {@link Progress}).
-   *
-   * ---
    *
    * @default true
    */
@@ -531,7 +485,6 @@ export interface Options extends IObserverOptions {
    *  components: { Foo, Bar }
    * })
    * ```
-   * ---
    *
    * @default null
    */

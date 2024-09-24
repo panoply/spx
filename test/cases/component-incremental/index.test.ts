@@ -1,32 +1,32 @@
 import spx, { SPX } from 'spx';
 
-export class Incremental extends spx.Component<typeof Incremental.define> {
-
-  static define = {
-    id: 'incremental',
-    state: {
-      label: String,
-      color: String,
-      count: Number
-    },
-    nodes: [
-      'color',
-      'count'
-    ]
-  };
+export class Incremental extends spx.Component({
+  name: 'incremental',
+  state: {
+    label: String,
+    color: String,
+    count: Number
+  },
+  sugar: true,
+  nodes: <const>[
+    'color',
+    'count',
+    'label'
+  ]
+}) {
 
   labelValue ({ attrs }: SPX.Event<{
     text: string;
   }>) {
 
-    this.dom.labelNode.innerText = attrs.text;
+    this.label.innerText = attrs.text;
 
   }
 
   labelInput (event: SPX.InputEvent) {
     if (event.target instanceof HTMLInputElement) {
 
-      this.dom.labelNode.innerText = event.target.value;
+      this.label.innerText = event.target.value;
 
     }
   }
@@ -34,7 +34,7 @@ export class Incremental extends spx.Component<typeof Incremental.define> {
   changeColor (event: SPX.InputEvent<{}, HTMLInputElement>) {
 
     this.state.color = event.target.value;
-    this.dom.colorNode.style.backgroundColor = this.state.color;
+    this.color.style.backgroundColor = this.state.color;
 
   }
 

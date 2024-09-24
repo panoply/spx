@@ -90,6 +90,7 @@ export const patchComponentSnap = (scope: Scope, scopeKey: string) => onNextTick
 
   const snap = q.getSnapDom(scope.snap);
   const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
+
   // console.log(snap, elem);
   if (elem) {
     elem.innerHTML = scope.snapshot;
