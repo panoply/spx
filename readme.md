@@ -103,7 +103,7 @@ class Counter extends spx.Component({
 }) {
 
   increment () {
-    this.countNode.innerText = +this.state.clicks
+    this.countNode.innerText = ++this.state.clicks
   }
 }
 
