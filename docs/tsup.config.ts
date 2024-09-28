@@ -11,7 +11,7 @@ export default defineConfig(
     clean: false,
     treeshake: false,
     splitting: false,
-    minify: true,
+    minify: false,
     target: 'es2017',
     platform: 'browser',
     format: [

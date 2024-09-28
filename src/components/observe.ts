@@ -1,53 +1,36 @@
 import type { Class } from 'types';
-import type { Context } from './context';
-import { $ } from '../app/session';
-import { Colors, Hooks, HookStatus, Log, Nodes, Refs } from '../shared/enums';
+import { $, ctx } from '../app/session';
+import { Hooks, HookStatus, Nodes, Refs, Colors } from '../shared/enums';
 import { getContext, walkNode, isDirective } from './context';
 import { addEvent, removeEvent } from './listeners';
-import { log } from '../shared/logs';
+import * as log from '../shared/logs';
 import { onNextTick } from '../shared/utils';
-import { s } from '../shared/native';
 import { hargs } from '../observe/components';
-
-/**
- * Context Model
- *
- * Contructed when nodes are traversed pertaining to components.
- */
-export let context: Context;
-
-/**
- * Mark References
- *
- * This holds `id=""` values fo
- */
-export const mark: Set<string> = s();
 
 /**
  * Context Reset
  *
  * Sets the `content` reference to `undefined` outside the event loop.
  */
-export const resetContext = () => onNextTick(() => (context = undefined));
+export const resetContext = () => onNextTick(() => (ctx.store = undefined));
 
 const connect = (node: HTMLElement, refs: string[]) => {
 
   for (const id of refs) {
 
-    if (!$.components.$reference[id]) continue;
+    if (!$.maps[id]) continue;
 
-    const instance: Class = $.components.$reference[id];
+    const instance: Class = $.maps[id];
     const ref = id.charCodeAt(0);
 
     if (ref === Refs.COMPONENT) {
 
-      $.components.$mounted.add(instance.scope.key);
+      $.mounted.add(instance.scope.key);
 
-      console.log(node);
       instance.dom = node;
       instance.scope.status = Hooks.MOUNT;
 
-      log(Log.VERBOSE, `Component ${instance.scope.define.name} mounted: ${instance.scope.key}`, Colors.GREEN);
+      log.debug(`Component ${instance.scope.define.name} mounted: ${instance.scope.key}`, Colors.GREEN);
 
     } else if (ref === Refs.EVENT) {
 
@@ -78,21 +61,22 @@ export const unmount = (curNode: HTMLElement, refs: string[]) => {
 
   for (const id of refs) {
 
-    if (!$.components.$reference[id]) continue;
+    if (!$.maps[id]) continue;
 
-    const instance: Class = $.components.$reference[id];
+    const instance: Class = $.maps[id];
     const ref = id.charCodeAt(0);
 
     if (ref === Refs.COMPONENT) {
 
+      // @ts-expect-error
       instance.scope.hooks.unmount === HookStatus.DEFINED && instance.unmount(hargs());
 
-      $.components.$mounted.delete(instance.scope.key);
+      $.mounted.delete(instance.scope.key);
 
       if (instance.scope.define.merge) {
 
         instance.scope.snapshot = curNode.innerHTML;
-        log(Log.VERBOSE, `Component ${instance.scope.define.name} snapshot: ${instance.scope.key}`, Colors.GRAY);
+        log.debug(`Component ${instance.scope.define.name} snapshot: ${instance.scope.key}`);
 
       }
 
@@ -112,7 +96,7 @@ export const unmount = (curNode: HTMLElement, refs: string[]) => {
 
       instance.scope.status = Hooks.UNMOUNTED;
 
-      log(Log.VERBOSE, `Component ${instance.scope.define.name} unmounted: ${instance.scope.key}`, Colors.PURPLE);
+      log.debug(`Component ${instance.scope.define.name} unmounted: ${instance.scope.key}`, Colors.ORANGE);
 
     } else if (ref === Refs.EVENT) {
 
@@ -157,10 +141,8 @@ export const addedNode = (node: HTMLElement) => {
   } else {
 
     if (isDirective(node.attributes)) {
-
-      context ? context.$morph = node : context = getContext(node);
-
-      walkNode(node, context);
+      ctx.store ? ctx.store.$morph = node : ctx.store = getContext(node);
+      walkNode(node, ctx.store);
     }
 
   }
@@ -168,9 +150,9 @@ export const addedNode = (node: HTMLElement) => {
 
 export const readNode = (newNode: HTMLElement) => {
 
-  context ? context.$morph = newNode : context = getContext(newNode);
+  ctx.store ? ctx.store.$morph = newNode : ctx.store = getContext(newNode);
 
-  walkNode(newNode, context, false);
+  walkNode(newNode, ctx.store, false);
 
 };
 
@@ -190,11 +172,11 @@ export const updateNode = (curNode: HTMLElement, newNode: HTMLElement, cRef: any
 
   } else {
 
-    context ? context.$morph = curNode : context = getContext(curNode, newNode);
+    ctx.store ? ctx.store.$morph = curNode : ctx.store = getContext(newNode);
 
     if (cRef && !nRef) unmount(curNode, cRef);
 
-    if (isDirective(newNode.attributes)) walkNode(curNode, context);
+    if (isDirective(newNode.attributes)) walkNode(curNode, ctx.store);
 
   }
 };

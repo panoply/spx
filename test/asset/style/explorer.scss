@@ -12,6 +12,14 @@
     background-color: $papyrus-code-bg;
   }
 }
+
+button[disabled] {
+  text-decoration: line-through;
+  &:hover {
+    color: $gray-700 !important;
+  }
+}
+
 .explorer {
   color: $white;
   font-size: 1rem;

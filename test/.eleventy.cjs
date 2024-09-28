@@ -1,6 +1,7 @@
-const { eleventy, sprite, markdown } = require('e11ty');
+const { defineConfig, sprite, markdown } = require('e11ty');
+const papyrus = require('papyrus');
 
-module.exports = eleventy(function (config) {
+module.exports = defineConfig(function (config) {
 
   markdown(config, {
     papyrus: {
@@ -16,6 +17,7 @@ module.exports = eleventy(function (config) {
   });
 
   config.addPlugin(sprite, { inputPath: './asset/svg', spriteShortCode: 'sprite' });
+  config.addShortcode('version', function () { return require('../package.json').version; });
   config.addShortcode('iframe', function (url, height = 180) {
     return `<iframe src="${url}" class="bd rd-3 w-100 my-3" height="${height}px"></iframe>`;
   });
@@ -35,7 +37,8 @@ module.exports = eleventy(function (config) {
       input: '.',
       output: 'public',
       includes: '',
-      layouts: ''
+      layouts: '',
+      data: 'views/data'
     }
   };
 

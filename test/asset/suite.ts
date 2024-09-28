@@ -10,20 +10,23 @@ import { Lifecycle } from '../cases/component-lifecycle/index.test';
 import { Nesting } from '../cases/component-nesting/index.test';
 import { Refs1, Refs2 } from '../cases/component-refs/index.test';
 import { MorphNodes } from '../cases/morph-nodes/index.test';
+import { Mounted } from '../cases/component-observer/index.test';
 
+import { Events } from '../cases/lifecycle-events/index.test';
 /* INTERNAL ----------------------------------- */
 
-// import { code } from './suite/resize';
+import { code } from './suite/resize';
+import { Cases } from './suite/cases';
+
 // import { Logger } from './suite/logger';
-// import { Explorer } from './suite/explorer';
+import { Explorer } from './suite/explorer';
 // import { Refs } from './suite/refs';
 
 spx({
   fragments: [
-    'sidebar',
     'main'
   ],
-  logLevel: 1,
+  logLevel: 3,
   hover: {
     threshold: 100,
     trigger: 'href'
@@ -33,7 +36,11 @@ spx({
   },
   components: {
     // Logger,
-    // Explorer,
+
+    Events,
+    Mounted,
+    Explorer,
+    Cases,
     Literal,
     Alias,
     Async,
@@ -47,4 +54,8 @@ spx({
     MorphNodes
 
   }
+})(function () {
+
+  code();
+
 });

@@ -37,7 +37,7 @@ $ npm install spx --save
 #### YARN
 
 ```bash
-$ pnpm add spx
+$ yarn add spx
 ```
 
 :::
@@ -82,7 +82,7 @@ export default spx({
 
 # CDN USAGE
 
-If you're new to JavaScript or prefer a straightforward setup, you can easily integrate SPX into your website by fetching it from a CDN and dropping it into your project. Ensure that SPX is included before any other JavaScript files and add the `type="module"` attribute to the script tag. By default, SPX will replace the entire `<body>` fragment during navigation.
+If you're new to JavaScript or prefer a straightforward setup, you can easily integrate SPX into your website by fetching it from a CDN and dropping it into your project. Ensure that SPX is included before any other JavaScript files and add the `{html} <script type="module">` attribute to the script tag. By default, SPX will replace the entire `{html} <body>` fragment during navigation.
 
 # Option 1
 
@@ -93,10 +93,10 @@ Importing SPX using the [esm.sh](https://esm.sh) CDN:
 <head>
   <meta charset="UTF-8" />
   <title>SPX | Single Page XHR</title>
-  <!--
-    Import the module and establish a connection
-  -->
-  <script type="module" spx-eval="false">
+  <!-- Import the module and connect with spx() -->
+  <script
+    type="module"
+    spx-eval="false">
 
     import spx from 'https://esm.sh/spx';
 
@@ -119,9 +119,7 @@ Importing SPX using the [unpkg.com](https://unpkg.com) CDN:
 <head>
   <meta charset="UTF-8" />
   <title>SPX | Single Page XHR</title>
-  <!--
-    Include the module and establish a connection
-  -->
+  <!-- Include the module and connect with spx() -->
   <script
     src="https://unpkg.com/spx"
     type="module"

@@ -192,9 +192,22 @@ export enum Colors {
   GRAY = '#999',
   GREEN = '#6DD093',
   PURPLE = '#7b97ca',
+  LAVENDAR = '#D1A9FF',
+  ORANGE = '#CAAF7C',
   PINK = '#F48FB1',
   WHITE = '#FFF',
   RED = '#f86461'
+}
+
+export const enum Æ {
+  Gray = '90m',
+  Teal = '38;5;66m',
+  Green = '32m',
+  Red = '31m',
+  Yellow = '33m',
+  Cyan = '36m',
+  Blue = '38;5;81m',
+  Pink = '38;5;219m'
 }
 
 /**
@@ -202,21 +215,21 @@ export enum Colors {
  */
 export enum LogLevel {
   /**
-   * Prints trace info to console (does not throw)
+   * Prints error to console (will throw Error)
    */
-  VERBOSE = 1,
+  ERROR = 0,
+  /**
+   * Prints warning to console (does not throw)
+   */
+  WARN = 1,
   /**
    * Prints info to console (does not throw)
    */
   INFO = 2,
   /**
-   * Prints warning to console (does not throw)
+   * Prints trace info to console (does not throw)
    */
-  WARN = 3,
-  /**
-   * Prints error to console (will throw Error)
-   */
-  ERROR = 4
+  DEBUG = 3,
 }
 
 /**
@@ -224,25 +237,25 @@ export enum LogLevel {
  */
 export enum Log {
   /**
-   * Prints Verbose info to console (does not throw)
+   * Prints error to console (will throw Error)
    */
-  VERBOSE = 1,
+  ERROR = 0,
+  /**
+   * Prints warning to console (does not throw)
+   */
+  WARN = 1,
   /**
    * Prints info to console (does not throw)
    */
   INFO = 2,
   /**
-   * Prints warning to console (does not throw)
+   * Prints trace info to console (does not throw)
    */
-  WARN = 3,
+  DEBUG = 3,
   /**
    * Prints error to console (will throw TypeError)
    */
   TYPE = 4,
-  /**
-   * Prints error to console (will throw Error)
-   */
-  ERROR = 5
 }
 
 /**

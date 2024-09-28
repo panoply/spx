@@ -5,10 +5,36 @@ permalink: '/'
 index: true
 ---
 
-<div class="row g-0 py-4  h-100 ai-center  jc-center">
-  <div class="col-7 tc">
-    {% svg 'logo', 'icon-logo mt-5' %} <br><br>
-    This a static runtime for testing SPX. Given that SPX often involves actions that typical test tools don't handle well, this custom test suite exists to perform e2e (end-to-end) and improved debugging.
+<div class="row g-0 py-4 ">
+  <div class="col-auto">
+    {%- svg 'logo', 'icon-logo' -%}
   </div>
-
+  <div class="col-12 mt-5 pb-5 bb ">
+    <p class="pr-5">
+      This static web application serves as a dedicated runtime environment for testing SPX, a framework known for its unique actions that traditional testing tools struggle to manage. It's designed to offer a real-time, customized testing suite, focusing on e2e (end-to-end) testing, debugging, and the development of proof of concept features for SPX.
+    </p>
+    <p class="pr-5">
+      By providing a platform that closely mirrors real-world application scenarios, one can create a robust testing ground for observing, debugging and refine SPX's behavior in a controlled yet realistic setting. The goal is to ensure reliability and efficiency in the framework's implementation.
+    </p>
+  </div>
+  <div class="col-12 mt-5 mb-5">
+    <div class="row jc-between">
+      <div class="col pr-5 br ">
+        <h1 class="fw-bolder">{%- svg 'chevron-left', 'icon-left mr-2' -%} TEST CASES</h1>
+        <p>
+          Tests are organized by categories and referred to as test cases. Each case is designed to evaluate specific functionalities or scenarios within SPX. The navigation will target the main element fragment. Each case contains a description describing the purpose and expected outcomes, so read the descriptions for more information.
+        </p>
+      </div>
+      <div class="col pl-5 tj">
+        <h1 class="fw-bolder tr">DATA MODEL {%- svg 'chevron-right', 'icon-right ml-2' -%}</h1>
+        <p>
+          The right side of the application displays a visual representation of the SPX session, offering insights into the underlying data structure and interactions that the module employs. This layout facilitates a clear understanding of how SPX functions in real-time, aiding developers in debugging and optimizing the framework.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 mt-5 pt-5 tc">
+    <h3 class="mt-5 pt-5">SINGLE PAGE XHR</h3>
+    <h6 class="fs-sm fw-light">VERSION&nbsp;{%- version -%}</h6>
+  </div>
 </div>

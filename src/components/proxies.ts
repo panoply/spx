@@ -1,86 +1,27 @@
-import type { ComponentNodes, Scope } from 'types';
+import type { Class, ComponentNodes, ValueOf } from 'types';
 import { $ } from '../app/session';
-import { attrJSON, convertValue, forNode, isEmpty, kebabCase, upcase } from '../shared/utils';
+import { attrJSON, forNode, isEmpty, kebabCase, upcase, setStateDefaults } from '../shared/utils';
 import { DoM } from './dom';
-import { log, C, R } from '../shared/logs';
-import { Log } from '../shared/enums';
+import * as log from '../shared/logs';
 
-export const stateProxy = (scope: Scope, dom: HTMLElement) => {
+export const stateProxy = (instance: Class) => {
 
-  const prefix = $.config.schema + scope.instanceOf;
+  const { scope, dom } = instance;
 
-  const initialState = (prop: string, attr: any, typeCheck = false) => {
-
-    /** The `spx.Component()` state type contructor value */
-    let type = attr;
-
-    /** The `spx.Component()` state type converted value */
-    let value = '';
-
-    if (typeof attr === 'object' && 'typeof' in attr) {
-      type = attr.typeof;
-      value = attr.default;
-    }
-
-    scope.state[prop] = convertValue(type, value);
-
-  };
-
-  if (isEmpty(scope.state)) {
-
-    for (const prop in scope.define.state) {
-      initialState(prop, scope.define.state[prop]);
-    }
-
-  } else {
-
-    for (const prop in scope.define.state) {
-
-      prop in scope.state || initialState(prop, scope.define.state[prop]);
-
-      const attrName = kebabCase(prop);
-      const attrValue = dom.getAttribute(`${prefix}:${attrName}`) || dom.getAttribute(`${prefix}:${prop}`);
-      const defined = attrValue !== null && attrValue !== '';
-      const hasState = `has${upcase(prop)}`;
-
-      hasState in scope.state || Object.defineProperty(scope.state, hasState, { get: () => defined });
-
-      if (attrValue && attrValue.startsWith('window.')) {
-
-        scope.state[prop] = window[attrValue.slice(7)];
-
-      } else {
-
-        const attr = scope.define.state[prop];
-        const type = typeof attr === 'object' ? attr.typeof : attr;
-        const value = defined ? attrValue : (typeof attr === 'object' ? attr.default : '');
-
-        scope.state[prop] = (type === Object || type === Array)
-          ? (defined ? attrJSON(value) : value)
-          : convertValue(type, value);
-      }
-    }
-  }
-
-  return new Proxy(scope.state, {
+  // @ts-ignore
+  instance.state = new Proxy(scope.state, {
     get: Reflect.get,
-    set: (target, key: string, value, receiver) => {
-
-      const domValue = typeof value === 'object' || Array.isArray(value)
-        ? JSON.stringify(value)
-        : String(value);
-
-      if (dom && domValue.trim() !== '') {
-        const camelCase = `${prefix}:${key}`;
-        const attrName = dom.hasAttribute(camelCase) ? camelCase : `${prefix}:${kebabCase(key)}`;
-        domValue === dom.getAttribute(attrName) || dom.setAttribute(attrName, domValue);
-      }
+    set (target, key: string, value, receiver) {
 
       if (key in scope.binds) {
-        for (const id in scope.binds[key]) {
-          if (!scope.binds[key][id].live) continue;
-          scope.binds[key][id].value = domValue;
-          forNode(scope.binds[key][id].selector, node => { node.innerText = domValue; });
+
+        const binding = scope.binds[key];
+        const domValue = typeof value === 'object' || Array.isArray(value) ? JSON.stringify(value) : `${value}`;
+
+        for (const id in binding) {
+          if (!binding[id].live) continue;
+          binding[id].value = domValue;
+          forNode(binding[id].selector, node => { node.innerText = domValue; });
         }
       }
 
@@ -88,15 +29,104 @@ export const stateProxy = (scope: Scope, dom: HTMLElement) => {
 
     }
   });
+
+  const prefix = $.config.schema + scope.instanceOf;
+
+  if (isEmpty(scope.state)) {
+
+    for (const prop in scope.define.state) {
+      scope.state[prop] = setStateDefaults(scope.define.state[prop]);
+    }
+
+  } else {
+
+    for (const prop in scope.define.state) {
+
+      /** The `state` defined value */
+      const stateValue = scope.define.state[prop];
+
+      if (!(prop in scope.state)) {
+        scope.state[prop] = setStateDefaults(stateValue);
+        continue;
+      }
+
+      const hasProp = `has${upcase(prop)}`;
+
+      let attrName = `${prefix}:${kebabCase(prop)}`;
+      if (!dom.hasAttribute(attrName)) attrName = `${prefix}:${prop}`;
+
+      const domValue = dom.getAttribute(attrName);
+      const defined = domValue !== null && domValue !== ''; // whether dom state is defined
+
+      hasProp in scope.state || Reflect.set(scope.state, hasProp, defined);
+
+      if (typeof domValue === 'string' && domValue.startsWith('window.')) {
+
+        const windowProp = domValue.slice(7);
+
+        if (windowProp in window) {
+          scope.state[prop] = window[windowProp];
+        } else {
+          log.warn(`Property "windowProp" does not exist on window: ${$.qs.$component}-${attrName}="${domValue}"`);
+        }
+
+      } else {
+
+        if (Array.isArray(stateValue)) {
+          scope.state[prop] = defined ? attrJSON(domValue) : stateValue;
+        } else {
+
+          const typeOf: ValueOf<typeof scope.define.state> = typeof stateValue;
+
+          if (typeOf === 'object') {
+            scope.state[prop] = defined ? attrJSON(domValue) : stateValue;
+          } else if (typeOf === 'number') {
+            scope.state[prop] = defined ? +domValue : stateValue;
+          } else if (typeOf === 'boolean') {
+            scope.state[prop] = defined ? domValue === 'true' : stateValue;
+          } else if (typeOf === 'string') {
+            scope.state[prop] = defined ? domValue : stateValue;
+          } else {
+            switch (stateValue) {
+              case String: scope.state[prop] = defined ? domValue : ''; break;
+              case Boolean: scope.state[prop] = domValue === 'true' || false; break;
+              case Number: scope.state[prop] = domValue ? Number(domValue) : 0; break;
+              case Object: scope.state[prop] = defined ? attrJSON(domValue) : {}; break;
+              case Array: scope.state[prop] = defined ? attrJSON(domValue) : []; break;
+            }
+          }
+        }
+
+      }
+    }
+
+  }
+
 };
 
-export const nodeProxy = (node: HTMLElement) => {
+export const setNodeProxy = (prop: symbol | string, node: HTMLElement) => {
 
-  return new Proxy(node, {
-    get: (_, prop) => prop in DoM ? (...args: unknown[]) => DoM[prop](node, ...args) : node[prop]
-  });
+  const prototype = Reflect.getPrototypeOf(node);
+  const descriptor = Reflect.getOwnPropertyDescriptor(prototype, prop);
+
+  if (descriptor && descriptor.get) return Reflect.get(prototype, prop, node);
+
+  const value = Reflect.get(node, prop);
+
+  return typeof value === 'function' ? value.bind(node) : value;
 
 };
+
+export const nodeProxy = (node: HTMLElement) => !node ? null : new Proxy(node, {
+  set: (target, prop, value, receiver) => prop in node
+    ? Reflect.set(node, prop, value)
+    : Reflect.set(target, prop, value, receiver),
+  get: (target, prop, receiver) => {
+    if (prop in node) return setNodeProxy(prop, node);
+    if (prop in DoM) return (...args: unknown[]) => DoM[prop](node, ...args);
+    return Reflect.get(target, prop, receiver);
+  }
+});
 
 export const sugarProxy = ({ dom, name }: ComponentNodes) => {
 
@@ -106,7 +136,7 @@ export const sugarProxy = ({ dom, name }: ComponentNodes) => {
       const { node } = dom;
 
       if (prop === Symbol.toPrimitive) {
-        log(Log.ERROR, `Sugar Error: Use ${C(`this.${name}.toNode()`)} for raw element: ${R(`this.${name}`)}`);
+        log.error(`Sugar Error: Use this.${name}.toNode() for raw element: ${`this.${name}`}`);
         return () => '';
       }
 
@@ -116,14 +146,7 @@ export const sugarProxy = ({ dom, name }: ComponentNodes) => {
 
       } else if (prop in node) {
 
-        const prototype = Reflect.getPrototypeOf(node);
-        const descriptor = Reflect.getOwnPropertyDescriptor(prototype, prop);
-
-        if (descriptor && descriptor.get) return Reflect.get(prototype, prop, node);
-
-        const value = Reflect.get(node, prop);
-
-        return typeof value === 'function' ? value.bind(node) : value;
+        return setNodeProxy(prop, node);
 
       }
 
@@ -144,14 +167,19 @@ export const sugarProxy = ({ dom, name }: ComponentNodes) => {
 
       const length = nodes.length;
       const callback = args[0];
-      const typeOf = args[0];
+      const typeOf = typeof args[0];
 
       if (typeOf === 'number') return nodeProxy(nodes[callback]);
       if (typeOf === 'string') return nodes.filter(el => el.matches(callback));
       if (typeOf === 'function') {
+
         let index = -1;
         const map = Array(length);
-        while (++index < length) map[index] = callback(nodeProxy(nodes[index]), index);
+
+        while (++index < length) {
+          map[index] = callback(nodeProxy(nodes[index]), index);
+        }
+
         return map;
       }
 

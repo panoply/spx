@@ -11,7 +11,7 @@ anchors:
 
 # Component Nodes
 
-Component nodes represent DOM elements associated with a specific component instance and are made available using attribute annotations and act as query selectors. The `spx-node` directive can be used to establish association with components which expects a `<ref>.<identifier>` dot notation value be provided. Every element in the DOM marked with an `spx-node` directive is made accessible within component scope and support both multiple occurrences and referencing.
+Component nodes represent DOM elements associated with a specific component instance and are made available using attribute annotations and act as query selectors. The `spx-node` directive can be used to establish association with components which expects a `{html} <div spx-node="component.identifier">` dot notation value be provided. Every element in the DOM marked with an `spx-node` directive is made accessible within component scope and support both multiple occurrences and referencing.
 
 > Component nodes are not query selected in the traditional sense, but instead are incrementally defined during morphs and traversal operations. Nodes can exist anywhere in the DOM and are registered ahead of time, making them accessible outside of dynamic fragments.
 
@@ -19,10 +19,10 @@ Component nodes represent DOM elements associated with a specific component inst
 
 # Defining Nodes
 
-Component nodes can be defined in the `nodes[]` setting within the static `define` object of a component class. This option accepts an array of strings, where each string serves as an identifier. These identifiers are used in the DOM to associate specific nodes with their corresponding components.
+Component nodes can be defined in the `{js} nodes[]` setting within the static `define` object of a component class. This option accepts an array of strings, where each string serves as an identifier. These identifiers are used in the DOM to associate specific nodes with their corresponding components.
 
 <!-- prettier-ignore -->
-```js
+```ts
 import spx from 'spx';
 
 export class Example extends spx.Component({
@@ -55,13 +55,11 @@ In the example above, we've defined three nodes within an `Example` component: `
 </div>
 ```
 
-In this setup, the `spx-node` attribute connects each DOM element to its corresponding node within the `Example` component. The `buttonNode`, `counterNode`, and `feedbackNode` are now directly linked to their respective DOM elements, allowing for seamless interaction and dynamic updates within the component's logic.
-
----
+In this setup, the `spx-node` attribute connects each DOM element to its corresponding node within the `Example` component. The `{js} this.buttonNode`, `{js} this.counterNode`, and `{js} this.feedbackNode` are now directly linked to their respective DOM elements, allowing for seamless interaction and dynamic updates within the component's logic.
 
 # Accessing Nodes
 
-In our component, nodes can be easily accessed through the `this` context, which is available in all components. The `dom` object not only provides direct access to the defined nodes but also includes additional references that facilitate interaction with associated elements. This makes it straightforward to manipulate DOM elements directly from within a component. Here's an example of how we can access our defined nodes:
+In our component, nodes can be easily accessed through the `{js} this` context, which is available in all components. The `dom` object not only provides direct access to the defined nodes but also includes additional references that facilitate interaction with associated elements. This makes it straightforward to manipulate DOM elements directly from within a component. Here's an example of how we can access our defined nodes:
 
 <!-- prettier-ignore -->
 ```js

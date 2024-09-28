@@ -1,9 +1,9 @@
 import type { Class, Page } from 'types';
 import { $ } from './session';
 import { emit } from './events';
-import { log } from '../shared/logs';
+import * as log from '../shared/logs';
 import { m, o } from '../shared/native';
-import { CharCode, Hooks, Log, VisitType } from '../shared/enums';
+import { CharCode, Hooks, VisitType } from '../shared/enums';
 import * as fragments from '../observe/fragment';
 import { getLocation } from './location';
 import {
@@ -14,7 +14,6 @@ import {
   targets,
   ts,
   selector,
-  defineGetterProps,
   uid,
   parse,
   getTitle
@@ -80,8 +79,7 @@ export const create = (page: Page): Page => {
 /**
  * New Page Session
  *
- * Clones a page but applies a reset on the provided keys, changing them to
- * the connection defaults.
+ * Clones a page but applies a reset on the provided keys, changing them to the connection defaults.
  */
 export const newPage = (page: Page) => {
 
@@ -96,13 +94,13 @@ export const newPage = (page: Page) => {
     fragments: $.config.fragments
   });
 
-  if ($.config.hover) {
-    state.threshold = $.config.hover.threshold;
-  }
+  const h = $.config.hover;
+  const p = $.config.proximity;
 
-  if ($.config.proximity) {
-    state.proximity = $.config.proximity.distance;
-    state.threshold = $.config.proximity.threshold;
+  if (h) state.threshold = h.threshold;
+  if (p) {
+    state.proximity = p.distance;
+    state.threshold = p.threshold;
   }
 
   if ($.config.progress) {
@@ -143,22 +141,20 @@ export const patch = <T extends keyof Page> (prop: T, value: Page[T], key = $.hi
  */
 export const set = (page: Page, snapshot: string): Page => {
 
-  const event = emit('before:cache', page, snapshot as any);
-  const dom = typeof event === 'string' ? event : snapshot;
-
   // VisitTypes above 5 are prefetch/trigger kinds.
   // We need to augment the page store to align with the record we are handling.
   if (page.type > VisitType.POPSTATE) {
 
     // VisitTypes above 9 are prefetch kinds
     // we need to update the type reference
-    if (page.type > VisitType.RELOAD) {
-      page.type = VisitType.PREFETCH;
-    }
+    if (page.type > VisitType.RELOAD) page.type = VisitType.PREFETCH;
   }
 
   // Update to document title
   page.title = getTitle(snapshot);
+
+  const event = emit('cache', page, snapshot);
+  const dom = typeof event === 'string' ? event : snapshot;
 
   // If cache is disabled or the lifecycle event returned false we stop processing
   if (!$.config.cache || event === false) return page;
@@ -171,8 +167,6 @@ export const set = (page: Page, snapshot: string): Page => {
   $.snaps[page.snap] = dom;
 
   fragments.setFragmentElements(page);
-
-  emit('after:cache', page);
 
   return page;
 
@@ -207,27 +201,6 @@ export const update = (page: Page, snapshot: string = null): Page => {
 };
 
 /**
- * Set Snapshot
- *
- * Replaces an exisiting snapshot DOM String with the provided `snapshot`
- * value. This function is used to align marked snapshots, wherein elements
- * are updated with identifier references such as `t.a1b2c4` (targets) or `f.a1b2c3`
- * (fragments) etc etc. Call to this function are typically occurring outside the
- * event loop.
- */
-export const setSnap = (snapshot: string, key?: number | string) => {
-
-  const snap = key = typeof key === 'number' ? key : null;
-
-  if (snap) {
-    $.snaps[snap] = snapshot;
-  } else {
-    log(Log.WARN, 'Snapshot record does not exist, update failed');
-  }
-
-};
-
-/**
  * Get Session
  *
  * Returns the in-memory (session) page store and a parsed document snapshot.
@@ -239,7 +212,7 @@ export const get = (key?: string): { page: Page, dom: Document } => {
 
   if (!key) {
     if ($.history === null) {
-      log(Log.WARN, 'Missing history state reference, page cannot be returned');
+      log.warn('Missing history state reference, page cannot be returned');
       return;
     }
 
@@ -248,15 +221,13 @@ export const get = (key?: string): { page: Page, dom: Document } => {
   }
 
   if (key in $.pages) {
-
-    return defineGetterProps(o(), [
-      [ 'page', () => $.pages[key] ],
-      [ 'dom', () => parse($.snaps[$.pages[key].snap]) ]
-    ]);
-
+    return {
+      get page () { return $.pages[key]; },
+      get dom () { return parse($.snaps[$.pages[key].snap]); }
+    };
   }
 
-  log(Log.ERROR, `No record exists: ${key}`);
+  log.error(`No record exists: ${key}`);
 
 };
 
@@ -266,13 +237,13 @@ export const get = (key?: string): { page: Page, dom: Document } => {
  * Returns a snapshot DOM. Optionally accepts a page `key` to return a specific
  * snapshot DOM record OR a `snap` UUID
  */
-export const getSnapDom = (key?: string): Document => {
+export const getSnapDom = (key?: string | number): Document => {
 
-  const uuid = typeof key === 'string'
-    ? key.charCodeAt(0) === CharCode.FWD
+  const uuid = typeof key === 'number'
+    ? key
+    : typeof key === 'string' && key.charCodeAt(0) === CharCode.FWD
       ? $.pages[key].snap
-      : key
-    : $.page.snap;
+      : $.page.snap;
 
   return parse($.snaps[uuid]);
 
@@ -281,22 +252,21 @@ export const getSnapDom = (key?: string): Document => {
 /**
  * Get Mounted Components
  *
- * Returns an array list of component intances which are currently
- * mounted (active) on the page.
+ * Returns an array list of component instances which are currently
+ * mounted and/or (active) on the page.
  */
 export const mounted = <T extends Map<string, Class[]>>(): T => {
 
   const live = m<string, Class[]>();
-  const { $instances, $mounted } = $.components;
 
-  for (const key of $mounted) {
+  for (const key of $.mounted) {
 
-    if (!$instances.has(key)) continue;
+    if (!$.instances.has(key)) continue;
 
-    const instance = $instances.get(key);
+    const instance = $.instances.get(key);
     const { scope } = instance;
 
-    if (scope.status === Hooks.MOUNT) {
+    if (scope.status === Hooks.MOUNT || scope.status === Hooks.MOUNTED) {
 
       // We will populate aliases incase an alias is being used
       if (scope.alias !== null) {
@@ -304,6 +274,7 @@ export const mounted = <T extends Map<string, Class[]>>(): T => {
         live.has(scope.alias)
           ? live.get(scope.alias).push(instance)
           : live.set(scope.alias, [ instance ]);
+
       }
 
       // We always populate instanceOf
@@ -331,7 +302,7 @@ export const getPage = (key?: string): Page => {
   if (!key) {
 
     if ($.history === null) {
-      log(Log.WARN, 'Missing history state reference, page cannot be returned');
+      log.warn('Missing history state reference, page cannot be returned');
       return;
     }
 
@@ -340,7 +311,7 @@ export const getPage = (key?: string): Page => {
 
   if (hasProp($.pages, key)) return $.pages[key];
 
-  log(Log.ERROR, `No page record exists for: ${key}`);
+  log.error(`No page record exists for: ${key}`);
 
 };
 

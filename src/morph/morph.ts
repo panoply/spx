@@ -150,7 +150,7 @@ const moveChildren = (curElement: Element, newElement: Element) => {
  *
  * Discard a node from the DOM.
  */
-const removeNode = (curNode: any, parentNode: Node, context: MorphContext, skipKeys = true): void => {
+const removeNode = (curNode: any, parentNode: Node, ctx: MorphContext, skipKeys = true): void => {
 
   // if (onBeforeNodeDiscarded(node) === false) return;
 
@@ -158,7 +158,7 @@ const removeNode = (curNode: any, parentNode: Node, context: MorphContext, skipK
 
   parentNode && parentNode.removeChild(curNode);
 
-  walkNodes(curNode, skipKeys, context);
+  walkNodes(curNode, skipKeys, ctx);
 
 };
 
@@ -176,7 +176,7 @@ const morphEqual = (curElement: Element) => {
  *
  * Traversed and applies morphs to child nodes.
  */
-const morphChildren = (curElement: Element, newElement: Element, context: MorphContext) => {
+const morphChildren = (curElement: Element, newElement: Element, ctx: MorphContext) => {
 
   let newNode = newElement.firstChild;
   let newKey: string;
@@ -225,7 +225,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
               // The current element in the original DOM tree does not have a matching key so
               // let's check our lookup to see if there is a matching element in the original DOM tree
               //
-              if ((curMatch = context.$lookup.get(newKey) as Element)) {
+              if ((curMatch = ctx.$lookup.get(newKey) as Element)) {
 
                 if (curNextSibling && curNextSibling.isEqualNode(curMatch)) {
 
@@ -259,7 +259,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
 
                     // Since the node is keyed it might be matched up later
                     // so we defer the actual removal to later
-                    context.$remove.add(curKey);
+                    ctx.$remove.add(curKey);
 
                   } else {
 
@@ -270,7 +270,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
                     removeNode(
                       curNode,
                       curElement,
-                      context
+                      ctx
                     );
 
                   }
@@ -307,7 +307,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
             morphElement(
               curNode as Element,
               newNode as Element,
-              context
+              ctx
             );
 
           }
@@ -346,7 +346,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
 
         // Since the node is keyed it might be matched up later so we defer
         // the actual removal to later
-        context.$remove.add(curKey);
+        ctx.$remove.add(curKey);
 
       } else {
 
@@ -355,7 +355,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
         removeNode(
           curNode,
           curElement,
-          context
+          ctx
         );
 
       }
@@ -370,10 +370,10 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
     //
     if (
       newKey &&
-      (curMatch = context.$lookup.get(newKey) as Element) && matchName(curMatch.nodeName, newNode.nodeName)) {
+      (curMatch = ctx.$lookup.get(newKey) as Element) && matchName(curMatch.nodeName, newNode.nodeName)) {
 
       curElement.appendChild(curMatch);
-      morphElement(curMatch, newNode as Element, context);
+      morphElement(curMatch, newNode as Element, ctx);
 
     } else {
 
@@ -392,7 +392,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
       //
       // Original:  handleNodeAdded(curToNodeChild)
       //
-      addedNode(newNode, context);
+      addedNode(newNode, ctx);
 
     }
 
@@ -404,7 +404,7 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
     curElement,
     curNode,
     curKey,
-    context
+    ctx
   );
 
   formNodes(
@@ -418,14 +418,14 @@ const morphChildren = (curElement: Element, newElement: Element, context: MorphC
  *
  * Applies morph to elements. Comparison is done via `isEqualNode` to determain changes.
  */
-const morphElement = (curElement: any, newElement: Element, context: MorphContext) => {
+const morphElement = (curElement: any, newElement: Element, ctx: MorphContext) => {
 
   const newKey = getKey(newElement);
 
   // If an element with an ID is being morphed then it will be in the final
   // DOM so clear it out of the saved elements collection
   //
-  newKey && context.$lookup.delete(newKey);
+  newKey && ctx.$lookup.delete(newKey);
 
   if (curElement.isEqualNode(newElement)) return; // spec - https://dom.spec.whatwg.org/#concept-node-equals
 
@@ -442,7 +442,7 @@ const morphElement = (curElement: any, newElement: Element, context: MorphContex
 
   curElement.nodeName === 'TEXTAREA'
     ? forms.textarea(curElement as HTMLTextAreaElement, newElement as HTMLTextAreaElement)
-    : morphChildren(curElement, newElement, context);
+    : morphChildren(curElement, newElement, ctx);
 
 };
 
@@ -451,7 +451,7 @@ const morphElement = (curElement: any, newElement: Element, context: MorphContex
  *
  * Recusively traverse through the node node list.
  */
-const walkNodes = (curNode: ChildNode, skipKeys: boolean, context: MorphContext) => {
+const walkNodes = (curNode: ChildNode, skipKeys: boolean, ctx: MorphContext) => {
 
   if (curNode.nodeType !== Nodes.ELEMENT_NODE) return;
 
@@ -465,7 +465,7 @@ const walkNodes = (curNode: ChildNode, skipKeys: boolean, context: MorphContext)
 
       // If we are skipping keyed nodes then we add the key
       // to a list so that it can be handled at the very end.
-      context.$remove.add(key);
+      ctx.$remove.add(key);
 
     } else {
 
@@ -474,7 +474,7 @@ const walkNodes = (curNode: ChildNode, skipKeys: boolean, context: MorphContext)
       // and then discard them in one final pass.
 
       observe.removeNode(curChild as HTMLElement); // onNodeDiscarded(curChild);
-      curChild.firstChild && walkNodes(curChild, skipKeys, context);
+      curChild.firstChild && walkNodes(curChild, skipKeys, ctx);
 
     }
 
@@ -489,7 +489,7 @@ const walkNodes = (curNode: ChildNode, skipKeys: boolean, context: MorphContext)
  *
  * A new node has been added to the DOM
  */
-const addedNode = (curElement: Node, context: MorphContext) => {
+const addedNode = (curElement: Node, ctx: MorphContext) => {
 
   // Lets check our component observer to determine whether or
   // not this node is component related.
@@ -509,17 +509,17 @@ const addedNode = (curElement: Node, context: MorphContext) => {
 
     if (curKey) {
 
-      const unmatchElement = context.$lookup.get(curKey);
+      const unmatchElement = ctx.$lookup.get(curKey);
 
       // If we find a duplicate #id node in cache, replace `el` with cache value and morph it to the child node.
       if (unmatchElement && matchName(curChild.nodeName, unmatchElement.nodeName)) {
 
         curChild.parentNode.replaceChild(unmatchElement, curChild);
-        morphElement(unmatchElement, curChild, context);
+        morphElement(unmatchElement, curChild, ctx);
 
       } else {
 
-        addedNode(curChild, context);
+        addedNode(curChild, ctx);
 
       }
 
@@ -527,7 +527,7 @@ const addedNode = (curElement: Node, context: MorphContext) => {
 
       // Recursively call for curChild and it's children to see if we find something
       //
-      addedNode(curChild, context);
+      addedNode(curChild, ctx);
 
     }
 
@@ -542,7 +542,7 @@ const addedNode = (curElement: Node, context: MorphContext) => {
  * We have processed all of the "to nodes". If `curFromNodeChild` is non-null
  * then we still have some from nodes left over that need to be removed.
  */
-const cleanNode = (curElement: Element, curNode: ChildNode, curKey: string, context: MorphContext) => {
+const cleanNode = (curElement: Element, curNode: ChildNode, curKey: string, ctx: MorphContext) => {
 
   // We have processed all of the "to nodes". If curNode is
   // non-null then we still have some from nodes left over that need to be removed
@@ -553,13 +553,13 @@ const cleanNode = (curElement: Element, curNode: ChildNode, curKey: string, cont
     if ((curKey = getKey(curNode))) {
 
       // Since the node is keyed it might be matched up later so we defer the actual removal to later
-      context.$remove.add(curKey);
+      ctx.$remove.add(curKey);
 
     } else {
 
       // NOTE: We skip nested keyed nodes from being removed since there is
       // still a chance they will be matched up later
-      removeNode(curNode, curElement, context);
+      removeNode(curNode, curElement, ctx);
 
     }
 
@@ -568,7 +568,7 @@ const cleanNode = (curElement: Element, curNode: ChildNode, curKey: string, cont
   }
 };
 
-const indexNode = (fromNode: Element | ChildNode, context: MorphContext) => {
+const indexNode = (fromNode: Element | ChildNode, ctx: MorphContext) => {
 
   if (fromNode.nodeType === Nodes.ELEMENT_NODE || fromNode.nodeType === Nodes.FRAGMENT_NODE) {
 
@@ -578,11 +578,11 @@ const indexNode = (fromNode: Element | ChildNode, context: MorphContext) => {
 
       const key = getKey(childNode);
 
-      key && context.$lookup.set(key, childNode);
+      key && ctx.$lookup.set(key, childNode);
 
       // Walk recursively
       //
-      indexNode(childNode, context);
+      indexNode(childNode, ctx);
 
       childNode = childNode.nextSibling;
 
@@ -606,11 +606,14 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
    *
    * Models used for the id (keyed) operations in post-cycle.
    */
-  const context: MorphContext = o({ $remove: s(), $lookup: m() });
+  const ctx: MorphContext = o();
+
+  ctx.$remove = s();
+  ctx.$lookup = m();
 
   newNode.nodeType === Nodes.FRAGMENT_NODE && (newNode = newNode.firstElementChild as HTMLElement);
 
-  indexNode(curNode, context);
+  indexNode(curNode, ctx);
 
   /**
    * Old Node references the last known `curNode`
@@ -676,18 +679,18 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
     //
     if (newNode.isEqualNode(morphedNode)) return morphedNode;
 
-    morphElement(morphedNode, newNode, context);
+    morphElement(morphedNode, newNode, ctx);
 
     // We now need to loop over any keyed nodes that might need to be
     // removed. We only do the removal if we know that the keyed node
     // never found a match. When a keyed node is matched up we remove
     // it out of curNodesLookup and we use curNodesLookup to determine
     // if a keyed node has been matched up or not
-    if (context.$remove.size > 0) {
-      for (const key of context.$remove) {
-        if (context.$lookup.has(key)) {
-          const node = context.$lookup.get(key);
-          removeNode(node, node.parentNode, context, false);
+    if (ctx.$remove.size > 0) {
+      for (const key of ctx.$remove) {
+        if (ctx.$lookup.has(key)) {
+          const node = ctx.$lookup.get(key);
+          removeNode(node, node.parentNode, ctx, false);
         }
       }
     }
@@ -706,8 +709,8 @@ export const morph = (curNode: HTMLElement, snapNode: HTMLElement) => {
 
   }
 
-  context.$lookup.clear();
-  context.$remove.clear();
+  ctx.$lookup.clear();
+  ctx.$remove.clear();
 
   return morphedNode;
 };

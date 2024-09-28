@@ -32,7 +32,7 @@ The `connect` lifecycle callback hook serves as an initializer, executing first 
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component {
+export class Example extends spx.Component() {
 
   connect({ page }) {
 
@@ -52,7 +52,7 @@ The `onmount` lifecycle callback hook will trigger after the component has been 
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component {
+export class Example extends spx.Component() {
 
   onmount({ page }) {
 
@@ -73,7 +73,7 @@ The `unmount` lifecycle callback hook is invoked when a component is about to be
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component {
+export class Example extends spx.Component() {
 
   unmount({ page }) {
 

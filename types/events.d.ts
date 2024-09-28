@@ -1,162 +1,64 @@
 /* eslint-disable no-unused-vars */
-
 import { Page } from './page';
+import { HistoryState } from 'types';
 
 /**
  * SPX Events
  */
 export type EventNames = (
- | 'connected'
+ | 'connect'
  | 'popstate'
  | 'prefetch'
  | 'visit'
  | 'fetch'
- | 'before:cache'
- | 'after:cache'
- | 'before:resource'
- | 'after:resource'
- | 'hydrate'
+ | 'cache'
+ | 'resource'
  | 'render'
  | 'load'
+ | 'disconnect'
 );
 
 /**
  * Emitter Arguments
  */
 export type EmitterArguments<T extends EventNames> = (
-  T extends 'connected' ? [] :
-  T extends 'visit' ? [
-    event: MouseEvent
-  ] :
-  T extends 'popstate' ? [
-    {
-      state: Page
-    }
-  ] :
-  T extends 'prefetch' ? [
-    target: Element,
-    state: Page
-  ] :
-  T extends 'fetch' ? [
-    state: Page
-  ] :
-  T extends 'before:cache' ? [
-    state: Page,
-    dom: Document
-  ] : T extends 'after:cache' ? [
-    state: Page
-  ] :
-  T extends 'before:render' ? [
-    state: Page
-  ] :
-  T extends 'hydrate' ? [
-    element: Element,
-    newElement: Element
-  ] :
-  T extends 'render' ? [
-    element: Element,
-    newElement: Element
-  ] :
-  T extends 'before:resource' ? [
-    node: Element
-  ] :
-  T extends 'load' ? [
-    state: Page
-  ] : never
-
+  T extends 'connect' ? [ page: Page ] :
+  T extends 'visit' ? [ page: Page, event: MouseEvent ] :
+  T extends 'popstate' ? [ page: Page ] :
+  T extends 'prefetch' ? [ page: Page, dom: HTMLElement ] :
+  T extends 'fetch' ? [ page: Page ] :
+  T extends 'cache' ? [ page: Page, dom: string ] :
+  T extends 'render' ? [page: Page, curDom: HTMLElement, newDom: HTMLElement] :
+  T extends 'resource' ? [ page: Page, node: Element ] :
+  T extends 'load' ? [ page: Page] :
+  T extends 'disconnect' ? [] :
+  never
 )
+
+type Connect = (this: Page, page: Page) => void;
+type Prefetch<T extends HTMLElement = HTMLElement> = (this: Page, dom: T) => string[] | void;
+type Visit<T = MouseEvent> = (this: Page, event: T) => void | false;
+type Popstate = (this: Page, page: Page) => void | false;
+type Fetch = (this: Page, page: Page) => void | false;
+type Resource = (this: Page, resource: HTMLElement) => void | false;
+type Cache = (this: Page, dom: Document) => void | false | Document;
+type Render = <T extends HTMLElement = HTMLElement>(this: Page, curDom: T, newDom: T) => void | false;
+type Load = (this: Page, page: Page) => void;
 
 /**
  * Lifecycle Events
  */
-export type LifecycleEvent<T extends EventNames> = (
-
-  T extends 'connected' ? () => void :
-
-  T extends 'visit' ? (
-    /**
-     * The mouse event, access target via `event.target`
-     */
-    event?: MouseEvent
-
-  ) => void | false :
-  T extends 'popstate' ? (
-    /**
-     * Page state reference
-     */
-    state?: Page
-
-  ) => string[] | void:
-
-  T extends 'prefetch' ? (
-    /**
-     * The target element that will be replaced
-     */
-    element?: Element,
-    /**
-     * Page state reference
-     */
-    state?: Page,
-
-  ) => void | false :
-  T extends 'fetch' ? (
-    /**
-     * Page state reference
-     */
-     state?: Page,
-
-  ) => void | false :
-
-  T extends 'before:cache' ? (
-    /**
-     * Page state reference
-     */
-    state?: Page,
-    /**
-     * Parsed document snapshot. Augment the snapshot
-     * by returning the document.
-     */
-    snapshot?: Document
-
-  ) => void | false | Document :
-
-  T extends 'after:cache' ? (
-    /**
-     * Page state reference
-     */
-    state?: Page
-
-  ) => void :
-
-  T extends 'hydrate' ? (
-    /**
-     * The target element that will be replaced
-     */
-    element?: Element,
-    /**
-     * The element replacing the current target
-     */
-    newElement?: Element
-
-  ) => void | false :
-
-  T extends 'render' ? (
-    /**
-     * The target element that will be replaced
-     */
-     element?: Element,
-     /**
-      * The element replacing the current target
-      */
-     newElement?: Element
-
-  ) => void | false :
-
-  T extends 'load' ? (
-    /**
-     * Page state reference
-     */
-    state?: Page
-
-  ) => void : never
+export type LifecycleEvent<T extends EventNames, S> = (
+    T extends 'connect' ? Connect & S
+  : T extends 'visit' ? Visit & S
+  : T extends 'popstate' ? Popstate & S
+  : T extends 'prefetch' ? Prefetch & S
+  : T extends 'fetch' ? Fetch & S
+  : T extends 'resource' ? Resource & S
+  : T extends 'cache' ? Cache & S
+  : T extends 'render' ? Render & S
+  : T extends 'load' ? Load & S
+  : T extends 'disconnect'
+  ? () => void
+  : never
 )

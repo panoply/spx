@@ -2,15 +2,14 @@ import type { Proximity } from 'types';
 import { $ } from '../app/session';
 import { canFetch, getTargets } from '../shared/links';
 import { isNumber } from '../shared/regexp';
-import { log } from '../shared/logs';
 import { getRoute } from '../app/location';
 import { emit } from '../app/events';
-import { VisitType, Log, CanFetch } from '../shared/enums';
+import { VisitType, CanFetch } from '../shared/enums';
 import { pointer } from '../shared/native';
 import * as q from '../app/queries';
 import * as request from '../app/fetch';
 import { onNextTick } from 'src/shared/utils';
-
+import * as log from '../shared/logs';
 /**
  * Detects if the cursor (mouse) is in range of a target element.
  */
@@ -74,7 +73,7 @@ const observer = (
 
       request.throttle(page.key, async () => {
 
-        if (!emit('prefetch', target, page)) return disconnect();
+        if (!emit('prefetch', page, target)) return disconnect();
 
         const prefetch = await request.fetch(page);
 
@@ -86,7 +85,7 @@ const observer = (
 
           if (targets.length === 0) {
             disconnect();
-            log(Log.INFO, 'Proximity observer disconnected');
+            log.info('Proximity observer disconnected');
           }
         }
 

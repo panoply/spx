@@ -1,8 +1,8 @@
 import type { ComponentEvent, Merge, Class } from 'types';
-import { Log } from '../shared/enums';
 import { getEventParams } from './context';
-import { log } from '../shared/logs';
+import * as log from '../shared/logs';
 import { defineGetter } from 'src/shared/utils';
+import { Colors } from '../shared/enums';
 
 /**
  * Is Valid Event
@@ -14,10 +14,7 @@ export const isValidEvent = (eventName: string, node: Element | Window) => {
 
   if (`on${eventName}` in node) return true;
 
-  log(Log.ERROR, [
-    `Invalid event name "${eventName}" provided. No such event exists in the DOM API.`,
-    'Only known event listeners can be attached.'
-  ], node);
+  log.error(`Invalid event name "${eventName}" provided`, node);
 
   return false;
 
@@ -57,10 +54,10 @@ export const removeEvent = (instance: Class, event: ComponentEvent) => {
   event.options.signal = event.listener.signal;
   event.attached = false;
 
-  log(Log.VERBOSE, [
+  log.debug([
     `Detached ${event.key} ${event.eventName} event from ${event.method}() method in component`,
     `${instance.scope.define.name}: ${instance.scope.key}`
-  ]);
+  ], Colors.LAVENDAR);
 
 };
 
@@ -75,7 +72,7 @@ export const addEvent = (instance: Class, event: ComponentEvent, node?: HTMLElem
   if (event.attached) return;
 
   if (!(event.method in instance)) {
-    log(Log.WARN, `Undefined callback method: ${instance.scope.define.name}.${event.method}()`);
+    log.warn(`Undefined callback method: ${instance.scope.define.name}.${event.method}()`);
     return;
   }
 
@@ -95,9 +92,9 @@ export const addEvent = (instance: Class, event: ComponentEvent, node?: HTMLElem
 
   event.attached = true;
 
-  log(Log.VERBOSE, [
+  log.debug([
     `Attached ${event.key} ${event.eventName} event to ${event.method}() method in component`,
     `${instance.scope.define.name}: ${instance.scope.key}`
-  ]);
+  ], Colors.PURPLE);
 
 };

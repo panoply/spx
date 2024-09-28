@@ -1,0 +1,59 @@
+---
+layout: views/base.liquid
+permalink: '/components/types/dom-defined/index.html'
+base: /components/dom-defined/
+dom_defined:
+  - name: String
+    bind: domDefinedStringValue
+    original: defaultStringValue
+  - name: Boolean
+    bind: domDefinedBooleanValue
+    original: defaultBooleanValue
+  - name: Number
+    bind: domDefinedNumberValue
+    original: defaultNumberValue
+  - name: Object
+    bind: domDefinedObjectValue
+    original: defaultObjectValue
+  - name: Array
+    bind: domDefinedArrayValue
+    original: defaultArrayValue
+---
+
+<div class="row">
+  <div class="col-12">
+    <h1>
+      🧪 DOM Defined States
+    </h1>
+    <p>
+      The component DOM asserts state values, whereas the component state referenced are using TypeConstructors. The outcome will be the DOM state values.
+    </p>
+    <hr>
+  </div>
+</div>
+{%- include 'cases/component-types/include/pages' -%}
+{%- include 'cases/component-types/include/legend' -%}
+<div class="row ml-1 py-1">
+  <div class="col">
+    <div
+      class="d-block py-2"
+      spx-component="types"
+      spx-types:dom-defined-string="foo"
+      spx-types:dom-defined-number="250"
+      spx-types:dom-defined-boolean="true"
+      spx-types:dom-defined-object="{ test: 'pass' }"
+      spx-types:dom-defined-array="['test', { key: 'pass' }]">
+      {%- for type in dom_defined -%}
+        <div class="row g-0 ai-center py-2 {% unless forloop.last %}bb{% endunless %}">
+          <span class="col-2">{{ type.name }}</span>
+          <code
+            class="col-auto fc-blue fw-bold"
+            spx-bind="types.{{ type.bind }}"></code>
+          <code
+            class="col-auto fw-bold ml-auto"
+            spx-bind="types.{{ type.original }}"></code>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>

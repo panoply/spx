@@ -1,12 +1,12 @@
 import { $ } from '../app/session';
 import { forEach } from '../shared/utils';
-import { log } from '../shared/logs';
-import { Log, VisitType } from '../shared/enums';
+import { VisitType } from '../shared/enums';
 import { getNodeTargets } from '../shared/links';
 import { emit } from '../app/events';
 import { getRoute } from '../app/location';
 import * as request from '../app/fetch';
 import * as q from '../app/queries';
+import * as log from '../shared/logs';
 
 /**
  * @type IntersectionObserver
@@ -22,7 +22,7 @@ const onIntersect = async (entry: IntersectionObserverEntry): Promise<void> => {
 
     const route = getRoute(entry.target, VisitType.INTERSECT);
 
-    if (!emit('prefetch', entry.target, route)) return entries.unobserve(entry.target);
+    if (!emit('prefetch', route, entry.target as HTMLElement)) return entries.unobserve(entry.target);
 
     const response = await request.fetch(q.create(route));
 
@@ -31,7 +31,7 @@ const onIntersect = async (entry: IntersectionObserverEntry): Promise<void> => {
       entries.unobserve(entry.target);
 
     } else {
-      log(Log.WARN, `Prefetch will retry at next intersect for: ${route.key}`);
+      log.warn(`Prefetch will retry at next intersection for: ${route.key}`);
       entries.observe(entry.target);
     }
   }
@@ -44,6 +44,8 @@ const onIntersect = async (entry: IntersectionObserverEntry): Promise<void> => {
 export const connect = () => {
 
   if (!$.config.intersect || $.observe.intersect) return;
+
+  // @ts-expect-error
   if (!entries) entries = new IntersectionObserver(forEach(onIntersect), $.config.intersect);
 
   const observe = forEach<Element>(target => entries.observe(target));

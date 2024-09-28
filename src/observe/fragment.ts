@@ -1,12 +1,12 @@
 import type { Page } from 'types';
-import { $ } from '../app/session';
-import { getSnapDom, patch, setSnap } from '../app/queries';
-import { Log, VisitType } from '../shared/enums';
+import { $, ctx } from '../app/session';
+import { getSnapDom, patch } from '../app/queries';
+import { VisitType } from '../shared/enums';
 import { b, nil } from '../shared/native';
 import { forNode, nodeSet, onNextTick, uuid } from '../shared/utils';
-import { log } from '../shared/logs';
-import { getSelector } from 'src/components/context';
-import { mark } from '../components/observe';
+import * as log from '../shared/logs';
+import { getSelector } from '../components/context';
+import { replace } from '../app/snapshot';
 
 /**
  * Node is contained in Fragment
@@ -50,11 +50,10 @@ export const connect = () => {
    */
   let aliases: Set<HTMLElement>;
 
+  /** Document QuerySelector */
   const dom = b();
 
   if ($.page.target.length > 0) {
-
-    console.log($.page);
 
     directive = $.qs.$target;
     selector = $.page.target.join();
@@ -96,7 +95,7 @@ export const connect = () => {
     for (const child of aliases) {
       $.fragments.set(`#${child.id}`, child);
       $.page.target.push(`#${child.id}`);
-      mark.add(child.id);
+      ctx.marks.add(child.id);
     }
 
     aliases.clear();
@@ -127,7 +126,7 @@ export const setFragmentElements = (page: Page) => {
 
       if (contains(node)) {
 
-        log(Log.WARN, 'The fragment or target is a decedent of an element which morphs', node);
+        log.warn('The fragment or target is a decedent of an element which morphs', node);
 
       } else {
 
@@ -143,7 +142,7 @@ export const setFragmentElements = (page: Page) => {
       }
     });
 
-    setSnap(snapDom.documentElement.outerHTML, page.snap);
+    replace(page.snap, snapDom.documentElement.outerHTML);
 
   });
 

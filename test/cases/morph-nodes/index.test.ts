@@ -14,15 +14,15 @@ export class MorphNodes extends spx.Component({
 
     console.log(this.alpha);
 
-    if (page.key.endsWith('c/')) {
+    if (page.key.indexOf('/page-c') > -1) {
 
       this.alpha.style.backgroundColor = 'blue';
 
-    } else if (page.key.endsWith('b/')) {
+    } else if (page.key.indexOf('/page-b') > -1) {
 
       this.alpha.style.backgroundColor = 'red';
 
-    } else if (page.key.endsWith('a/')) {
+    } else if (page.key.indexOf('/page-a') > -1) {
 
       this.alpha.style.backgroundColor = 'green';
 

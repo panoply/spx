@@ -1,15 +1,14 @@
 import type { Page } from 'types';
-import { $ } from './session';
+import { $, ctx } from './session';
 import { emit } from './events';
-import { Log, VisitType } from '../shared/enums';
+import { VisitType } from '../shared/enums';
 import { b, h, nil, s } from '../shared/native';
 import { canEval, hasProp } from '../shared/utils';
 import { progress } from './progress';
-import { context, mark } from '../components/observe';
 import { getSnapDom, patch } from './queries';
 import { morph } from '../morph/morph';
-import { log } from '../shared/logs';
-import { snap } from '../components/snapshot';
+import * as snapshot from './snapshot';
+import * as log from '../shared/logs';
 import * as hover from '../observe/hovers';
 import * as intersect from '../observe/intersect';
 import * as components from '../observe/components';
@@ -17,7 +16,11 @@ import * as mutations from '../observe/mutations';
 import * as proximity from '../observe/proximity';
 import * as fragment from '../observe/fragment';
 
-const morphHead = async (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Promise<PromiseSettledResult<void>[]> => {
+const morphHead = async (
+  page: Page,
+  curHead: HTMLHeadElement,
+  newHead: HTMLHeadElement
+): Promise<PromiseSettledResult<void>[]> => {
 
   if (!$.eval || !curHead.children || !newHead.children) return;
 
@@ -56,6 +59,8 @@ const morphHead = async (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Pr
 
     if (hasProp(node, 'href') || hasProp(node, 'src')) {
 
+      if (!emit('resource', page, node as HTMLElement)) continue;
+
       /** Promise Resolver */
       let resolve: (value: void | PromiseLike<void>) => void;
 
@@ -63,7 +68,7 @@ const morphHead = async (curHead: HTMLHeadElement, newHead: HTMLHeadElement): Pr
 
       node.addEventListener('load', () => resolve());
       node.addEventListener('error', error => {
-        log(Log.WARN, `Resource <${node.nodeName.toLowerCase()}> failed:`, error);
+        log.warn(`Resource <${node.nodeName.toLowerCase()}> failed:`, error);
         resolve();
       });
 
@@ -103,7 +108,8 @@ const morphDom = (page: Page, snapDom: Document) => {
   } else {
 
     const elements = page.target.length > 0 ? $.fragments.keys() : page.fragments;
-    const components = $.components.$registry.size > 0;
+    const components = $.registry.size > 0;
+    const events = 'render' in $.events;
 
     for (const id of elements) {
 
@@ -111,14 +117,14 @@ const morphDom = (page: Page, snapDom: Document) => {
       const newNode = snapDom.body.querySelector<HTMLElement>(id);
 
       if (!newNode || !domNode) continue;
-      if (!emit('render', domNode, newNode)) continue;
+      if (events && !emit('render', page, domNode, newNode)) continue;
 
       // I don't know what the fuck this logic pertains to...
       // The mark set store is populated during fragment selections
       // and consists of alias spx-components but I don't know
       // why this check and attribute marking applies??
       //
-      if (mark.has(newNode.id)) {
+      if (ctx.marks.has(newNode.id)) {
 
         newNode.setAttribute($.qs.$ref, domNode.getAttribute($.qs.$ref));
 
@@ -130,7 +136,7 @@ const morphDom = (page: Page, snapDom: Document) => {
         // Next, we add the newNode from snapshot dom to our component
         // data-spx reference updater which will sync in next tick
         //
-        components && snap.set(newNode);
+        components && snapshot.add(newNode);
 
         // Last, we send the elements off form morphing
         //
@@ -141,7 +147,7 @@ const morphDom = (page: Page, snapDom: Document) => {
 
   }
 
-  context && snap.sync(snapDom, page.snap);
+  ctx.store && snapshot.update(snapDom, page.snap);
   page.type !== VisitType.VISIT && patch('type', VisitType.VISIT);
 
   // Lets check whether or not location points to an anchor.
@@ -177,7 +183,7 @@ export const update = (page: Page): Page => {
 
   const snapDom = getSnapDom(page.snap);
 
-  morphHead(h(), snapDom.head);
+  morphHead(page, h(), snapDom.head);
   morphDom(page, snapDom);
 
   progress.done();

@@ -26,3 +26,26 @@
     transform: scaleX(100%);
   }
 }
+
+ol {
+  margin-top: $spacer-4;
+  margin-bottom: $spacer-4;
+  padding-left: $spacer-5;
+  margin-left: $spacer-1;
+  list-style-type: decimal;
+
+  li {
+    font-size: 1rem;
+    // font-family: $font-family-heading;
+    // text-transform: uppercase;
+    margin-bottom: $spacer-1;
+    color: $white;
+
+    &::marker {
+      color: $gray-500;
+      font-weight: bold;
+      font-family: $font-family-heading;
+      margin-right: $spacer-2;
+    }
+  }
+}

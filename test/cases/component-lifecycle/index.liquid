@@ -2,80 +2,58 @@
 layout: views/base.liquid
 ---
 
-<div class="row pt-4 g-0">
-  <div class="col-12 mb-4">
-    {{
-      content
-    }}
+<div class="row">
+  <div class="col-11">
+    {{ content }}
   </div>
 </div>
-<div class="row mx-1">
+<div class="row">
   <div
-    class="col-7 pr-1"
+    class="col-11 p-4"
     spx-component="lifecycle"
     spx-lifecycle:connect="0"
     spx-lifecycle:onmount="0"
     spx-lifecycle:unmount="0">
-
-    <div class="row jc-start bb pb-4">
-      <div class="col-auto h6 fc-gray">
-        connect count:
+    <div class="row">
+      <div class="col">
+        <div class="tc py-3 bd rd">
+          <h5 class="fw-bold fc-gray fs-sm mb-3">
+            connect count
+          </h5>
+          <code
+            class="py-2 px-4 fs-lg"
+            spx-bind="lifecycle.connect">0</code>
+          <p class="fs-xs mt-3">
+            Never more than 1
+          </p>
+        </div>
       </div>
-      <div class="col-8 h6">
-        <code spx-bind="lifecycle.connect"></code>
+      <div class="col">
+        <div class="tc py-3 bd rd">
+          <h5 class="fw-bold fc-gray fs-sm mb-3">
+            onmount count
+          </h5>
+          <code
+            class="py-2 px-4 fs-lg"
+            spx-bind="lifecycle.onmount">0</code>
+          <p class="fs-xs mt-3">
+            Always 1 more than unmount
+          </p>
+        </div>
       </div>
-      <div class="col-auto h6 fc-gray">
-        onmount count:
-      </div>
-      <div class="col-8 h6">
-        <code spx-bind="lifecycle.onmount"></code>
-      </div>
-      <div class="col-auto h6 fc-gray">
-        unmount count:
-      </div>
-      <div class="col-8 h6">
-        <code spx-bind="lifecycle.unmount"></code>
-      </div>
-    </div>
-
-    <div
-      class="row mt-4"
-      id="lifecycle">
-
-      <div class="col tc py-3 bd rd mr-3">
-        <h6 class="fw-bold fc-gray fs-sm mb-3">
-          Foo Node:
-        </h6>
-        <span
-          class="py-2 px-4 bd"
-          spx-node="lifecycle.foo"></span>
-      </div>
-      <div class="col tc py-3 bd rd mr-3">
-        <h6 class="fw-bold fc-gray fs-sm mb-3">
-          Bar Node:
-        </h6>
-        <span
-          class="py-2 px-4 bd"
-          spx-node="lifecycle.bar"></span>
-      </div>
-      <div class="col tc py-3 bd rd mr-3">
-        <h6 class="fw-bold fc-gray fs-sm mb-3">
-          Bax Node:
-        </h6>
-        <span
-          class="py-2 px-4 bd"
-          spx-node="lifecycle.baz"></span>
-      </div>
-      <div class="col tc py-3 bd rd mr-0">
-        <h6 class="fw-bold fc-gray fs-sm mb-3">
-          Qux Node:
-        </h6>
-        <span
-          class="py-2 px-4 bd"
-          spx-node="lifecycle.qux"></span>
+      <div class="col">
+        <div class="tc py-3 bd rd">
+          <h5 class="fw-bold fc-gray fs-sm mb-3">
+            unmount count
+          </h5>
+          <code
+            class="py-2 px-4 fs-lg"
+            spx-bind="lifecycle.unmount">0</code>
+          <p class="fs-xs mt-3">
+            Always 1 less than onmount.
+          </p>
+        </div>
       </div>
     </div>
-
   </div>
-
 </div>

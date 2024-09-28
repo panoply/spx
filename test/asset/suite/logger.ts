@@ -1,11 +1,17 @@
 import spx from 'spx';
 import papyrus from 'papyrus';
-import { JSONTree, Tree } from './json-tree';
 
-export class Logger extends spx.Component<typeof Logger.define> {
-
-  pages: Tree;
-  components: Tree;
+export class Logger extends spx.Component({
+  nodes: <const>[
+    'event',
+    'page',
+    'input',
+    'components'
+  ],
+  state: {
+    count: Number
+  }
+}) {
 
   static define = {
     nodes: <const>[
@@ -26,7 +32,7 @@ export class Logger extends spx.Component<typeof Logger.define> {
       scopes: {}
     };
 
-    for (const [ id, { scope } ] of spx.$.components.$instances) {
+    for (const [ id, { scope } ] of spx.$.instances) {
       if (!(id in model)) model.scopes[id] = [];
       model.scopes[id].push(scope);
       if (!(scope.instanceOf in model.instances)) {
@@ -36,7 +42,7 @@ export class Logger extends spx.Component<typeof Logger.define> {
       model.instances[scope.instanceOf].push(id);
     }
 
-    papyrus.render(JSON.stringify(model.instances, null, 2), this.dom.componentsNode, {
+    papyrus.render(JSON.stringify(model.instances, null, 2), this.componentsNode, {
       language: 'javascript'
     });
 
@@ -44,25 +50,25 @@ export class Logger extends spx.Component<typeof Logger.define> {
 
   connect () {
 
-    this.dom.eventNode.style.height = `${this.dom.eventNode.parentElement.clientHeight}px`;
-    this.components = JSONTree.create({}, this.dom.componentsNode);
-    this.pages = JSONTree.create({}, this.dom.pageNode);
+    this.eventNode.style.height = `${this.eventNode.parentElement.clientHeight}px`;
+    this.components = JSONTree.create({}, this.componentsNode);
+    this.pages = JSONTree.create({}, this.pageNode);
     this.pages.loadData(spx.$.page);
-    this.log(this.dom.eventNode, 'connected', spx.$.page.key, 'fc-cyan');
+    this.log(this.eventNode, 'connected', spx.$.page.key, 'fc-cyan');
     this.getScopes();
 
     spx.on('load', (page) => {
-      this.log(this.dom.eventNode, 'load', page.key, 'fc-cyan');
+      this.log(this.eventNode, 'load', page.key, 'fc-cyan');
       this.pages.loadData(page);
       this.getScopes();
 
     });
 
-    spx.on('prefetch', (_, page) => this.log(this.dom.eventNode, 'prefetch', page.key, 'fc-green'));
-    spx.on('visit', () => this.log(this.dom.eventNode, 'visit', 'event', 'fc-purple'));
+    spx.on('prefetch', (_, page) => this.log(this.eventNode, 'prefetch', page.key, 'fc-green'));
+    spx.on('visit', () => this.log(this.eventNode, 'visit', 'event', 'fc-purple'));
     spx.on('fetch', (page) => {
       if (page.type === spx.$.types.REVERSE) {
-        this.log(this.dom.eventNode, 'reverse fetch', page.key, 'fc-blue');
+        this.log(this.eventNode, 'reverse fetch', page.key, 'fc-blue');
       }
     });
   }

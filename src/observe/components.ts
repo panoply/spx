@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
-import { $ } from '../app/session';
+import { $, ctx } from '../app/session';
 import { getComponents } from '../components/context';
 import { setInstances } from '../components/instance';
 import { removeEvent } from '../components/listeners';
-import { context, resetContext } from '../components/observe';
-import { Hooks, HookStatus, Log, VisitType } from '../shared/enums';
-import { log } from '../shared/logs';
+import { resetContext } from '../components/observe';
+import { Hooks, HookStatus, VisitType } from '../shared/enums';
 import { o } from '../shared/native';
 import { patchComponentSnap } from '../morph/snapshot';
 import { onNextTick, promiseResolve } from '../shared/utils';
+import * as log from '../shared/logs';
 
 export type Lifecycle = (
   | 'connect'
@@ -26,20 +26,20 @@ export const hargs = () => o(o($.page));
 
 export const teardown = () => {
 
-  for (const ref in $.components.$reference) {
-    delete $.components.$reference[ref];
+  for (const ref in $.maps) {
+    delete $.maps[ref];
   }
 
-  for (const instance of $.components.$instances.values()) {
+  for (const instance of $.instances.values()) {
     for (const key in instance.scope.events) {
       removeEvent(instance, instance.scope.events[key]);
     }
   }
 
-  $.components.$instances.clear();
-  $.components.$mounted.clear();
+  $.instances.clear();
+  $.mounted.clear();
 
-  log(Log.INFO, 'Component instances were disconnected');
+  log.info('Component instances were disconnected');
 
 };
 
@@ -50,7 +50,7 @@ export const mount = (promises: LifecycleHooks) => {
 
   for (const [ ref, firsthook, finalhook ] of promises) {
 
-    const instance = $.components.$instances.get(ref);
+    const instance = $.instances.get(ref);
     const MOUNT = instance.scope.status === Hooks.UNMOUNT ? 'unmount' : 'onmount';
 
     if (!instance.scope.snap) instance.scope.snap = $.page.snap;
@@ -80,7 +80,7 @@ export const mount = (promises: LifecycleHooks) => {
 
         // Fall through and reject outside of catch
 
-        log(Log.WARN, `Component to failed to ${MOUNT}: ${instance.scope.instanceOf} (${ref})`, error);
+        log.warn(`Component to failed to ${MOUNT}: ${instance.scope.instanceOf} (${ref})`, error);
 
         return Promise.reject<string>(ref);
 
@@ -110,17 +110,15 @@ export const mount = (promises: LifecycleHooks) => {
  */
 export const hook = () => {
 
-  const { $mounted, $instances, $registry } = $.components;
-
-  if ($mounted.size === 0 && $instances.size === 0 && $registry.size > 0) return getComponents();
+  if ($.mounted.size === 0 && $.instances.size === 0 && $.registry.size > 0) return getComponents();
 
   const promises: LifecycleHooks = [];
 
-  for (const ref of $mounted) {
+  for (const ref of $.mounted) {
 
-    if (!$instances.has(ref)) continue;
+    if (!$.instances.has(ref)) continue;
 
-    const instance = $instances.get(ref);
+    const instance = $.instances.get(ref);
 
     if (instance.scope.status !== Hooks.MOUNTED && instance.scope.status !== Hooks.UNMOUNTED) {
 
@@ -145,16 +143,16 @@ export const hook = () => {
   }
 
   promises.length > 0 && mount(promises).catch(ref => {
-    const instance = $instances.get(ref);
+    const instance = $.instances.get(ref);
     instance.scope.status = Hooks.UNMOUNTED;
-    $mounted.delete(ref);
+    $.mounted.delete(ref);
   });
 
 };
 
 export const connect = () => {
 
-  if ($.components.$registry.size === 0 || $.observe.components) return;
+  if ($.registry.size === 0 || $.observe.components) return;
 
   if ($.page.type === VisitType.INITIAL) {
 
@@ -162,9 +160,9 @@ export const connect = () => {
 
   } else {
 
-    if (context) {
+    if (ctx.store) {
 
-      setInstances(context).then(hook).then(resetContext);
+      setInstances(ctx.store).then(hook).then(resetContext);
 
     } else {
 

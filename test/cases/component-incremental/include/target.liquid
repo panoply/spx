@@ -1,8 +1,7 @@
-<div class="row mx-1">
-  <div class="col-7">
+<div class="row pl-3">
+  <div class="col pr-4 py-4">
     <div
       class="row mt-b"
-      id="increment"
       spx-component="incremental"
       spx-incremental:count="0"
       spx-incremental:color="aquamarie"
@@ -26,7 +25,7 @@
           spx-bind="incremental.count">0</code>
       </div>
 
-      <div class="col tc py-3 bd rd">
+      <div class="col tc py-3 bd rd mr-3">
         <h6 class="fw-bold fc-gray fs-sm mb-3">
           Color:
         </h6>
@@ -35,7 +34,29 @@
           spx-node="incremental.color"
           style="background-color: aquamarine;"></span>
       </div>
+      <div class="col-auto tl py-3 bd rd px-4 bg-ivory">
 
+        <ul>
+          <li>
+            <span class="fs-xxs fw-bold pr-3">CONNECT&nbsp;</span>
+            <code
+              class="fs-sm fw-bold"
+              spx-bind="incremental.connect"></code>
+          </li>
+          <li>
+            <span class="fs-xxs fw-bold pr-3">ONMMOUNT</span>
+            <code
+              class="fs-sm fw-bold"
+              spx-bind="incremental.onmount"></code>
+          </li>
+          <li>
+            <span class="fs-xxs fw-bold pr-3">UNMMOUNT</span>
+            <code
+              class="fs-sm fw-bold"
+              spx-bind="incremental.unmount">0</code>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>

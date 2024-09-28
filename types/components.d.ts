@@ -1254,7 +1254,7 @@ export interface Scope {
    *
    * @default null
    */
-  snap: string;
+  snap: number;
   /**
    * ### key
    *
@@ -1436,7 +1436,7 @@ export interface ComponentSession {
    * at runtime intialization. The entires of the map are called upon during the
    * {@link setInstances} operations to establish a component instance.
    */
-  $registry: Map<string, any>;
+  registry: Map<string, any>;
   /**
    * ### Instances
    *
@@ -1448,7 +1448,7 @@ export interface ComponentSession {
    * > Existing instances can be purged using `spx.disconnect()` or `spx.reset()` methods,
    * > but cannot be killed or destroyed in isolation.
    */
-  $instances: Map<string, Class>;
+  instances: Map<string, Class>;
   /**
    * ### Reference
    *
@@ -1459,7 +1459,7 @@ export interface ComponentSession {
    * > The `data-spx` value (`ref`) records will be the **key** entries that allow
    * > the {@link ComponentSession} to be acquired.
    */
-  $reference: ProxyHandler<Record<string, Class>>;
+  maps: ProxyHandler<Record<string, Class>>;
   /**
    * ### Mounted
    *
@@ -1468,5 +1468,5 @@ export interface ComponentSession {
    * between navigations (depending on fragment morphs) and will always accurately reflect
    * which mounted component instances.
    */
-  $mounted: Set<string>;
+  mounted: Set<string>;
 }

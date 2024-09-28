@@ -92,11 +92,7 @@
           "url": "/usage/installation/"
         },
         {
-          "title": "TypeScript",
-          "url": "/usage/typescript/"
-        },
-        {
-          "title": "Connection",
+          "title": "Connect",
           "url": "/usage/connection/"
         },
         {
@@ -116,12 +112,16 @@
           "url": "/usage/lifecycle-events/"
         },
         {
-          "title": "VSCode Extension",
-          "url": "/usage/vscode-extension/"
-        },
-        {
           "title": "Methods List",
           "url": "/usage/methods-list/"
+        },
+        {
+          "title": "TypeScript",
+          "url": "/usage/typescript/"
+        },
+        {
+          "title": "VSCode Extension",
+          "url": "/usage/vscode-extension/"
         }
       ]
     },
@@ -129,32 +129,32 @@
       "title": "Components",
       "links": [
         {
-          "title": "Define",
-          "url": "/components/define/"
+          "title": "Extends",
+          "url": "/components/extends/"
         },
         {
           "title": "State",
           "url": "/components/state/"
         },
         {
-          "title": "Hooks",
-          "url": "/components/hooks/"
+          "title": "Bindings",
+          "url": "/components/bindings/"
         },
         {
           "title": "Nodes",
           "url": "/components/nodes/"
         },
         {
-          "title": "DOM",
-          "url": "/components/dom/"
+          "title": "Sugar",
+          "url": "/components/sugar/"
         },
         {
           "title": "Events",
           "url": "/components/events/"
         },
         {
-          "title": "Bindings",
-          "url": "/components/bindings/"
+          "title": "Hooks",
+          "url": "/components/hooks/"
         },
         {
           "title": "Directives",
@@ -167,6 +167,10 @@
         {
           "title": "Register",
           "url": "/components/register/"
+        },
+        {
+          "title": "Algorithm",
+          "url": "/components/algorithm/"
         }
       ]
     },

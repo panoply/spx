@@ -43,24 +43,20 @@ export const getNodeTargets = (selector: string, hrefs: string): HTMLAnchorEleme
 
   const targets: HTMLAnchorElement[] = [];
 
-  forNode<HTMLAnchorElement>(
-    selector,
-    targetNode => {
+  forNode<HTMLAnchorElement>(selector, targetNode => {
 
-      if (targetNode.nodeName !== 'A') {
-        forNode<HTMLAnchorElement>(
-          hrefs,
-          linkNode => canFetch(linkNode) === CanFetch.YES ? targets.push(linkNode) : null
-        );
-      } else {
-
-        if (targetNode.hasAttribute('href') && validKey(targetNode.href)) {
-          const key = getKey(targetNode.href);
-          if (getKey(key) !== null && has(key) === false) targets.push(targetNode);
-        }
+    if (targetNode.nodeName !== 'A') {
+      forNode<HTMLAnchorElement>(
+        hrefs,
+        linkNode => canFetch(linkNode) === CanFetch.YES ? targets.push(linkNode) : null
+      );
+    } else {
+      if (targetNode.hasAttribute('href') && validKey(targetNode.href)) {
+        const key = getKey(targetNode.href);
+        if (getKey(key) !== null && has(key) === false) targets.push(targetNode);
       }
     }
-  );
+  });
 
   return targets;
 

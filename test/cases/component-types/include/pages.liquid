@@ -1,0 +1,37 @@
+{%- assign pages = 'Defaults,DOM Defined,Defined,Overwrite' | split: ',' -%}
+
+<div class="row ai-center ml-1">
+  <div class="col-12 py-3 p-4 bg-ivory rd bd">
+    <div class="row jc-between">
+      <div
+        class="col-auto"
+        id="pages">
+        <ul class="list-pipe jc-start">
+
+          {%- for link in pages -%}
+
+            {%-
+              liquid
+              assign slug = link | slugify
+              if link == 'Defaults'
+                assign url = '/components/types/'
+              else
+                assign url = link | slugify | prepend: '/components/types/' | append: '/'
+              endif
+            -%}
+
+            <li>
+              <a
+                href="{{ url }}"
+                {%- if page.url == url -%}
+                  class="fw-bold fc-pink"
+                {%- endif -%}>
+                {{ link }}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

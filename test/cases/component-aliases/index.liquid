@@ -8,11 +8,9 @@ aliases:
 
 <div class="row">
   <div class="col-8">
-    {{
-      content
-    }}
+    {{ content }}
     <div class="row jc-center">
-      {% for alias in aliases %}
+      {%- for alias in aliases -%}
         <div class="col-auto px-5 pt-5 {% unless forloop.last %}br{% endunless %}">
           <h2 class="fs-sm mb-3">{{ alias }} Alias {{ forloop.index }}</h2>
           <div
@@ -37,7 +35,7 @@ aliases:
             class="d-block fs-sm mt-3 tc"
             spx-node="{{ alias }}.feedback"></span>
         </div>
-      {% endfor %}
+      {%- endfor -%}
     </div>
   </div>
 </div>

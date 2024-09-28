@@ -20,3 +20,19 @@ export const Entities: Record<string, string> = {
   '&#x60;': '`',
   '&#x3D;': '='
 };
+
+/**
+ * Array list of applied to session api method
+ */
+export const SessionMethod = [
+  'config',
+  'snaps',
+  'pages',
+  'observers',
+  'fragments',
+  'instances',
+  'mounted',
+  'registry',
+  'reference',
+  'memory'
+];

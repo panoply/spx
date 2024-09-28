@@ -1,24 +1,43 @@
+hr {
+  margin: 40px 0;
+}
 .icon-logo {
   color: #363d49;
-  width: 150px;
+  width: 120px;
   height: 50px;
 }
 
+.fs-xxs {
+  font-size: 0.6rem;
+  font-family: $headings-font-family;
+}
+.icon-left,
+.icon-right {
+  color: #363d49;
+  width: 30px;
+  height: 30px;
+}
 .bg-code {
   background-color: #16181c;
 }
 
+.bg-ivory {
+  background-color: #fbfbfb;
+}
+
 .sidebar {
-  position: absolute;
+  position: fixed;
   left: 0;
-  width: 170px;
+  width: 200px;
+  height: 100%;
+  background-color: #fbfbfb;
   a:hover {
     text-decoration: underline;
   }
 
   &::after {
     position: absolute;
-    left: 170px;
+    left: 200px;
     height: 98.8vh;
     min-height: 98.8vh;
     top: 0;
@@ -33,7 +52,7 @@
 }
 
 .offset-left {
-  margin-left: 170px;
+  margin-left: 200px;
 }
 
 .version {
@@ -102,6 +121,61 @@
   border-color: $papyrus-complete-border-color !important;
 }
 
+.event-roll {
+  overflow-y: hidden;
+  position: relative;
+  font-size: 0.85rem;
+  max-height: 300px;
+
+  &:hover {
+    overflow-y: auto;
+  }
+
+  &::-webkit-scrollbar {
+    width: var(--papyrus-scrollbar-width);
+    height: var(--papyrus-scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--papyrus-scrollbar-track);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--papyrus-scrollbar-thumb);
+
+    &:hover {
+      background: var(--papyrus-scrollbar-thumb-hover);
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  .line {
+    width: 100%;
+    border-bottom: $cyan 0.01rem solid;
+    margin-bottom: 8px;
+    margin-top: 5px;
+  }
+
+  .message {
+    color: $white;
+    font-family: $font-family-code;
+    font-size: 0.775rem;
+    position: relative;
+    padding-left: 40px;
+
+    &::before {
+      color: var(--papyrus-line-number-color);
+      content: attr(aria-label);
+      position: absolute;
+      left: 5px;
+      width: 15px;
+      text-align: right;
+    }
+  }
+}
 .event-logger {
   overflow-y: hidden;
   position: relative;

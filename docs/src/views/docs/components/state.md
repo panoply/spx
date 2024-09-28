@@ -14,8 +14,6 @@ anchors:
 
 Component state is stored in the DOM, and bindings are established in mounted components. State references necessitate the definition of an interface model via the static `define.state` object within components, supporting various definition structures.
 
-<br>
-
 # Type Constructors
 
 In the following code snippet, we've defined some state for a tab component. Developers familiar with Stimulus will notice that SPX components closely resemble how you might define `values` in controllers.
@@ -24,21 +22,15 @@ In the following code snippet, we've defined some state for a tab component. Dev
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component {
-
-  static define = {
-    state: {
-      startTab: Number,
-      activeColor: String,
-      activeTab: Number,
-      disabledTabs: Array
-    }
-  };
-
-}
+export class Example extends spx.Component({
+  state: {
+    startTab: Number,
+    activeColor: String,
+    activeTab: Number,
+    disabledTabs: Array
+  }
+}) {}
 ```
-
----
 
 # Default State
 
@@ -48,24 +40,15 @@ Let's now elaborate on the previous definitions and provide some default values 
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component {
-
-  static define = {
-    state: {
-      startTab: Number,
-      activeColor: String,
-      activeTab: Number,
-      disabledTabs: {
-        typeof: Array,
-        default: [4,5] // Tab indexes 4 and 5 will be disabled
-      }
-    }
-  };
-
-}
+export class Example extends spx.Component({
+  state: {
+    startTab: 0,
+    activeColor: 'green',
+    activeTab: 2,
+    disabledTabs: [4,5] // Tab indexes 4 and 5 will be disabled
+  }
+}) {}
 ```
-
----
 
 # Persisted State
 

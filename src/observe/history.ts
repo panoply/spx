@@ -2,13 +2,14 @@ import type { HistoryState, HistoryAPI, Page } from 'types';
 import { $ } from '../app/session';
 import { o } from '../shared/native';
 import { hasProps, promiseResolve } from '../shared/utils';
-import { log } from '../shared/logs';
-import { Colors, Log, VisitType } from '../shared/enums';
+import * as log from '../shared/logs';
+import { VisitType } from '../shared/enums';
 import { getKey, getRoute } from '../app/location';
 import * as request from '../app/fetch';
 import * as render from '../app/render';
 import * as q from '../app/queries';
 import { Merge } from 'type-fest';
+import { emit } from 'src/app/events';
 
 /**
  * History API `window.history`
@@ -35,6 +36,7 @@ export const reverse = (): boolean => (
  */
 export const has = (key?: string): boolean => {
 
+  console.log(api);
   if (api.state === null) return false;
   if (typeof api.state !== 'object') return false;
   if (!('spx' in api.state)) return false;
@@ -108,7 +110,7 @@ export const replace = ({
     })
   }, title, key);
 
-  log(Log.VERBOSE, `History replaceState: ${key}`);
+  log.debug(`History replaceState: ${key}`);
 
   return api.state.spx;
 
@@ -132,7 +134,7 @@ export const push = ({ key, rev, title, scrollX, scrollY, target }: Page) => {
     })
   }, title, key);
 
-  log(Log.VERBOSE, `History pushState: ${key}`);
+  log.debug(`History pushState: ${key}`);
 
   return api.state.spx;
 
@@ -168,17 +170,19 @@ const pop = async (event: Merge<PopStateEvent, {
 
     q.patch('type', VisitType.POPSTATE, spx.key);
 
+    if (!emit('popstate', $.pages[spx.key])) return;
+
     const { type, key } = render.update($.pages[spx.key]);
 
-    type === VisitType.REVERSE
-      ? log(Log.VERBOSE, `History popState reverse: ${key}`)
-      : log(Log.VERBOSE, `History popState session: ${key}`);
+    log.debug(`History popState ${type === VisitType.REVERSE ? 'session' : 'reverse'}: ${key}`);
 
   } else {
 
-    log(Log.VERBOSE, `History popState fetch: ${spx.key}`);
+    log.debug(`History popState fetch: ${spx.key}`);
 
     spx.type = VisitType.POPSTATE;
+
+    if (!emit('popstate', spx as Page)) return;
 
     const page = await request.fetch(spx as Page);
 
@@ -193,7 +197,7 @@ const pop = async (event: Merge<PopStateEvent, {
 
       // Let's proceed as normal, our snapshot is ready.
 
-      log(Log.VERBOSE, `History popState fetch Complete: ${spx.key}`, Colors.CYAN);
+      log.debug(`History popState fetch Complete: ${spx.key}`);
 
       page.target = [];
       page.selector = null;
@@ -214,6 +218,9 @@ const pop = async (event: Merge<PopStateEvent, {
       // teardown();
 
       const data = q.create(getRoute(key, VisitType.POPSTATE));
+
+      if (!emit('popstate', data)) return;
+
       const page = await request.fetch(data);
 
       if (page) push(page);

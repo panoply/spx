@@ -11,11 +11,13 @@ anchors:
   - Example 4
 ---
 
-# Connection
+# Connect
 
-SPX initialization requires invoking the default function `{js} spx()`. This default export returns a curried callback function, triggered once the **DOMContentLoaded** event fires. Upon connection, SPX saves the outer HTML of the current document in the snapshot cache using `{js} document.documentElement.outerHTML`. Subsequent snapshots are saved after an XHR request completes.
+The SPX initialization process involves invoking a default function, `{js} spx()`, which returns a curried callback function designed to activate once the `DOMContentLoaded` event fires. At this juncture, SPX captures a snapshot of the document's state by saving `{js} document.documentElement.outerHTML` into its snapshot cache.
 
-### Example 1
+> This initial snapshot serves as a baseline, reflecting the document's state at the moment of initialization. This differs in subsequent visits, as snapshots are obtained using XHR over the wire.
+
+#### Example 1
 
 SPX Connection using default options:
 
@@ -26,7 +28,7 @@ import spx from 'spx';
 spx(); // (session) => {}
 ```
 
-### Example 2
+#### Example 2
 
 SPX Connection using default options with callback:
 
@@ -41,9 +43,9 @@ spx()(function(session) {
 });
 ```
 
-### Example 3
+#### Example 3
 
-SPX Connection with `fragment[]` options and callback:
+SPX Connection with `{ts} fragment[]` options and callback:
 
 <!-- prettier-ignore -->
 ```js
@@ -62,7 +64,7 @@ spx({
 });
 ```
 
-### Example 4
+#### Example 4
 
 SPX Connection with curried callback reference:
 

@@ -1,60 +1,10 @@
 import type { ComponentBinds, Scope } from 'types';
 import { $ } from '../app/session';
-import { log } from '../shared/logs';
-import { Log } from '../shared/enums';
+import * as log from '../shared/logs';
 import { onNextTick } from '../shared/utils';
 import * as q from '../app/queries';
-
-// export function markComponents (datasets: Array<[string, string]>) {
-
-//   const { instances } = $.components;
-//   const { page, dom } = q.get();
-//   const snapDom = dom.body;
-
-//   for (const [ selector, key ] of datasets) {
-
-//     const instance = instances.get(key);
-//     const attrRef = instance.dom.getAttribute($.qs.$ref);
-//     const element = snapDom.querySelector(selector);
-//     const {
-//       instanceOf,
-//       binds,
-//       nodes
-//     } = instance.scope;
-
-//     for (const ref in binds) {
-
-//       const bind = binds[ref];
-//       const selector = `[${$.qs.$bind}=${escSelector(`${instanceOf}.${bind.stateKey}`)}]`;
-//       const node = (bind.isChild ? element : snapDom).querySelector(selector);
-
-//       if (node.getAttribute($.qs.$ref) !== bind.key) {
-//         node.setAttribute($.qs.$ref, bind.key);
-//         log(Log.VERBOSE, `Binding reference in snapshot ${bind.key} was applied`, '#fff');
-//       }
-//     }
-
-//     for (const ref in nodes) {
-
-//       const item = nodes[ref];
-//       const selector = `[${$.qs.$node}*=${escSelector(`${instanceOf}.${item.keyProp}`)}]`;
-//       const node = (item.isChild ? element : snapDom).querySelector(selector);
-
-//       if (node.getAttribute($.qs.$ref) !== item.key) {
-//         node.setAttribute($.qs.$ref, item.key);
-//         log(Log.VERBOSE, `Node reference in snapshot ${item.key} was applied`, '#fff');
-//       }
-//     }
-
-//     if (element.getAttribute($.qs.$ref) !== attrRef) {
-//       element.setAttribute($.qs.$ref, attrRef);
-//       log(Log.VERBOSE, `Component reference in snapshot ${page.snap} was applied`, '#fff');
-//     }
-//   }
-
-//   q.setSnap(dom.documentElement.outerHTML);
-
-// }
+import { Colors } from 'src/shared/enums';
+import { replace } from '../app/snapshot';
 
 /**
  * Morph Bindings
@@ -64,14 +14,12 @@ import * as q from '../app/queries';
 export function morphBinds (cRef: string, bind: ComponentBinds, value: string) {
 
   const { page, dom } = q.get();
-  const elem = dom.body.querySelector<HTMLElement>(bind.selector);
+  const curDom = dom.body.querySelector<HTMLElement>(bind.selector);
 
-  if (elem) {
-
-    elem.innerText = value;
-    q.setSnap(elem.ownerDocument.documentElement.outerHTML, page.snap);
-    log(Log.VERBOSE, `Components binded node in snapshot was updated: ${value}`);
-
+  if (curDom) {
+    curDom.innerText = value;
+    replace(page.snap, curDom.ownerDocument.documentElement.outerHTML);
+    log.debug(`Components binded node in snapshot was updated: ${value}`, Colors.GREEN);
   } else {
     // TODO: FAILED
   }
@@ -89,14 +37,13 @@ export function morphBinds (cRef: string, bind: ComponentBinds, value: string) {
 export const patchComponentSnap = (scope: Scope, scopeKey: string) => onNextTick(() => {
 
   const snap = q.getSnapDom(scope.snap);
-  const elem = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
+  const dom = snap.querySelector<HTMLElement>(`[${$.qs.$ref}="${scope.ref}"]`);
 
-  // console.log(snap, elem);
-  if (elem) {
-    elem.innerHTML = scope.snapshot;
-    q.setSnap(elem.ownerDocument.documentElement.outerHTML, scope.snap);
+  if (dom) {
+    dom.innerHTML = scope.snapshot;
+    replace(scope.snap, dom.ownerDocument.documentElement.outerHTML);
   } else {
-    log(Log.WARN, `Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
+    log.warn(`Component snapshot merge failed: ${scope.instanceOf} (${scopeKey})`);
   }
 
 });
@@ -115,12 +62,11 @@ export const morphHead = (method: 'removeChild' | 'appendChild', newNode: HTMLEl
 
     dom.head[method](newNode);
 
-    $.snaps[page.snap] = dom.documentElement.outerHTML;
-
-    log(Log.VERBOSE, `Snapshot record was updated. Node ${operation} from <head>`, newNode);
+    replace(page.snap, dom.documentElement.outerHTML);
+    log.debug(`Snapshot record was updated, ${operation} ${newNode.nodeName.toLowerCase()} from <head>`);
 
   } else {
-    log(Log.WARN, 'Node does not exist in the snapshot record, no mutation applied', newNode);
+    log.warn('Node does not exist in the snapshot record, snapshot morph skipped', newNode);
   }
 
 };

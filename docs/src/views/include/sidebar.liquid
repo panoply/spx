@@ -54,7 +54,7 @@
         {%- else -%}
           class="menu-link"
         {%- endif -%}>
-        {{- parent.title -}}
+        {{ parent.title }}
       </a>
     {%- else -%}
       <button
@@ -65,7 +65,7 @@
         {%- else -%}
           class="menu-link"
         {%- endif -%}>
-        {{- parent.title -}}
+        {{ parent.title }}
       </button>
     {%- endif -%}
     <ul
@@ -95,7 +95,7 @@
               {%- else -%}
                 class="child-link"
               {%- endif -%}>
-              {{- child.title -}}
+              {{ child.title }}
             </button>
             <ul
               class="child-list rel pl-2"
@@ -110,7 +110,7 @@
                     {%- if page.url == child.url -%}
                       class="active"
                     {%- endif -%}>
-                    {{- child.title -}}
+                    {{ child.title }}
                   </a>
                 </li>
               {%- endfor -%}
@@ -125,7 +125,7 @@
               {%- if page.url == child.url -%}
                 class="active"
               {%- endif -%}>
-              {{- child.title -}}
+              {{ child.title }}
             </a>
           </li>
         {%- endif -%}
@@ -137,7 +137,7 @@
 <div class="sidebar-footer w-100">
   <div class="row jc-center">
     <div class="col-auto fc-dark-gray">
-      {{- pkg.version | prepend: 'spx version ' -}}
+      {{ pkg.version | prepend: 'spx version ' }}
     </div>
   </div>
 </div>

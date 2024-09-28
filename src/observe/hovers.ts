@@ -34,7 +34,7 @@ const onEnter = (event: MouseEvent): void => {
 
   request.throttle(route.key, function () {
 
-    if (!emit('prefetch', target, route)) return;
+    if (!emit('prefetch', route, target)) return;
 
     request.fetch(state).then(function () {
       delete XHR.$timeout[route.key];

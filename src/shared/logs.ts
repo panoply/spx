@@ -1,89 +1,57 @@
+/* eslint-disable no-unused-vars */
 import { $ } from '../app/session';
-import { Colors, LogLevel, Log } from './enums';
-import { info, warn, error } from './native';
+import { Colors, LogLevel, Æ } from './enums';
+
+class SPXError extends Error {
+
+  constructor (message: string, public context?: any) {
+    super(message);
+    this.name = 'SPX Error';
+    if (context) this.context = context;
+  }
+
+}
 
 const PREFIX = 'SPX ';
 const START = '\x1b[';
 const END = '\x1b[0m';
 
 /**
- * Dimmed Gray Text
+ * Color
  */
-export const D = (text: string) => START + '90m' + text + END;
+export const C = (COLOR: Æ, text: string) => START + COLOR + text + END;
 
 /**
- * Green Text
+ * Console Debug
  */
-export const G = (text: string) => START + '32m' + text + END;
-
-/**
- * Red text
- */
-export const R = (text: string) => START + '31m' + text + END;
-
-/**
- * Yellow text
- */
-export const Y = (text: string) => START + '33m' + text + END;
-
-/**
- * Cyan text
- */
-export const C = (text: string) => START + '36m' + text + END;
-
-/**
- * Type Error
- *
- * Error handler for console logging operations. The function allows for
- * throws, warnings and other SPX related logs.
- */
-export const log = (type: Log, message: string | string[], context?: any) => {
-
-  const LEVEL = $.logLevel;
-
-  if (LEVEL > Log.INFO && type <= Log.INFO) return;
-
-  if (Array.isArray(message)) message = message.join(' ');
-
-  if ((
-    type === Log.INFO ||
-    type === Log.VERBOSE
-  ) && (
-    LEVEL === LogLevel.VERBOSE ||
-    LEVEL === LogLevel.INFO
-  )) {
-
-    info(`${PREFIX}%c${message}`, `color: ${context || Colors.GRAY};`);
-
-  } else if (
-    type === Log.WARN &&
-    LEVEL <= LogLevel.WARN
-  ) {
-
-    if (context) {
-      warn(PREFIX + message, context);
-    } else {
-      warn(PREFIX + message);
-    }
-
-  } else if (
-    type === Log.ERROR ||
-    type === Log.TYPE
-  ) {
-
-    if (context) {
-      error(PREFIX + message, context);
-    } else {
-      error(PREFIX + message);
-    }
-
-    try {
-      if (type === Log.TYPE) {
-        throw new TypeError(message);
-      } else {
-        throw new Error(message);
-      }
-    } catch (e) {}
-
+export const debug = (message: string | string[], color: Colors = Colors.GRAY) => {
+  if ($.logLevel === LogLevel.DEBUG) {
+    // @ts-ignore
+    console.debug('%c' + PREFIX + (Array.isArray(message) ? message.join(' ') : message), `color: ${color};`);
   }
+};
+
+/**
+ * Console Warnings
+ */
+export const warn = (message: string, context?: any) => {
+  if ($.logLevel >= LogLevel.WARN) {
+    context ? console.warn(PREFIX + message, context) : console.warn(PREFIX + message);
+  }
+};
+
+/**
+ * Console Info
+ */
+export const info = (...message: string[]) => {
+  if ($.logLevel === LogLevel.INFO) {
+    console.info(PREFIX + C(Æ.Gray, message.join('')));
+  }
+};
+
+/**
+ * Console Error (Will throw)
+ */
+export const error = (message: string, context?: any) => {
+  throw new SPXError(message, context);
 };

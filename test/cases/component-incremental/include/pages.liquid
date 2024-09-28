@@ -1,36 +1,34 @@
-{%
+{%-
   liquid
   assign pages = 'Page A,Page B,Page C' | split: ','
-%}
+-%}
 
 <div class="row ai-center ml-1">
-  <div class="col-9 py-3 px-4 bg-ivory rd my-4 bd">
+  <div class="col-12 py-3 p-4 bg-ivory rd bd">
     <div class="row jc-between">
       <div
         class="col-auto"
         id="pages">
         <ul class="list-pipe jc-start">
 
-          {% for link in pages %}
-
-            {%
+          {%- for link in pages -%}
+            {%-
               liquid
               assign slug = link | slugify
               assign url = link | slugify | prepend: '/components/incremental/' | append: '/'
-              assign hasTarget = target | slice: 0, 1
-            %}
+            -%}
 
             <li>
               <a
                 href="{{ url }}"
                 spx-target="#content,#pages,#title"
-                {% if page.url == url %}
+                {%- if page.url == url -%}
                   class="fw-bold"
-                {% endif %}>
+                {%- endif -%}>
                 {{ link }}
               </a>
             </li>
-          {% endfor %}
+          {%- endfor -%}
         </ul>
       </div>
     </div>

@@ -79,7 +79,7 @@ export interface Page<T = any> {
   /**
    * UUID reference to the page snapshot HTML Document element
    */
-  snap: string;
+  snap: number;
 
   /**
    * Controls the history pushstate for the navigation. Accepts a boolean

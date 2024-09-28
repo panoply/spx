@@ -1,11 +1,10 @@
 /* eslint-disable no-unused-vars */
 
 import type { LiteralUnion } from 'type-fest';
-import type { EventNames, EmitterArguments } from 'types';
+import type { EventNames, EmitterArguments, Page } from 'types';
 import { $ } from './session';
 import { forEach, parse } from '../shared/utils';
-import { log } from '../shared/logs';
-import { Log } from '../shared/enums';
+import * as log from '../shared/logs';
 
 /**
  * Emit Event
@@ -13,23 +12,25 @@ import { Log } from '../shared/enums';
  * Private function use for emitting events
  * which users are subscribed.
  */
-export function emit<T extends EventNames> (name: LiteralUnion<T, string>, ...args: EmitterArguments<T>) {
+export function emit<T extends EventNames> (name: T, ...args: EmitterArguments<T>) {
 
-  const isCache = name === 'before:cache';
+  const isCache = name === 'cache';
+  const binding = name === 'disconnect' ? null : args.length === 1 ? args[0] : args.shift();
 
-  if (isCache) args[1] = parse(args[1] as any);
+  // @ts-expect-error
+  if (isCache) args[0] = parse(args[0] as any);
 
   let returns: boolean | string = true;
 
   forEach(argument => {
 
-    const returned = argument.apply(null, args);
+    const returned = argument.apply(binding, args);
 
     if (isCache) {
       if (returned instanceof Document) {
         returns = returned.documentElement.outerHTML;
-      } else {
-        if (typeof returns !== 'string') returns = returned !== false;
+      } else if (typeof returns !== 'string') {
+        returns = returned !== false;
       }
     } else {
       returns = returned !== false;
@@ -67,7 +68,7 @@ export const off = (name: LiteralUnion<EventNames, string>, callback: (() => voi
     if (events && typeof callback === 'number') {
 
       events.splice(callback, 1);
-      log(Log.INFO, `Removed ${name} event listener (id: ${callback})`);
+      log.debug(`Removed ${name} event listener (id: ${callback})`);
 
       if (events.length === 0) delete $.events[name];
 
@@ -80,7 +81,7 @@ export const off = (name: LiteralUnion<EventNames, string>, callback: (() => voi
           if (events[i] !== callback) {
             live.push(events[i]);
           } else if (name !== 'x') { // Do not log "x" events, they are internal
-            log(Log.INFO, `Removed ${name} event listener (id: ${i})`);
+            log.debug(`Removed ${name} event listener (id: ${i})`);
           }
         }
       }
@@ -93,7 +94,7 @@ export const off = (name: LiteralUnion<EventNames, string>, callback: (() => voi
     }
 
   } else {
-    log(Log.WARN, `There are no ${name} event listeners`);
+    log.warn(`Unknown or invalid event listener: ${name}`);
   }
 
   return this;

@@ -1,14 +1,13 @@
-import type { Class, ComponentNodes, Scope } from 'types';
-import { type Context } from './context';
+import type { Class, ComponentNodes, Scope, Context } from 'types';
 import { $ } from '../app/session';
-import { Colors, Hooks, HookStatus, Log, VisitType } from '../shared/enums';
+import { Colors, Hooks, HookStatus, VisitType } from '../shared/enums';
 import { addEvent } from './listeners';
-import { log } from '../shared/logs';
 import { Component } from './class';
 import { LifecycleHooks, mount } from '../observe/components';
-import { snap } from './snapshot';
-import { defineGetter, element, elements, forEach, onNextTick, upcase } from '../shared/utils';
+import { element, elements, forEach, onNextTick, upcase } from '../shared/utils';
 import * as q from '../app/queries';
+import * as log from '../shared/logs';
+import * as snap from '../app/snapshot';
 import { b, o } from '../shared/native';
 import { sugarProxy } from './proxies';
 
@@ -33,10 +32,10 @@ const setTriggers = (hooks: LifecycleHooks, isMorph: boolean, isMount: boolean) 
 
   if (isMorph === false || (isMount && scope.status === Hooks.MOUNT)) {
 
-    $.components.$mounted.add(scope.key);
-    $.components.$instances.set(scope.key, instance);
+    $.mounted.add(scope.key);
+    $.instances.set(scope.key, instance);
 
-    log(Log.VERBOSE, `Component "${scope.instanceOf}" connected: ${scope.key}`, Colors.CYAN);
+    log.debug(`Component "${scope.instanceOf}" connected: ${scope.key}`, Colors.PINK);
 
     // This reference is used for onmount hook sequence
     // When initial run, onmount hook will run AFTER connect hook
@@ -71,7 +70,7 @@ const setTriggers = (hooks: LifecycleHooks, isMorph: boolean, isMount: boolean) 
 
 };
 
-const setEvents = (scope: Scope, instance: Class, isMorph: boolean) => {
+const setEvents = (scope: Scope, $instance: Class, isMorph: boolean) => {
 
   // Step 6 (New Visit)
   // Step 3 (Old Visit)
@@ -80,44 +79,67 @@ const setEvents = (scope: Scope, instance: Class, isMorph: boolean) => {
   //
   for (const key in scope.events) {
 
-    if (isMorph !== null && scope.status === Hooks.MOUNTED) {
-      $.components.$reference[key] = scope.key;
-      instance.scope.events[key] = scope.events[key];
+    const event = scope.events[key];
+
+    // Update the scope when key if non-existent.
+    // This will generally mean we apply incremental association
+    if (!(key in $instance.scope.events)) {
+      $.maps[key] = $instance.ref;
+      $instance.scope.events[key] = event;
     }
 
-    addEvent(instance, scope.events[key]);
+    if (isMorph !== null && scope.status === Hooks.MOUNTED) {
+      $.maps[key] = scope.key;
+      $instance.scope.events[key] = scope.events[key];
+    }
+
+    addEvent($instance, scope.events[key]);
 
   }
 
 };
 
-const setNodes = (nodes: Record<string, ComponentNodes>, instance: Class) => {
-
-  const { scope } = instance;
+const setNodes = (nodes: Record<string, ComponentNodes>, $instance: Class) => {
 
   for (const key in nodes) {
 
     const node = nodes[key];
-    const hasNode = `has${upcase(key)}`;
+    const hasNodeKey = `has${upcase(key)}`;
 
-    if (hasNode in instance) {
-      key in scope && ++scope[key].live;
+    // Update the scope when key is non-existent.
+    // This will generally mean we apply incremental association
+    if (!(key in $instance.scope.nodes)) {
+      $.maps[key] = $instance.ref;
+      $instance.scope.nodes[key] = node;
+    }
+
+    if (hasNodeKey in $instance) {
+      key in $instance.scope.nodes && ++$instance.scope.nodes[key].live;
       return;
     }
 
-    Object.defineProperty(instance, hasNode, { get: () => node.live > 0 });
+    const hasNode = () => node.live > 0;
+    const getNode = () => element(node.selector, node.isChild ? $instance.dom : b());
+    const getNodes = () => elements(node.selector, node.isChild ? $instance.dom : b());
 
-    const getNode = () => element(node.selector, node.isChild ? instance.dom : b());
-    const getNodes = () => elements(node.selector, node.isChild ? instance.dom : b());
+    Object.defineProperty($instance, hasNodeKey, { get: hasNode });
 
-    if (scope.define.sugar) {
-      Object.defineProperties(node.dom, { node: { get: getNode }, nodes: { get: getNodes } });
-      instance[key] = sugarProxy(node);
+    if ($instance.scope.define.sugar) {
+
+      Object.defineProperties(node.dom, {
+        node: { get: getNode },
+        nodes: { get: getNodes }
+      });
+
+      $instance[key] = sugarProxy(node);
+
     } else {
-      Object.defineProperties(instance, {
+
+      Object.defineProperties($instance, {
         [`${key}Node`]: { get: getNode },
         [`${key}Nodes`]: { get: getNodes }
       });
+
     }
   }
 
@@ -150,9 +172,10 @@ const defineInstances = (promises: LifecycleHooks, mounted: q.Mounted, isMorph: 
 
       scope.define = o();
 
-      const Register = $.components.$registry.get(scope.instanceOf);
+      const Register = $.registry.get(scope.instanceOf);
+      const Defined = Object.defineProperty(scope, 'define', { get: () => Register.define });
 
-      Component.scopes.set(scope.key, defineGetter(scope, 'define', Register.define));
+      Component.scopes.set(scope.key, Defined);
 
       const Instance = new Register(scope.key);
 
@@ -188,8 +211,8 @@ export const setInstances = (context: Context, snapshot?: Document) => {
 
   for (const instanceOf in $scopes) {
 
-    if (!$.components.$registry.has(instanceOf) && !mounted.has(instanceOf)) {
-      log(Log.WARN, `Component does not exist in registry: ${instanceOf}`, $scopes[instanceOf]);
+    if (!$.registry.has(instanceOf) && !mounted.has(instanceOf)) {
+      log.warn(`Component does not exist in registry: ${instanceOf}`, $scopes[instanceOf]);
       continue;
     }
 
@@ -205,7 +228,11 @@ export const setInstances = (context: Context, snapshot?: Document) => {
 
       if (mounted.has(instanceOf)) {
         for (const instance of mounted.get(instanceOf)) {
-          if (instance.scope.instanceOf === instanceOf) define(scope, instance);
+          if (instance.scope.instanceOf === instanceOf) {
+
+            define(scope, instance);
+
+          }
         }
       } else {
         define(scope);
@@ -222,7 +249,11 @@ export const setInstances = (context: Context, snapshot?: Document) => {
   // Intial visits require snapshot sync to apply. All visits thereafter
   // will augment and align snapshots during morph/render operations.
   //
-  $.page.type === VisitType.INITIAL && snap.sync(snapshot, $.page.snap);
+  if (($.page.type === VisitType.INITIAL && snapshot) || snapshot) {
+
+    snap.update(snapshot, $.page.snap);
+
+  }
 
   // Mount Components
   //

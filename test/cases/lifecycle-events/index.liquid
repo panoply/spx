@@ -1,0 +1,44 @@
+---
+layout: views/base.liquid
+---
+
+{%- assign events = 'visit,prefetch,fetch,cache,render,load' | split: ',' -%}
+
+<div class="row">
+  <div class="col-12">
+    {{ content }}
+  </div>
+</div>
+<div class="row">
+  <div
+    class="col-12 p-4"
+    spx-component="events"
+    spx-events:visit="0"
+    spx-events:prefetch="0"
+    spx-events:fetch="0"
+    spx-events:cache="0"
+    spx-events:render="0"
+    spx-events:load="0">
+    <div class="row">
+      {%- for item in events -%}
+        <div class="col">
+          <div class="tc py-3 bd rd">
+            <h5 class="fw-bold fc-gray fs-sm mb-3">
+              {{ item }}
+            </h5>
+            <code
+              class="py-2 px-4 fs-lg"
+              spx-bind="events.{{ item }}">0</code>
+          </div>
+        </div>
+      {%- endfor -%}
+
+    </div>
+
+    <div class="col-12">
+      <div
+        spx-node="events.logger"
+        class="event-roll bg-code rd my-3 p-3 fs-md"></div>
+    </div>
+  </div>
+</div>

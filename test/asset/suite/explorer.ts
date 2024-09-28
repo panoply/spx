@@ -1,7 +1,7 @@
 /* eslint-disable no-redeclare */
 /* eslint-disable no-unused-expressions */
 import spx, { SPX } from 'spx';
-import papyrus, { Papyrus } from 'papyrus';
+// import papyrus, { Papyrus } from 'papyrus';
 import m from 'mithril';
 import esthetic from 'esthetic';
 import { state } from './explorer/state';
@@ -21,6 +21,7 @@ esthetic.rules({
 });
 
 export class Explorer extends spx.Component({
+  sugar: true,
   nodes: <const>[
     'content',
     'components',
@@ -36,20 +37,21 @@ export class Explorer extends spx.Component({
   }
 }) {
 
-  public papyrusDoc: Papyrus.Model;
-  public papyrusSnap: Papyrus.Model;
+  // public papyrusDoc: Papyrus.Model;
+  // public papyrusSnap: Papyrus.Model;
 
   connect () {
 
-    this.papyrusDoc = papyrus.mount(this.documentNode, { language: 'html' });
-    this.papyrusSnap = papyrus.mount(this.snapshotNode, { language: 'html' });
+    // this.papyrusDoc = papyrus.mount(this.documentNode, { language: 'html' });
+    // this.papyrusSnap = papyrus.mount(this.snapshotNode, { language: 'html' });
     this.setComponents();
 
   }
 
   onmount () {
 
-    this.setComponents();
+    m.redraw();
+    // this.setComponents();
 
     // this.setDocument();
     // this.setSnapshot();
@@ -58,16 +60,16 @@ export class Explorer extends spx.Component({
 
   setDocument () {
 
-    const input = this.format(state.document.getElementById('main').outerHTML);
+    // const input = this.format(state.document.getElementById('main').outerHTML);
 
-    this.papyrusDoc.update(input);
+    // this.papyrusDoc.update(input);
 
   }
 
-  logger (event: SPX.Event) {
+  setLogger (event: SPX.Event) {
 
-    this.componentsNode.classList.add('d-none');
-    this.loggerNode.classList.remove('d-none');
+    this.components.addClass('d-none');
+    this.logger.removeClass('d-none');
     // this.dom.tab(tab => tab.removeClass('active'));
     event.target.classList.add('active');
 
@@ -75,21 +77,21 @@ export class Explorer extends spx.Component({
 
   session (event: SPX.Event) {
 
-    this.dom.logger.addClass('d-none');
-    this.dom.components.removeClass('d-none');
-    this.dom.tab(tab => tab.classList.remove('active'));
+    this.logger.addClass('d-none');
+    this.components.removeClass('d-none');
+    this.tab(tab => tab.classList.remove('active'));
     event.target.classList.add('active');
   }
 
   setSnapshot () {
 
-    setTimeout(() => {
-      const input = this.format(state.snapshot.getElementById('main').outerHTML);
-      this.papyrusSnap.update(input);
-      this.papyrusDoc.onscroll((position) => {
-        this.papyrusSnap.scroll(position);
-      });
-    }, 500);
+    // setTimeout(() => {
+    //   const input = this.format(state.snapshot.getElementById('main').outerHTML);
+    //   this.papyrusSnap.update(input);
+    //   this.papyrusDoc.onscroll((position) => {
+    //     this.papyrusSnap.scroll(position);
+    //   });
+    // }, 500);
   }
 
   format (code: string) {
@@ -99,7 +101,7 @@ export class Explorer extends spx.Component({
 
   setComponents () {
 
-    m.mount(this.dom.components, Components);
+    m.mount(this.components.toNode(), Components);
 
   }
 
@@ -113,8 +115,8 @@ export class Explorer extends spx.Component({
     element.ariaLabel = `${++this.state.count}`;
     element.innerHTML = `${message}`;
 
-    this.dom.logger.appendChild(element);
-    this.dom.logger.scrollTop = this.dom.logger.parentElement.scrollHeight;
+    this.logger.appendChild(element);
+    this.logger.scrollTop = this.logger.parentElement.scrollHeight;
 
   }
 

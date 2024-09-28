@@ -5,7 +5,11 @@ export class Incremental extends spx.Component({
   state: {
     label: String,
     color: String,
-    count: Number
+    count: Number,
+    click: Number,
+    connect: Number,
+    onmount: Number,
+    unmount: 0
   },
   sugar: true,
   nodes: <const>[
@@ -15,9 +19,25 @@ export class Incremental extends spx.Component({
   ]
 }) {
 
-  labelValue ({ attrs }: SPX.Event<{
-    text: string;
-  }>) {
+  connect (): void {
+
+    ++this.state.connect;
+
+  }
+
+  onmount (): void {
+
+    ++this.state.onmount;
+
+  }
+
+  unmount (): void {
+
+    ++this.state.unmount;
+
+  }
+
+  labelValue ({ attrs }: SPX.Event<{ text: string; }>) {
 
     this.label.innerText = attrs.text;
 
@@ -34,7 +54,9 @@ export class Incremental extends spx.Component({
   changeColor (event: SPX.InputEvent<{}, HTMLInputElement>) {
 
     this.state.color = event.target.value;
-    this.color.style.backgroundColor = this.state.color;
+    this.color(color => {
+      color.style.backgroundColor = this.state.color;
+    });
 
   }
 
@@ -44,17 +66,18 @@ export class Incremental extends spx.Component({
 
   }
 
-  increment () {
+  onClick () {
 
-    console.log('increment', this);
+    ++this.state.click;
+  }
+
+  increment () {
 
     ++this.state.count;
 
   }
 
   decrement () {
-
-    console.log('decrement', this);
 
     --this.state.count;
 

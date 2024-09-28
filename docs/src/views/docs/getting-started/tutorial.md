@@ -109,24 +109,21 @@ Let's proceed with creating SPX components to integrate into our web application
 ## `counter.ts`
 
 <!--prettier-ignore-->
-```ts
+```js
 import spx, { SPX } from 'spx';
 
-export class Counter extends spx.Component<typeof Counter.define> {
-
-  static define = {
-    nodes: <const>['count' ], // We use <const> to enable completions
-    state: {
-      count: Number
-    }
-  };
+export class Count extends spx.Component({
+  state: {
+    clicks: 0
+  }
+}) {
 
   increment () {
-    this.dom.countNode.innerText = `${++this.state.count}`;
+    ++this.state.clicks;
   }
 
   decrement () {
-    this.dom.countNode.innerText = `${--this.state.count}`;
+    --this.state.clicks;
   }
 
 }
@@ -156,18 +153,14 @@ Now, it's time to integrate our component into the DOM. SPX components follow a 
 
 <!--prettier-ignore-->
 ```html
-<section spx-component="counter">
+<section spx-component="count">
   <!-- Element -->
   <h1>
-    Count: <span spx-node="counter.count">0</span>
+    Count: <span spx-bind="count.clicks">0</span>
   </h1>
   <!-- Buttons -->
-  <button
-    type="button"
-    spx@click="counter.increment"> + </button>
-  <button
-    type="button"
-    spx@click="counter.decrement"> - </button>
+  <button spx@click="count.increment"> + </button>
+  <button spx@click="count.decrement"> - </button>
 </section>
 ```
 
@@ -181,34 +174,26 @@ A simple counter component is an excellent starting point, but let's create a sl
 ```ts
 import spx, { SPX } from 'spx';
 
-export class Tabs extends spx.Component<typeof Tabs.define> {
-
-  static define = {
-    nodes: <const>['button', 'panel'],
-    state: {
-      init: Number,
-      open: Number
-    }
-  };
-
-  connect () {
-    this.state.hasInit && this.toggle({ attrs: { idx: this.state.init } });
+export class Tabs extends spx.Component({
+  sugar: true,
+  nodes: <const>[
+    'button',
+    'panel'
+  ],
+  state: {
+    init: Number,
+    open: Number
   }
+}) {
 
-  open (idx: number) {
-    this.buttonNode.children[idx].classList.add('active');
-    this.panelNodes[idx].classList.remove('d-none');
-  }
+  toggle ({ attrs }: SPX.Event<{ panel: number }>) {
 
-  close(idx: number) {
-    this.dom.buttonNode.children[idx].classList.remove('active');
-    this.dom.panelNodes[idx].classList.toggle('d-none', true);
-  }
+   if (this.state.open === attrs.panel) return;
 
-  toggle ({ attrs }: SPX.Event<{ idx: number }>) {
-    if (this.state.open === attrs.idx) return;
-    this.state.open = attrs.idx;
-    this.dom.panelNodes.forEach((_, idx) => idx === attrs.idx ? this.open(idx) : this.close(idx))
+    this.button(button => button.toggleClass('active'))
+    this.panel(panel => panel.toggleClass('opened'))
+    this.state.open = attrs.panel;
+
   }
 }
 ```
@@ -244,11 +229,9 @@ State Directives serve as a means to define component state directly from the DO
 ```html
 <section spx-component="tabs" spx-tabs:init="2">
   <!-- Buttons -->
-  <div spx-node="tabs.button">
-    <button type="button" spx@click="tabs.toggle" spx-tabs:idx="0">Foo</button>
-    <button type="button" spx@click="tabs.toggle" spx-tabs:idx="1">Bar</button>
-    <button type="button" spx@click="tabs.toggle" spx-tabs:idx="2">Baz</button>
-  </div>
+  <button spx@click="tabs.toggle" spx-tabs:panel="0">Foo</button>
+  <button spx@click="tabs.toggle" spx-tabs:panel="1">Bar</button>
+  <button spx@click="tabs.toggle" spx-tabs:panel="2">Baz</button>
   <!-- Panels -->
   <div spx-node="tabs.panel">
     <h1>Foo Panel</h1>

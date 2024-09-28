@@ -16,28 +16,24 @@ SPX components serve as a bridge between JavaScript logic and the Document Objec
 import spx from 'spx';
 
 
-export class Demo extends spx.Component {
-
-  static define = {
-    name: 'demo',           // Define an identifier (optional)
-    nodes: ['foo'],         // Define elements associated with components
-    state: {}               // Define component state interface
-  }
-
+export class Demo extends spx.Component({
+  name: 'demo',           // Define an identifier (optional)
+  sugar: false,           // Whether or not to use node sugars
+  nodes: ['foo'],         // Define elements associated with components
+  state: {}               // Define component state interface
+}) {
 
   connect({ page }) {}      // Component lifecycle event when component connects
   onmount({ page }) {}      // Component lifecycle event when component rendered
   unmount({ page }) {}      // Component lifecycle event when component removed
 
   method() {
-
-    this.state              // State object as per define.state
-    this.dom.root           // DocumentElement reference: <html>
-    this.dom.view           // HTMLElement reference for: <div spx-component="demo">
-    this.dom.foo            // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
-    this.dom.foo()          // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
-    this.dom.fooExists      // Whether or not <div spx-node="demo.foo"> exists in dom
-
+    this.state            // State object as per define.state
+    this.root             // DocumentElement reference: <html>
+    this.dom              // HTMLElement reference for: <div spx-component="demo">
+    this.fooNode          // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
+    this.fooNodes         // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
+    this.hasFoo           // Whether or not <div spx-node="demo.foo"> exists in dom
   }
 
   callback (event) {
@@ -53,7 +49,7 @@ Components support lifecycle hooks like `onmount` for initialization when render
 
 # Events
 
-Events are crucial for interactivity. For instance, a click event can be bound directly in HTML using `spx@click="demo.open"`, where `open` is a method defined within the component. This method receives an event object with methods like `preventDefault()` to stop default browser behavior and properties like `attrs` for accessing attributes passed with the event.
+Events are crucial for interactivity. For instance, a click event can be bound directly in HTML using `{html} <button spx@click="demo.open">` (or whatever element your event should be attached), where `open` is a method defined within the component. This method receives an event object with methods like `{js} preventDefault()` to stop default browser behavior and properties like `attrs` for accessing attributes passed with the event.
 
 # Markup
 

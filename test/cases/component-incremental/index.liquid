@@ -4,27 +4,26 @@ layout: views/base.liquid
 
 <h1 id="title">
   Incremental
-
-  <div
-    id="xxx"
-    spx-component="incremental"></div>
-
 </h1>
 
 {{ content }}
 
-{% include 'cases/component-incremental/include/pages' %}
-{% include 'cases/component-incremental/include/target' %}
+{%- include 'cases/component-incremental/include/pages' -%}
+{%- include 'cases/component-incremental/include/target' -%}
 
 <section
-  class="row bt mt-4 ml-1 py-3"
+  class="row bt ml-1 py-3"
   id="content">
 
   <button
     type="button"
-    class="col-auto"
+    class="col-auto ff-head bc-black bg-white bd bd-3 fs-xs upper p-2 px-3 rd fw-bold"
     spx@click="incremental.increment">
     Increment Counter
   </button>
 
+  <div class="col-12 tl fs-xs bt mt-3 pt-3 pl-1">
+    <strong>NOTE:</strong>
+    The above button is a component event contained within a target element
+  </div>
 </section>

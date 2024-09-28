@@ -1,10 +1,10 @@
 import type { Page } from 'types';
-import { $ } from './session';
-import { VisitType, Log } from '../shared/enums';
+import { $, ctx } from './session';
+import { VisitType } from '../shared/enums';
 import { getRoute } from './location';
-import { log } from '../shared/logs';
-import { defineGetterProps, enqueue, parse, takeSnapshot } from '../shared/utils';
+import { enqueue, parse, takeSnapshot } from '../shared/utils';
 
+import * as log from '../shared/logs';
 import * as q from './queries';
 import * as hrefs from '../observe/hrefs';
 import * as hover from '../observe/hovers';
@@ -15,6 +15,8 @@ import * as proximity from '../observe/proximity';
 import * as components from '../observe/components';
 import * as mutations from '../observe/mutations';
 import * as fragment from '../observe/fragment';
+import { m } from 'src/shared/native';
+import { emit } from './events';
 
 /**
  * Initialize SPX
@@ -32,11 +34,27 @@ export const initialize = (): Promise<Page> => {
   //
   const state = history.connect(q.create(route));
 
-  defineGetterProps($, [
-    [ 'prev', () => $.pages[$.history.rev] ],
-    [ 'page', () => $.pages[$.history.key] ],
-    [ 'snapDom', () => parse($.snaps[$.page.snap]) ]
-  ]);
+  // Set the refs getter reflection on session context
+  Object.defineProperty(ctx, 'refs', {
+    configurable: false,
+    enumerable: false,
+    get () {
+      return this.snaps.length > 0 ? this.snaps[this.snaps.length - 1][1] : m();
+    }
+  });
+
+  // Set common used getter reflections on the main $ session model.
+  Object.defineProperties($, {
+    prev: {
+      get: () => $.pages[$.history.rev]
+    },
+    page: {
+      get: () => $.pages[$.history.key]
+    },
+    snapDom: {
+      get: () => parse($.snaps[$.page.snap])
+    }
+  });
 
   /**
    * DOM Ready
@@ -48,9 +66,6 @@ export const initialize = (): Promise<Page> => {
 
     const page = q.set(state, takeSnapshot());
 
-    // We mark the document <html> element
-    // d().id = page.snap;
-
     hrefs.connect();
     fragment.connect();
     hover.connect();
@@ -58,6 +73,8 @@ export const initialize = (): Promise<Page> => {
     proximity.connect();
     components.connect();
     mutations.connect();
+
+    emit('connect', page);
 
     enqueue(
       () => q.patch('type', VisitType.VISIT),
@@ -94,7 +111,7 @@ export const disconnect = (): void => {
   if ($.config.components) {
     components.disconnect();
     components.teardown();
-    $.components.$registry.clear();
+    $.registry.clear();
   }
 
   // Purge q
@@ -102,6 +119,6 @@ export const disconnect = (): void => {
 
   if ($.config.globalThis) delete window.spx;
 
-  log(Log.INFO, 'Disconnected');
+  log.info('Disconnected');
 
 };

@@ -5,7 +5,7 @@
     "**/.hg": true,
     "**/CVS": true,
     "**/.DS_Store": true,
-    // "**/node_modules": true,
+    "**/node_modules": true,
     "**/pnpm-lock.yaml": true,
     //"**/public": true
   },
@@ -72,7 +72,7 @@
         }
       ]
     },
-    "\\b(connect|onmount|unmount|onmedia)\\b(?=\\s*\\()": {
+    "\\b(connect|onmount|unmount|onmedia|onroute)\\b(?=\\s*\\()": {
       "decorations": [
         {
           "color": "#58e093",

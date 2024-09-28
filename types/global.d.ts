@@ -5,11 +5,12 @@
 import type { Config, Observers, Memory } from './config';
 import type { LiteralUnion } from 'type-fest';
 import type { Page } from './page';
-import type { IObserverOptions, Options } from './options';
+import type { Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
-import type { ComponentSession, Class, Component } from './components';
+import type { ComponentSession, Class, Component, Scope } from './components';
 import type { Session } from './session';
 import type { Attrs, DOMEvents, Identity, Merge, TypeConstructors, TypeEvent, TypeOf, TypeState } from 'types';
+import type { Context, CTX } from './context';
 export * from './components';
 export * from './session';
 export * from './events';
@@ -24,7 +25,7 @@ export * from './page';
  */
 export declare namespace SPX {
 
-  export { Page, Options, Class };
+  export { Page, Options, Class, Scope };
 
   export abstract class Methods {
 
@@ -328,7 +329,11 @@ export declare namespace SPX {
     *
     * ```
     */
-    static on<T extends EventNames>(event: T, callback: LifecycleEvent<T>, binding?: any): number;
+    static on<T extends EventNames, S = unknown>(
+      event: T,
+      callback: LifecycleEvent<T, S>,
+      binding?: any
+    ): number;
 
     /**
     * #### Remove Event Listener

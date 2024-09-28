@@ -1,14 +1,14 @@
 import type { Page } from 'types';
 import { deviceType } from 'detect-it';
 import { $ } from '../app/session';
-import { Log, VisitType } from '../shared/enums';
+import { VisitType } from '../shared/enums';
 import { ts } from '../shared/utils';
-import { log } from '../shared/logs';
 import { XHR, pointer } from '../shared/native';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
 import { getAttributes, getKey, getRoute } from '../app/location';
 import { progress } from '../app/progress';
+import * as log from '../shared/logs';
 import * as hover from './hovers';
 import * as proximity from './proximity';
 import * as intersect from './intersect';
@@ -93,7 +93,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
    * Credit to the brother mansedan for catching this.
    */
   const move = () => {
-    log(Log.WARN, `Drag occurance, visit cancelled: ${key}`);
+    log.warn(`Drag occurance, visit cancelled: ${key}`);
     handle.drag = true;
     target.removeEventListener(`${pointer}move`, move);
   };
@@ -107,15 +107,14 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
   target.removeEventListener(`${pointer}move`, move);
 
-  // Event lifecycle, cancel if returned false
-  if (!emit('visit', event)) return;
-
   /**
    * Handle the click event on links. This function will update
    * page state and history state. The subsequent parameter is
    * used to determine whether we a visting an fetched page or not
    */
-  const click = (state: Page, subsequent = true) => {
+  const click = (event: MouseEvent, state: Page, subsequent = true) => {
+
+    event.preventDefault();
 
     $.pages[state.key].ts = ts();
     $.pages[state.key].visits = state.visits + 1;
@@ -124,11 +123,14 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
     $.pages[state.rev].scrollX = window.scrollX;
     $.pages[state.rev].scrollY = window.scrollY;
 
+    // Event lifecycle, cancel if returned false
+    if ('visit' in $.events && !emit('visit', $.pages[state.key], event)) return;
+
     // console.log(state.selector);
 
     if (isRoute) {
 
-      log(Log.INFO, `Identical pathname, page visit skipped: ${key}`);
+      log.info(`Identical pathname, page visit skipped: ${key}`);
 
     } else {
 
@@ -153,10 +155,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
     const attrs = getAttributes(target, $.pages[key]);
     const page = q.update(attrs);
 
-    target.onclick = (event: MouseEvent) => {
-      event.preventDefault();
-      click(page);
-    };
+    target.onclick = (event: MouseEvent) => click(event, page);
 
   } else if (XHR.$transit.has(key)) { // In-Transit visit
 
@@ -164,16 +163,13 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
 
     request.cancel(key); // Cancel any other fetches in transit
 
-    log(Log.INFO, `Request in transit: ${key}`);
+    log.info(`Request in transit: ${key}`);
 
     // console.log(request.timers, request.transit, request.xhr);
 
     const page = $.pages[key];
 
-    target.onclick = (event: MouseEvent) => {
-      event.preventDefault();
-      click(page, false);
-    };
+    target.onclick = (event: MouseEvent) => click(event, page, false);
 
   } else { // New Visit
 
@@ -193,11 +189,7 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
     // have a head-start on the request.
     request.fetch(page);
 
-    target.onclick = (event: MouseEvent) => {
-      event.preventDefault();
-      click(page, false);
-    };
-
+    target.onclick = (event: MouseEvent) => click(event, page, false);
   }
 };
 

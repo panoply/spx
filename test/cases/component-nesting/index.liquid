@@ -7,95 +7,158 @@ aliases:
 ---
 
 <div class="row">
-  <div class="col-8">
-    {{
-      content
-    }}
+  <div class="col-12">
+    {{ content }}
   </div>
 </div>
-
-<div class="row">
-
-  <div class="col-8 mb-5">
+<div class="row mb-5 ai-center">
+  <div class="col-auto">
     <div class="row gx-0">
       <div class="col-auto ml-0">
         <button
-          class="btn bc-black bg-white bd bd-3 fs-sm upper fw-bold p-1 px-2 mr-3"
+          class="normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold mr-3"
           type="button"
-          spx@click="n1.onClick">Target (N1)</button>
+          spx@click="n1.onClick">TARGET
+          <span class="fc-pink fs-sm">n1</span>
+        </button>
       </div>
       <div class="col-auto ml-0">
         <button
-          class="btn bc-black bg-white bd bd-3 fs-sm upper fw-bold p-1 px-2 mr-3"
+          class="normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold mr-3"
           type="button"
-          spx@click="n2.onClick">Target (N2)</button>
+          spx@click="n2.onClick">TARGET
+          <span class="fc-pink fs-sm">n2</span>
+        </button>
       </div>
       <div class="col-auto ml-0">
         <button
-          class="btn bc-black bg-white bd bd-3 fs-sm upper fw-bold p-1 px-2"
+          class="normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold mr-3"
           type="button"
-          spx@click="n3.onClick">Target (N3)</button>
+          spx@click="n3.onClick">TARGET
+          <span class="fc-pink fs-sm">n3</span>
+        </button>
       </div>
     </div>
   </div>
+  <div class="col-auto pl-0 pr-4">
+    ←
+  </div>
+  <div class="col fs-sm rd bd py-2 bg-ivory tc">
+    Buttons are targeting components by alias outside of their DOM element
+  </div>
+</div>
 
-  <div
-    class="col-8"
-    spx-component="nesting as n1">
-    <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 1 (N1)</h2>
-    <div class="row ai-center mb-3">
-      <button
-        class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
-        type="button"
-        spx@click="n1.onClick">Click Me (N1)</button>
-      <code
-        class="col-auto fs-lg"
-        spx-bind="n1.count">0</code>
-    </div>
-    <button
-      class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1 mb-3"
-      type="button"
-      spx@click="n1.onClick">Click Me (N1)</button>
-
-    <hr>
-
-    <div
-      class="col-11 offset-1"
-      spx-component="nesting as n2">
-      <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 2 (N2)</h2>
-      <div class="row ai-center mb-3">
-        <button
-          class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
-          type="button"
-          spx@click="nesting.onClick">Click Me (N2)</button>
-        <code
-          class="col-auto fs-lg"
-          spx-bind="nesting.count">0</code>
-      </div>
-      <button
-        class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1 mb-3"
-        type="button"
-        spx@click="nesting.onClick">Click Me (N2)</button>
-
-      <hr>
-
-      <div class="col-10 offset-2">
-        <h2 class="fs-sm mb-3 ml-1 py-3">Nesting 3 (N3)</h2>
-        <div
-          class="row ai-center mb-3"
-          spx-component="nesting as n3">
-          <button
-            class="col-auto fs-sm upper fw-bold p-1 px-2 ml-3"
-            type="button"
-            spx@click="n3.onClick">Click Me (N3)</button>
-          <code
-            class="col-auto fs-lg"
-            spx-bind="n3.count">0</code>
+<div
+  class="row ml-1"
+  spx-component="nesting as n1">
+  <div class="col-12">
+    <div class="row">
+      <div class="col-12 pl-2">
+        <h1 class="fs-md mb-2 py-2">Nesting 1 (N1)</h1>
+        <p class="mb-4">
+          The component alias here is
+          <code class="fs-md">n1</code>
+        </p>
+        <div class="row ai-center mb-3 pl-3">
+          <div class="col-4">
+            <div class="row ai-center mb-3">
+              <button
+                class="col-7 normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold mb-3"
+                type="button"
+                spx@click="n1.onClick">n1.onClick</button>
+              <button
+                class="col-7 normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold"
+                type="button"
+                spx@click="nesting.onClick">nesting.onClick</button>
+            </div>
+          </div>
+          <div class="col-auto ml-auto">
+            <code
+              class="ml-3 fs-lg py-3 px-4 bd rd"
+              spx-bind="nesting.count">0</code>
+          </div>
+          <div class="col-auto">
+            <code
+              class="ml-3 fs-lg py-3 px-4 bd rd"
+              spx-bind="n1.count">0</code>
+          </div>
         </div>
-        <button
-          class="col-auto fs-sm upper fw-bold p-1 px-2 ml-1"
-          type="button"
-          spx@click="n3.onClick">Click Me (N3)</button>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div
+        class="row"
+        spx-component="nesting as n2">
+        <div class="col-10 offset-2">
+          <h1 class="fs-md mb-2 py-2">Nesting 2 (N2)</h1>
+          <p class="mb-4">
+            The component alias here is
+            <code class="fs-md">n2</code>
+          </p>
+          <div class="row ai-center mb-3 pl-3">
+            <div class="col-4">
+              <div class="row ai-center mb-2">
+                <button
+                  class="col-7 normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold mb-3"
+                  type="button"
+                  spx@click="n2.onClick">n2.onClick</button>
+                <button
+                  class="col-7 normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold"
+                  type="button"
+                  spx@click="nesting.onClick">nesting.onClick</button>
+              </div>
+            </div>
+            <div class="col-auto ml-auto">
+              <code
+                class="ml-3 fs-lg py-3 px-4 bd rd"
+                spx-bind="nesting.count">0</code>
+            </div>
+            <div class="col-auto">
+              <code
+                class="ml-3 fs-lg py-3 px-4 bd rd"
+                spx-bind="n2.count">0</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 my-3">
+        <div class="row">
+          <div
+            class="col-8 offset-4"
+            spx-component="nesting as n3">
+            <h1 class="fs-md mb-2 py-2">Nesting 3 (N3)</h1>
+            <p class="mb-4">
+              The component alias here is
+              <code class="fs-md">n3</code>
+            </p>
+            <div class="row ai-center mb-3">
+              <div class="col-4 pl-4">
+                <div class="row ai-center mb-3">
+                  <button
+                    class="col-9 normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold mb-3"
+                    type="button"
+                    spx@click="n3.onClick">n3.onClick</button>
+                  <button
+                    class="col-9 normal ff-head bc-black bg-white bd bd-3 fs-xs p-2 px-3 rd fw-bold"
+                    type="button"
+                    spx@click="nesting.onClick">nesting.onClick</button>
+                </div>
+              </div>
+              <div class="col-auto ml-auto">
+                <code
+                  class="ml-3 fs-lg py-3 px-4 bd rd"
+                  spx-bind="nesting.count">0</code>
+              </div>
+              <div class="col-auto">
+                <code
+                  class="ml-3 fs-lg py-3 px-4 bd rd"
+                  spx-bind="n3.count">0</code>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

@@ -2,12 +2,12 @@
 import type { Page, Key, HistoryState } from 'types';
 import { $ } from './session';
 import { emit } from './events';
-import { log } from '../shared/logs';
 import { hasProp, onNextTickResolve } from '../shared/utils';
 import { getRoute } from './location';
 import { XHR } from '../shared/native';
-import { Log, VisitType } from '../shared/enums';
+import { VisitType } from '../shared/enums';
 import * as q from './queries';
+import * as log from '../shared/logs';
 
 interface RequestParams {
   /**
@@ -54,17 +54,9 @@ export const http = <T> (key: string, {
 
   for (const [ hk, hv ] of headers) xhr.setRequestHeader(hk, hv);
 
-  xhr.onloadstart = function (this: XHR) {
-    XHR.$request.set(this.key, xhr);
-  };
-
-  xhr.onload = function (this: XHR) {
-    resolve(this.response);
-  };
-
-  xhr.onerror = function (this: XHR) {
-    reject(this.statusText);
-  };
+  xhr.onloadstart = function (this: XHR) { XHR.$request.set(this.key, xhr); };
+  xhr.onload = function (this: XHR) { resolve(this.response); };
+  xhr.onerror = function (this: XHR) { reject(this.statusText); };
 
   xhr.onabort = function (this: XHR) {
     delete XHR.$timeout[this.key];
@@ -114,7 +106,7 @@ export const abort = (key: string): void => {
 
   if (XHR.$request.has(key)) {
     XHR.$request.get(key).abort();
-    log(Log.WARN, `Cancelled request: ${key}`);
+    log.warn(`Cancelled request: ${key}`);
   }
 
 };
@@ -131,7 +123,7 @@ export const cancel = (key?: string): void => {
   for (const [ url, xhr ] of XHR.$request) {
     if (key !== url) {
       xhr.abort();
-      log(Log.WARN, `Pending request aborted: ${url}`);
+      log.warn(`Pending request aborted: ${url}`);
     }
   }
 
@@ -198,8 +190,8 @@ export const reverse = async (state: Page | HistoryState): Promise<void> => {
 
   fetch(page).then(page => {
     page
-      ? log(Log.INFO, `Reverse fetch completed: ${page.rev}`)
-      : log(Log.WARN, `Reverse fetch failed: ${state.rev}`);
+      ? log.info(`Reverse fetch completed: ${page.rev}`)
+      : log.warn(`Reverse fetch failed: ${state.rev}`);
   });
 
 };
@@ -232,9 +224,9 @@ export const fetch = async <T extends Page> (state: T): Promise<false|Page> => {
 
       if (state.type === VisitType.REVERSE && XHR.$request.has(state.rev)) {
         XHR.$request.get(state.rev).abort();
-        log(Log.WARN, `Request aborted: ${state.rev}`);
+        log.warn(`Request aborted: ${state.rev}`);
       } else {
-        log(Log.WARN, `Request in transit: ${state.key}`);
+        log.warn(`Request in transit: ${state.key}`);
       }
 
       return false;
@@ -242,7 +234,7 @@ export const fetch = async <T extends Page> (state: T): Promise<false|Page> => {
   }
 
   if (!emit('fetch', state)) {
-    log(Log.WARN, `Request cancelled via dispatched event: ${state.key}`);
+    log.warn(`Request cancelled via dispatched event: ${state.key}`);
     return false;
   }
 

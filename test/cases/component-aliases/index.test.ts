@@ -1,22 +1,20 @@
 import spx from 'spx';
 
 export class Alias extends spx.Component({
-  state: {
-    min: Number,
-    max: Number,
-    qty: Number
-  },
   sugar: true,
   nodes: <const>[
     'feedback',
     'counter',
     'bar'
-  ]
+  ],
+  state: {
+    min: Number,
+    max: Number,
+    qty: Number
+  }
 }) {
 
   increment () {
-
-    console.log(this.state.qty, this.state.max);
 
     if (this.state.qty < this.state.max) {
       this.counter.innerHTML = `${++this.state.qty}`;

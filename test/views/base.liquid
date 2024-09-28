@@ -1,93 +1,9 @@
----json
-{
-  "menu": [
-    {
-      "title": "Testing",
-      "links": [
-        {
-          "title": "Overview",
-          "url": "/"
-        }
-      ]
-    },
-    {
-      "title": "Options",
-      "links": [
-        {
-          "title": "Fragments",
-          "url": "/options/fragments/"
-        }
-      ]
-    },
-    {
-      "title": "Directives",
-      "links": [
-        {
-          "title": "spx-target",
-          "url": "/directives/spx-target/"
-        }
-      ]
-    },
-    {
-      "title": "Morphs",
-      "links": [
-        {
-          "title": "Nodes",
-          "url": "/morph/nodes/"
-        }
-      ]
-    },
-    {
-      "title": "Components",
-      "links": [
-        {
-          "title": "Async",
-          "url": "/components/async/"
-        },
-        {
-          "title": "Lifecycle",
-          "url": "/components/lifecycle/"
-        },
-        {
-          "title": "Literal",
-          "url": "/components/literal/"
-        },
-        {
-          "title": "Types",
-          "url": "/components/types/"
-        },
-        {
-          "title": "Merge",
-          "url": "/components/merge/"
-        },
-        {
-          "title": "Refs",
-          "url": "/components/refs/"
-        },
-        {
-          "title": "Alias",
-          "url": "/components/alias/"
-        },
-        {
-          "title": "Incremental",
-          "url": "/components/incremental/"
-        },
-        {
-          "title": "Nesting",
-          "url": "/components/nesting/"
-        }
-      ]
-    }
-  ]
-}
----
-
 <!DOCTYPE html>
 <html lang="en">
 
   <head>
     <title>
-      {{- title -}}
+      {{ title }}
     </title>
 
     <meta charset="UTF-8">
@@ -126,7 +42,7 @@
 
     {%- if iframe -%}
 
-      {{- content -}}
+      {{ content }}
 
     {%- else -%}
 
@@ -145,40 +61,14 @@
                 {%- include 'views/include/cases' -%}
                 <main
                   class="col h-100 p-5 offset-left "
-                  {%- unless no_main -%}
-                    id="main"
-                  {%- endunless -%}>
-                  {{- content -}}
-
-                  {%- if shared -%}
-                    {%- include shared -%}
-                  {%- endif -%}
+                  id="main">
+                  {{ content }}
                 </main>
               </div>
             </div>
           </flex-item>
           <flex-resizer></flex-resizer>
           {%- include 'views/include/explorer' -%}
-        </flex>
-        <flex-resizer></flex-resizer>
-        <flex
-          class="h"
-          style="flex: 0;">
-          <flex-item style="flex: 1;">
-            <section
-              spx-node="explorer.document"
-              class="compare"></section>
-          </flex-item>
-          <flex-resizer></flex-resizer>
-          <flex
-            class="v"
-            style="flex: 1; ">
-            <flex-item style="flex: 1;">
-              <section
-                spx-node="explorer.snapshot"
-                class="snap"></section>
-            </flex-item>
-          </flex>
         </flex>
       </flex>
 

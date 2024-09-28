@@ -317,31 +317,29 @@ export interface Options extends IObserverOptions {
   /**
    * #### SPX Log Level
    *
-   * Controls information printed to `console`. By default, SPX will print info, warnings and errors
-   * to the browser console (i.e: `2`) but you may require additional context in development mode and
-   * in such cases you can set this to `1` which is verbose.
+   * Controls information printed to `console` and error monitoring. By default, SPX will print warnings and errors
+   * to the browser console (i.e: `1`) but you may require additional context in development mode and in such cases
+   * you can set this to `3` which will enable debug.
    *
-   * SPX provides 4 log levels
-   *
-   * > **VERBOSE - `1`**
+   * > **ERROR - `0`**
    * >
-   * > Verbose logging to the console, use in development mode.
+   * > Suppress trace, info and warning logs, only errors will be printed to the browser console.
+   *
+   * > **WARN - `1`** (default)
+   * >
+   * > Suppress trace and info logs, prints warnings and errors to the browser console.
    *
    * > **INFO - `2`**
    * >
    * > Suppress trace logs, prints info, warnings and errors to the browser console.
    *
-   * > **WARN - `3`** (default)
+   * > **DEBUG - `3`**
    * >
-   * > Suppress trace and info logs, prints warnings and errors to the browser console.
+   * > Verbose logging to the console, use in development mode.
    *
-   * > **ERROR - `4`**
-   * >
-   * > Suppress trace, info and warning logs, only errors will be printed to the browser console.
-   *
-   * @default 3
+   * @default 1
    */
-  logLevel?: 1 | 2 | 3 | 4;
+  logLevel?: 0 | 1 | 2 | 3;
   /**
    * #### SPX Resource Evaluations
    *

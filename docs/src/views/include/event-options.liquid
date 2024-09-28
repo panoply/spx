@@ -1,0 +1,14 @@
+{%- for item in events.options -%}
+  <div class="row ai-center gx-0 pb-1 {% if forloop.last %}{% endif %}">
+    <code
+      class="col-auto fs-sm fc-teal bd-0"
+      style="width: 120px;">
+      {{ item.name
+        | replace: '{', "<span class='fc-gray'>{</span>"
+        | replace: '}', "<span class='fc-gray'>}</span>" }}
+    </code>
+    <div class="col">
+      {{ item.describe }}
+    </div>
+  </div>
+{%- endfor -%}

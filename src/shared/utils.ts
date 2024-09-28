@@ -1,8 +1,8 @@
-import type { Page, LiteralUnion, TypeConstructors, NativeTypes } from 'types';
+import type { Page, LiteralUnion } from 'types';
 import { $ } from '../app/session';
-import { CharCode, Log } from './enums';
+import { CharCode } from './enums';
 import { b, nil, s } from './native';
-import { log } from '../shared/logs';
+import * as log from '../shared/logs';
 import { CharEntities } from './regexp';
 import { Entities, Identifiers } from './const';
 
@@ -118,7 +118,7 @@ export const attrJSON = (attr: string, string?: string) => {
 
   } catch (e) {
 
-    log(Log.ERROR, 'Invalid JSON in attribute value: ' + JSON.stringify(attr || string, null, 2), e);
+    log.error('Invalid JSON in attribute value: ' + JSON.stringify(attr || string, null, 2), e);
 
     return string;
 
@@ -226,16 +226,19 @@ export const hasProp = <T extends object> (object: T, property: keyof T | string
  * Converts Type Constructor values to default types. This is used to setup
  * component state references
  */
-export const convertValue = (type: TypeConstructors, value: NativeTypes) => {
-  switch (type) {
-    case String: return value || '';
-    case Boolean: return value === 'true' || false;
-    case Number: return Number(value) || 0;
-    case Object: return typeof value === 'object' ? value : {};
-    case Array: return Array.isArray(value) ? value : [];
+export const setStateDefaults = (value: any) => {
+
+  switch (value) {
+    case String: return '';
+    case Boolean: return false;
+    case Number: return 0;
+    case Object: return {};
+    case Array: return [];
     default: return value;
   }
+
 };
+
 /**
  * Creates a getter on an object and be used to redefine a getter.
  * The `configurable` parameter when undefined signals a refine operation,
@@ -278,7 +281,7 @@ export const targets = (page: Page) => {
     if (page.target.length === 1 && page.target[0] === 'body') return page.target;
 
     if (page.target.includes('body')) {
-      log(Log.WARN, `The body selector passed via ${$.qs.$target} will override`);
+      log.warn(`The body selector passed via ${$.qs.$target} will override`);
       return [ 'body' ];
     }
 
@@ -294,6 +297,24 @@ export const targets = (page: Page) => {
   }
 
   return [];
+
+};
+
+/**
+ * Returns a query selector string from an element
+ */
+export const getSelectorFromElement = (node: HTMLElement) => {
+
+  let selector = node.tagName.toLowerCase();
+
+  if (node.id) return selector + '#' + node.id;
+
+  if (node.hasAttribute('class')) {
+    const className = node.className.trim().replace(/\s+/g, '.');
+    if (className) selector += '.' + className;
+  }
+
+  return `${selector}:nth-child(${Array.prototype.indexOf.call(node.parentNode.children, node) + 1})`;
 
 };
 

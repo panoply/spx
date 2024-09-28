@@ -1,5 +1,17 @@
 import type { Session } from 'types';
 import { m, o, p, s } from '../shared/native';
+import { CTX } from 'types/context';
+
+/**
+ * Shared Contexts
+ *
+ * This object holds data used during the morph, context and rendering cycles.
+ */
+export const ctx: CTX = {
+  marks: s(),
+  store: undefined,
+  snaps: []
+};
 
 export const $: Session = {
   index: '',
@@ -8,6 +20,17 @@ export const $: Session = {
   loaded: false,
   logLevel: 2,
   qs: o(),
+  fragments: m(),
+  mounted: s(),
+  registry: m(),
+  instances: m(),
+  maps: p({ get: (m, k) => $.instances.get(m[k]) }),
+  events: o(),
+  observe: o(),
+  memory: o(),
+  pages: o(),
+  snaps: o(),
+  resources: s(),
   config: {
     fragments: [ 'body' ],
     timeout: 30000,
@@ -49,23 +72,5 @@ export const $: Session = {
       trickle: true,
       trickleSpeed: 200
     }
-  },
-  fragments: m(),
-  components: {
-    $mounted: s(),
-    $registry: m(),
-    $instances: m(),
-    $reference: p({
-      get: (
-        map: Record<string, string>,
-        key: string
-      ) => $.components.$instances.get(map[key])
-    })
-  },
-  events: o(),
-  observe: o(),
-  memory: o(),
-  pages: o(),
-  snaps: o(),
-  resources: s()
+  }
 };

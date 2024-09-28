@@ -5,7 +5,6 @@
 import type { Scope, SPX } from 'types';
 import { d, m } from '../shared/native';
 import { stateProxy } from './proxies';
-import { defineGetter } from 'src/shared/utils';
 
 Component.scopes = m<string, Scope>();
 
@@ -91,7 +90,9 @@ export function Component (define: SPX.Define) {
     constructor (value: string) {
 
       Reflect.defineProperty(this, 'scope', {
-        get: () => Component.scopes.get(value)
+        get () {
+          return Component.scopes.get(value);
+        }
       });
 
       Reflect.defineProperty(this, 'ref', {
@@ -101,9 +102,7 @@ export function Component (define: SPX.Define) {
         writable: false
       });
 
-      console.log(Component.scopes);
-
-      this.state = stateProxy(this.scope, this.dom);
+      stateProxy(this);
 
     }
 

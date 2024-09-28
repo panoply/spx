@@ -14,7 +14,7 @@ anchors:
 
 # Resource Evaluation
 
-In SPX, external resources such as those referenced by `<script>`, `<link>`, or any other elements that influence how the browser handles external content, are classified as **Resources**. Given SPX's control over rendering, it's vital to approach the management of these resources with intentionality, especially concerning how they are evaluated or loaded.
+In SPX, external resources such as those referenced by `{html} <script>`, `{html} <link>`, or any other elements that influence how the browser handles external content, are classified as **Resources**. Given SPX's control over rendering, it's vital to approach the management of these resources with intentionality, especially concerning how they are evaluated or loaded.
 
 By default, SPX is set up to manage a basic set of resource elements without needing extra configuration. However, for tailored performance and functionality, developers are encouraged to customize and broaden this support to match their application's unique needs.
 
@@ -103,7 +103,7 @@ spx.on('load', function () {
 
 # Style Evaluation
 
-Stylesheet and inline CSS evaluation is supported for ` <style>` and `<link rel="stylesheet>` elements contained in the `{html} <head>` or `{html} <body>` elements. External stylesheets reference using `{html} <link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `spx-eval="true"` attribute annotations.
+Stylesheet and inline CSS evaluation is supported for `{html} <style>` and `{html} <link rel="stylesheet">` elements contained in the `{html} <head>` or `{html} <body>` elements. External stylesheets reference using `{html} <link>` elements are will be evaluated once and never again thereafter. If you require re-evaluation then use `spx-eval="true"` attribute annotations.
 
 ```html
 <head>

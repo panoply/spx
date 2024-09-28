@@ -1,0 +1,54 @@
+---
+layout: views/base.liquid
+permalink: '/components/types/defined/index.html'
+base: /components/defined/
+defined:
+  - name: String
+    bind: definedStringValue
+    original: definedOriginalStringValue
+  - name: Boolean
+    bind: definedBooleanValue
+    original: definedOriginalBooleanValue
+  - name: Number
+    bind: definedNumberValue
+    original: definedOriginalNumberValue
+  - name: Object
+    bind: definedObjectValue
+    original: definedOriginalNumberValue
+  - name: Array
+    bind: definedArrayValue
+    original: definedOriginalArrayValue
+---
+
+<div class="row">
+  <div class="col-12">
+    <h1>
+      🧪 Component Defined States
+    </h1>
+    <p>
+      The state are define within the component, and undefined within the DOM. The outcome will be the component state values we've define within the component.
+    </p>
+    <hr>
+  </div>
+</div>
+{%- include 'cases/component-types/include/pages' -%}
+{%- include 'cases/component-types/include/legend' -%}
+<div class="row ml-1 py-1">
+  <div class="col">
+    <div
+      class="d-block py-2"
+      spx-component="types">
+      {%- for type in defined -%}
+        <div class="row g-0 ai-center py-2 {% unless forloop.last %}bb{% endunless %}">
+          <span class="col-2">{{ type.name }}</span>
+          <code
+            class="col-auto fc-blue fw-bold"
+            spx-bind="types.{{ type.bind }}"></code>
+          <code
+            class="col-auto fw-bold ml-auto"
+            spx-bind="types.{{ type.original }}"></code>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>

@@ -1,11 +1,11 @@
-import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope } from 'types';
+import type { ComponentBinds, ComponentEvent, ComponentNodes, Scope, Context } from 'types';
 import { $ } from '../app/session';
-import { CharCode, Hooks, Log } from '../shared/enums';
+import { CharCode, Hooks } from '../shared/enums';
 import { b, o } from '../shared/native';
-import { log } from '../shared/logs';
+import * as log from '../shared/logs';
 import { walkElements } from '../morph/walk';
 import { setInstances } from './instance';
-import { snap } from './snapshot';
+import * as snap from '../app/snapshot';
 import { isBoolean, isNumeric } from '../shared/regexp';
 import * as fragment from '../observe/fragment';
 import {
@@ -67,42 +67,6 @@ import {
   DOM Parser when visiting new pages. The reference allow us to persist across visits in the session.
 
 */
-
-export interface Context {
-  /**
-   * Alias Maps
-   */
-  $aliases: { [alias: string]: string; };
-  /**
-   * Component Scopes
-   */
-  $scopes: { [component: string]: Scope[]; };
-  /**
-   * When we are applying incremental context generation (i.e: during morphs)
-   * this value will be `true`, otherwise `false`.
-   *
-   * @default false
-   */
-  $morph: HTMLElement;
-  /**
-   * Holds a reference to the snapshot, used for creating data-spx="" references
-   *
-   * @default false
-   */
-  $snapshot: HTMLElement;
-  /**
-   * Holds a reference to the last known element identifier
-   *
-   * @default null
-   */
-  $element: string;
-  /**
-   * Holds a reference to the last known element identifier
-   *
-   * @default null
-   */
-  $snaps: string;
-}
 
 /* -------------------------------------------- */
 /* DOM WALKS                                    */
@@ -285,14 +249,16 @@ export const getAttrValueType = (input: string) => {
  */
 export const getContext = ($morph: HTMLElement = null, $snapshot: HTMLElement = null): Context => {
 
-  return o<Context>({
-    $aliases: o(),
-    $scopes: o(),
-    $element: null,
-    $snaps: $morph ? o() : null,
-    $morph,
-    $snapshot
-  });
+  const ctx: Context = o<Context>();
+
+  ctx.$aliases = o();
+  ctx.$scopes = o();
+  ctx.$element = null;
+  ctx.$snaps = $morph ? o() : null;
+  ctx.$morph = $morph;
+  ctx.$snapshot = $snapshot;
+
+  return ctx;
 
 };
 
@@ -341,15 +307,13 @@ export const getScope = (id: string, { $scopes, $aliases }: Context) =>
  */
 export const defineDomRef = (node: HTMLElement, instance: string, ref: string, selector?: string) => {
 
-  $.components.$reference[ref] = instance;
+  $.maps[ref] = instance;
 
   const value = node.getAttribute($.qs.$ref);
 
-  node.setAttribute($.qs.$ref, value
-    ? `${value},${ref}`
-    : ref);
+  node.setAttribute($.qs.$ref, value ? `${value},${ref}` : ref);
 
-  selector && snap.add(selector, ref);
+  selector && snap.ref(selector, ref);
 
   return ref;
 
@@ -393,7 +357,7 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], dom?: HTMLEle
 
   }
 
-  if ($.components.$registry.has(instanceOf)) {
+  if ($.registry.has(instanceOf)) {
 
     scope.instanceOf = instanceOf;
 
@@ -401,7 +365,7 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], dom?: HTMLEle
 
       // Aliases cannot match components identifiers in register
       // When false, we can proceed with matching up any dormant aliases.
-      if (!$.components.$registry.has(scope.alias)) {
+      if (!$.registry.has(scope.alias)) {
 
         if (scope.alias in context.$scopes) {
 
@@ -417,21 +381,21 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], dom?: HTMLEle
             if ('events' in scope) {
               for (const e in events) {
                 scope.events[e] = events[e];
-                $.components.$reference[e] = scope.key;
+                $.maps[e] = scope.key;
               }
             }
 
             if ('nodes' in scope) {
               for (const n in nodes) {
                 scope.nodes[n] = nodes[n];
-                $.components.$reference[n] = scope.key;
+                $.maps[n] = scope.key;
               }
             }
 
             if ('binds' in scope) {
               for (const b in binds) {
                 scope.binds[b] = binds[b];
-                $.components.$reference[b] = scope.key;
+                $.maps[b] = scope.key;
               }
             }
           }
@@ -452,10 +416,7 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], dom?: HTMLEle
 
       } else {
 
-        log(Log.ERROR, [
-          `The component alias ("${scope.alias}") matches a component identifer in the registry.`,
-          'An alias reference must be unique and cannot match component names.'
-        ]);
+        log.error(`Component alias "${scope.alias}" matched a component identifier in the registry`);
 
       }
 
@@ -597,7 +558,7 @@ export const setBinds = (node: HTMLElement, value: string, context: Context) => 
       isChild: isChild(scope, node)
     });
 
-    defineGetter(scope.binds[stateKey][key], 'dom', node);
+    Object.defineProperty(scope.binds[stateKey][key], 'dom', { get: () => node });
 
   }
 };
@@ -651,9 +612,9 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
 
   getComponentValues(value, (instanceOf, aliasOf) => {
 
-    if (!$.components.$registry.has(instanceOf)) {
+    if (!$.registry.has(instanceOf)) {
 
-      log(Log.WARN, `Component does not exist in registry: ${instanceOf}`);
+      log.warn(`Component does not exist in registry: ${instanceOf}`);
 
     } else {
 
@@ -712,8 +673,8 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
 
       } else if (scope.alias && !(scope.alias in context.$aliases)) {
 
-        if ($.components.$registry.has(scope.alias)) {
-          log(Log.WARN, `Alias must not match a component identifier: ${scope.instanceOf} as ${scope.alias}`);
+        if ($.registry.has(scope.alias)) {
+          log.warn(`Alias cannot use a component identifier: ${scope.instanceOf} as ${scope.alias}`);
           scope.alias = null;
         } else {
           context.$aliases[scope.alias] = instanceOf;
@@ -734,17 +695,47 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
 /* COMPONENTS                                   */
 /* -------------------------------------------- */
 
-export const getComponents = (nodes?: Set<HTMLElement> | HTMLElement) => {
+/**
+ * This function is responsible for obtaining component context by performing a
+ * DOM traversal and walking through elements, looking for occurences of component
+ * directives. The {@link Context} model will be generated and then reasoned with.
+ *
+ * **Passing `nodes`**
+ *
+ * The function accepts 2 optional parameters. Omitting and calling the function with
+ * no parameters will result in a full-dom walk, whereas passing a `nodes` parameter
+ * will trigger walks on elements provided.
+ *
+ * **Passing `snapSelector`**
+ *
+ * The `snapSelector` parameter is for special cases related to Mutations and is
+ * passed to ensure snapshot records are aligned. The snap selector will always be provided
+ * when carrying out mutation based component context generation.
+ */
+export const getComponents = (nodes?: Set<HTMLElement> | HTMLElement, snapSelector: string = null) => {
 
   const context: Context = getContext();
 
-  if (!nodes) {
+  if (!nodes && !snapSelector) {
 
-    const snapshot = snap.set($.snapDom.body);
+    const { ownerDocument } = snap.add($.snapDom.body);
 
     walkElements(b(), node => walkNode(node, context));
+    isEmpty(context.$scopes) || setInstances(context, ownerDocument);
 
-    isEmpty(context.$scopes) || setInstances(context, snapshot.ownerDocument);
+  } else if (snapSelector) {
+
+    let ownerDocument: Document;
+
+    const snapshot = $.snapDom.querySelector(snapSelector);
+    if (!snapshot) {
+      log.warn(`Cannot find element in snapshot using selector: ${snapSelector}`);
+    } else {
+      ownerDocument = snap.add($.snapDom.querySelector(snapSelector)).ownerDocument;
+    }
+
+    walkElements(nodes as HTMLElement, node => walkNode(node, context));
+    isEmpty(context.$scopes) || setInstances(context, ownerDocument);
 
   } else if (nodes instanceof Set) {
 

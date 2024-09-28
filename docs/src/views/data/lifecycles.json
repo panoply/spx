@@ -2,9 +2,59 @@
   "listeners": [
     {
       "order": "1",
-      "name": "connected",
-      "description": "",
+      "name": "connect",
+      "description": "Fires once, after SPX has connected. Equivalent to DOMContentReady.",
       "cancellable": true
+    },
+    {
+      "order": "2",
+      "name": "visit",
+      "description": "Fires when a visit begins, but before and XHR fetch is issued",
+      "cancellable": true,
+      "arguments": {
+        "event": "Event",
+        "page": "Page",
+        "type": "Type"
+      }
+    },
+    {
+      "order": "3",
+      "name": "fetch",
+      "description": "Fires immeadiately after a fetch completes and before cache store ensues.",
+      "cancellable": true,
+      "arguments": {
+        "page": "Page",
+        "type": "Type"
+      }
+    },
+    {
+      "order": "4",
+      "name": "cache",
+      "description": "Fires before a new page and snapshot is saved to cache.",
+      "cancellable": true,
+      "arguments": {
+        "page": "Page",
+        "type": "Type"
+      }
+    },
+    {
+      "order": "5",
+      "name": "render",
+      "description": "Fires before fragment or target is swapped in post-morph state.",
+      "cancellable": true,
+      "arguments": {
+        "curDom": "HTMLElement",
+        "newDom": "HTMLElement"
+      }
+    },
+    {
+      "order": "6",
+      "name": "load",
+      "description": "Fires after new page has rendered, use this event for analytics etc",
+      "cancellable": true,
+      "arguments": {
+        "page": "Page"
+      }
     },
     {
       "order": "1",

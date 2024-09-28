@@ -1,8 +1,7 @@
 import type { ComponentRegister, Merge } from 'types';
 import { $ } from '../app/session';
 import { camelCase, downcase } from '../shared/utils';
-import { Colors, Log } from '../shared/enums';
-import { log } from '../shared/logs';
+import * as log from '../shared/logs';
 import { ComponentNameCheck } from '../shared/regexp';
 
 type Register = Merge<ComponentRegister, {
@@ -38,10 +37,7 @@ export const getComponentId = (instance: Register, identifier?: string) => {
   if (identifier !== instance.define.name) identifier = camelCase(instance.define.name);
 
   if (hasName && name !== original && ComponentNameCheck.test(instance.define.name)) {
-    log(Log.WARN, [
-      `Component identifer id "${instance.define.name}" must use camelCase format.`,
-      `The identifer has been converted to "${identifier}"`
-    ]);
+    log.warn(`Component name "${instance.define.name}" is invalid and converted to: ${identifier}`);
   }
 
   return identifier;
@@ -59,18 +55,16 @@ export const getComponentId = (instance: Register, identifier?: string) => {
  */
 export const registerComponents = (components: { [id: string]: Register }, isValidID = false) => {
 
-  const { $registry } = $.components;
-
   for (const id in components) {
 
     const instance = components[id];
     const identifier = isValidID ? id : getComponentId(instance, id);
 
-    if (!$registry.has(identifier)) {
+    if (!$.registry.has(identifier)) {
 
-      $registry.set(identifier, instance);
+      $.registry.set(identifier, instance);
 
-      log(Log.VERBOSE, `Component ${instance.name} registered using id: ${identifier}`, Colors.PINK);
+      log.debug(`Component ${instance.name} registered using id: ${identifier}`);
 
     }
   }

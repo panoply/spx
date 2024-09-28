@@ -1,6 +1,6 @@
 import m from 'mithril';
 import { state, DataScope, Data } from './state';
-
+import spx from 'spx';
 const { keys, values } = Object;
 
 const color = (value: any) => {
@@ -104,13 +104,13 @@ const Nodes: m.Component<{ scope: DataScope }> = {
         )
         , m(
           'span.fc-gray.fs-xs.mr-auto.ff-code'
-          , ` - ${nodes[key].schema}`
+          , ` - ${nodes[key].name}`
         )
       )
       , m(
         '.d-block.py-3'
         ,
-        keys(nodes[key]).map(node => m(
+        keys(nodes[key]).filter(k => k !== 'dom').map(node => m(
           '.row.ai-center.px-2'
           , m(
             '.col-3.fs-sm.ff-code'
@@ -213,7 +213,7 @@ const Events: m.Component<{ scope: DataScope }> = {
         , keys(events[key]).filter(prop => (
           prop !== 'options' &&
           prop !== 'listener' &&
-          prop !== 'params'
+          prop !== 'attrs'
         )).map(prop => m(
           '.row.ai-center.px-2'
           , m(
@@ -232,20 +232,25 @@ const Events: m.Component<{ scope: DataScope }> = {
 
 export const Components = () => {
 
-  setInterval(() => {
-    state.get();
-    m.redraw.sync();
-  }, 500);
-
   const isActive = (scope: Data[string]) => values(scope).some((
     {
       reference
     }
   ) => (reference.status === 3));
 
+  state.get();
+
+  spx.on('load', () => {
+    state.get();
+    m.redraw();
+  });
+
   return {
+    onupdate: () => {
+      state.get();
+    },
     view: () => m(
-      'section.explorer-accordion'
+      '#section.explorer-accordion[data-relapse]'
       , keys(state.data).flatMap((name) => m(
         'details'
         , m(
@@ -266,11 +271,23 @@ export const Components = () => {
         , m(
           '.container-fluid.p-3.bg-darker'
           , m(
-            `#component-${name}.explorer-accordion.by.bx.bc-code.rd.hidden`
+            `#component-${name}.explorer-accordion.by.bx.bc-code.rd.hidden[data-relapse]`
             , values(state.data[name]).map(scope => m(
               'details'
               , m(
                 'summary.ff-code.bg-code.py-2.px-3'
+                , {
+                  onmouseover: () => {
+                    console.log(name);
+                    spx.$.instances.get(scope.reference.key)
+                      .dom
+                      .style
+                      .outline = '4px red solid';
+                  },
+                  onmouseout: () => {
+                    spx.$.instances.get(scope.reference.key).dom.style.outline = '';
+                  }
+                }
                 , m(
                   '.fs-lg.pr-3'
                   , {
@@ -294,25 +311,32 @@ export const Components = () => {
                     'binds',
                     'events',
                     'nodes'
-                  ].map(key => m(
-                    'button.btn-tab.col-auto.ff-code.upper'
-                    , {
-                      class: state.tabs[scope.reference.ref][key] ? 'active' : '',
-                      onclick: () => {
-                        state.tabs[scope.reference.ref][key] = true;
-                        for (const prop in state.tabs[scope.reference.ref]) {
-                          if (prop !== key) {
-                            state.tabs[scope.reference.ref][prop] = false;
+                  ].map(key => {
+
+                    const size = keys(scope[key]).length;
+
+                    return m(
+                      `button.btn-tab.col-auto.ff-code.upper${size === 0
+                        ? '[disabled][data-tooltip="top"][aria-label="EMPTY"]'
+                        : ''}`
+                      , {
+                        class: state.tabs[scope.reference.ref][key] ? 'active' : '',
+                        onclick: () => {
+                          state.tabs[scope.reference.ref][key] = true;
+                          for (const prop in state.tabs[scope.reference.ref]) {
+                            if (prop !== key) {
+                              state.tabs[scope.reference.ref][prop] = false;
+                            }
                           }
                         }
                       }
-                    }
-                    , (
-                      key === 'events' ||
-                      key === 'nodes' ||
-                     key === 'binds'
-                    ) ? `${keys(scope[key]).length} ${key}` : key
-                  ))
+                      , (
+                        key === 'events' ||
+                        key === 'nodes' ||
+                        key === 'binds'
+                      ) ? `${size === 0 ? '0' : size} ${key}` : key
+                    );
+                  })
                 )
                 , m(
                   '.d-block.bt.bc-code.mx-2.py-3'

@@ -13,7 +13,7 @@ interface Tabs {
 
 export interface DataScope {
   reference: {
-    root: any
+    dom: any
     status: any
     alias:any
     instanceOf:any
@@ -38,7 +38,7 @@ export const state = new class {
 
   tabs: Tabs = {};
   data: Data = {};
-  define: { [instanceOf: string]: Scope['define'] } = {};
+  define: { [instanceOf: string]: SPX.Scope['define'] } = {};
 
   get spx () {
     return spx.$;
@@ -54,7 +54,7 @@ export const state = new class {
 
   get () {
 
-    for (const { scope } of this.spx.components.$instances.values()) {
+    for (const { scope } of this.spx.instances.values()) {
 
       if (scope.instanceOf === 'explorer') continue;
 
@@ -82,7 +82,7 @@ export const state = new class {
           ref: scope.ref,
           snap: scope.snap,
           inFragment: scope.inFragment,
-          root: `${scope.view}`
+          dom: `${scope.dom}`
         },
         binds: scope.binds,
         events: scope.events,

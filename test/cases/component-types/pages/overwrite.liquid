@@ -1,0 +1,61 @@
+---
+layout: views/base.liquid
+permalink: '/components/types/overwrite/index.html'
+base: /components/overwrite/
+overwrites:
+  - name: string
+    bind: overwriteStringValue
+    original: overwriteOriginalStringValue
+  - name: boolean
+    bind: overwriteBooleanValue
+    original: overwriteOriginalBooleanValue
+  - name: number
+    bind: overwriteNumberValue
+    original: overwriteOriginalNumberValue
+  - name: object
+    bind: overwriteObjectValue
+    original: overwriteOriginalObjectValue
+  - name: array
+    bind: overwriteArrayValue
+    original: overwriteOriginalArrayValue
+---
+
+<div class="row">
+  <div class="col-12">
+    <h1>
+      🧪 Overwrite States in DOM
+    </h1>
+    <p>
+      This tests component state overwrites, wherein state values are defined in the component, but also in DOM. The DOM defined states will run precedence in these situations.
+    </p>
+    <hr>
+  </div>
+</div>
+
+{%- include 'cases/component-types/include/pages' -%}
+{%- include 'cases/component-types/include/legend' -%}
+
+<div class="row ml-1 py-1">
+  <div class="col">
+    <div
+      class="d-block py-2"
+      spx-component="types"
+      spx-types:overwrite-string="overwrite"
+      spx-types:overwrite-number="20.45"
+      spx-types:overwrite-boolean="false"
+      spx-types:overwrite-object="{ has: 'overwrite' }"
+      spx-types:overwrite-array="['new', { key: 'array value' }]">
+      {%- for type in overwrites -%}
+        <div class="row g-0 ai-center py-2 {% unless forloop.last %}bb{% endunless %}">
+          <span class="col-2">{{ type.name }}</span>
+          <code
+            class="col-5 fc-blue fw-bold"
+            spx-bind="types.{{ type.bind }}"></code>
+          <code
+            class="col-5 tr fw-bold"
+            spx-bind="types.{{ type.original }}"></code>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>

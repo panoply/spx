@@ -4,10 +4,10 @@ spx(
   {
     logLevel: 1,
     fragments: [
-      'element-a',
-      'element-b',
-      'element-c',
-      'element-d'
+      '#element-a',
+      '#element-b',
+      '#element-c',
+      '#element-d'
     ]
   }
 );

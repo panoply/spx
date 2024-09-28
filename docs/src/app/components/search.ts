@@ -31,11 +31,10 @@ export class Search extends spx.Component({
 
     if (!this.state.active) {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault();
         this.input.focus();
         this.onFocus();
-        this.getResults(this.index.content.map(item => this.getItem(item)));
         this.show();
+        this.getResults(this.index.content.map(item => this.getItem(item)));
       }
     } else {
       if (event.key === 'Escape') {
@@ -75,7 +74,7 @@ export class Search extends spx.Component({
 
     const input = this.state.query = event.target.value.trim();
 
-    if (input.length > 0) {
+    if (input.length > 2) {
 
       this.result = matchSorter(this.index.content, input, this.match);
 

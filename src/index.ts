@@ -1,11 +1,10 @@
 import type { Config, Page, LiteralUnion, Class } from 'types';
 import { $ } from './app/session';
-import { log } from './shared/logs';
 import { defineGetter, forEach, forNode, size, takeSnapshot } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute } from './app/location';
-import { Log, VisitType } from './shared/enums';
-import { b, o, isBrowser, origin } from './shared/native';
+import { VisitType } from './shared/enums';
+import { b, isBrowser, o, origin } from './shared/native';
 import { initialize, disconnect } from './app/controller';
 import { clear } from './app/queries';
 import { on, off } from './app/events';
@@ -18,27 +17,28 @@ import * as request from './app/fetch';
 import * as renderer from './app/render';
 import * as history from './observe/history';
 import * as components from './observe/components';
+import * as log from './shared/logs';
 
 /**
  * Connect SPX
  */
 export default function spx (options: Config = {}) {
 
-  if (isBrowser === false) {
-    return log(Log.ERROR, 'Invalid runtime environment: window is undefined.');
+  if (!isBrowser) {
+    return log.error('Invalid runtime environment: window is undefined.');
   }
 
   if (!spx.supported) {
-    return log(Log.ERROR, 'Browser does not support SPX');
+    return log.error('Browser does not support SPX');
   }
 
   if (!window.location.protocol.startsWith('http')) {
-    return log(Log.ERROR, 'Invalid protocol, SPX expects HTTPS or HTTP protocol');
+    return log.error('Invalid protocol, SPX expects HTTPS or HTTP protocol');
   }
 
   configure(options);
 
-  if ($.config.globalThis && !('spx' in window)) {
+  if ($.config.globalThis && window && !('spx' in window)) {
     defineGetter(window, 'spx', spx);
   }
 
@@ -52,13 +52,13 @@ export default function spx (options: Config = {}) {
       try {
         await callback(state);
       } catch (e) {
-        log(Log.WARN, 'Connection Error', e);
+        log.error('Connection Error', e);
       }
     } else {
       callback(state);
     }
 
-    log(Log.INFO, 'Connection Established');
+    log.info('Connection Established');
 
   };
 
@@ -113,7 +113,7 @@ function live (identifers: string | string[] = null, ...rest: string[]) {
   const ids = identifers ? [ identifers, ...rest ].flat() : null;
   const mounted = {};
 
-  for (const { scope: { alias, instanceOf } } of $.components.$instances.values()) {
+  for (const { scope: { alias, instanceOf } } of $.instances.values()) {
 
     const id = ids ? (ids.includes(alias)
       ? alias
@@ -133,7 +133,7 @@ function component (identifer: string, callback?: (instance: any) => any) {
 
   const instances: Class[] = [];
 
-  for (const instance of $.components.$instances.values()) {
+  for (const instance of instances.values()) {
 
     const { scope } = instance;
 
@@ -155,10 +155,7 @@ function register (...classes: any[]) {
   if (typeof classes[0] === 'string') {
 
     if (classes.length > 2) {
-      log(Log.ERROR, [
-        `Named component registration expects 2 parameters, recieved ${classes.length}.`,
-        'Registry should follow this structure: spx.register("identifer", YourComponent)'
-      ], classes);
+      log.error(`Named component registration expects 2 parameters, recieved ${classes.length}.`, classes);
     }
 
     registerComponents({ [components[0]]: classes[1] });
@@ -176,7 +173,6 @@ function register (...classes: any[]) {
         }
       } else {
 
-        console.log(component);
         if (typeof component === 'function') {
           registerComponents({ [getComponentId(component)]: component }, true);
         } else if (typeof component === 'object') {
@@ -197,15 +193,25 @@ function register (...classes: any[]) {
  */
 function session () {
 
-  return Object.defineProperties(o(), {
-    config: { get: () => $.config },
-    snaps: { get: () => $.snaps },
-    pages: { get: () => $.pages },
-    observers: { get: () => $.observe },
-    components: { get: () => $.components },
-    fragments: { get: () => $.fragments },
-    memory: { get: () => ($.memory.size = size($.memory.bytes)) }
-  });
+  return [
+    'config',
+    'snaps',
+    'pages',
+    'observers',
+    'fragments',
+    'instances',
+    'mounted',
+    'registry',
+    'reference',
+    'memory'
+  ].reduceRight((
+    target,
+    prop
+  ) => Object.defineProperty(target, prop, {
+    get: prop === 'memory' ? () => ($[prop].size = size($[prop].bytes)) : () => $[prop],
+    enumerable: false,
+    configurable: false
+  }), o());
 
 }
 
@@ -241,11 +247,11 @@ async function reload () {
   const page = await request.fetch($.page);
 
   if (page) {
-    log(Log.INFO, 'Triggered reload, page was re-cached');
+    log.info('Triggered reload, page was re-cached');
     return renderer.update(page);
   }
 
-  log(Log.WARN, 'Reload failed, triggering refresh (cache will purge)');
+  log.warn('Reload failed, triggering refresh (cache will purge)');
 
   return location.assign($.page.key);
 
@@ -259,7 +265,8 @@ async function fetch (url: string) {
   const link = getRoute(url, VisitType.FETCH);
 
   if (link.location.origin !== origin) {
-    log(Log.ERROR, 'Cross origin fetches are not allowed');
+    log.error('Cross origin fetches are not allowed');
+    return;
   }
 
   const dom = await request.http<Document>(link.key);
@@ -310,11 +317,11 @@ async function render (url: string, pushState: 'intersect' | 'replace' | 'push',
   const page = $.page;
   const route = getRoute(url);
 
-  if (route.location.origin !== origin) log(Log.ERROR, 'Cross origin fetches are not allowed');
+  if (route.location.origin !== origin) log.error('Cross origin fetches are not allowed');
 
   const dom = await request.http<Document>(route.key, { type: 'document' });
 
-  if (!dom) log(Log.ERROR, `Fetch failed for: ${route.key}`, dom);
+  if (!dom) log.error(`Fetch failed for: ${route.key}`, dom);
 
   await fn.call(page, dom) as Document;
 
@@ -370,14 +377,14 @@ async function prefetch (link: string): Promise<void|Page> {
   const path = getRoute(link, VisitType.PREFETCH);
 
   if (q.has(path.key)) {
-    log(Log.WARN, `Cache already exists for ${path.key}, prefetch skipped`);
+    log.warn(`Cache already exists for ${path.key}, prefetch skipped`);
     return;
   }
 
   const prefetch = await request.fetch(q.create(path));
   if (prefetch) return prefetch;
 
-  log(Log.ERROR, `Prefetch failed for ${path.key}`);
+  log.error(`Prefetch failed for ${path.key}`);
 
 };
 

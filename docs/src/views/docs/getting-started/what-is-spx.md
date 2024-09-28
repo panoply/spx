@@ -10,7 +10,7 @@ anchors:
 
 # What is SPX?
 
-SPX is a lightweight JavaScript library ({{ meta.gzipSize }} gzip) designed for static, SaaS, and server-side powered web applications. It performs HTML pre-fetching over the wire and utilizes the response to carry-out morphed replacements. The module operates navigation in an idle state, maintaining an in-memory cache of fetched pages to prevent subsequent requests. It conducts morphed renders between visits and supports component integration.
+SPX is a lightweight JavaScript library ({{ meta.gzipSize }} gzip) designed for static, SaaS, and server-side powered web applications. It performs HTML pre-fetching over the wire and utilizes the response to carry-out morphed replacements. The module performs navigation in an idle state, maintains an in-memory cache, applies morphed rendering between visits and supports component integration.
 
 {% include 'include/comparison' %}
 

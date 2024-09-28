@@ -4,11 +4,11 @@ import { $ } from './session';
 import { patchSetAttribute } from '../shared/patch';
 import { Attributes, CharCode, LogLevel, Log } from '../shared/enums';
 import { nil, o } from '../shared/native';
-import { log } from '../shared/logs';
 import { hasProp } from '../shared/utils';
 import { progress } from './progress';
 import { registerComponents } from '../components/register';
 import { api } from '../observe/history';
+import * as log from '../shared/logs';
 
 /**
  * Observe Options
@@ -43,12 +43,12 @@ export const observers = (options: Options) => {
  */
 const not = (attr: string, name: 'hover' | 'intersect' | 'proximity') => {
 
-  const prefix = `:not([${attr}${name}=false]):not([${attr}link])`;
+  const prefix = `:not([${attr}${name}=false]):not([${attr}link]):not`;
 
   switch (name.charCodeAt(0)) {
-    case CharCode.LCH: return `${prefix}:not([${attr}proximity]):not([${attr}intersect])`;
-    case CharCode.LCI: return `${prefix}:not([${attr}hover]):not([${attr}proximity])`;
-    case CharCode.LCP: return `${prefix}:not([${attr}intersect]):not([${attr}hover])`;
+    case CharCode.LCH: return `${prefix}([${attr}proximity]):not([${attr}intersect])`;
+    case CharCode.LCI: return `${prefix}([${attr}hover]):not([${attr}proximity])`;
+    case CharCode.LCP: return `${prefix}([${attr}intersect]):not([${attr}hover])`;
   }
 
 };
@@ -74,31 +74,24 @@ const evaluators = (options: Options, attr: string, disable: string) => {
 
   return (tag: LiteralUnion<'style' | 'script' | 'link' | 'meta', string>) => {
 
-    if ($.eval === false || $.config.eval[tag] === false) {
-      return `${tag}[${attr}eval]:${disable}`;
-    }
-
-    if ($.config.eval[tag] === true) {
-      return `${tag}:${disable}`;
-    }
+    if ($.eval === false || $.config.eval[tag] === false) return `${tag}[${attr}eval]:${disable}`;
+    if ($.config.eval[tag] === true) return `${tag}:${disable}`;
 
     const defaults = tag === 'link'
       ? `${tag}[rel=stylesheet]:${disable}`
-      : tag === 'script'
-        ? `${tag}:${disable}:not([${attr}eval=hydrate])`
-        : `${tag}:${disable}`;
+      : `${tag}:${disable}${tag === 'script' ? `:not([${attr}eval=hydrate])` : ''}`;
 
     if ($.config.eval[tag] === null) return defaults;
     if (Array.isArray($.config.eval[tag] as string[])) {
       if ($.config.eval[tag].length > 0) {
         return $.config.eval[tag].map<string>((s: string) => `${s}:${disable}`).join(',');
       } else {
-        log(Log.WARN, `Missing eval ${tag} value, SPX will use defaults`);
+        log.warn(`Missing eval ${tag} value, default will be used`);
         return defaults;
       }
     }
 
-    log(Log.TYPE, `Invalid eval ${tag} value, expected boolean or array`);
+    log.error(`Invalid "eval" ${tag} value, expected boolean or array type`);
 
   };
 };
@@ -119,14 +112,8 @@ const fragments = (options: Options) => {
 
       // check for . or [ starting characters
       if (charCode === CharCode.DOT || charCode === CharCode.LSB) {
-
-        log(Log.WARN, [
-          `Invalid fragment selector "${fragment}" provided. Fragments must be id annotated values.`,
-          'Use spx-target attributes for additional fragment selections.'
-        ]);
-
+        log.warn(`Invalid fragment, only element id values allowed: "${fragment}"`);
         continue;
-
       } else if (charCode === CharCode.HSH) { // hash selectors will augment, eg: #foo > foo
         elements.push(fragment.trim());
       } else {
@@ -153,9 +140,7 @@ export const configure = (options: Options = o()) => {
 
   if ('logLevel' in options) {
     $.logLevel = options.logLevel;
-    if ($.logLevel === LogLevel.VERBOSE) {
-      log(Log.VERBOSE, 'Verbose Logging');
-    }
+    $.logLevel === LogLevel.DEBUG && log.debug('DEBUG MODE');
   }
 
   patchSetAttribute();
@@ -207,38 +192,34 @@ export const configure = (options: Options = o()) => {
   $.memory.visits = 0;
   $.memory.limit = $.config.maxCache;
 
-  // qs
-  // Registers all the attribute a selector entries SPX will use
-  Object.assign<Selectors, Selectors>($.qs, {
-    $attrs: new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i'),
-    $find: new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i'),
-    $param: new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i'),
-    $target: `${attr}target`,
-    $fragment: `${attr}fragment`,
-    $fragments: `[${attr}fragment]`,
-    $targets: `[${attr}target]:not(a[spx-target]):not([${attr}target=false])`,
-    $morph: `${attr}morph`,
-    $eval: `${attr}eval`,
-    $intersector: `[${attr}intersect]${not(attr, 'intersect')}`,
-    $track: `[${attr}track]:not([${attr}track=false])`,
-    $component: `${attr}component`,
-    $node: `${attr}node`,
-    $bind: `${attr}bind`,
-    $ref: 'data-spx',
-    $href: $.config.annotate ? `a[${attr}link]${href}` : `a${href}`,
-    $script: evals('script'),
-    $style: evals('style'),
-    $link: evals('link'),
-    $meta: evals('meta'),
-    $hydrate: `script[${attr}eval=hydrate]:${disable}`,
-    $resource: `link[rel=stylesheet][href*=\\.css]:${disable},script[src*=\\.js]:${disable}`,
-    $data: `${attr}data:`,
-    $proximity: `a[${attr}proximity]${href}${not(attr, 'proximity')}`,
-    $intersect: `a${href}${not(attr, 'intersect')}`,
-    $hover: $.config.hover !== false && $.config.hover.trigger === 'href'
-      ? `a${href}${not(attr, 'hover')}`
-      : `a[${attr}hover]${href}${not(attr, 'hover')}`
-  });
+  $.qs.$attrs = new RegExp(`^href|${attr}(${Attributes.NAMES})$`, 'i');
+  $.qs.$find = new RegExp(`${attr}(?:node|bind|component)|@[a-z]|[a-z]:[a-z]`, 'i');
+  $.qs.$param = new RegExp(`^${attr}[a-zA-Z0-9-]+:`, 'i');
+  $.qs.$target = `${attr}target`;
+  $.qs.$fragment = `${attr}fragment`;
+  $.qs.$fragments = `[${$.qs.$fragment}]`;
+  $.qs.$targets = `[${attr}target]:not(a[spx-target]):not([${attr}target=false])`;
+  $.qs.$morph = `${attr}morph`;
+  $.qs.$eval = `${attr}eval`;
+  $.qs.$intersector = `[${attr}intersect]${not(attr, 'intersect')}`;
+  $.qs.$track = `[${attr}track]:not([${attr}track=false])`;
+  $.qs.$component = `${attr}component`;
+  $.qs.$node = `${attr}node`;
+  $.qs.$bind = `${attr}bind`;
+  $.qs.$ref = 'data-spx';
+  $.qs.$href = `a${$.config.annotate ? `[${attr}link]` : ''}${href}`;
+  $.qs.$script = evals('script');
+  $.qs.$style = evals('style');
+  $.qs.$link = evals('link');
+  $.qs.$meta = evals('meta');
+  $.qs.$hydrate = `script[${attr}eval=hydrate]:${disable}`;
+  $.qs.$resource = `link[rel=stylesheet][href*=\\.css]:${disable},script[src*=\\.js]:${disable}`;
+  $.qs.$data = `${attr}data:`;
+  $.qs.$proximity = `a[${attr}proximity]${href}${not(attr, 'proximity')}`;
+  $.qs.$intersect = `a${href}${not(attr, 'intersect')}`;
+  $.qs.$hover = $.config.hover !== false && $.config.hover.trigger === 'href'
+    ? `a${href}${not(attr, 'hover')}`
+    : `a[${attr}hover]${href}${not(attr, 'hover')}`;
 
   // PROGRESS BAR
   progress.style($.config.progress);

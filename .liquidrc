@@ -18,13 +18,13 @@
       "commentIndent": true,
       "commentNewline": true,
       "delimiterPlacement": "consistent",
-      "delimiterTrims": "always",
+      "delimiterTrims": "tags",
       "lineBreakSeparator": "before",
       "indentAttribute": true,
       "normalizeSpacing": true,
       "preserveComment": false,
       "quoteConvert": "single",
-      "forceFilter": 3,
+      "forceFilter": 2,
       "forceArgument": 3
     },
     "markup": {

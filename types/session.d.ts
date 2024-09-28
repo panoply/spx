@@ -1,8 +1,8 @@
 import type { Merge } from 'type-fest';
-import type { Config, Page, Observers, Memory, Selectors, HistoryState } from './global';
+import type { Config, Page, Observers, Memory, Selectors, HistoryState, EventNames } from './global';
 import type { ComponentSession } from './components';
 
-export interface Session {
+export interface Session extends ComponentSession {
   /**
    * Getter value which reflects `document.readyState` and matches against `complete`
    */
@@ -54,7 +54,7 @@ export interface Session {
    * Holds an o reference for every event
    * emitted. Used by the event emitter operations
    */
-  readonly events: { [name: string]: Array<() => void | boolean> };
+  readonly events: Record<EventNames, Array<() => void | boolean>>
 
   /**
    * Observers
@@ -231,13 +231,6 @@ export interface Session {
    * page navigation. The Set is update after each page render.
    */
   readonly fragments: Map<string, HTMLElement>
-
-  /**
-   * Components
-   *
-   * Maintains component models.
-   */
-  readonly components: ComponentSession;
 
   /**
    * Resources

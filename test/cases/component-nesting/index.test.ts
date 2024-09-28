@@ -13,6 +13,7 @@ export class Nesting extends spx.Component({
   method () {
 
     this.bar();
+
   }
 
   onClick () {

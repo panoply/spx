@@ -9,11 +9,11 @@ base: /components/incremental/
 
 {{ content }}
 
-{% include 'cases/component-incremental/include/pages' %}
-{% include 'cases/component-incremental/include/target' %}
+{%- include 'cases/component-incremental/include/pages' -%}
+{%- include 'cases/component-incremental/include/target' -%}
 
 <section
-  class="row bt mt-4 ml-1 py-3"
+  class="row ai-center bt ml-1 py-3"
   id="content">
 
   <input
@@ -22,4 +22,29 @@ base: /components/incremental/
     style="height: 50px;"
     spx@input="incremental.changeColor">
 
+  <div
+    class="col-auto pt-3 ff-head upper fs-sm ml-4 bl pl-4"
+    style="height: 50px;">
+    New Nodes:
+  </div>
+
+  <div class="col-1 py-2">
+    <div
+      class="col-1 py-3 px-4 bd rd
+      spx-node="
+      incremental.color"
+      style="
+      background-color:
+      aquamarine;"></div>
+  </div>
+  <div class="col-1  py-2 ">
+    <div
+      class="col-1 py-3 px-4 bd rd ml-2"
+      spx-node="incremental.color"
+      style="background-color: aquamarine;"></div>
+  </div>
+  <div class="col-12 tl fs-xs bt mt-3 pt-3 pl-1">
+    <strong>NOTE:</strong>
+    The above input element is a component event contained within a target element. We also added additional nodes which will reflect the input colors. In the component, changes will use the sugar helpers.
+  </div>
 </section>
