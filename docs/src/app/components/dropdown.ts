@@ -67,10 +67,10 @@ export class Dropdown extends spx.Component({
 
     event.stopPropagation();
 
-    if (this.dom.classList.contains('is-open')) return this.close();
+    if (this.view.classList.contains('is-open')) return this.close();
 
     this.state.collapse = 'opened';
-    this.dom.classList.add('is-open');
+    this.view.classList.add('is-open');
     this.buttonNode.classList.remove('selected');
 
     if (this.hasAccordion) this.inViewport();
@@ -86,7 +86,7 @@ export class Dropdown extends spx.Component({
   outsideClick (event: Event) {
 
     if (this.buttonNode !== event.target && this.collapseNode !== event.target) {
-      if (this.dom.classList.contains('is-open')) {
+      if (this.view.classList.contains('is-open')) {
         this.close();
       }
     }
@@ -98,10 +98,10 @@ export class Dropdown extends spx.Component({
    */
   close () {
 
-    this.dom.classList.remove('is-open');
+    this.view.classList.remove('is-open');
 
     if (this.state.collapse === 'selected' || this.state.hasSelected) {
-      this.dom.classList.add('selected');
+      this.view.classList.add('selected');
       this.state.collapse = 'selected';
     } else {
       this.state.collapse = 'closed';
@@ -123,7 +123,7 @@ export class Dropdown extends spx.Component({
     this.buttonNode.innerText = target.getAttribute('aria-label');
     this.state.collapse = 'selected';
 
-    for (const label of this.dom.getElementsByTagName('label')) {
+    for (const label of this.view.getElementsByTagName('label')) {
 
       if (label.getAttribute('for') === target.id) {
         if (!label.classList.contains('selected')) {

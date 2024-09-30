@@ -376,10 +376,10 @@ export class Drawer extends spx.Component({
   onmount () {
 
     if (this.state.useParent) {
-      this.target = this.dom.parentElement;
+      this.target = this.view.parentElement;
       this.target.ariaHidden = 'true';
     } else {
-      this.target = this.dom;
+      this.target = this.view;
     }
 
     if (this.target.classList.contains('d-none')) {

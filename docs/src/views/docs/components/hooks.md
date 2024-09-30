@@ -84,11 +84,3 @@ export class Example extends spx.Component() {
 
 }
 ```
-
----
-
-# Demonstration
-
-See the below example where we are demonstrating hooks execution.
-
-{% include 'include/iframe', url: '/iframe/using-hooks/page-a/', class: 'hook-iframe' %}

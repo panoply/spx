@@ -12,7 +12,7 @@ export class Indicator extends spx.Component({
 
     this.markerNode.style.setProperty(
       'transform',
-      `translateY(${this.dom.offsetTop}px)`
+      `translateY(${this.view.offsetTop}px)`
     );
 
   }
