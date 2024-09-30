@@ -6,7 +6,7 @@ import * as log from '../shared/logs';
 
 export const stateProxy = (instance: Class) => {
 
-  const { scope, dom } = instance;
+  const { scope, view } = instance;
 
   // @ts-ignore
   instance.state = new Proxy(scope.state, {
@@ -53,9 +53,9 @@ export const stateProxy = (instance: Class) => {
       const hasProp = `has${upcase(prop)}`;
 
       let attrName = `${prefix}:${kebabCase(prop)}`;
-      if (!dom.hasAttribute(attrName)) attrName = `${prefix}:${prop}`;
+      if (!view.hasAttribute(attrName)) attrName = `${prefix}:${prop}`;
 
-      const domValue = dom.getAttribute(attrName);
+      const domValue = view.getAttribute(attrName);
       const defined = domValue !== null && domValue !== ''; // whether dom state is defined
 
       hasProp in scope.state || Reflect.set(scope.state, hasProp, defined);
