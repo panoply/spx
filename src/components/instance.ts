@@ -119,8 +119,8 @@ const setNodes = (nodes: Record<string, ComponentNodes>, $instance: Class) => {
     }
 
     const hasNode = () => node.live > 0;
-    const getNode = () => element(node.selector, node.isChild ? $instance.dom : b());
-    const getNodes = () => elements(node.selector, node.isChild ? $instance.dom : b());
+    const getNode = () => element(node.selector, node.isChild ? $instance.view : b());
+    const getNodes = () => elements(node.selector, node.isChild ? $instance.view : b());
 
     Object.defineProperty($instance, hasNodeKey, { get: hasNode });
 
@@ -169,8 +169,6 @@ const defineInstances = (promises: LifecycleHooks, mounted: q.Mounted, isMorph: 
       setEvents(scope, instance, isMorph);
 
     } else {
-
-      scope.define = o();
 
       const Register = $.registry.get(scope.instanceOf);
       const Defined = Object.defineProperty(scope, 'define', { get: () => Register.define });
