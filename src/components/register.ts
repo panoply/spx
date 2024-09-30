@@ -30,8 +30,6 @@ export const getComponentId = (instance: Register, identifier?: string) => {
   const original = identifier;
   const hasName = 'define' in instance && 'name' in instance.define;
 
-  console.log(instance.name, identifier);
-
   instance.define.name = downcase(identifier || name);
 
   if (identifier !== instance.define.name) identifier = camelCase(instance.define.name);
