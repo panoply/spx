@@ -52,6 +52,7 @@ export default function spx (options: Config = {}) {
       try {
         await callback(state);
       } catch (e) {
+        console.error(e);
         log.error('Connection Error', e);
       }
     } else {
