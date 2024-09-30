@@ -15,7 +15,7 @@ export function Component (define: SPX.Define) {
    *
    * Extends base classes and assigns scopes to custom defined components.
    */
-  return class implements Partial<SPX.Class> {
+  return class {
 
     /**
      * Static Definition
@@ -72,12 +72,8 @@ export function Component (define: SPX.Define) {
      *
      * Holds a reference to the DOM Document element `<div spx-component="">` node.
      */
-    get dom () {
+    get view () {
       return this.scope.dom;
-    }
-
-    set dom (dom) {
-      Component.scopes.get(this.ref).dom = dom;
     }
 
     readonly scope: Scope;
@@ -102,7 +98,7 @@ export function Component (define: SPX.Define) {
         writable: false
       });
 
-      stateProxy(this);
+      stateProxy(this as any);
 
     }
 
