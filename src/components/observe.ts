@@ -27,7 +27,7 @@ const connect = (node: HTMLElement, refs: string[]) => {
 
       $.mounted.add(instance.scope.key);
 
-      instance.dom = node;
+      instance.scope.dom = node;
       instance.scope.status = Hooks.MOUNT;
 
       log.debug(`Component ${instance.scope.define.name} mounted: ${instance.scope.key}`, Colors.GREEN);
@@ -68,7 +68,6 @@ export const unmount = (curNode: HTMLElement, refs: string[]) => {
 
     if (ref === Refs.COMPONENT) {
 
-      // @ts-expect-error
       instance.scope.hooks.unmount === HookStatus.DEFINED && instance.unmount(hargs());
 
       $.mounted.delete(instance.scope.key);
