@@ -567,47 +567,6 @@ export type DOMSugar<T extends readonly string[] = readonly string[]> = (
 
 )
 
-export declare class ClassHooks {
-
-  /**
-   * **SPX `connect`**
-   *
-   * An SPX component lifecycle callback that will be triggered on component register.
-   * This event will on fire once for each instance occurance throughout an SPX session.
-   *
-   * [SPX Documentation](https://spx.js.org/components/hooks/)
-   */
-  public connect<U extends Page>(page?: U): any;
-
-  /**
-   * **SPX `onmount`**
-   *
-   * SPX lifecycle hook triggered each time the component is present in the DOM.
-   *
-   * [SPX Documentation](https://spx.js.org/components/hooks/)
-   */
-  public onmount<U extends Page>(page?: U): any;
-
-  /**
-   * **SPX `unmount`**
-   *
-   * SPX lifecycle hook that executes when a component is removed from the DOM.
-   *
-   * [SPX Documentation](https://spx.js.org/components/hooks/)
-   */
-  public unmount<U extends Page>(page?: U): any;
-
-  /**
-   * **SPX `onmedia`**
-   *
-   * SPX lifecycle hook which fire upon media query breakpoint changes.
-   *
-   * [SPX Documentation](https://spx.js.org/components/hooks/)
-   */
-  public onmedia(screen: 'xs' | 'sm' | 'md' | 'lg' | 'xl'): any;
-
-}
-
 /**
  * Component Class
  *
@@ -639,54 +598,79 @@ export declare class Class<T extends HTMLElement = HTMLElement> {
   public readonly root: HTMLElement;
 
   /**
-   * **SPX Document Element**
+   * **SPX Component Element**
    *
-   * Holds a reference to the DOM Document element `<html>` node.
+   * Holds a reference to the DOM Document element `<div spx-component="">` node.
    */
-  public get dom(): T;
-  public set dom(dom: T);
+  public readonly view: T;
+
+  /**
+   * **SPX `connect`**
+   *
+   * An SPX component lifecycle callback that will be triggered on component register.
+   * This event will on fire once for each instance occurance throughout an SPX session.
+   *
+   * [SPX Documentation](https://spx.js.org/components/hooks/)
+   */
+  public connect<U extends Page>(page?: U): any;
+
+  /**
+  * **SPX `onmount`**
+  *
+  * SPX lifecycle hook triggered each time the component is present in the DOM.
+  *
+  * [SPX Documentation](https://spx.js.org/components/hooks/)
+  */
+  public onmount<U extends Page>(page?: U): any;
+
+  /**
+  * **SPX `unmount`**
+  *
+  * SPX lifecycle hook that executes when a component is removed from the DOM.
+  *
+  * [SPX Documentation](https://spx.js.org/components/hooks/)
+  */
+  public unmount<U extends Page>(page?: U): any;
 
 }
 
-type ComponentScope<T extends SPX.Define> = {
+type StateContext<T extends SPX.Define> = {
+  /**
+   * ### SPX State
+   *
+   * Component state references the structure provided on the `spx.Component({ state: {} })` object.
+   * Entries will be matched and merged with the DOM state directives provided on component views.
+   *
+   * [SPX Documentation](https://spx.js.org/components/state/)
+   */
+  state: State<T>;
+}
 
-  new (context: Class): (
+type ComponentScope<T extends SPX.Define> = {
+  new (context: Class): T['nodes'] extends ReadonlyArray<string> ? (
     & Class
-    & {
-      /**
-       * ### SPX State
-       *
-       * Component state references the structure provided on the `spx.Component({ state: {} })` object.
-       * Entries will be matched and merged with the DOM state directives provided on component views.
-       *
-       * [SPX Documentation](https://spx.js.org/components/state/)
-       */
-      state: State<T>;
-    }
+    & StateContext<T>
     & DOM<T['nodes']>
+  ) : (
+    & Class
+    & StateContext<T>
   )
 }
 
 type ComponentSugar<T extends SPX.Define> = {
 
-  new (context: Class): (
+    new (context: Class): T['nodes'] extends ReadonlyArray<string> ? (
     & Class
-    & {
-      /**
-       * ### SPX State
-       *
-       * Component state references the structure provided on the `spx.Component({ state: {} })` object.
-       * Entries will be matched and merged with the DOM state directives provided on component views.
-       *
-       * [SPX Documentation](https://spx.js.org/components/state/)
-       */
-      state?: State<T>;
-    }
+    & StateContext<T>
     & DOMSugar<T['nodes']>
+  ) : (
+    & Class
+    & StateContext<T>
   )
 }
 
 export interface Component {
+
   <T extends SPX.Define = SPX.Define> (define?: T & {
     /**
      * ### Component Name
@@ -789,7 +773,7 @@ export interface Component {
      *
      * ```
      */
-    nodes?: ReadonlyArray<string>;
+    nodes?: readonly string[];
     /**
      * ### Node Sugars
      *

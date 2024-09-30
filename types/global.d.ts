@@ -368,7 +368,7 @@ export declare namespace SPX {
     *
     * ```
     */
-    static off<T extends EventNames>(event: T, callback: LifecycleEvent<T> | number): number;
+    static off<T extends EventNames>(event: T, callback: LifecycleEvent<T, any> | number): number;
 
     /**
     * #### State
@@ -769,14 +769,14 @@ export declare namespace SPX {
      *
      * Whether or not nodes should use sugar methods
      */
-    readonly sugar?: boolean;
+    sugar?: boolean;
     /**
      * #### State
      *
      * Attribute state references used to connect DOM states with component `this.state`.
      * Accepts Constructor types or `typeof` and `default` object presets.
      */
-    readonly state?: {
+    state?: {
       [key: `${Lowercase<string>}${string}`]: (
         | number
         | string
@@ -802,7 +802,7 @@ export declare namespace SPX {
      * DOM Node identifier references used to connect elements in the DOM with component
      * `this.dom.<node>` values.
      */
-    readonly nodes?: ReadonlyArray<string>;
+    nodes?: ReadonlyArray<string>;
   }
 
 }
