@@ -53,5 +53,7 @@ export const info = (...message: string[]) => {
  * Console Error (Will throw)
  */
 export const error = (message: string, context?: any) => {
+
   throw new SPXError(message, context);
+
 };
