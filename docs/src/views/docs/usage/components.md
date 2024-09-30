@@ -2,6 +2,7 @@
 permalink: '/usage/components/index.html'
 title: Components - Overview
 layout: base.liquid
+logger: false
 anchors:
   - Components
   - Markup
@@ -15,12 +16,12 @@ SPX components serve as a bridge between JavaScript logic and the Document Objec
 ```ts
 import spx from 'spx';
 
-
 export class Demo extends spx.Component({
   name: 'demo',           // Define an identifier (optional)
-  sugar: false,           // Whether or not to use node sugars
-  nodes: ['foo'],         // Define elements associated with components
-  state: {}               // Define component state interface
+  sugar: false,           // Whether or not to use node sugars (optional)
+  merge: false,           // Whether or not snapshot merging applies (optional)
+  nodes: ['foo'],         // Define elements associated with components (optional)
+  state: {}               // Define component state interface (optional)
 }) {
 
   connect({ page }) {}      // Component lifecycle event when component connects
@@ -30,7 +31,7 @@ export class Demo extends spx.Component({
   method() {
     this.state            // State object as per define.state
     this.root             // DocumentElement reference: <html>
-    this.dom              // HTMLElement reference for: <div spx-component="demo">
+    this.view             // HTMLElement reference for: <div spx-component="demo">
     this.fooNode          // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
     this.fooNodes         // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
     this.hasFoo           // Whether or not <div spx-node="demo.foo"> exists in dom
@@ -45,7 +46,39 @@ export class Demo extends spx.Component({
 
 # Hooks
 
-Components support lifecycle hooks like `onmount` for initialization when rendered, and `unmount` for cleanup before removal from the DOM. These hooks are essential for managing resources efficiently, ensuring components clean up after themselves when no longer needed.
+SPX components incorporate three essential lifecycle callback hooks for precise control over component behavior. The `connect` hook triggers at the outset and is ideal for initial setup, executing just once. The `onmount` hook will trigger every time a component view is attached to the DOM, useful for logic that needs to run upon rendering. The `unmount` hook is invoked each time a component's view is detached from the DOM, this allows you to perform any necessary cleanups before component removal applies. Hooks provide you with a simple and effective management point, allowing components to responsibly handle their lifecycle, from initialization to termination and recurrence.
+
+:::: grid row gx-0
+::: grid col-12 col-sm-7 iframe-code mt-4 my-sm-4
+
+<!-- prettier-ignore -->
+```ts
+import spx from 'spx';
+
+export class Demo extends spx.Component() {
+
+  connect() {
+    console.log('Demo Connect')
+  }
+  onmount() {
+    console.log('Demo Mounted')
+  }
+  unmount() {
+    console.log('Demo Unmounted')
+  }
+}
+```
+
+:::
+::: grid col-12 col-sm-5 iframe-code mb-4 my-sm-4
+
+{% include 'include/iframe'
+  , url: '/usage/iframe/components-hooks/onmount/'
+  , class: 'iframe-code'
+%}
+
+:::
+::::
 
 # Events
 
@@ -81,7 +114,7 @@ SPX components connect with DOM elements via attribute annotations. Initializing
     Click Me
   </button>
   <!--
-    Component dom element reference which be available to: "this.dom.foo"
+    Component dom element reference which be available to: "this.fooNode"
     This will be index 0 as we have 2 node references
   -->
   <div spx-dom="demo.foo">
@@ -89,8 +122,8 @@ SPX components connect with DOM elements via attribute annotations. Initializing
   </div>
 </section>
 <!--
-  Additional Component doom element reference placed outside of the
-  components tree which will be index 1 in the array list: "this.dom.foo()"
+  Additional Component dom element references placed outside of the
+  component view are supported. This would be on index 1: "this.fooNodes[1]"
 -->
 <div spx-dom="demo.foo">
   Hello World!

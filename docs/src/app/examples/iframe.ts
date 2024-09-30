@@ -1,17 +1,15 @@
 /* eslint-disable no-use-before-define */
 import spx from 'spx';
 
-export class IFrame extends spx.Component<typeof IFrame.define> {
-
-  static define = {
-    id: 'iframe',
-    nodes: <const>[
-      'log'
-    ],
-    state: {
-      count: Number
-    }
-  };
+export class IFrame extends spx.Component({
+  name: 'iframe',
+  nodes: <const>[
+    'log'
+  ],
+  state: {
+    count: Number
+  }
+}) {
 
   /**
    * Rolling logs which will print the hook messages
@@ -23,8 +21,8 @@ export class IFrame extends spx.Component<typeof IFrame.define> {
     element.ariaLabel = `${++this.state.count}`;
     element.innerHTML = `<span class="ff-code ${color}">${hook}()</span> ${message}`;
 
-    this.dom.logNode.appendChild(element);
-    this.dom.logNode.scrollTop = this.dom.logNode.scrollHeight;
+    this.logNode.appendChild(element);
+    this.logNode.scrollTop = this.logNode.scrollHeight;
 
   }
 

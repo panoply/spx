@@ -1,9 +1,12 @@
-.search {
-  position: fixed;
-  min-width: 250px;
-  right: $spacer-5;
+.search-sticky {
+  position: sticky;
   top: 15px;
+}
+
+.search {
+  position: relative;
   z-index: 10;
+  min-width: 300px;
 
   .keys {
     display: block;
@@ -37,11 +40,11 @@
     border-radius: 8px;
     background-position: 8px center;
     background-size: 20px;
-    width: 100%;
+    width: 300px;
     font-weight: 400;
     text-transform: initial;
     background-image: url(icon-search($white, 1.3));
-    transition: width linear 200ms;
+    transition: width ease-in-out 180ms;
 
     &:focus::-webkit-search-cancel-button {
       background-image: url(icon-search($input-placeholder-color, 2px));
@@ -58,6 +61,7 @@
       font-weight: 600;
       font-size: 0.7rem;
       text-transform: uppercase;
+
       font-family: $font-family-heading;
     }
 
@@ -71,7 +75,7 @@
     }
 
     &::placeholder {
-      color: $white;
+      color: $gray-500;
     }
 
     &:focus {
@@ -121,6 +125,7 @@
     overflow-y: scroll;
     margin: 0;
     padding: 0;
+    z-index: 10;
 
     .w-icon {
       width: 20px;
@@ -142,7 +147,8 @@
     }
 
     &.no-results {
-      padding: 40px 0;
+      padding: 20px 0;
+      z-index: 100;
 
       li:first-of-type {
         background-color: $code-bg;
@@ -174,6 +180,7 @@
       padding: 10px 15px;
       margin: 0;
       background-color: $code-bg;
+      transition: $transition-base;
 
       &.selected {
         background-color: $body-bg;
@@ -189,7 +196,6 @@
       }
 
       &:hover {
-        transition: background-color 20ms linear 20ms;
         background-color: $body-bg;
         cursor: pointer;
 

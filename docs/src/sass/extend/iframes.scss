@@ -2,6 +2,9 @@
   position: relative;
 
   &-refresh {
+    position: absolute;
+    right: 25px;
+
     .icon-refresh {
       width: 15px;
       height: 15px;
@@ -51,12 +54,114 @@
   }
 }
 
-.hook-iframe {
-  height: 500px;
+.iframe-logs {
+  overflow-y: hidden;
+  position: relative;
+  background-color: #050505;
+  padding: $spacer-3;
+  max-height: 37vh;
+  height: 37vh;
+  align-self: end;
+  border-top: $border-width solid var(--papyrus-line-fence-color);
+
+  &:hover {
+    overflow-y: auto;
+  }
+
+  &::-webkit-scrollbar {
+    width: var(--papyrus-scrollbar-width);
+    height: var(--papyrus-scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--papyrus-scrollbar-track);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--papyrus-scrollbar-thumb);
+
+    &:hover {
+      background: var(--papyrus-scrollbar-thumb-hover);
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  .message {
+    display: block;
+    color: $white;
+    font-family: $font-family-code;
+    font-size: 0.775rem;
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: $spacer-1;
+
+    &::before {
+      color: var(--papyrus-line-number-color);
+      content: attr(aria-label);
+      position: absolute;
+      left: 5px;
+      width: 15px;
+      text-align: right;
+    }
+  }
+}
+
+.iframe-code {
+  //
+
+  > .papyrus {
+    @include media-breakpoint-down(sm) {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    @include media-breakpoint-up(sm) {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  > iframe {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    border: $border-width solid var(--papyrus-line-fence-color);
+    border-radius: var(--papyrus-code-border-radius);
+
+    @include media-breakpoint-down(sm) {
+      border-top: 0;
+      border-top-right-radius: 0;
+      border-top-left-radius: 0;
+      height: 320px;
+    }
+
+    @include media-breakpoint-up(sm) {
+      border-left: 0;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+}
+
+.iframe-grid {
+  display: grid;
+  height: 100vh;
+  background-color: #101114;
+
+  nav {
+    height: 40px;
+  }
 }
 
 .alias-iframe {
   height: 350px;
+}
+
+.h-375 {
+  height: 375px;
 }
 
 .hook-events {

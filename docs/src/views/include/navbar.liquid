@@ -1,13 +1,13 @@
 <header
   id="navbar"
-  class="container-fluid navbar d-unset d-sm-none">
+  class="container-fluid navbar d-unset d-md-none">
   <nav class="row jc-between ai-center px-2">
 
     <button
       type="button"
-      class="col-auto btn navbar-drawer ml-2 d-flex d-sm-none p-0"
+      class="col-auto btn navbar-drawer ml-2 d-flex d-md-none p-0"
       spx@click="drawer.toggle">
-      {% svg 'menu', 'icon-menu' %}
+      {%- svg 'menu', 'icon-menu' -%}
     </button>
 
     <a
@@ -15,7 +15,7 @@
       class="col-auto tc-sm"
       title="Home Page"
       spx-target="body">
-      {% svg 'logo', 'logo' %}
+      {%- svg 'logo', 'logo' -%}
     </a>
 
     <a
@@ -23,7 +23,7 @@
       href="{{ navigation.github.url }}"
       title="SPX Github"
       target="_blank">
-      {% svg 'github', 'icon-github' %}
+      {%- svg 'github', 'icon-github' -%}
     </a>
   </nav>
 </header>

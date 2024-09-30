@@ -45,17 +45,15 @@ In SPX, every component is derived from the `spx.Component` subclass, which faci
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component<typeof Example.define> {
-
-  static define = {
-    state: {
-      foo: String,
-      bar: Boolean,
-      baz: Number,
-      qux: Object,
-      arr: Array
-    }
+export class Example extends spx.Component({
+  state: {
+    foo: String,
+    bar: Boolean,
+    baz: Number,
+    qux: Object,
+    arr: Array
   }
+}) {
 
   connect () {
     this.state.foo  // => string
@@ -67,38 +65,6 @@ export class Example extends spx.Component<typeof Example.define> {
 }
 ```
 
-# Customized Typing
-
-There are scenarios where you might want to customize the auto-typing mechanism provided by SPX components. The `{js} spx.Component` class offers flexibility by allowing you to define custom interfaces for component state and specify different types of `HTMLElement` for DOM elements within your component.
-
-<!-- prettier-ignore -->
-```ts
-interface IExample {
-  /** Lorem Ipsum */
-  text: string;
-}
-
-interface IElements {
-  /** Open Button */
-  toggle: HTMLButtonElement;
-}
-
-spx.Component<typeof Example.define, IExample, IElements> {
-
-  static define = {
-    state: {
-      text: String
-    }
-  }
-
-  connect () {
-    this.state.text  // => string
-    this.dom.toggle  // => HTMLButtonElement
-  }
-
-}
-```
-
 # Type Constructors
 
 Type constructors can also accept inferred types, and the provision will behave in accordance with the definition passed. Applying _typed_ (Type) constructors is highly desirable when using `Object` or `Array` constructors in component state. Additionally, SPX extends support to literal unions for `String` type constructors which will resolve to `Record<T>` ensuring that known types of the string are shown as completions while unknown strings being error tolerant.
@@ -107,21 +73,19 @@ Type constructors can also accept inferred types, and the provision will behave 
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component<typeof Example.define> {
-
-  static define {
-    state: {
-      foo: String<'a' | 'b' | 'c'>,
-      bar: Object<{
-        name: string
-        age: number
-      }>,
-      baz: Array<{
-        city: string
-        country: string
-      }>
-    }
+export class Example extends spx.Component({
+  state: {
+    foo: String<'a' | 'b' | 'c'>,
+    bar: Object<{
+      name: string
+      age: number
+    }>,
+    baz: Array<{
+      city: string
+      country: string
+    }>
   }
+}) {
 
   connect () {
     this.state.foo  // => 'a' | 'b' | 'c' | string
@@ -131,9 +95,9 @@ export class Example extends spx.Component<typeof Example.define> {
 }
 ```
 
-# Component DOM
+# Component Nodes
 
-Component `dom[]` elements which are defined on the static `define` configuration object will default to using `HTMLElement`. These DOM identifier entires will be made available on the `{js} this.dom` object, offering a direct interface to manipulate elements within your component. SPX intelligently interprets the node identifiers to determine the appropriate element tag types. This means that DOM identifier names suffixed with an valid element name (e.g., `button`, `div`, `input`) will automatically infer and apply the element type.
+Component `nodes` are associated DOM Elements provided on the `nodes` definition object as keyword identifiers. These DOM identifier entires will be made available on the `{js} this` object of classes, offering a direct interface to manipulate elements within your component. SPX intelligently interprets the node identifiers to determine the appropriate element tag types. This means that DOM identifier names suffixed with an valid element name (e.g., `button`, `div`, `input`) will automatically infer and apply the element type.
 
 > The `<const>` prefix type annotation is **mandatory** when defining `nodes`. Omitting this annotation will prevent SPX from applying the specific DOM Node element typing, potentially leading to type errors or loss of IntelliSense support in your IDE.
 
@@ -141,27 +105,25 @@ Component `dom[]` elements which are defined on the static `define` configuratio
 ```ts
 import spx from 'spx';
 
-export class Example extends spx.Component<typeof Example.define> {
-
-  static define {
-    nodes: <const>[
-      'fooButton',
-      'demoInput',
-      'example'
-    ]
-  }
+export class Example extends spx.Component({
+  nodes: <const>[
+    'fooButton',
+    'demoInput',
+    'example'
+  ]
+}) {
 
   connect () {
 
-    this.dom.fooButton         // => HTMLButtonElement
-    this.dom.fooButton()       // => HTMLButtonElement[]
-    this.dom.fooButtonExists   // => true or false
-    this.dom.demoInput         // => HTMLInputElement
-    this.dom.demoInput()       // => HTMLInputElement[]
-    this.dom.demoInputExists   // => true or false
-    this.dom.example           // => HTMLElement
-    this.dom.example()         // => HTMLElement[]
-    this.dom.exampleExists     // => true or false
+    this.fooNode          // => HTMLButtonElement
+    this.fooNodes         // => HTMLButtonElement[]
+    this.hasFooNode       // => true or false
+    this.demoInputNode    // => HTMLInputElement
+    this.demoInputNodes   // => HTMLInputElement[]
+    this.hasDemoInput     // => true or false
+    this.exampleNode      // => HTMLElement
+    this.exampleNodes     // => HTMLElement[]
+    this.hasExampleNode   // => true or false
 
   }
 }
@@ -175,11 +137,11 @@ Event methods for components are inferred at the parameter level. SPX provides a
 ```ts
 import spx, { SPX } from 'spx';
 
-export class Example extends spx.Component<typeof Example.define> {
-
-  static define {
-    nodes: <const>['button']
-  }
+export class Example extends spx.Component({
+  nodes: <const>[
+    'button'
+  ]
+}) {
 
   // We can pass attrs as first parameter and Element type second
   //

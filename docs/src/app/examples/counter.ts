@@ -1,16 +1,14 @@
 import spx from 'spx';
 import { IFrame } from './iframe';
 
-export class Counter extends spx.Component<typeof Counter.define> {
-
-  static define = {
-    state: {
-      count: Number
-    },
-    nodes: <const>[
-      'count'
-    ]
-  };
+export class Counter extends spx.Component({
+  state: {
+    count: Number
+  },
+  nodes: <const>[
+    'count'
+  ]
+}) {
 
   get iframe () {
     return spx.component<IFrame>('iframe');

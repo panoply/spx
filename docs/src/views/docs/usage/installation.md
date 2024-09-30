@@ -23,7 +23,7 @@ $ pnpm add spx --save
 ```
 
 :::
-::: grid col-12 col-md-6 pl-4 mb-5
+::: grid col-12 col-md-6 pl-sm-4 mb-5
 
 #### NPM
 
@@ -32,7 +32,7 @@ $ npm install spx --save
 ```
 
 :::
-::: grid col-12 col-md-6 pr-4
+::: grid col-12 col-md-6 pr-sm-4
 
 #### YARN
 
@@ -41,7 +41,7 @@ $ yarn add spx
 ```
 
 :::
-::: grid col-12 col-md-6 pl-4
+::: grid col-12 col-md-6 mt-5 mt-sm-0 pl-sm-4
 
 #### BUN
 

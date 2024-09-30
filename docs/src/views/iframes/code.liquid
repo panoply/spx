@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {%- include 'include/head', iframe: true -%}
+  </head>
+  <body class="iframe-bg">
+    {%- if links -%}
+      <nav class="p-3">
+        <div class="row ai-center gx-1 rd bg-code p-2">
+          <div class="col-auto ff-head upper fs-sm fw-bolder mr-3 fc-gray">
+            Pages
+          </div>
+          <div class="col">
+            <ul
+              class="list-pipe py-1 mb-0"
+              id="menu">
+              {%- for link in iframes[links].links -%}
+                <li>
+                  <a
+                    href="{{ link.url }}"
+                    {%- if page.url == link.url -%}
+                      class="fc-blue"
+                    {%- endif -%}
+                    {%- if link.target -%}
+                      spx-target="{{ link.target }}"
+                    {%- endif -%}
+                    {%- if link.disable -%}
+                      spx-disable="true"
+                    {%- endif -%}>
+                    {{ link.title }}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+
+      </nav>
+    {%- endif -%}
+    <div
+      class="d-block"
+      id="main">
+      {{ content }}
+    </div>
+    {%- if logger -%}
+      <div
+        class="logger"
+        spx-node="{{ logger }}"></div>
+    {%- endif -%}
+    {%- sprite -%}
+  </body>
+</html>

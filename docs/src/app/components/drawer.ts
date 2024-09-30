@@ -365,7 +365,15 @@ export class Drawer extends spx.Component({
 
   connect () {
 
-    console.log(this.dom);
+    if (this.state.mode !== 'overlay' && this.state.hasShift === false) {
+      console.error('Missing "data-drawer-shift-value" defintions on:', this.target);
+    }
+
+    spx.on('load', this.close, this);
+
+  }
+
+  onmount () {
 
     if (this.state.useParent) {
       this.target = this.dom.parentElement;
@@ -377,16 +385,6 @@ export class Drawer extends spx.Component({
     if (this.target.classList.contains('d-none')) {
       this.target.classList.remove('d-none');
     }
-
-    if (this.state.mode !== 'overlay' && this.state.hasShift === false) {
-      console.error('Missing "data-drawer-shift-value" defintions on:', this.target);
-    }
-
-    spx.on('load', this.close, this);
-
-  }
-
-  onmount () {
 
     if (this.state.hasWidth) {
       this.target.style.setProperty('width', this.state.width);

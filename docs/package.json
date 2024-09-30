@@ -44,11 +44,11 @@
     "cssnano": "^7.0.6",
     "e11ty": "^0.1.1",
     "markdown-it-container": "^4.0.0",
-    "netlify-cli": "^17.36.0",
-    "papyrus": "^0.6.8",
-    "postcss": "^8.4.45",
+    "netlify-cli": "^17.36.2",
+    "papyrus": "^0.6.9",
+    "postcss": "^8.4.47",
     "postcss-cli": "^11.0.0",
-    "sass": "^1.78.0",
-    "tsup": "^8.2.4"
+    "sass": "^1.79.4",
+    "tsup": "^8.3.0"
   }
 }

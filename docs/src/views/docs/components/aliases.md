@@ -94,7 +94,3 @@ Its not uncommon you'll have multiple occurrences of the same component within t
 ```
 
 In the above example, we provided aliases on each `spx-component` counter occurrence. One counter component was given an identifier alias value of `foo` and the other component was given an identifier value of `bar`.
-
-# Demonstration
-
-{% include 'iframe', url: '/iframe/using-aliases/example', class: 'alias-iframe' %}

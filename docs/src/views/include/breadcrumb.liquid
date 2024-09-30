@@ -1,11 +1,11 @@
-{% assign links = page.url | split: '/' %}
+{%- assign links = page.url | split: '/' -%}
 
-<div class="row gx-2 ai-center breadcrumb mb-5 pl-2 pt-4">
+<div class="row gx-2 ai-center breadcrumb mb-5 pl-2 pt-3">
   <div class="col-auto">
-    {% svg 'home', 'icon icon-home' %}
+    {%- svg 'home', 'icon icon-home' -%}
   </div>
   <div class="col-auto">
-    {% svg 'arrow-right', 'icon icon-right' %}
+    {%- svg 'arrow-right', 'icon icon-right' -%}
   </div>
   <div class="col-auto pt-1">
     {{ links[1]
@@ -14,9 +14,9 @@
       | replace: 'spx', 'SPX' }}
   </div>
 
-  {% if links[2] %}
+  {%- if links[2] -%}
     <div class="col-auto">
-      {% svg 'arrow-right', 'icon icon-right' %}
+      {%- svg 'arrow-right', 'icon icon-right' -%}
     </div>
     <div class="col-auto pt-1">
       {{ links[2]
@@ -24,11 +24,11 @@
         | capitalize
         | replace: 'spx', 'SPX' }}
     </div>
-  {% endif %}
+  {%- endif -%}
 
-  {% if links[3] %}
+  {%- if links[3] -%}
     <div class="col-auto">
-      {% svg 'arrow-right', 'icon icon-right' %}
+      {%- svg 'arrow-right', 'icon icon-right' -%}
     </div>
     <div class="col-auto pt-1">
       {{ links[3]
@@ -36,5 +36,5 @@
         | capitalize
         | replace: 'spx', 'SPX' }}
     </div>
-  {% endif %}
+  {%- endif -%}
 </div>

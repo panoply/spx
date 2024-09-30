@@ -26,16 +26,14 @@ spx.dom<HTMLElement>``;
 
 > The SPX [VSCode Extension](/usage/vscode-extension/) supports HTML IntelliSense capabilities directly within `spx.dom` markup template literals. Code contained within DOM literals will provide completions, hovers and syntax highlighting.
 
----
-
-### Single Element Return
+# Single Element Return
 
 When the markup literal defines a single, self-contained structure (e.g, `<div>Hello</div>`), the return value will be a `HTMLElement` element. TypeScript users can provide generic arguments to set return type value.
 
 ```ts
 import spx from 'spx';
 
-const button = spx.dom<HTMLButtonElement>`
+const button = spx.dom`
   <button type="button">
     Hello World!
   </button>
@@ -44,14 +42,14 @@ const button = spx.dom<HTMLButtonElement>`
 console.log(button); // HTMLButtonElement
 ```
 
-### Array of Elements
+# Array of Elements
 
 When the markup consists of multiple sibling elements without a common parent (e.g, `{html} <li>A</li> <li>B</li>`), then `spx.dom` will return an array of `HTMLElement[]` elements.
 
 ```ts
 import spx from 'spx';
 
-const items = spx.dom<HTMLLIElement[]>`
+const items = spx.dom`
   <li>Item 1</li>
   <li>Item 2</li>
   <li>Item 3</li>
@@ -66,7 +64,7 @@ items[2]; // HTMLLIElement
 
 > While `spx.dom` can handle multiple sibling elements, it's generally recommended to wrap these elements in a parent container within the markup. This approach not only simplifies DOM manipulation but also ensures that the returned structure is always predictable, whether it's a single element or a wrapped set of elements.
 
-### Raw Markup Literal
+# Raw Markup Literal
 
 For scenarios where you need to reference the original markup string, `spx.dom` exposes a `.raw` property. This property is read-only and can be accessed on either the returned `HTMLElement` or the array of `HTMLElement[]`. This feature is particularly useful for debugging, logging, or when you need to reconstruct or modify the original markup.
 

@@ -1,6 +1,6 @@
 ---
 permalink: '/iframe/using-aliases/example/index.html'
-layout: iframe.liquid
+layout: iframe-block.liquid
 name: 'Component Alias Demo'
 ---
 

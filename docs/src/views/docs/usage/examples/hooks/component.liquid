@@ -1,0 +1,54 @@
+---
+links:
+  - title: onmount
+    url: /usage/iframe/components-hooks/onmount/
+  - title: unmount
+    url: /usage/iframe/components-hooks/unmount/
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {%- include 'include/head', iframe: true -%}
+  </head>
+  <body class="iframe-grid">
+
+    <div class="p-3">
+      <nav class="row ai-center px-3">
+        <div class="col bg-code py-1 rd">
+          <ul
+            class="list-pipe jc-center py-1 mb-0"
+            id="menu">
+            {%- for link in links -%}
+              <li>
+                <a
+                  href="{{ link.url }}"
+                  {%- if page.url == link.url -%}
+                    class="fc-blue"
+                  {%- endif -%}>
+                  {{ link.title }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <main id="main">
+      <div
+        class="row jc-center"
+        {%- if component -%}
+          spx-component="usageHooks"
+        {%- endif -%}>
+        <div class="col-10">
+          {{ content }}
+        </div>
+      </div>
+    </main>
+    <div
+      class="iframe-logs"
+      spx-node="usageHooks.log"></div>
+
+    {%- sprite -%}
+  </body>
+</html>

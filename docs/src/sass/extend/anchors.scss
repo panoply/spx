@@ -2,10 +2,10 @@
   padding: 20px;
   display: block;
   border-left: 0.01rem #2d333a solid;
-  border-radius: 5px;
+  // border-radius: 5px;
   position: sticky;
   top: $spacer-5 * 2;
-  width: 250px;
+  z-index: 0;
 
   li {
     font-size: $font-size-sm;

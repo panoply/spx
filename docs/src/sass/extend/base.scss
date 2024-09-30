@@ -175,6 +175,10 @@ blockquote > p {
   font-weight: 400;
   color: $gray-500;
 
+  @media screen and (min-width: 1140px) {
+    margin-top: -45px;
+  }
+
   .icon-right,
   .icon-home {
     width: 14px;

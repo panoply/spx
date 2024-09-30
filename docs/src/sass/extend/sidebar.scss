@@ -1,15 +1,40 @@
 .sidebar {
   height: 100%;
   background-color: $code-bg;
+  direction: rtl;
+  left: auto;
+  border-top-left-radius: 10px;
+
+  &::-webkit-scrollbar {
+    direction: rtl;
+    width: 1px;
+    height: var(--papyrus-scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--papyrus-scrollbar-track);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--papyrus-scrollbar-thumb);
+
+    &:hover {
+      background: var(--papyrus-scrollbar-thumb-hover);
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 
   &-header {
-    position: absolute;
-    top: -61px;
+    position: fixed;
+    top: 0px;
     display: flex;
     align-items: center;
-    width: 280px;
+    width: 265px;
     height: 60px;
-    padding-left: $spacer-3;
+    padding-left: $spacer-2;
     background-color: $body-bg;
 
     .icon-logo {
@@ -19,40 +44,69 @@
       color: $white;
     }
 
+    a {
+      .icon-discord,
+      .icon-github,
+      .icon-npm {
+        color: $gray-500;
+        transition: $transition-base;
+
+        &:hover {
+          color: $white;
+        }
+      }
+    }
+
     .icon-github {
       width: 42px;
       height: 22px;
-      color: $gray-500;
     }
 
     .icon-discord {
       width: 23px;
       height: 23px;
-      color: $gray-500;
     }
 
     .icon-npm {
       width: 24px;
       height: 24px;
-      color: $gray-500;
     }
+  }
+
+  @media screen and (min-width: 1920px) {
+    border-top-left-radius: 10px;
+    left: auto;
+  }
+
+  @media screen and (max-width: 1920px) {
+    border-top-left-radius: 0;
+    left: 0;
   }
 
   @include media-breakpoint-up(md) {
     top: 64px;
     width: 280px;
     border-top-right-radius: 10px;
+
     transform: translateX(0);
     visibility: visible;
     opacity: 1;
   }
 
   &-footer {
-    position: absolute;
-    bottom: 0;
-    z-index: 100;
+    @include media-breakpoint-up(lg) {
+      position: fixed;
+      bottom: 0;
+    }
+
+    @include media-breakpoint-down(lg) {
+      margin-top: 50px;
+      display: none;
+    }
+
+    z-index: 1;
     display: block;
-    height: 90px;
+    margin-bottom: $spacer-4;
     font-family: $headings-font-family;
     text-transform: uppercase;
     font-size: 0.6rem;
@@ -63,6 +117,8 @@
   &-menu {
     padding: 15px 5px 0px 0;
     width: 100%;
+    overflow: scroll;
+    direction: ltr;
 
     .child-links,
     .menu-link {

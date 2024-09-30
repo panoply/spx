@@ -1,16 +1,16 @@
 {
   "github": {
-    "title": "Github",
+    "title": "SPX on Github",
     "url": "https://github.com/panoply/spx",
     "target": "_blank"
   },
   "npm": {
-    "title": "NPM",
+    "title": "SPX on NPM",
     "url": "https://www.npmjs.com/package/spx",
     "target": "_blank"
   },
   "discord": {
-    "title": "Discord",
+    "title": "SPX on Discord",
     "url": "https://discord.gg/shopify-developers-597504637167468564",
     "target": "_blank"
   },

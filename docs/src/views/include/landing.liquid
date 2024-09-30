@@ -1,11 +1,25 @@
 <main
   id="main"
   class="container-fluid">
+  <button
+    type="button"
+    class="btn hero-drawer ml-2 d-flex d-sm-none p-0"
+    spx@click="drawer.toggle">
+    {%- svg 'menu', 'icon-menu' -%}
+  </button>
+
   <div class="row vh-100 d-flex ai-center jc-center px-sm-5 hidden">
     <div class="hero d-grid ai-center col-11 col-xl-6 m-auto">
-      <div class="hero-github">
-        <a href="https://github.com/panoply/spx">
-          {% svg 'github', 'icon icon-github' %}
+
+      <div class="row jc-end ai-center w-100 links mr-2">
+
+        <a
+          class="col-auto tr"
+          href="{{ navigation.github.url }}"
+          data-tooltip="bottom"
+          aria-label="{{ navigation.github.title }}"
+          target="_blank">
+          {%- svg 'github', 'icon-github' -%}
         </a>
       </div>
 
@@ -17,7 +31,7 @@
           spx-target="body"
           href="/what-is-spx/"
           class="hero-logo d-block m-auto mb-3">
-          {% svg 'logo' %}
+          {%- svg 'logo' -%}
         </a>
 
       </div>

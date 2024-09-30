@@ -27,7 +27,7 @@ There are several ways developers can optimize SPX and improve the speed of per-
 Fragments in SPX refer to elements annotated with an `id` attribute that persist across various pages of your website. These fragments serve as the dynamic components of your web application, as the descendant elements within them undergo changes between page visits. In contrast to static elements, which remain consistent across multiple visits, (dynamic) fragments represent the areas of your website that are subject to modification and consistent.
 
 :::: grid row pt-3 pb-4
-::: grid col-6
+::: grid col-12 col-sm-6
 
 <!-- prettier-ignore -->
 ```ts
@@ -42,7 +42,7 @@ spx({
 ```
 
 :::
-::: grid col-6
+::: grid mt-3 mt-sm-0 col-12 col-sm-6
 
 <!-- prettier-ignore -->
 ```html
@@ -139,7 +139,7 @@ spx({
 ```
 
 :::
-::: grid col-12 col-md-6
+::: grid mt-3 mt-sm-0 col-12 col-md-6
 
 <!-- prettier-ignore -->
 ```html

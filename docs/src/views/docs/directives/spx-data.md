@@ -9,9 +9,7 @@ permalink: '/directives/spx-data/index.html'
 
 The `spx-data` attribute is a **special** attribute that can be used to pass data references to page states. The attribute uses an XML type syntactical structure and will parse the provided values into an object which will be made available in SPX events and session state.
 
-<br>
-
-### Use Case
+# Use Case
 
 The `spx-data` directive is ideal for usage with third-party integrated solutions like analytics. A good appropriation use-case would be integrating something like a meta tracking pixel, wherein you'd use the `spx-data` structure to pass references to the pixel without needing to re-evaluate injected scripts.
 

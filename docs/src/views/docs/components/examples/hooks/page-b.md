@@ -1,8 +1,10 @@
 ---
 permalink: '/iframe/using-hooks/page-b/index.html'
-layout: iframe.liquid
+layout: iframe-block.liquid
 links: 'using-hooks'
 logger: true
+footer: true
+main: 'my-4 pr-5 pl-3'
 name: 'Lifecycle Hooks Demo'
 ---
 

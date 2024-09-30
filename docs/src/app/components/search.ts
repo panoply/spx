@@ -9,13 +9,15 @@ export class Search extends spx.Component({
   sugar: true,
   nodes: <const>[
     'list',
-    'input'
+    'input',
+    'anchors'
   ],
   state: {
     active: Boolean,
     query: String,
     source: String,
-    result: Number
+    result: Number,
+    entered: Boolean
   }
 }) {
 
@@ -34,7 +36,6 @@ export class Search extends spx.Component({
         this.input.focus();
         this.onFocus();
         this.show();
-        this.getResults(this.index.content.map(item => this.getItem(item)));
       }
     } else {
       if (event.key === 'Escape') {
@@ -74,13 +75,15 @@ export class Search extends spx.Component({
 
     const input = this.state.query = event.target.value.trim();
 
-    if (input.length > 2) {
+    if (input.length > 1) {
 
+      this.list.removeClass('d-none');
+      this.state.entered = true;
       this.result = matchSorter(this.index.content, input, this.match);
 
       if (this.result.length === 0) {
         this.list.innerHTML = '';
-        this.list.classList.add('no-results');
+        this.list.addClass('no-results');
         this.list.appendChild(this.noResults);
       } else {
         this.getResults(this.result.sort((a, b) => a.sort - b.sort).map(item => this.getItem(item)));
@@ -88,9 +91,6 @@ export class Search extends spx.Component({
 
       this.show();
 
-    } else if (input.length === 0) {
-      this.input.removeClass('is-results');
-      this.list.toggleClass('d-block', 'd-none');
     }
 
   }
@@ -106,9 +106,10 @@ export class Search extends spx.Component({
   private close () {
 
     this.root.removeEventListener('click', this.hide);
-    this.list.toggleClass('d-block', 'd-none');
+    this.list.addClass('d-none');
     this.input.removeClass('is-active', 'is-results');
     this.state.active = false;
+    this.state.entered = false;
 
   }
 
@@ -117,16 +118,17 @@ export class Search extends spx.Component({
 
     this.state.active = !this.state.active;
     this.state.active && this.root.addEventListener('click', this.hide.bind(this));
+    this.state.entered = this.list.childElementCount > 0;
 
   }
 
   /** Show the search results list */
   private show () {
 
-    if (this.state.active) {
-      this.result.length > 0 && !this.list.classList.contains('d-block') &&
-      this.list.toggleClass('d-none', 'd-block');
+    if (this.state.entered) {
+      this.list.removeClass('d-none');
       this.input.addClass('is-results');
+      this.anchors.style.setProperty('z-index', '-1');
     }
   }
 
@@ -134,7 +136,7 @@ export class Search extends spx.Component({
   private hide (event: Event) {
 
     this.list.toNode() !== event.target && this.input.toNode() !== event.target && this.close();
-
+    this.anchors.style.removeProperty('z-index');
   }
 
   /** Generate workable search item reference */
@@ -168,50 +170,55 @@ export class Search extends spx.Component({
   /** Renders the search results to the list */
   private getResults (result: { page: SearchPage; heading: SearchHeading; content: SearchContent; }[]) {
 
-    this.list.classList.remove('no-results');
     this.list.innerHTML = '';
 
-    const nodes = result.map((
-      {
-        content,
-        page,
-        heading
-      },
-      index
-    ) => {
+    const items: HTMLElement[] = [];
 
-      return spx.dom`
-      <li tabindex="-1" class="${index === 0 ? 'selected' : ''}">
-        <a href="${heading.anchor}" class="d-flex ai-center">
-          <div class="w-icon">
-            <svg class="icon">
-              <use xlink:href="#svg-search-${content.type}" />
-            </svg>
-          </div>
-        <div class="px-3">
-          <div class="result">
-            ${this.getMatch(content.text)}
-          </div>
-          <div class="d-block upper ff-heading fw-bold fc-dark-gray fs-xs">
-            ${
-              content.type === 'heading'
-                ? page.title
-                : `${page.title} → ${this.index.content[heading.cidx[0]].text.replace(/\.$/, '')}`
-            }
-          </div>
-          </div>
-          <div class="w-icon">
-            <svg class="icon icon-goto">
-              <use xlink:href="#svg-search-goto" />
-            </svg>
-          </div>
-        </a>
-      </li>
-    `;
-    });
+    for (let i = 0, s = result.length; i < s; i++) {
+
+      const { content, page, heading } = result[i];
+      const title = this.getMatch(content.text);
+
+      if (title.length < 3) continue;
+
+      items.push(spx.dom`
+        <li tabindex="-1" class="${i === 0 ? 'selected' : ''}">
+          <a href="${heading.anchor}" class="d-flex ai-center">
+            <div class="w-icon">
+              <svg class="icon">
+                <use xlink:href="#svg-search-${content.type}" />
+              </svg>
+            </div>
+          <div class="px-3">
+            <div class="result">
+              ${this.getMatch(content.text)}
+            </div>
+            <div class="d-block upper ff-heading fw-bold fc-dark-gray fs-xs">
+              ${
+                content.type === 'heading'
+                  ? page.title
+                  : `${page.title} → ${this.index.content[heading.cidx[0]].text.replace(/\.$/, '')}`
+              }
+            </div>
+            </div>
+            <div class="w-icon">
+              <svg class="icon icon-goto">
+                <use xlink:href="#svg-search-goto" />
+              </svg>
+            </div>
+          </a>
+        </li>
+      `);
+    }
 
     this.state.result = 0;
-    this.list.append(...nodes);
+
+    if (items.length > 0) {
+      this.list.append(...items);
+    } else {
+      this.list.addClass('no-results');
+      this.list.appendChild(this.noResults);
+    }
 
   }
 

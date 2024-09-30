@@ -3,9 +3,30 @@
 }
 
 .hero {
+  //
+
   h5 {
     @include media-breakpoint-down(md) {
       font-size: $font-size-md;
+    }
+  }
+
+  &-drawer {
+    background-color: transparent;
+    border: none;
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    position: fixed;
+    left: $spacer-2;
+    top: 10px;
+    display: block;
+    z-index: 1;
+
+    .icon-menu {
+      width: 30px;
+      height: 30px;
+      color: $gray-500;
     }
   }
 
@@ -44,31 +65,25 @@
     }
   }
 
-  &-github {
+  .links {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
     a {
-      position: absolute;
-      top: 30px;
-      right: 30px;
-
-      @include media-breakpoint-down(md) {
-        top: 20px;
-        right: 20px;
-      }
-
-      > .icon {
-        width: 30px;
-        height: 30px;
-        fill: $white;
-
-        @include media-breakpoint-down(md) {
-          width: 20px;
-          height: 20px;
-        }
+      .icon-github {
+        color: $gray-500;
+        transition: $transition-base;
 
         &:hover {
-          fill: $blue;
+          color: $white;
         }
       }
+    }
+
+    .icon-github {
+      width: 42px;
+      height: 22px;
     }
   }
 
@@ -86,13 +101,13 @@
     &::after {
       position: absolute;
       overflow: hidden;
-      top: 31px;
-      left: -100%;
+      top: 32.5px;
+      left: -110%;
       transform: translatey(-50%);
       content: '';
       width: 50%;
       height: 100%;
-      background: linear-gradient(to right, rgba($white, 0) 0%, $blue 60%, $blue 100%);
+      background: linear-gradient(to right, rgba($white, 0) 0%, $blue 50%, $blue 100%);
       opacity: 1;
       z-index: 100;
       animation-fill-mode: forwards;
@@ -100,8 +115,8 @@
 
       @include media-breakpoint-down(md) {
         top: 18px;
-        width: 80%;
-        transform: translatey(-80%);
+        width: 50%;
+        transform: translatey(-50%);
       }
     }
 
@@ -127,23 +142,13 @@
   &-logo {
     color: #282a36;
     z-index: 101;
-
+    transition: $transition-base;
     &:hover {
-      transition: color 200ms ease-in-out 50ms;
-      color: $white;
-    }
-
-    a {
-      color: #282a36;
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
+      color: $blue;
     }
 
     > svg {
-      width: 200px;
+      width: 190px;
       height: 80px;
 
       @include media-breakpoint-down(md) {
@@ -158,7 +163,7 @@
   }
 
   &-caption {
-    font-size: 17px;
+    font-size: 18px;
     text-transform: uppercase;
 
     @include media-breakpoint-down(md) {
@@ -179,14 +184,16 @@
 
 .goto-link {
   font-family: $font-family-heading;
-  font-size: 0.745rem;
+  font-size: 0.775rem;
+  font-weight: 600;
   text-transform: uppercase;
-  color: $link-color;
+  color: $gray-500;
   border: $border-width $border-color solid;
   border-radius: 5px;
   padding: 10px 0;
   text-align: center;
   background-color: $code-bg;
+  transition: $transition-base;
 
   &:hover {
     color: $white;

@@ -1,8 +1,8 @@
 import spx from 'spx';
-import { Hooks } from './examples/hooks';
 import { Counter } from './examples/counter';
 import { Alias } from './examples/alias';
 import { IFrame } from './examples/iframe';
+import { UsageHooks } from '../views/docs/usage/examples/hooks/component';
 
 spx({
   fragments: [
@@ -11,7 +11,7 @@ spx({
   ],
   components: {
     IFrame,
-    Hooks,
+    UsageHooks,
     Counter,
     Alias
   }

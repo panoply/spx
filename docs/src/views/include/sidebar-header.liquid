@@ -1,0 +1,30 @@
+{%- unless page.url == '/' -%}
+  <div class="sidebar-header d-none d-md-flex">
+    <div class="row jc-between ai-center w-100">
+      <a
+        href="/"
+        class="col-auto tc-sm"
+        spx-target="body">
+        {%- svg 'logo', 'icon-logo' -%}
+      </a>
+      <a
+        class="col-auto tr ml-auto"
+        href="{{ navigation.github.url }}"
+        target="_blank">
+        {%- svg 'github', 'icon-github' -%}
+      </a>
+      <a
+        class="col-auto tr"
+        href="{{ navigation.npm.url }}"
+        target="_blank">
+        {%- svg 'npm', 'icon-npm' -%}
+      </a>
+      <a
+        class="col-auto tr pr-0"
+        href="{{ navigation.discord.url }}"
+        target="_blank">
+        {%- svg 'discord', 'icon-discord' -%}
+      </a>
+    </div>
+  </div>
+{%- endunless -%}

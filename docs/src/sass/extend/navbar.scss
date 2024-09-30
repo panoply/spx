@@ -174,13 +174,13 @@
     }
   }
 
-  @include media-breakpoint-down(sm) {
+  @include media-breakpoint-down(md) {
     backdrop-filter: blur(5px);
 
     border-bottom: $border-color $border-width solid;
   }
 
-  @include media-breakpoint-up(sm) {
+  @include media-breakpoint-up(md) {
     background-color: transparent;
   }
 
@@ -194,7 +194,7 @@
     .icon-menu {
       width: 30px;
       height: 30px;
-      color: $white;
+      color: #484f5b;
     }
   }
 

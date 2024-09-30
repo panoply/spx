@@ -23,6 +23,22 @@
       }
     ]
   },
+  "hooks-example": {
+    "links": [
+      {
+        "title": "onmount",
+        "url": "/iframe/hooks-example/onmount/",
+        "target": "#target,#menu",
+        "disable": false
+      },
+      {
+        "title": "unmount",
+        "url": "/iframe/hooks-example/unmount/",
+        "target": "#target,#menu",
+        "disable": false
+      }
+    ]
+  },
   "using-hooks": {
     "links": [
       {
