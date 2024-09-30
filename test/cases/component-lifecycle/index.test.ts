@@ -5,8 +5,7 @@ export class Lifecycle extends spx.Component({
     connect: Number,
     onmount: Number,
     unmount: 0
-  },
-  nodes: <const>[]
+  }
 }) {
 
   connect (): void {
