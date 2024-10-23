@@ -1736,7 +1736,7 @@ var mounted = () => {
     if (!$.instances.has(key)) continue;
     const instance = $.instances.get(key);
     const { scope } = instance;
-    if (scope.status === 2 /* MOUNT */ || scope.status === 3 /* MOUNTED */) {
+    if (scope.inFragment === true && (scope.status === 2 /* MOUNT */ || scope.status === 3 /* MOUNTED */)) {
       if (scope.alias !== null) {
         live2.has(scope.alias) ? live2.get(scope.alias).push(instance) : live2.set(scope.alias, [instance]);
       }
@@ -3271,7 +3271,6 @@ var initialize2 = () => {
     connect5();
     connect7();
     connect2();
-    connect6();
     emit("connect", page);
     enqueue(
       () => patch("type", 6 /* VISIT */),
@@ -3287,7 +3286,6 @@ var initialize2 = () => {
 var disconnect8 = () => {
   disconnect6();
   disconnect7();
-  disconnect4();
   disconnect2();
   disconnect3();
   disconnect5();
@@ -3369,23 +3367,51 @@ Object.defineProperties(spx, {
 function supported() {
   return !!(isBrowser && window.history.pushState && window.requestAnimationFrame && window.DOMParser && window.Proxy);
 }
-function live(identifers = null, ...rest) {
-  const ids = identifers ? [identifers, ...rest].flat() : null;
+function live(id = null, ...rest) {
+  const isOne = typeof id === "string";
+  const ids = isOne ? rest.length > 0 ? [id].concat(rest) : [id] : id;
   const mounted2 = {};
-  for (const { scope: { alias, instanceOf } } of $.instances.values()) {
-    const id = ids ? ids.includes(alias) ? alias : ids.includes(instanceOf) ? instanceOf : null : null;
-    mounted2[id || !ids && (alias || instanceOf)] = Array.isArray(mounted2[id || !ids && instanceOf]) ? [...mounted2[id || !ids && instanceOf], component] : component;
+  for (const ref2 of $.mounted) {
+    const component2 = $.instances.get(ref2);
+    if (ids !== null) {
+      if (ids.indexOf(component2.scope.alias) > -1) {
+        mounted2[component2.scope.alias] = component2;
+      } else if (ids.indexOf(component2.scope.instanceOf) > -1) {
+        if (component2.scope.instanceOf in mounted2) {
+          warn2(`More than 1 instance defined: ${id}`);
+        } else {
+          mounted2[component2.scope.instanceOf] = component2;
+        }
+      }
+    } else {
+      if (component2.scope.alias) {
+        mounted2[component2.scope.alias] = component2;
+      } else {
+        if (component2.scope.instanceOf in mounted2) {
+          if (Array.isArray(mounted2[component2.scope.instanceOf])) {
+            mounted2[component2.scope.instanceOf].push(component2);
+          } else {
+            const previous = mounted2[component2.scope.instanceOf];
+            mounted2[component2.scope.instanceOf] = [previous, component2];
+          }
+        } else {
+          mounted2[component2.scope.instanceOf] = component2;
+        }
+      }
+    }
   }
-  return mounted2;
+  return isOne ? mounted2[id] : mounted2;
 }
 function component(identifer, callback) {
   const instances = [];
   for (const instance of instances.values()) {
     const { scope } = instance;
+    console.log(scope, identifer);
     if (scope.instanceOf === identifer || scope.alias === identifer) {
       instances.push(instance);
     }
   }
+  console.log(instances);
   return callback ? forEach(callback, instances) : instances[0];
 }
 function register(...classes) {

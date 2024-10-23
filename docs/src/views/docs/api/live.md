@@ -2,5 +2,7 @@
 title: 'Component'
 layout: base.liquid
 group: api
-permalink: '/api/component/index.html'
+permalink: '/api/live/index.html'
 ---
+
+# spx.live

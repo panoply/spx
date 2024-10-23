@@ -7,7 +7,7 @@ export class Merge extends spx.Component() {
 
   onmount () {
 
-    this.relapse = relapse(this.dom);
+    this.relapse = relapse(this.view);
 
   }
 

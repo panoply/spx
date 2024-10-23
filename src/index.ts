@@ -109,24 +109,48 @@ function supported () {
   );
 }
 
-function live (identifers: string | string[] = null, ...rest: string[]) {
+function live (id: string | string[] = null, ...rest: string[]) {
 
-  const ids = identifers ? [ identifers, ...rest ].flat() : null;
-  const mounted = {};
+  const isOne = typeof id === 'string';
+  const ids = isOne
+    ? rest.length > 0
+      ? [ id ].concat(rest)
+      : [ id ]
+    : id;
 
-  for (const { scope: { alias, instanceOf } } of $.instances.values()) {
+  const mounted: { [id: string]: any} = {};
 
-    const id = ids ? (ids.includes(alias)
-      ? alias
-      : ids.includes(instanceOf) ? instanceOf : null) : null;
-
-    mounted[id || (!ids && (alias || instanceOf))] = Array.isArray(mounted[id || (!ids && instanceOf)])
-      ? [ ...mounted[id || (!ids && instanceOf)], component ]
-      : component;
-
+  for (const ref of $.mounted) {
+    const component = $.instances.get(ref);
+    if (ids !== null) {
+      if (ids.indexOf(component.scope.alias) > -1) {
+        mounted[component.scope.alias] = component;
+      } else if (ids.indexOf(component.scope.instanceOf) > -1) {
+        if (component.scope.instanceOf in mounted) {
+          log.warn(`More than 1 instance defined: ${id}`);
+        } else {
+          mounted[component.scope.instanceOf] = component;
+        }
+      }
+    } else {
+      if (component.scope.alias) {
+        mounted[component.scope.alias] = component;
+      } else {
+        if (component.scope.instanceOf in mounted) {
+          if (Array.isArray(mounted[component.scope.instanceOf])) {
+            mounted[component.scope.instanceOf].push(component);
+          } else {
+            const previous = mounted[component.scope.instanceOf];
+            mounted[component.scope.instanceOf] = [ previous, component ];
+          }
+        } else {
+          mounted[component.scope.instanceOf] = component;
+        }
+      }
+    }
   }
 
-  return mounted;
+  return isOne ? mounted[id] : mounted;
 
 }
 
@@ -138,14 +162,15 @@ function component (identifer: string, callback?: (instance: any) => any) {
 
     const { scope } = instance;
 
-    if (
-      scope.instanceOf === identifer ||
-      scope.alias === identifer) {
+    console.log(scope, identifer);
+    if (scope.instanceOf === identifer || scope.alias === identifer) {
 
       instances.push(instance);
 
     }
   }
+
+  console.log(instances);
 
   return callback ? forEach(callback, instances) : instances[0];
 

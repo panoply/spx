@@ -111,26 +111,26 @@ export declare namespace SPX {
     * import spx from 'spx';
     *
     * // Returns component named "foo"
-    * spx.component('foo')
+    * spx.live('foo')
     *
     * // Return a live component name "foo" otherwise false
-    * spx.component('foo', { live: true })
+    * spx.live('foo', { live: true })
     *
     * // Iteration over all components named "foo"
-    * spx.component('foo', instance => instance.method())
+    * spx.live('foo', instance => instance.method())
     *
     * // Observe component name foo, callback if or when live
-    * spx.component('foo', { observe: true }, instance => instance.method())
+    * spx.live('foo', { observe: true }, instance => instance.method())
     *
     * // Iterate over all components
-    * spx.component(instance => instance.method())
+    * spx.live(instance => instance.method())
     *
     * // Iterate over all live components
-    * spx.component({ live: true }, instance => instance.method())
+    * spx.live({ live: true }, instance => instance.method())
     *
     * ```
     */
-    static component: {
+    static live: {
       <T = Class>(id: string): T;
       <T = Class>(id: string, callback: (instance: T) => void): void;
     };

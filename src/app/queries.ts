@@ -266,7 +266,7 @@ export const mounted = <T extends Map<string, Class[]>>(): T => {
     const instance = $.instances.get(key);
     const { scope } = instance;
 
-    if (scope.status === Hooks.MOUNT || scope.status === Hooks.MOUNTED) {
+    if (scope.inFragment === true && (scope.status === Hooks.MOUNT || scope.status === Hooks.MOUNTED)) {
 
       // We will populate aliases incase an alias is being used
       if (scope.alias !== null) {

@@ -62,7 +62,7 @@ In some situations you wish to apply multiple aliases to a single elements used 
 
 # Usage
 
-Its not uncommon you'll have multiple occurrences of the same component within the DOM. Using alias identifiers allow you to isolate the associated references and target different component instances. Below a practical example of alias usage, wherein we have 2 separate instances of a component called <strong>counter</strong>.
+Its not uncommon you'll have multiple occurrences of the same component within the DOM. Using alias identifiers allow you to isolate the associated references and target different component instances. Below a practical example of alias usage, wherein we have 2 separate instances of a component called **counter**.
 
 <!-- prettier-ignore -->
 ```html

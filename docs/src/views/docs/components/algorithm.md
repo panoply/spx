@@ -82,6 +82,14 @@ export interface Scope {
 }
 ```
 
+### Fragment
+
+The `inFragment` scope value determines whether or not the component exists within an interchangeable fragment. This determination is of importance because in some cases we will have components with identical `instanceOf` names mounted within and without a fragment/s. If a component has been mounted outside of a fragment, the value will be `false` but SPX during instance establishment will have a reference of it incase context scopes contain incremental associates.
+
+This can lead to quite the conundrum, because mounted components will be matched with incoming (unmounted) components and in a situation where a different component using the same `instanceOf` name attempts have an instance established, that mounted component will match.
+
+This situation occurs in post-connection state and subsequent visits, and in order for the issue to get replicated, components must not be using an alias identifier, so as a preventative measure SPX will always refer to the `inFragment` value to ensure that the incoming component mount will not attempt to merge itself with the existing outside fragment component.
+
 ### Runtime
 
 Runtime context happens upon SPX connection. This is a heavy operation and likely the most expensive in terms of performance bottlenecks (depending on the size of the DOM), however in most cases will conclude in less than 50ms. Runtime context works in a similar way as subsequent context, the difference being is that subsequent context is composed during morph operations, whereas runtime context is component using DOM traversal.

@@ -178,8 +178,8 @@
       "title": "API",
       "links": [
         {
-          "title": "spx.component",
-          "url": "/api/component/"
+          "title": "spx.live",
+          "url": "/api/live/"
         },
         {
           "title": "spx.dom",

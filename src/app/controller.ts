@@ -72,7 +72,7 @@ export const initialize = (): Promise<Page> => {
     intersect.connect();
     proximity.connect();
     components.connect();
-    mutations.connect();
+    // mutations.connect();
 
     emit('connect', page);
 
@@ -103,7 +103,7 @@ export const disconnect = (): void => {
 
   history.disconnect();
   hrefs.disconnect();
-  mutations.disconnect();
+  // mutations.disconnect();
   hover.disconnect();
   intersect.disconnect();
   proximity.disconnect();
