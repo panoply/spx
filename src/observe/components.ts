@@ -98,7 +98,7 @@ export const mount = (promises: LifecycleHooks) => {
 /**
  * Component Hooks
  *
- * This function willfire off component lifecycle hooks. The component `scope.status`
+ * This function will fire off component lifecycle hooks. The component `scope.status`
  * key is imperative to hook execution and will be used to determine which hooks trigger.
  *
  * @todo

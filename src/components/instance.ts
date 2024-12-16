@@ -225,7 +225,6 @@ export const setInstances = (context: Context, snapshot?: Document) => {
       }
 
       if (mounted.has(instanceOf)) {
-
         for (const instance of mounted.get(instanceOf)) {
           if (instance.scope.instanceOf === instanceOf) {
             define(scope, instance);
