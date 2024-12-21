@@ -1,6 +1,6 @@
 {
   "name": "spx",
-  "version": "0.1.2-beta.1",
+  "version": "0.1.2-next.0",
   "private": false,
   "description": "Single Page XHR - The essential DOM enhancement for SSR powered web applications",
   "homepage": "https://spx.js.org",
