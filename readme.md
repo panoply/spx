@@ -22,33 +22,26 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 - Powerful pub/sub event driven lifecycle triggers.
 - Gracefully handles script and style asset evaluation.
 - Attribute driven programmatic control.
+- Zero dependencies and lightweight
 
 # Installation
 
-SPX is available for download on the [NPM](https://www.npmjs.com/package/spx) registry.
+SPX is available for download on the [NPM](https://www.npmjs.com/package/spx) registry. There are a couple of different versions available at this point in time.
 
-###### PNPM
+### Release Candidate
+
+The `rc` version of spx is what developers should use for now.
+
+```bash
+pnpm add spx@rc
+```
+
+### Latest (Deprecated)
+
+The `latest` version release of spx should be avoided at this point in time. Please use the `rc` release.
 
 ```bash
 pnpm add spx
-```
-
-###### YARN
-
-```bash
-yarn add spx
-```
-
-###### NPM
-
-```bash
-npm install spx --save
-```
-
-###### CDN
-
-```bash
-https://unpkg.com/spx
 ```
 
 # Usage
