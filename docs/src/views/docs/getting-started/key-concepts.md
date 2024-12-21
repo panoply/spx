@@ -16,11 +16,15 @@ anchors:
 
 Before using SPX, it is important to acquaint yourself with a few of its fundamental **key concepts** outlined on this page. Gaining familiarity with these concepts and understanding the approaches employed by SPX will allow you to better leverage the module in an effective manner and enable you to take advantage of its capabilities with more command.
 
+---
+
 # Rendering Cycle
 
 SPX integrates into your web application and takes control of the rendering cycle. It achieves this by intercepting link clicks and executing navigation in an isolated and controlled manner. Pages are fetched over the wire using [XHR](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest) and the XHR (DOM String) responses are stored in browser state where they will remain until called upon.
 
 There are several ways developers can optimize SPX and improve the speed of per-page visits. In its default state, the module applies the bare minimum in terms of preset configuration and optimization is encouraged. The quickest and easiest optimization tactic one can use is to define **Fragments** which persist across pages.
+
+---
 
 # Fragments
 
@@ -60,6 +64,8 @@ spx({
 ::::
 
 In the provided example, we've specified two fragments that are anticipated to change: `menu` and `main`. These fragments are identified by their respective `id` attributes as per the entires supplied to `fragments` upon connection. Between visits, only the contents within these elements undergo replacements, or morphs, based on the updates received from the server or the directive annotation applied to link elements. This targeted approach aids in minimizing traversal operations when SPX swaps content, which brings us to the underlying method employed by SPX for replacing nodes.
+
+---
 
 # Navigation
 
@@ -108,6 +114,8 @@ SPX actively monitors events occurring on `<a>` elements within the DOM. This is
 <!-- Progress Control, whether or not to show a progress bar -->
 <a spx-progress="false"></a>
 ```
+
+---
 
 # Prefetching
 
@@ -165,6 +173,8 @@ spx({
 :::
 ::::
 
+---
+
 # Morphing
 
 DOM morphing is a technique employed by SPX to efficiently update the Document Object Model (DOM) when navigating between pages and replacing elements. Unlike traditional page loading methods, which often involve full-page reloads or re-rendering of entire DOM Tree, morphing focuses on selectively updating only the parts of the DOM that have changed. Below is a more detailed breakdown of the process and operations carried out under the hood.
@@ -200,6 +210,8 @@ By applying changes incrementally, SPX minimizes the amount of work required to 
 #### 5. Real DOM Manipulation
 
 Unlike virtual DOM libraries like React, which operate on a virtual representation of the DOM, SPX directly manipulates the real DOM. This means that changes are applied directly to the visible page, eliminating the need for additional abstraction layers and optimizing performance.
+
+---
 
 # Caching
 

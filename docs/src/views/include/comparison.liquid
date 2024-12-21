@@ -1,38 +1,46 @@
 <div class="row pt-4 pb-5">
   <div class="col-6">
     <h6 class="mb-2">{{ comparison.size.title }}</h6>
-    <p class="mb-4">{{ comparison.size.content }}</p>
-    {% for item in comparison.size.items %}
-      {% if forloop.first %}
+    <p class="mb-4 fs-sm">{{ comparison.size.content }}</p>
+    {%- for item in comparison.size.items -%}
+      {%- if forloop.first -%}
         <div class="fs-sm mb-2 ff-heading fc-white">
-          {{ item.name | append: ' ~ ' | append: item.size }}
+          {{ item.name
+            | append: ' ~ '
+            | append: item.size }}
         </div>
-      {% else %}
+      {%- else -%}
         <div class="fs-sm mt-3 mb-2 ff-heading fc-gray">
-          {{ item.name | append: ' ~ ' | append: item.size }}
+          {{ item.name
+            | append: ' ~ '
+            | append: item.size }}
         </div>
-      {% endif %}
+      {%- endif -%}
       <div
         class="comparison"
         style="animation:grow 0.55s;width:{{ item.bar }}%;"></div>
-    {% endfor %}
+    {%- endfor -%}
   </div>
   <div class="col-6">
     <h6 class="mb-2">{{ comparison.perf.title }}</h6>
-    <p class="mb-4">{{ comparison.perf.content }}</p>
-    {% for item in comparison.perf.items %}
-      {% if forloop.first %}
+    <p class="mb-4 fs-sm">{{ comparison.perf.content }}</p>
+    {%- for item in comparison.perf.items -%}
+      {%- if forloop.first -%}
         <div class="fs-sm mb-2 ff-heading fc-white">
-          {{ item.name | append: ' ~ ' | append: item.time }}
+          {{ item.name
+            | append: ' ~ '
+            | append: item.time }}
         </div>
-      {% else %}
+      {%- else -%}
         <div class="fs-sm mt-3 mb-2 ff-heading fc-gray">
-          {{ item.name | append: ' ~ ' | append: item.time }}
+          {{ item.name
+            | append: ' ~ '
+            | append: item.time }}
         </div>
-      {% endif %}
+      {%- endif -%}
       <div
         class="comparison"
         style="animation:grow 0.55s;width:{{ item.bar }}%;"></div>
-    {% endfor %}
+    {%- endfor -%}
   </div>
 </div>

@@ -35,6 +35,8 @@ SPX.Define        // The static component define object
 SPX.Event<T>      // Type inferred Event parameter utility
 ```
 
+---
+
 # Component Auto-typing
 
 In SPX, every component is derived from the `spx.Component` subclass, which facilitates auto-typing. Within TypeScript environments, this feature allows developers to utilize type inference. By applying the `typeof` prefix to the static `define` object, SPX can infer and enforce types upon the `{js} this.state` context, providing type completions and validations automatically.
@@ -65,6 +67,8 @@ export class Example extends spx.Component({
 }
 ```
 
+---
+
 # Type Constructors
 
 Type constructors can also accept inferred types, and the provision will behave in accordance with the definition passed. Applying _typed_ (Type) constructors is highly desirable when using `Object` or `Array` constructors in component state. Additionally, SPX extends support to literal unions for `String` type constructors which will resolve to `Record<T>` ensuring that known types of the string are shown as completions while unknown strings being error tolerant.
@@ -94,6 +98,8 @@ export class Example extends spx.Component({
   }
 }
 ```
+
+---
 
 # Component Nodes
 
@@ -128,6 +134,8 @@ export class Example extends spx.Component({
   }
 }
 ```
+
+---
 
 # Component Events
 
@@ -166,6 +174,8 @@ export class Example extends spx.Component({
 
 }
 ```
+
+---
 
 # Event Utilities
 

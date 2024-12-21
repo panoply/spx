@@ -14,13 +14,15 @@ anchors:
 
 Developers using the [VSCode](https://code.visualstudio.com) text editor may like to take advantage of the official [SPX Extension](https://marketplace.visualstudio.com/items?itemName=sissel.vscode-spx). The extension will help improves the development experience with SPX and supports various capabilities designed to improve productivity an usage.
 
-# Key Features
+#### Key Features
 
 - Syntax Highlighting for `spx-*` annotations in markup.
 - SPX Specific Directive Completions with descriptions
 - Event Directive Completions with MDN descriptions.
 - Component Completions with state defined referencing.
 - Supports grammar targeting for highlight customizations.
+
+---
 
 # Workspace Settings
 
@@ -35,11 +37,13 @@ The SPX extension contributes the following workspace settings:
 }
 ```
 
+---
+
 # Usage
 
 Install the SPX extension from the [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=sissel.vscode-spx). By default, IntelliSense capabilities will work within `.html` and `.liquid` files, with all global directives available. For developers who are taking advantage of SPX Components, you can active and enable completion features by providing a glob path list within workspace settings.
 
-:::: grid row mt-5
+:::: grid row mt-4
 ::: grid col-12 col-md-6 pr-4 mb-5
 
 #### Example Project

@@ -14,6 +14,8 @@ anchors:
 
 The SPX Component algorithm (or pattern) works in a progressive and incremental manner. This explanation will delve into the internal execution logic that drives component handling within the SPX framework, offering a better understanding into how things operate beneath the surface. This is not-essential reading or anything general users of the framework are required to know, but more so for those curious of looking to contribute to the project.
 
+---
+
 # Execution Process
 
 The SPX Component algorithm execution approach is not rigid and will adapt according to the method of invocation which is determined based on various factors. Despite variability, the algorithm's core operations will remain consistent with several fundamental processes being carried out. These processes might be executed with different emphases depending on the state of the application or their invocation point, but typically adhere to the following execution order:
@@ -28,11 +30,15 @@ The most performance-critical operations and incurred at runtime, wherein SPX wi
 
 > SPX optimizes performance by executing some operations outside the main event loop in a non-blocking manner, thus preventing excessive strain on the browser's rendering engine. During this phase, SPX undertakes several actions:
 
+---
+
 # Registering Components
 
 Before the initialization of SPX, components are registered into a dedicated session data structure within `{js} spx.$.registry`, establishing a unique reference for each component. These registered components form the foundation upon which instances are subsequently created. However, prior to the actual establishment of an instance, the module engages in the critical process of acquiring context, marking the initiation of the core algorithm governing component creation.
 
 Component registration is somewhat isolated in the overall algorithm and is mostly a pre-process operation. The [Register](/components/register/) documentation describes registration in greater detail, so refer to that page for more information.
+
+---
 
 # Construct Context
 
@@ -82,7 +88,9 @@ export interface Scope {
 }
 ```
 
-### Fragment
+---
+
+# Fragment
 
 The `inFragment` scope value determines whether or not the component exists within an interchangeable fragment. This determination is of importance because in some cases we will have components with identical `instanceOf` names mounted within and without a fragment/s. If a component has been mounted outside of a fragment, the value will be `false` but SPX during instance establishment will have a reference of it incase context scopes contain incremental associates.
 
@@ -90,20 +98,14 @@ This can lead to quite the conundrum, because mounted components will be matched
 
 This situation occurs in post-connection state and subsequent visits, and in order for the issue to get replicated, components must not be using an alias identifier, so as a preventative measure SPX will always refer to the `inFragment` value to ensure that the incoming component mount will not attempt to merge itself with the existing outside fragment component.
 
-### Runtime
+#### Runtime
 
 Runtime context happens upon SPX connection. This is a heavy operation and likely the most expensive in terms of performance bottlenecks (depending on the size of the DOM), however in most cases will conclude in less than 50ms. Runtime context works in a similar way as subsequent context, the difference being is that subsequent context is composed during morph operations, whereas runtime context is component using DOM traversal.
 
-### Morph
+#### Morph
 
 Runtime context happens upon SPX connection. This is a heavy operation and likely the most expensive in terms of performance bottlenecks (depending on the size of the DOM), however in most cases will conclude in less than 50ms. Runtime context works in a similar way as subsequent context, the difference being is that subsequent context is composed during morph operations, whereas runtime context is component using DOM traversal.
 
-### Mutation
-
-### Immutability
+#### Immutability
 
 Component instances are immutable and for every component occurrence, a new instance will be established, however once instances have been established, they will not re-establish. This is the intended design philosophy behind SPX component architecture and similar to the caching algorithm, component will behave in accordance with snapshot references.
-
-### Subsequent
-
-### data-spx

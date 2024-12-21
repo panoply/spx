@@ -20,6 +20,8 @@ By default, SPX is set up to manage a basic set of resource elements without nee
 
 > To maximize efficiency, it's advisable to limit resource evaluation to only what is strictly necessary and, where possible, delay the execution of project-specific scripts until runtime. This approach not only optimizes load times but also ensures that resources are loaded in a manner that best serves the application's dynamic requirements.
 
+---
+
 # Configuration
 
 Control over resource evaluation in SPX is managed through the `eval` configuration option during connection setup. This option can be set to either a `boolean` value or an `object`. If you choose to use an `object`, each key should correspond to a resource tag name. By specifying [Attribute Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors) for these tags, you can direct SPX to evaluate resources based on specific attributes, thereby customizing how and when these resources are processed.
@@ -38,6 +40,8 @@ spx({
 });
 ```
 
+---
+
 # Attribute Directives
 
 Connection settings in SPX provide default configurations, but developers can override the `eval` options directly on resource elements by using the `spx-eval` attribute directive. This attribute accepts a `boolean` value, where `true` or `false` dictates whether SPX should evaluate that specific resource element, allowing for fine-grained control over resource handling at the element level.
@@ -50,11 +54,15 @@ Connection settings in SPX provide default configurations, but developers can ov
 </head>
 ```
 
+---
+
 # Script Evaluation
 
 In SPX, scripts within the DOM undergo asynchronous evaluation and initialization. By default, all inline scripts are subject to re-evaluation, while scripts linked via `{html} <script src="">` are evaluated once upon their first encounter and not re-evaluated subsequently. For modules employing an Immediately Invoked Function Expression (IIFE) pattern, re-evaluation might require a redesign to support repeated execution. When navigating between pages that necessitate the re-execution of linked scripts, employing inline scripts is recommended. Placing scripts within the `{html} <body>` or within defined fragments is generally not advised.
 
 > There's seldom a need for `{html} <body>` script placements; component-based designs can achieve similar outcomes more effectively. Should the default handling not meet your needs, SPX allows for custom script evaluation settings per resource using the `spx-eval` directive.
+
+---
 
 # Script Placement
 
@@ -86,6 +94,8 @@ JavaScript evaluation is supported for `{html} <script>` elements located in the
 </body>
 ```
 
+---
+
 # Load Event
 
 You might want to use SPX [events](/usage/events/) to re-execute JavaScript code with each page visit, which is particularly useful for tasks like Google Analytics or scripts needing execution on a per-page basis. The `{js} spx.on('load')` event triggers after each page visit has completed rendering to the DOM, acting as the last event in the sequence, akin to the DOMContentLoaded event.
@@ -100,6 +110,8 @@ spx.on('load', function () {
 
 });
 ```
+
+---
 
 # Style Evaluation
 

@@ -25,7 +25,7 @@ $enable-rfs: true;
 /* PALETTE                                      */
 /* -------------------------------------------- */
 
-$white: rgb(240, 240, 240);
+$white: rgb(228, 222, 222);
 $black: #1c1e21;
 $blue: #6eb2d3;
 $indigo: #6610f2;
@@ -203,7 +203,7 @@ $font-family-code: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 /* FONT SIZES                                   */
 /* -------------------------------------------- */
 
-$font-size-base: 1rem;
+$font-size-base: 1.075rem;
 
 $font-size-xs: $font-size-base * 0.595;
 $font-size-sm: $font-size-base * 0.825;
@@ -236,7 +236,7 @@ $h2-font-size: $font-size-base * 1.2;
 $h3-font-size: $font-size-base * 1.1;
 $h4-font-size: $font-size-base * 1;
 $h5-font-size: $font-size-base * 1;
-$h6-font-size: $font-size-base;
+$h6-font-size: 1rem;
 
 $hr-color: $border-color;
 $hr-margin-y: $spacer;
@@ -308,6 +308,8 @@ $papyrus-code-bg: $body-bg;
 // SELECTION
 $papyrus-selection-bg: 255, 255, 255;
 $papyrus-selection-alpha: 0.3;
+
+$papyrus-ts-bracket: white;
 
 .language-ts {
   .token {

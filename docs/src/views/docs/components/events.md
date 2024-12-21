@@ -41,6 +41,8 @@ class Demo extends spx.Component() {
 :::
 ::::
 
+---
+
 # Using Attrs
 
 Event parameter arguments passed to callback methods defined within components include an `attrs` object, which can contain additional data references specified in the DOM. When an element with an `spx@` event directive includes state-structured directives, SPX automatically performs type conversion and makes the data available in the `event.attrs` object within the callback method.
@@ -86,6 +88,8 @@ class Demo extends spx.Component() {
 :::
 ::::
 
+---
+
 # Multiple References
 
 Event directive values can contain multiple references and are not limited to a single component. In some situations you may require multiple listeners to on a single element be applied, space separated `<ref>.<method>` occurrences within event directive values will be treated in isolation.
@@ -99,6 +103,8 @@ Event directive values can contain multiple references and are not limited to a 
 </button>
 ```
 
+---
+
 # Targeting Window
 
 Events can also be attached to the `window` object on the directive level. In cases where you require a listener in **globalThis** scope, provide a `window:` prefix on the event name.
@@ -109,6 +115,8 @@ Events can also be attached to the `window` object on the directive level. In ca
   <!-- Window Events -->
 </button>
 ```
+
+---
 
 # Passing Options
 

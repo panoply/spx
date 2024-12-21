@@ -27,6 +27,8 @@ spx.Component({
 
 > Definitions can be omitted and are completely optional. You can also just invoke `{ts} spx.Component()` for quick extends.
 
+---
+
 # Class
 
 The static `define` reference in SPX components is an object that serves as the configuration blueprint for the component. Within this object, developers define the state interface and dictate how SPX should manage and interact with the component, effectively setting the rules for its behavior and lifecycle.
@@ -41,6 +43,8 @@ export class Component extends spx.Component() {
 
 }
 ```
+
+---
 
 # Hooks
 
@@ -60,6 +64,8 @@ export class Component extends spx.Component() {
 
 }
 ```
+
+---
 
 # Context
 

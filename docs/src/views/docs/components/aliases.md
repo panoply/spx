@@ -27,7 +27,7 @@ Aliases for SPX Components serve as alternative identifier references. Aliases a
 <span spx-bind="foo.count"></span>
 ```
 
-### Multiple Component Aliases
+#### Multiple Component Aliases
 
 In some situations you wish to apply multiple aliases to a single elements used by multiple components. You can optionally use a separator of ` `, `|` or `,` characters. Below we are some components called `dog`, `bird` and `shark` - we give each of these components an alias
 

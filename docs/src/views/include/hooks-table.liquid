@@ -1,11 +1,11 @@
 <div class="row ai-center g-0 bd bb-0 py-2 pb-2 rd-t mx-1 mt-5 bg-code">
   <h6
-    class="col-auto px-3 mr-5 mb-0 pl-4 fs-md fc-gray"
+    class="col-auto px-3 mr-5 mb-0 pl-4 fs-sm fc-gray"
     style="width: 130px;">
-    {{- meta.method -}}
+    {{ meta.method }}
   </h6>
-  <h6 class="col-8 mb-0 fs-md pl-3 fc-gray">
-    {{- meta.description -}}
+  <h6 class="col-8 mb-0 fs-sm pl-3 fc-gray">
+    {{ meta.description }}
   </h6>
 </div>
 {%- for item in lifecycles.hooks -%}
@@ -13,10 +13,10 @@
     <code
       class="col-auto px-3 py-1 ml-3 mr-5 fw-bolder tc fc-green"
       style="width: 130px;">
-      {{- item.name -}}(){}
+      {{ item.name }}(){}
     </code>
-    <div class="col-8">
-      {{- item.description -}}
+    <div class="col-8 fs-sm">
+      {{ item.description }}
     </div>
   </div>
 {%- endfor -%}

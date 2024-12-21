@@ -4,7 +4,7 @@ title: Components - Directives
 layout: base.liquid
 ---
 
-# Markup
+# Directives
 
 TODO
 
@@ -14,7 +14,7 @@ TODO
 
 To connect templates to class components in SPX, elements annotated with the `spx-component` attribute require a value matching the class name of the SPX component you intend to connect. By default, SPX transforms class component names to `kebab-case` format.
 
-:::: grid row gx-3
+:::: grid row gx-3 my-4
 ::: grid col-6
 
 <!--prettier-ignore-->
@@ -33,7 +33,7 @@ class SomeDemo extends spx.Component {
 ```html
 <div spx-component="some-demo">
 
-<!-- class SomeDemo -->
+  <!-- class SomeDemo -->
 
 </div>
 ```
@@ -47,7 +47,7 @@ class SomeDemo extends spx.Component {
 
 Component templates annotated with `spx-component` also accept state attributes. These state attributes enable you to provide data via the DOM to components in an isolated manner. Components require an interface definition provided via the `connect → state` static property (refer to [state](/components/state)). This interface utilizes a namespace XML-like syntactic structure.
 
-:::: grid row gx-3
+:::: grid row gx-3 my-4
 ::: grid col-6
 
 <!--prettier-ignore-->
@@ -98,7 +98,7 @@ class Foo extends spx.Component {
 
 The `spx-bind` directive can be used on elements which you want bound to a `state` value. Elements marked as a component binding will reflect the value of a state change in real-time and persisted across page visits. You can define bindings by passing a component identifier name and state key name.
 
-:::: grid row gx-3
+:::: grid row gx-3 my-4
 ::: grid col-6
 
 <!--prettier-ignore-->
@@ -139,7 +139,7 @@ class Demo extends spx.Component {
 
 DOM Events can be annotated to elements using the `spx@` prefix followed by the event name. The attribute values follow a simple object dot `.` notation structure of `<component>.<method>`.
 
-:::: grid row gx-3
+:::: grid row gx-3 my-4
 ::: grid col-6
 
 <!--prettier-ignore-->
@@ -174,7 +174,7 @@ class Demo extends spx.Component {
 
 In certain scenarios, you might need to pass data to method callbacks in components from a DOM element. You can use the standard (state) directive structure, and all annotations will be provided to the event parameter argument in the class method. Event attributes are parsed, and the provided type will be normalized accordingly.
 
-:::: grid row gx-3
+:::: grid row gx-3 my-4
 ::: grid col-6
 
 <!--prettier-ignore-->
@@ -211,7 +211,7 @@ class Demo extends spx.Component {
 
 # Nodes
 
-:::: grid row gx-3
+:::: grid row gx-3 my-4
 ::: grid col-6
 
 <!--prettier-ignore-->

@@ -44,6 +44,8 @@ export class Demo extends spx.Component({
 }
 ```
 
+---
+
 # Hooks
 
 SPX components incorporate three essential lifecycle callback hooks for precise control over component behavior. The `connect` hook triggers at the outset and is ideal for initial setup, executing just once. The `onmount` hook will trigger every time a component view is attached to the DOM, useful for logic that needs to run upon rendering. The `unmount` hook is invoked each time a component's view is detached from the DOM, this allows you to perform any necessary cleanups before component removal applies. Hooks provide you with a simple and effective management point, allowing components to responsibly handle their lifecycle, from initialization to termination and recurrence.
@@ -80,9 +82,13 @@ export class Demo extends spx.Component() {
 :::
 ::::
 
+---
+
 # Events
 
 Events are crucial for interactivity. For instance, a click event can be bound directly in HTML using `{html} <button spx@click="demo.open">` (or whatever element your event should be attached), where `open` is a method defined within the component. This method receives an event object with methods like `{js} preventDefault()` to stop default browser behavior and properties like `attrs` for accessing attributes passed with the event.
+
+---
 
 # Markup
 

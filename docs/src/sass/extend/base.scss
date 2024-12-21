@@ -3,7 +3,7 @@
 }
 
 pre.papyrus + :not(blockquote):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
-  margin-bottom: $spacer-5 * 1.2;
+  margin-bottom: $spacer-5;
 }
 
 pre.papyrus + blockquote + h1,
@@ -12,7 +12,7 @@ pre.papyrus + blockquote + h3,
 pre.papyrus + blockquote + h4,
 pre.papyrus + blockquote + h5,
 pre.papyrus + blockquote + h6 {
-  margin-top: $spacer-5 * 1.5;
+  margin-top: $spacer-5;
 }
 
 p + p,
@@ -33,7 +33,7 @@ pre.papyrus + h3,
 pre.papyrus + h4,
 pre.papyrus + h5,
 pre.papyrus + h6 {
-  margin-top: $spacer-5 * 1.2;
+  margin-top: $spacer-5;
 }
 
 pre.papyrus + blockquote {
@@ -59,7 +59,7 @@ h6 {
 }
 
 hr {
-  margin: $spacer-5 * 1.2 0 !important;
+  margin: $spacer-5 0 !important;
   padding: 0 20px;
 }
 
@@ -109,13 +109,13 @@ table {
 
 :not(pre) > code {
   word-wrap: break-word;
-  padding: 0.1rem 0.42rem 0.21rem 0.42rem;
+  padding: 0.1rem 0.42rem 0.2rem 0.42rem;
   margin: 0rem 0.2rem 0 0.2rem;
   border-radius: 0.2rem;
   letter-spacing: 0.0235rem;
   font-weight: 500;
-  line-height: 1.4rem;
-  font-size: 0.71rem;
+  line-height: 1.3rem;
+  font-size: 0.73rem;
   color: $white;
   font-family: $font-family-code;
   text-shadow: 0px 0px 4px black;
@@ -242,8 +242,7 @@ blockquote > p {
   }
 }
 
-h3,
-h2 {
+h3 {
   text-transform: none;
 }
 

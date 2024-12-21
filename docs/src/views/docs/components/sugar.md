@@ -45,7 +45,9 @@ class Example extends spx.Component({ sugar: true, nodes: ['foo']}) {
 }
 ```
 
-## `{js} this.dom.map`
+---
+
+### `{js} this.dom.map`
 
 Applies a given function to each element in the set of matched elements, returning a new array with the results. This method is particularly useful for transforming data associated with DOM elements. It can be curried, allowing you to first select the elements and later define the mapping function, enhancing readability and modularity in your code. For instance, you might use it to extract specific attributes from a set of elements or to transform node data into a format more suitable for your application logic.
 
@@ -64,7 +66,9 @@ this.dom.map('id')(function(node, index, list) {
 });
 ```
 
-## `{js} this.dom.each`
+---
+
+### `{js} this.dom.each`
 
 Iterates over each DOM element in the set, executing a provided function for each one. This method doesn't return a new array but is invaluable for performing actions on each element individually without needing to collect results. You can curry and chain operations, first selecting elements, then defining what action to take on each. Good for scenarios where you need to manipulate each element's content or attributes directly.
 
@@ -78,7 +82,9 @@ this.dom.each('demo', function(node, index, list){
 })
 ```
 
-## `{js} this.dom.contains`
+---
+
+### `{js} this.dom.contains`
 
 Tests if at least one element in the matched set satisfies the provided testing function. It's a logical method for checking conditions across multiple elements without needing to loop through them manually. You can curry, and first select the elements you're interested in and later define the condition to test, making your code more declarative. Use this method when you need to check if any element in a group meets certain criteria.
 
@@ -88,7 +94,9 @@ Tests if at least one element in the matched set satisfies the provided testing 
 this.dom.contains('demo', node => node.nodeName === 'DIV')
 ```
 
-## `{js} this.dom.reduce`
+---
+
+### `{js} this.dom.reduce`
 
 Reduce the set of matched elements to a single value, which can be any JavaScript value. This method is particularly powerful for aggregating data from elements, like summing up values or collecting unique attributes. You can curry, so functionality allows for a clean separation of concerns, where you first select the elements and then define how to reduce them, enhancing code readability and maintainability.
 
@@ -101,7 +109,9 @@ this.dom.reduce('demo', {}, (acc, node) => {
 })
 ```
 
-## `{js} this.dom.filter`
+---
+
+### `{js} this.dom.filter`
 
 Created a new array object with elements that match the criteria specified by the provided function. This method is essential for refining your selection based on complex conditions. You can curry and first select all elements that might interest you, then later define the filter criteria, which is useful for dynamically adjusting what elements you're working with based on user interaction or data changes.
 
@@ -111,7 +121,9 @@ Created a new array object with elements that match the criteria specified by th
 this.dom.filter('demo', (node) => node.matches('[value]'))
 ```
 
-## `{js} this.dom.every`
+---
+
+### `{js} this.dom.every`
 
 Checks if every element in the set passes the test implemented by the provided function. It's useful for ensuring all elements meet certain conditions before proceeding with an operation. You can curry and first select elements and then define the universal condition they must satisfy, which is ideal for validation scenarios where all elements must comply with specific rules.
 
@@ -121,7 +133,9 @@ Checks if every element in the set passes the test implemented by the provided f
 this.dom.every('demo', (node) => node.nodeName === 'DIV')
 ```
 
-## `{js} this.dom.html`
+---
+
+### `{js} this.dom.html`
 
 Gets or sets the HTML contents of each element in the set of matched elements. When used to set content, it replaces the content of elements with the provided HTML string. This method can be curried and allows for a two-step process: first, select the elements, then decide what HTML to insert, which is particularly useful in template or dynamic content loading scenarios.
 
@@ -133,7 +147,9 @@ this.dom.html('demo')(`
 `)
 ```
 
-## `{js} this.dom.text`
+---
+
+### `{js} this.dom.text`
 
 You can get or set the combined text contents of each element in the set of matched elements, including their descendants.You can curry and first select elements, then later decide whether to retrieve or modify their text content, making it flexible for both reading and manipulating text in your DOM.
 
@@ -142,7 +158,9 @@ You can get or set the combined text contents of each element in the set of matc
 this.dom.text('demo')('I will be the new innerText')
 ```
 
-## `{js} this.dom.hasClass`
+---
+
+### `{js} this.dom.hasClass`
 
 Checks whether all elements in the matched set have the specified class. This method is handy for conditional operations based on element classes. You can curry and first select elements, then later check for class presence, which is useful in scenarios where you need to perform actions based on class states without immediately deciding what those actions are.
 
@@ -152,7 +170,9 @@ Checks whether all elements in the matched set have the specified class. This me
 this.dom.hasClass('demo', 'example-class')
 ```
 
-## `{js} this.dom.removeClass`
+---
+
+### `{js} this.dom.removeClass`
 
 Removes one or more classes from each element in the set of matched elements. IT can be curried and allows for a delayed application of class removal, which can be beneficial in scenarios where you're building up a series of DOM manipulations before applying them.
 
@@ -162,7 +182,9 @@ Removes one or more classes from each element in the set of matched elements. IT
 this.dom.removeClass('demo', 'example-class', 'another-class')
 ```
 
-## `{js} this.dom.addClass`
+---
+
+### `{js} this.dom.addClass`
 
 **Description:**
 Using `this.dom.addClass`, you can add one or more classes to each element in the set of matched elements. This method can be curried and supports a workflow where you first select elements and later decide which classes to add, useful for dynamically styling or categorizing elements based on user interaction or data changes.
@@ -173,7 +195,9 @@ Using `this.dom.addClass`, you can add one or more classes to each element in th
 this.dom.addClass('demo', 'new-class')
 ```
 
-## `{js} this.dom.toggleClass`
+---
+
+### `{js} this.dom.toggleClass`
 
 **Description:**
 Adds or removes one or more classes from each element in the set of matched elements, depending on either the class's presence or the second parameter. This method's can be curried and allows for a flexible approach where you can first select elements, then decide which classes to toggle based on different conditions or user interactions, making it ideal for dynamic UI adjustments.
@@ -184,7 +208,9 @@ Adds or removes one or more classes from each element in the set of matched elem
 this.dom.toggleClass('demo', 'new-class', 'toggled-class')
 ```
 
-## `{js} this.dom.hasAttr`
+---
+
+### `{js} this.dom.hasAttr`
 
 Checks whether the elements in the matched set have at least one of the specified attribute/s. This method is useful for conditional operations based on attribute presence. It can be curried, so you can first select an element, then later check for attribute existence, which is particularly handy when you need to perform actions contingent on attribute states without immediately deciding on those actions.
 
@@ -197,7 +223,9 @@ this.dom.hasAttr('demo', 'data-foo')
 this.dom.hasAttr('demo', 'id:bar')
 ```
 
-## `{js} this.dom.setAttr`
+---
+
+### `{js} this.dom.setAttr`
 
 Set one or more attributes for each element in the set of matched elements. It can be curried and allows for a two-step process: first, select the elements, then decide which attributes to set, making it flexible for dynamic attribute manipulation based on various conditions or data states.
 
@@ -210,7 +238,9 @@ this.dom.setAttr('demo')('data-foo', 'lorem')
 this.dom.setAttr('demo', { id: 'qux', value: 'sissel' })
 ```
 
-## `{js} this.dom.getAttr`
+---
+
+### `{js} this.dom.getAttr`
 
 Retrieves the value of an attribute for the first element in the set of matched elements. It can be curried, so you can first select elements and later decide which attribute's value to retrieve, which is useful in scenarios where you need to dynamically fetch attribute values for further processing or display.
 
@@ -223,7 +253,9 @@ this.dom.getAttr('demo', 'value')
 this.dom.setAttr('demo')('value', 'name', 'type')
 ```
 
-## `{js} this.dom.removeAttr`
+---
+
+### `{js} this.dom.removeAttr`
 
 Removes an attribute from each element in the set of matched elements. This method can be curried and supports a workflow where you first select elements, then later decide which attributes to remove, which can be beneficial for cleaning up elements or preparing them for new data without immediately deciding what to remove.
 
@@ -236,7 +268,9 @@ this.dom.removeAttr('demo', 'id')
 this.dom.setAttr('demo', 'id', 'class')
 ```
 
-## `{js} this.dom.on`
+---
+
+### `{js} this.dom.on`
 
 **Description:**
 Attaches one or more event handlers for the selected elements and child elements. This method can be curries and allows for a flexible event binding strategy where you can first select elements, then later decide which events to listen for and what actions to perform upon those events. This is particularly useful for setting up event listeners in a modular way, where the element selection and event handling can be separated for better code organization.
@@ -247,7 +281,9 @@ Attaches one or more event handlers for the selected elements and child elements
 this.dom.on('demo')('click', e => {})
 ```
 
-## `{js} this.dom.off`
+---
+
+### `{js} this.dom.off`
 
 **Description:**
 Removes event handlers that were attached with `.on()`. It can be curried, so you can first select elements where you've previously attached event handlers, then later decide which events or handlers to remove. This is crucial for cleaning up event listeners, especially in dynamic applications where elements might be reused or their event handling needs to change over time.

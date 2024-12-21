@@ -8,6 +8,15 @@
   }
 }
 
+:not(pre, h2, .h2, h3, .h3) > code[class*='language-typescript'],
+:not(pre, h2, .h2, h3, .h3) > code[class*='language-javascript'] {
+  color: #22c0cb;
+
+  .token.bracket > .token.punctuation {
+    color: $body-color;
+  }
+}
+
 .language-bash {
   padding: 0.8em !important;
 }

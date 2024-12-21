@@ -18,16 +18,16 @@ anchors:
 
 # Tutorial
 
-SPX operates under the assumption that developers possess an intermediate level of frontend knowledge. Before delving into this tutorial, it's essential to familiarize yourself with a few [key concepts](/introduction/key-concepts) and gain a basic understanding of how SPX functions. We'll be utilizing a sample project available on [GitHub](#), covering the major aspects of SPX along the way.
+SPX operates under the assumption that developers possess an intermediate level of frontend knowledge. Before delving into this tutorial, it's essential to familiarize yourself with a few [key concepts](/introduction/key-concepts) and gain a basic understanding of how SPX functions. We'll be utilizing a sample project available on [GitHub](#), covering the major aspects of SPX along the way. This tutorial will demonstrate SPX usage in TypeScript using the [pnpm](https://pnpm.io) package manager and [tsup](https://tsup.egoist.dev) bundler. However, if you're not using TypeScript or prefer a different development stack, feel free to make necessary adjustments to suit your preferences.
 
-This tutorial will demonstrate SPX usage in TypeScript using the [pnpm](https://pnpm.io) package manager and [tsup](https://tsup.egoist.dev) bundler. However, if you're not using TypeScript or prefer a different development stack, feel free to make necessary adjustments to suit your preferences.
+---
 
 # Install SPX
 
-To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your `package.json` file is marked with the type `module`. For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
+To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your **package.json** file is marked with the type `module`. For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
 
 :::: grid row mt-4
-::: grid col-12 col-md-6 pr-4 mb-5
+::: grid col-12 col-md-6 pr-4 mb-4
 
 #### PNPM
 
@@ -36,7 +36,10 @@ $ pnpm add spx --save
 ```
 
 :::
-::: grid col-12 col-md-6 pl-4 mb-5
+::::
+
+:::: grid row
+::: grid col-12 col-md-6 pr-4
 
 #### NPM
 
@@ -45,8 +48,9 @@ $ npm install spx --save
 ```
 
 :::
-::: grid col-12 col-md-6 pr-4
 ::::
+
+---
 
 # Project Structure
 
@@ -64,9 +68,11 @@ In this tutorial, we'll create components and explore various capabilities of SP
     └── tsup.config.ts
 ```
 
+---
+
 # Connect SPX
 
-To establish SPX as the communication point of your application, we'll use it as our default export and initialize it using the `{js} spx()` method. This method requires no options initially and will use the defaults. Once SPX is connected, it will take over the rendering cycle of your web application. Add the following code to your `bundle.ts` file:
+To establish SPX as the communication point of your application, we'll use it as our default export and initialize it using the `spx()` method. This method requires no options initially and will use the defaults. Once SPX is connected, it will take over the rendering cycle of your web application. Add the following code to your `bundle.ts` file:
 
 <!-- prettier-ignore -->
 ```ts
@@ -81,9 +87,13 @@ spx(/* options */)(function () {
 
 By default, SPX will morph the entire `{html} <body>` content between navigations. If you wish to adjust this behavior, you can do so using the [fragments](/usage/options#fragments) option. However, for now, let's stick to the basic configuration provided above. You can find more information about fragments in the [Key Concepts](/introduction/key-concepts) page.
 
+---
+
 # Script Evaluation
 
-In SPX, adherence to two crucial rules is paramount. Firstly, it's imperative to include JavaScript files within the `{html} <head>` element of your application. Secondly, it's vital to prevent evaluation on the script responsible for establishing a connection to SPX. This can be achieved by adding a `{html} <script spx-eval="false">` attribute to the tag containing SPX. This precautionary measure ensures that SPX isn't re-initialized for each navigation. Failure to implement this attribute may lead to SPX re-initializing for all subsequent visits, compromising its intended functionality.
+In SPX, adherence to two crucial rules is paramount. Firstly, it's imperative to include JavaScript files within the `{html} <head>` element of your application. Secondly, it's vital to prevent evaluation on the script responsible for establishing a connection to SPX. This can be achieved by adding a `{html} <script spx-eval="false">` attribute to the tag containing SPX. This precautionary measure ensures that SPX isn't re-initialized for each navigation.
+
+> Failure to implement this attribute may lead to SPX re-initializing for all subsequent visits, compromising its intended functionality.
 
 ```html
 <html>
@@ -102,36 +112,46 @@ In SPX, adherence to two crucial rules is paramount. Firstly, it's imperative to
 </html>
 ```
 
+---
+
 # Creating Components
 
-Let's proceed with creating SPX components to integrate into our web application. In this tutorial, we'll craft simple components and delve into the process of registering and utilizing them. We will start by developing a counter component, aiming to enable incrementing and decrementing a number utilizing SPX Component [events](/components/events), [state](/components/state), and [nodes](/components/nodes). Begin by generating a new file named `counter.ts` within the `./src/app/components/` directory of your project, and insert the following code:
+Let's proceed with creating SPX components to integrate into our web application. In this tutorial, we'll craft simple components and delve into the process of registering and utilizing them. We will start by developing a counter component, aiming to enable incrementing and decrementing a number utilizing SPX Component [events](/components/events), [state](/components/state), and [nodes](/components/nodes). Begin by generating a new file named `counter.ts` in the `./src/app/components/` directory of your project:
 
-## `counter.ts`
+<br>
+
+### `counter.ts`
 
 <!--prettier-ignore-->
-```js
+```ts
 import spx, { SPX } from 'spx';
 
 export class Count extends spx.Component({
   state: {
-    clicks: 0
+    clicks: 0 // our initial component state available via this.state
   }
 }) {
 
   increment () {
-    ++this.state.clicks;
+    ++this.state.clicks; // augments the state
   }
 
   decrement () {
-    --this.state.clicks;
+    --this.state.clicks; // augments the state
   }
 
 }
 ```
 
-# Registering Component
+---
 
-Now that we have our component defined, the next step is to register it with SPX so that SPX recognizes its existence. Let's open up the `bundle.ts` entry point file where we called `{js} spx()` and proceed to import and register the component.
+# Register Component
+
+Now that we have our component defined, the next step is to register it with SPX so that SPX recognizes its existence. Let's open up the `bundle.ts` entry point file where we called `spx()` and proceed to import and register the component.
+
+<br>
+
+### `bundle.ts`
 
 <!--prettier-ignore-->
 ```ts
@@ -145,7 +165,9 @@ export default spx({
 });
 ```
 
-> You can also register components using the `{js} spx.register()` API method. For further details, please refer to the [Component Register](/components/register/) section of the documentation.
+> You can also register components using the `spx.register()` API method. For further details, please refer to the [Component Register](/components/register/) section of the documentation.
+
+---
 
 # Counter Markup
 
@@ -164,11 +186,15 @@ Now, it's time to integrate our component into the DOM. SPX components follow a 
 </section>
 ```
 
+---
+
 # Tabs Component
 
 A simple counter component is an excellent starting point, but let's create a slightly more advanced component to explore the capabilities of SPX further. We'll design a Tabs component that allows us to incorporate tabs into our web application. While still relatively straightforward, this component will enable us to delve into additional features. Following the same approach as with our Counter component, let's create a new file in the `./src/app/components/` directory named `tabs.ts` and add the following code:
 
-## `tabs.ts`
+<br>
+
+### `tabs.ts`
 
 <!--prettier-ignore-->
 ```ts
@@ -200,11 +226,17 @@ export class Tabs extends spx.Component({
 
 <br>
 
-Our Tabs component introduces a bit more complexity compared to the Counter component, particularly highlighting the `{js} connect()` method. SPX components support [lifecycle hooks](/components/hooks/), triggered at various points during rendering and fetching cycles. Another significant aspect of the Tabs component is the event argument passed to the `{js} toggle(event)` method. Here, we're leveraging the SPX event `attrs` feature, enabling parameter values to be passed in via directives in the DOM.
+Our Tabs component introduces a bit more complexity compared to the Counter component, particularly highlighting the `connect()` method. SPX components support [lifecycle hooks](/components/hooks/), triggered at various points during rendering and fetching cycles. Another significant aspect of the Tabs component is the event argument passed to the `toggle(event)` method. Here, we're leveraging the SPX event `attrs` feature, enabling parameter values to be passed in via directives in the DOM.
+
+---
 
 # Register Tabs
 
 Just as we did with our [Counter Component](#6-registering-component), we need to make SPX aware that the Tabs component exists. Open up the `bundle.ts` entry point file where we called `spx()` and let's register the component.
+
+<br>
+
+### `bundle.ts`
 
 <!--prettier-ignore-->
 ```ts
@@ -219,6 +251,8 @@ export default spx({
   }
 });
 ```
+
+---
 
 # Tabs Markup
 

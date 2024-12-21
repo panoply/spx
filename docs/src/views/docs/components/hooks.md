@@ -16,9 +16,11 @@ Component hooks in SPX are lifecycle callback methods that execute at various po
 
 > Hooks in SPX are executed outside the event loop to prevent any potential blocking or performance degradation from expensive operations. This design allows hooks to be resolved concurrently, ensuring that they do not hinder performance.
 
+---
+
 # Order of Execution
 
-The order in which component hooks execute depends on whether it's the first time a component is encountered or if it's a subsequent visit. Initially, when a component instance is created and added to the DOM, the `{js} connect()` hook is executed before `{js} onmount()`, ensuring setup logic runs once. However, on subsequent visits to a component with an existing instance, the connect hook will not trigger; instead, `{js} onmount()` executes each time the component becomes active, followed by `{js} unmount()` whenever the component root element it's removed or replaced in the DOM.
+The order in which component hooks execute depends on whether it's the first time a component is encountered or if it's a subsequent visit. Initially, when a component instance is created and added to the DOM, the `connect()` hook is executed before `onmount()`, ensuring setup logic runs once. However, on subsequent visits to a component with an existing instance, the connect hook will not trigger; instead, `onmount()` executes each time the component becomes active, followed by `unmount()` whenever the component root element it's removed or replaced in the DOM.
 
 {% include 'include/hooks-table' %}
 
@@ -44,6 +46,8 @@ export class Example extends spx.Component() {
 }
 ```
 
+---
+
 # onmount
 
 The `onmount` lifecycle callback hook will trigger after the component has been mounted in the DOM. The hook is the equivalent of **DOMContentLoaded** and will fire each time an component with an established (existing) instance is rendered to the DOM. The difference between connect and onmount is that `connect` will trigger once upon initial visit whereas `onmount` triggers both upon initial visit and in all subsequent visits to a location where the component exists.
@@ -64,6 +68,8 @@ export class Example extends spx.Component() {
 
 }
 ```
+
+---
 
 # unmount
 
