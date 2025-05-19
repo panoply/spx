@@ -54,18 +54,14 @@ export const connect = () => {
   const dom = b();
 
   if ($.page.target.length > 0) {
-
     directive = $.qs.$target;
     selector = $.page.target.join();
     aliases = nodeSet(dom.querySelectorAll<HTMLElement>(`[id][${$.qs.$component}]`));
-
   } else {
-
     directive = $.qs.$fragment;
     selector = $.config.fragments.length === 1 && $.config.fragments[0] === 'body'
       ? $.qs.$fragments
       : `${$.config.fragments.join()},${$.qs.$fragments}`;
-
   }
 
   forNode(selector, node => {

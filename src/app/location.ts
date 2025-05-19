@@ -117,15 +117,11 @@ export const getAttributes = (element: Element, page?: Page): Page => {
           state[name] = +value;
 
         } else {
-
           if (name === 'history' && value !== 'push' && value !== 'replace') {
-
             log.warn(`Invalid ${nodeName} value, expected: false, push or replace`, element);
-
           }
 
           state[name] = value;
-
         }
       }
     }

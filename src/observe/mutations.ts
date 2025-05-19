@@ -23,6 +23,7 @@ function c (node: Node) {
   const s = e.length;
 
   let i = -1;
+
   while (++i < s) if (e[i].contains(node)) return hasResource && false;
 
   return hasResource && true;

@@ -60,16 +60,13 @@ export const ref = (selector: string, reference: string) =>
 export const update = (snapshot: Document, key: number) => enqueue(() => {
 
   while (ctx.snaps.length > 0) {
-
     const [ dom, marks ] = ctx.snaps.shift();
-
     for (const [ selector, dataspx ] of marks) {
       dom.matches(selector) && attr(dom, dataspx);
       dom.querySelectorAll<HTMLElement>(selector).forEach(child => attr(child, dataspx));
     }
 
     marks.clear();
-
   }
 
   replace(key, snapshot.documentElement.outerHTML);

@@ -27,9 +27,7 @@ const onIntersect = async (entry: IntersectionObserverEntry): Promise<void> => {
     const response = await request.fetch(q.create(route));
 
     if (response) {
-
       entries.unobserve(entry.target);
-
     } else {
       log.warn(`Prefetch will retry at next intersection for: ${route.key}`);
       entries.observe(entry.target);

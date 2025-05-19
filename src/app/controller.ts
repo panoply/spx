@@ -13,7 +13,7 @@ import * as request from './fetch';
 import * as history from '../observe/history';
 import * as proximity from '../observe/proximity';
 import * as components from '../observe/components';
-import * as mutations from '../observe/mutations';
+// import * as mutations from '../observe/mutations';
 import * as fragment from '../observe/fragment';
 import { m } from 'src/shared/native';
 import { emit } from './events';
@@ -73,9 +73,7 @@ export const initialize = (): Promise<Page> => {
     proximity.connect();
     components.connect();
     // mutations.connect();
-
     emit('connect', page);
-
     enqueue(
       () => q.patch('type', VisitType.VISIT),
       async () => await request.reverse(page),

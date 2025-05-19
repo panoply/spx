@@ -59,17 +59,12 @@ export const registerComponents = (components: { [id: string]: Register }, isVal
     const identifier = isValidID ? id : getComponentId(instance, id);
 
     if (!$.registry.has(identifier)) {
-
       $.registry.set(identifier, instance);
-
       log.debug(`Component ${instance.name} registered using id: ${identifier}`);
-
     }
   }
 
   if (!$.config.components) {
-
     $.config.components = true;
-
   }
 };
