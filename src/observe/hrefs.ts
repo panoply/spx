@@ -3,7 +3,7 @@ import { deviceType } from 'detect-it';
 import { $ } from '../app/session';
 import { VisitType } from '../shared/enums';
 import { ts } from '../shared/utils';
-import { XHR, pointer } from '../shared/native';
+import { XHR } from '../shared/native';
 import { emit } from '../app/events';
 import { getLink } from '../shared/links';
 import { getAttributes, getKey, getRoute } from '../app/location';
@@ -95,17 +95,17 @@ const handle: { (event: MouseEvent): void; drag?: boolean; } = function (event: 
   const move = () => {
     log.warn(`Drag occurance, visit cancelled: ${key}`);
     handle.drag = true;
-    target.removeEventListener(`${pointer}move`, move);
+    target.removeEventListener('pointermove', move);
   };
 
-  target.addEventListener(`${pointer}move`, move, { once: true });
+  target.addEventListener('pointermove', move, { once: true });
 
   if (handle.drag === true) {
     handle.drag = false;
     return handle(event);
   }
 
-  target.removeEventListener(`${pointer}move`, move);
+  target.removeEventListener('pointermove', move);
 
   /**
    * Handle the click event on links. This function will update
@@ -272,11 +272,11 @@ export const connect = (): void => {
   handle.drag = false;
 
   if (deviceType === 'mouseOnly') {
-    addEventListener(`${pointer}down`, handle, false);
+    addEventListener('pointerdown', handle, false);
   } else if (deviceType === 'touchOnly') {
     addEventListener('touchstart', handle, false);
   } else {
-    addEventListener(`${pointer}down`, handle, false);
+    addEventListener('pointerdown', handle, false);
     addEventListener('touchstart', handle, false);
   }
 
@@ -292,11 +292,11 @@ export const disconnect = (): void => {
   if (!$.observe.hrefs) return;
 
   if (deviceType === 'mouseOnly') {
-    removeEventListener(`${pointer}down`, handle, false);
+    removeEventListener('pointerdown', handle, false);
   } else if (deviceType === 'touchOnly') {
     removeEventListener('touchstart', handle, false);
   } else {
-    removeEventListener(`${pointer}down`, handle, false);
+    removeEventListener('pointerdown', handle, false);
     removeEventListener('touchstart', handle, false);
   }
 
