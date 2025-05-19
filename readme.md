@@ -7,11 +7,16 @@ width="160px">
 </p>
 <h1></h1>
 
-Single Page XHR - The essential dom enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (15kb gzip) over the wire (push~state) solution that employs an incremental (snapshot) morphing tactic with DOM driven component capabilities integrated at the core.
+Single Page XHR - The essential dom enhancement for static SSR powered web applications. SPX is a lightening fast, lightweight (18kb gzip) over the wire (push~state) solution that employs an incremental (snapshot) morphing tactic with DOM driven component capabilities integrated at the core.
 
 ### Documentation
 
-Documentation lives on **[spx.js.org](https://spx.js.org)**
+<h4>
+  Documentation lives on&nbsp;&nbsp;➠&nbsp;&nbsp;https://spx.js.org
+</h4>
+
+> [!NOTE]
+> Documentation is still a **WIP** so please just read the codebase or refer to the type definitions for a better understanding. You can also check the [test](/test/) and [docs](/) directories for real-world implementations.
 
 ### Features
 
@@ -26,22 +31,14 @@ Documentation lives on **[spx.js.org](https://spx.js.org)**
 
 # Installation
 
-SPX is available for download on the [NPM](https://www.npmjs.com/package/spx) registry. There are a couple of different versions available at this point in time.
+SPX is available for download on the [NPM](https://www.npmjs.com/package/spx) registry.
 
-### Release Candidate
+### Latest (Release Candidate)
 
-The `rc` version of spx is what developers should use for now.
-
-```bash
-pnpm add spx@rc
-```
-
-### Latest (Deprecated)
-
-The `latest` version release of spx should be avoided at this point in time. Please use the `rc` release.
+SPX is currently in the RC version release stage. Majority of its API has been ironed out and used in production.
 
 ```bash
-pnpm add spx
+<pnpm|npm> add spx
 ```
 
 # Usage
@@ -113,8 +110,8 @@ Associate the component to a DOM elements, add the following within a defined `f
   Clicked: <span spx-node="counter.count">0</span>
 
   <button
-   type="button"
-   spx@click="counter.increment"> Increment </button>
+    type="button"
+    spx@click="counter.increment"> Increment </button>
 
 </section>
 ```
@@ -171,4 +168,4 @@ While this structure is recommended for consistency, all items labeled as **opti
 
 # License
 
-Licensed under **[CC BY-NC-ND 4.0](./LICENSE)**
+The project is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

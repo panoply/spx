@@ -1,6 +1,6 @@
 import type { Config, Page, LiteralUnion, Class } from 'types';
 import { $ } from './app/session';
-import { defineGetter, forEach, forNode, size, takeSnapshot } from './shared/utils';
+import { defineGetter, forEach, forNode, httpHeaders, size, takeSnapshot } from './shared/utils';
 import { configure } from './app/config';
 import { getRoute } from './app/location';
 import { VisitType } from './shared/enums';
@@ -18,6 +18,8 @@ import * as renderer from './app/render';
 import * as history from './observe/history';
 import * as components from './observe/components';
 import * as log from './shared/logs';
+import { HTTPConfig } from 'types/http';
+import { RichText } from './shared/const';
 
 /**
  * Connect SPX
@@ -76,6 +78,7 @@ spx.render = render;
 spx.session = session;
 spx.reload = reload;
 spx.fetch = fetch;
+spx.http = http;
 spx.clear = clear;
 spx.hydrate = hydrate;
 spx.prefetch = prefetch;
@@ -159,18 +162,11 @@ function component (identifer: string, callback?: (instance: any) => any) {
   const instances: Class[] = [];
 
   for (const instance of instances.values()) {
-
     const { scope } = instance;
-
-    console.log(scope, identifer);
     if (scope.instanceOf === identifer || scope.alias === identifer) {
-
       instances.push(instance);
-
     }
   }
-
-  console.log(instances);
 
   return callback ? forEach(callback, instances) : instances[0];
 
@@ -241,27 +237,6 @@ function session () {
 
 }
 
-// function global (model?: { [key: string]: any }) {
-
-//   if (isEmpty($.global)) {
-//     if (model) {
-//       assign($.global, model);
-//       if ($.logLevel === LogLevel.INFO) {
-//         log(Log.INFO, 'Global has been defined');
-//       } else if ($.logLevel === LogLevel.VERBOSE) {
-//         log(Log.VERBOSE, 'Global has been defined: ', $.global);
-//       }
-//     }
-//   } else {
-//     if (model) {
-//       log(Log.WARN, 'You cannot re-define global data within an SPX session');
-//     }
-//   }
-
-//   return $.global;
-
-// }
-
 /**
  * Reload
  *
@@ -298,6 +273,95 @@ async function fetch (url: string) {
   const dom = await request.http<Document>(link.key);
 
   if (dom) return dom;
+
+}
+
+async function http (path?: string, {
+  url = new URL(path, window.location.origin),
+  method = 'GET',
+  response = 'json',
+  query,
+  body,
+  user = url.username,
+  pass = url.password,
+  headers = {},
+  config,
+  timeout = 0,
+  ...options
+}: HTTPConfig = {}) {
+
+  // @ts-expect-error
+  const xhr = new XMLHttpRequest(options);
+  const json = 'application/json';
+
+  let accept: string;
+  let contentType: string;
+
+  method = method.toUpperCase();
+
+  if (query) {
+    query = new URLSearchParams(query);
+    for (const [ k, v ] of query) {
+      url.searchParams.append(k, v);
+    }
+  }
+
+  xhr.open(method, url.href, true, user, pass);
+  xhr.timeout = timeout;
+  xhr.responseType = response;
+
+  for (const [ hk, hv ] of Object.entries(headers)) {
+    if (hv) xhr.setRequestHeader(hk, hv);
+    if (hk.toLowerCase() === 'accept') accept = hv;
+    if (hk.toLowerCase() === 'content-type') contentType = hv;
+  }
+
+  if (!accept && response === 'json') xhr.setRequestHeader('Accept', accept = json);
+  if (!contentType && body !== undefined && !RichText.some(x => body instanceof x)) {
+    xhr.setRequestHeader('Content-Type', contentType = json);
+  }
+
+  config && config(xhr);
+
+  return new Promise((resolve, reject) => {
+
+    xhr.onreadystatechange = () => {
+
+      if (xhr.readyState !== xhr.DONE) return;
+
+      try {
+
+        const resp = xhr.response;
+        const body = accept === json && resp
+          ? typeof resp === 'string' && resp !== ''
+            ? JSON.parse(resp)
+            : resp
+          : resp;
+
+        if (xhr.status === 304 || (xhr.status >= 200 && xhr.status < 300)) {
+          resolve(body);
+        } else {
+          reject(Object.assign(new Error(xhr.statusText || 'Unknown'), {
+            status: xhr.status,
+            headers: httpHeaders(xhr.getAllResponseHeaders()),
+            body,
+            xhr
+          }));
+        }
+      } catch (e) {
+        reject(Object.assign(e, {
+          headers: httpHeaders(xhr.getAllResponseHeaders()),
+          body: xhr.response,
+          status: xhr.status,
+          xhr
+        }));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network Error'));
+    xhr.onabort = () => reject(new Error('Aborted'));
+    xhr.send(contentType === json ? JSON.stringify(body) : body);
+  });
 
 }
 
