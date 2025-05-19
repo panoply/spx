@@ -36,7 +36,6 @@ export const reverse = (): boolean => (
  */
 export const has = (key?: string): boolean => {
 
-  console.log(api);
   if (api.state === null) return false;
   if (typeof api.state !== 'object') return false;
   if (!('spx' in api.state)) return false;
@@ -271,10 +270,10 @@ export const disconnect = (): void => {
   if (!$.observe.history) return;
 
   // Revert scroll restoration to defaults
-  if (api.scrollRestoration) api.scrollRestoration = 'auto';
+  // if (api.scrollRestoration) api.scrollRestoration = 'auto';
 
   removeEventListener('popstate', pop, false);
-  removeEventListener('load', load, false);
+  // removeEventListener('load', load, false);
 
   $.observe.history = false;
 
