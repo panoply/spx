@@ -18,42 +18,42 @@ import * as fragment from '../observe/fragment';
 
 const morphHead = async (
   page: Page,
-  curHead: HTMLHeadElement,
-  newHead: HTMLHeadElement
+  cHead: HTMLHeadElement,
+  nHead: HTMLHeadElement
 ): Promise<PromiseSettledResult<void>[]> => {
 
-  if (!$.eval || !curHead.children || !newHead.children) return;
+  if (!$.eval || !cHead.children || !nHead.children) return;
 
-  const curHeadChildren = curHead.children;
-  const newHeadExternal = s<string>();
-  const newHeadChildren = newHead.children;
-  const newHeadRemovals: Element[] = [];
+  const cHeadChildren = cHead.children;
+  const nHeadExternal = s<string>();
+  const nHeadChildren = nHead.children;
+  const nHeadRemovals: Element[] = [];
 
-  for (let i = 0, s = newHeadChildren.length; i < s; i++) {
-    if (canEval(newHeadChildren[i])) {
-      newHeadExternal.add(newHeadChildren[i].outerHTML);
+  for (let i = 0, s = nHeadChildren.length; i < s; i++) {
+    if (canEval(nHeadChildren[i])) {
+      nHeadExternal.add(nHeadChildren[i].outerHTML);
     }
   }
 
-  for (let i = 0, s = curHeadChildren.length; i < s; i++) {
+  for (let i = 0, s = cHeadChildren.length; i < s; i++) {
 
-    const curHeadChildNode = curHeadChildren[i];
-    const canEvalChildNode = canEval(curHeadChildNode);
-    const curHeadOuterHTML = curHeadChildNode.outerHTML;
+    const cHeadChildNode = cHeadChildren[i];
+    const canEvalChildNode = canEval(cHeadChildNode);
+    const cHeadOuterHTML = cHeadChildNode.outerHTML;
 
-    if (newHeadExternal.has(curHeadOuterHTML)) {
+    if (nHeadExternal.has(cHeadOuterHTML)) {
       canEvalChildNode
-        ? newHeadRemovals.push(curHeadChildNode)
-        : newHeadExternal.delete(curHeadOuterHTML);
+        ? nHeadRemovals.push(cHeadChildNode)
+        : nHeadExternal.delete(cHeadOuterHTML);
     } else if (canEvalChildNode) {
-      newHeadRemovals.push(curHeadChildNode);
+      nHeadRemovals.push(cHeadChildNode);
     }
   }
 
   const promises: Promise<void>[] = [];
   const range = document.createRange();
 
-  for (const outerHTML of newHeadExternal) {
+  for (const outerHTML of nHeadExternal) {
 
     const node = range.createContextualFragment(outerHTML).firstChild;
 
@@ -76,13 +76,13 @@ const morphHead = async (
 
     }
 
-    curHead.appendChild(node);
-    newHeadExternal.delete(outerHTML);
+    cHead.appendChild(node);
+    nHeadExternal.delete(outerHTML);
 
   }
 
-  for (let i = 0, s = newHeadRemovals.length; i < s; i++) {
-    curHead.removeChild(newHeadRemovals[i]);
+  for (let i = 0, s = nHeadRemovals.length; i < s; i++) {
+    cHead.removeChild(nHeadRemovals[i]);
   }
 
   await Promise.allSettled<void>(promises);
