@@ -6,8 +6,6 @@ import type { Scope, SPX } from 'types';
 import { d, m } from '../shared/native';
 import { stateProxy } from './proxies';
 
-Component.scopes = m<string, Scope>();
-
 export function Component (define: SPX.Define) {
 
   /**
@@ -25,10 +23,16 @@ export function Component (define: SPX.Define) {
     static define = Object.assign({
       name: '',
       merge: false,
-      sugar: false,
       state: {},
       nodes: []
     }, define);
+
+    /**
+     * Component Scope
+     *
+     * Private reference describing component
+     */
+    readonly scope: Scope;
 
     /**
      * Ref
@@ -72,11 +76,7 @@ export function Component (define: SPX.Define) {
      *
      * Holds a reference to the DOM Document element `<div spx-component="">` node.
      */
-    get view () {
-      return this.scope.dom;
-    }
-
-    readonly scope: Scope;
+    get view () { return this.scope.dom; }
 
     /**
      * Constructor
@@ -84,24 +84,13 @@ export function Component (define: SPX.Define) {
      * Creates the component instance
      */
     constructor (value: string) {
-
-      Reflect.defineProperty(this, 'scope', {
-        get () {
-          return Component.scopes.get(value);
-        }
-      });
-
-      Reflect.defineProperty(this, 'ref', {
-        value,
-        configurable: false,
-        enumerable: false,
-        writable: false
-      });
-
-      stateProxy(this as any);
-
+      Reflect.defineProperty(this, 'scope', { get () { return Component.scopes.get(value); } });
+      Reflect.defineProperty(this, 'ref', { value, configurable: false, enumerable: false, writable: false });
+      stateProxy<any>(this);
     }
 
   };
 
 };
+
+Component.scopes = m<string, Scope>();
