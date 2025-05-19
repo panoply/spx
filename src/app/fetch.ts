@@ -42,8 +42,11 @@ interface RequestParams {
 export const http = <T> (key: string, {
   method = 'GET',
   body = null,
-  headers = [ [ 'spx-http', 'href' ] ],
-  type = 'text'
+  type = 'text',
+  headers = [
+    [ 'spx-http', 'href' ],
+    [ 'Cache-Control', 'private, max-age=0' ]
+  ]
 }: RequestParams = {}) => new Promise<T extends string ? string : Document>((resolve, reject) => {
 
   const xhr = new XHR();
