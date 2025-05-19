@@ -30,28 +30,12 @@ import {
   DATASET REFERENCES
 
   Component elements (dom, events, binds and nodes) will be annotated with a data-spx="" value. The value is
-  is mapped to instances. Each time we encounter an element of interest (component directive) we mark it with
+  mapped to instances. Each time we encounter an element of interest (component directive) we mark it with
   an UUID reference via the data-spx="" attribute. The UUID value within that attribute uses the following pattern:
 
   c.a1b2c3  - Components begin with "c"
   b.fw32dk  - Binds begin with "b"
   e.tudhj2  - Events begin with "e"
-
-  In situations where an element is annotated with multiple directives, for example:
-
-  BEFORE:
-    <div
-      spx@mouseover="ref.callback"
-    ></div>
-
-  AFTER:
-    <div
-      spx@mouseover="ref.callback"
-      data-spx="e.tudhj2"  << Internal Reference
-    ></div>
-
-  Notice in the AFTER example, the data-spx="" value has comma separated UUID refs. The values UUIDs are important
-  because these will determine elements of interest during morph operations and will be leveraged to acquire the related instances(see observe.ts).
 
   CONTEXT > INSTANCE
 
@@ -99,10 +83,7 @@ export const walkNode = (node: HTMLElement, context: Context, strict = true): fa
  */
 const getComponentValues = (input: string, cb: (instanceOf: string, aliasName?: string) => void) => {
 
-  const names = input
-    .trim()
-    .replace(/\s+/, ' ')
-    .split(/[|, ]/);
+  const names = input.trim().replace(/\s+/, ' ').split(/[|, ]/);
 
   for (let i = 0, n = 0, s = names.length; i < s; i++) {
     if (names[i] === '') continue;
@@ -153,7 +134,7 @@ export const isDirective = (attrs: string | NamedNodeMap) => {
 
   if (typeof attrs === 'string') {
     return (
-      attrs.indexOf('@') > -1 ||
+      attrs.includes('@') ||
       attrs === $.qs.$component ||
       attrs === $.qs.$node ||
       attrs === $.qs.$bind
@@ -176,10 +157,7 @@ export const isDirective = (attrs: string | NamedNodeMap) => {
 export const isChild = (scope: Scope, node: HTMLElement) => (
   scope.status === Hooks.MOUNT ||
   scope.status === Hooks.MOUNTED
-) ? scope.dom
-    ? scope.dom.contains(node)
-    : false
-  : false;
+) ? scope.dom ? scope.dom.contains(node) : false : false;
 
 /**
  * Whether or not DOM Nodes of {@link Scope.nodes}, {@link Scope.binds}
@@ -187,8 +165,7 @@ export const isChild = (scope: Scope, node: HTMLElement) => (
  * in the scope records returning `false` if not currently live. This function
  * will negate the need for us having to query the DOM to check for nodes.
  *
- * Expects a `schema` parameters and {@link Scope} reference model for the
- * check to run.
+ * Expects a `schema` parameters and {@link Scope} reference model for the check to run.
  *
  * > **NOTE**
  * >
@@ -212,14 +189,11 @@ export const isLive = <T extends { [key: string]: any }>(schema: string, input: 
  * attribute values which use dot `.` notation formats. Returns a string list
  * and all entries contained.
  */
-export const getAttrValueNotation = (input: string) => {
-
-  return equalizeWS(input.replace(/\s \./g, '.'))
+export const getAttrValueNotation = (input: string) =>
+  equalizeWS(input.replace(/\s \./g, '.'))
     .replace(/\s+/g, ' ')
     .trim()
     .split(/[ ,]/);
-
-};
 
 /**
  * Obtains the attribute value type and then converts the strings into
@@ -375,7 +349,7 @@ export const setScope = ([ instanceOf, aliasOf = null ]: string[], dom?: HTMLEle
           // with the instance of the current component. We need to transfer all
           // the related events, nodes or binds from the dormant context instance
           // to the instance we have currently scoped. The $reference proxy will
-          // need to be aligned which is why we "for in" each property and re-assign.
+          // need to be aligned which is why the "for in" loop on each property and re-assign.
           for (const { events, nodes, binds } of context.$scopes[scope.alias]) {
 
             if ('events' in scope) {
@@ -578,11 +552,12 @@ export const setAttrs = (node: HTMLElement, context: Context, instanceOf?: strin
       let schema = `${$.config.schema}${instanceOf}:`;
 
       // Using alias references, e.g: spx-alias:state=""
-      //
       if (alias && !name.startsWith(schema)) schema = `${$.config.schema}${alias}:`;
-
       if (name.startsWith(schema)) {
-        getScope(instanceOf, context).state[camelCase(name.slice(schema.length))] = value;
+        getScope(instanceOf, context).state[camelCase(name.slice(schema.length))] = o({
+          value,
+          persist: true
+        });
       }
     }
 
@@ -590,7 +565,7 @@ export const setAttrs = (node: HTMLElement, context: Context, instanceOf?: strin
     /* DIRECTIVES                                   */
     /* -------------------------------------------- */
 
-    if (name.indexOf('@') > -1) {
+    if (name.includes('@')) {
 
       setEvent(node, name, value, context);
 
@@ -627,7 +602,7 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
         // Getting here means we have the component
         //
         // Status of UNMOUNTED signals that a scope exists and was already created
-        // before reaching the component element. In this cases, we can proceed to
+        // before reaching the component element. In this case, we can proceed to
         // setting the DOM Reference identifier (i.e, data-spx) and we will also go
         // around and assign the dom node getter.
         //
@@ -641,7 +616,7 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
 
         } else {
 
-          // When the scope status does not equal to UNMOUNTED then we
+          // When the scope status does not equal UNMOUNTED then we
           // we need to set a new scope, because one already exists. Because
           // our component identifier is present in $scope context, we can simply
           // push it onto the record as it signals another component occurence.
@@ -661,11 +636,11 @@ export const setComponent = (node: HTMLElement, value: string, context: Context)
 
       }
 
-      // Lets realign out scope variable to the last known record in the stack
+      // Lets realign our scope variable to the last known record in the stack
       scope = last(context.$scopes[instanceOf]);
 
-      // Lets handle component alias identifers occurances
-      // We will first check for an "as" component identifer alias
+      // Handle component alias identifer occurances
+      // First check for an "as" component identifer keyword
       //
       if (aliasOf) {
 
