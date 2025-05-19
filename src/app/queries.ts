@@ -222,8 +222,12 @@ export const get = (key?: string): { page: Page, dom: Document } => {
 
   if (key in $.pages) {
     return {
-      get page () { return $.pages[key]; },
-      get dom () { return parse($.snaps[$.pages[key].snap]); }
+      get page () {
+        return $.pages[key];
+      },
+      get dom () {
+        return parse($.snaps[$.pages[key].snap]);
+      }
     };
   }
 
