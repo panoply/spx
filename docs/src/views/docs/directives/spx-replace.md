@@ -1,14 +1,14 @@
 ---
-title: 'spx-replace'
+title: "spx-replace"
 layout: base.liquid
-group: 'directive'
-permalink: '/directives/spx-replace/index.html'
+group: "directive"
+permalink: "/directives/spx-replace/index.html"
 prev:
-  label: 'Installation'
-  uri: '/usage/installation'
+  label: "Installation"
+  uri: "/usage/installation"
 next:
-  label: 'Options'
-  uri: '/usage/options/'
+  label: "Options"
+  uri: "/usage/options/"
 ---
 
 # spx-replace
@@ -32,7 +32,7 @@ This attribute is a `string[]` type and expects a list of valid element selector
 
 The surrounding parenthesis `()` characters are optional and can be omitted. You can also omit the single `'` quotations or if you prefer, use double `"` quotations.
 
-:::
+::
 
 # Example
 

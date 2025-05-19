@@ -1,6 +1,6 @@
 ---
-permalink: '/usage/vscode-extension/index.html'
-title: 'VSCode Extension'
+permalink: "/usage/vscode-extension/index.html"
+title: "VSCode Extension"
 layout: base.liquid
 anchors:
   - VSCode Extension
@@ -43,8 +43,8 @@ The SPX extension contributes the following workspace settings:
 
 Install the SPX extension from the [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=sissel.vscode-spx). By default, IntelliSense capabilities will work within `.html` and `.liquid` files, with all global directives available. For developers who are taking advantage of SPX Components, you can active and enable completion features by providing a glob path list within workspace settings.
 
-:::: grid row mt-4
-::: grid col-12 col-md-6 pr-4 mb-5
+:: row mt-4
+:: col-12 col-md-6 pr-4 mb-5
 
 #### Example Project
 
@@ -55,8 +55,8 @@ Install the SPX extension from the [VSCode Marketplace](https://marketplace.visu
   └── package.json
 ```
 
-:::
-::: grid col-12 col-md-6 pl-4 mb-5
+::
+:: col-12 col-md-6 pl-4 mb-5
 
 #### Workspace Settings
 
@@ -69,5 +69,5 @@ Install the SPX extension from the [VSCode Marketplace](https://marketplace.visu
 }
 ```
 
-:::
-::::
+::
+::

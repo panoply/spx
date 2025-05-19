@@ -1,5 +1,5 @@
 ---
-permalink: '/usage/components/index.html'
+permalink: "/usage/components/index.html"
 title: Components - Overview
 layout: base.liquid
 logger: false
@@ -18,15 +18,14 @@ import spx from 'spx';
 
 export class Demo extends spx.Component({
   name: 'demo',           // Define an identifier (optional)
-  sugar: false,           // Whether or not to use node sugars (optional)
   merge: false,           // Whether or not snapshot merging applies (optional)
   nodes: ['foo'],         // Define elements associated with components (optional)
   state: {}               // Define component state interface (optional)
 }) {
 
-  connect({ page }) {}      // Component lifecycle event when component connects
-  onmount({ page }) {}      // Component lifecycle event when component rendered
-  unmount({ page }) {}      // Component lifecycle event when component removed
+  connect(page) {}        // Component lifecycle event when component connects
+  onmount(page) {}        // Component lifecycle event when component rendered
+  unmount(page) {}        // Component lifecycle event when component removed
 
   method() {
     this.state            // State object as per define.state
@@ -34,7 +33,7 @@ export class Demo extends spx.Component({
     this.view             // HTMLElement reference for: <div spx-component="demo">
     this.fooNode          // The HTMLElement of <div spx-node="demo.foo"> in dom or undefined
     this.fooNodes         // An HTMLElement[] list of all nodes using <div spx-node="demo.foo">
-    this.hasFoo           // Whether or not <div spx-node="demo.foo"> exists in dom
+    this.fooExists        // Whether or not <div spx-node="demo.foo"> exists in dom
   }
 
   callback (event) {
@@ -50,8 +49,8 @@ export class Demo extends spx.Component({
 
 SPX components incorporate three essential lifecycle callback hooks for precise control over component behavior. The `connect` hook triggers at the outset and is ideal for initial setup, executing just once. The `onmount` hook will trigger every time a component view is attached to the DOM, useful for logic that needs to run upon rendering. The `unmount` hook is invoked each time a component's view is detached from the DOM, this allows you to perform any necessary cleanups before component removal applies. Hooks provide you with a simple and effective management point, allowing components to responsibly handle their lifecycle, from initialization to termination and recurrence.
 
-:::: grid row gx-0
-::: grid col-12 col-sm-7 iframe-code mt-4 my-sm-4
+:: row gx-0
+:: col-12 col-sm-7 iframe-code mt-4 my-sm-4
 
 <!-- prettier-ignore -->
 ```ts
@@ -71,16 +70,16 @@ export class Demo extends spx.Component() {
 }
 ```
 
-:::
-::: grid col-12 col-sm-5 iframe-code mb-4 my-sm-4
+::
+:: col-12 col-sm-5 iframe-code mb-4 my-sm-4
 
 {% include 'include/iframe'
   , url: '/usage/iframe/components-hooks/onmount/'
   , class: 'iframe-code'
 %}
 
-:::
-::::
+::
+::
 
 ---
 
@@ -140,12 +139,12 @@ To ensure SPX is aware of their existence, all components must be registered. Th
 
 ---
 
-:::: grid row jc-center mx-2
-::: grid col-10 py-4 mt-3
+:: row jc-center mx-2
+:: col-10 py-4 mt-3
 
 <img src="/assets/flow.svg" class="w-100">
 
-:::
-::::
+::
+::
 
 ---

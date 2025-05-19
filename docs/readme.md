@@ -52,17 +52,17 @@ Grid access is made possible using fenced containers in the markdown. The `grid`
 Take the following code structure in `.md` files:
 
 ```md
-:::: grid row jc-center ai-center
+:: row jc-center ai-center
 
-::: grid col-sm-6 col-md-4
+:: col-sm-6 col-md-4
 Lorem ipsum dolor sit...
-:::
+::
 
-::: grid col-6 col-md-8
+:: col-6 col-md-8
 Lorem ipsum dolor sit...
-:::
+::
 
-::::
+::
 ```
 
 ### OUTPUT

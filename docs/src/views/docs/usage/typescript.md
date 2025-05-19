@@ -1,7 +1,7 @@
 ---
-permalink: '/usage/typescript/index.html'
+permalink: "/usage/typescript/index.html"
 layout: base.liquid
-title: 'Using TypeScript'
+title: "Using TypeScript"
 anchors:
   - TypeScript
   - SPX Namespace
@@ -123,13 +123,13 @@ export class Example extends spx.Component({
 
     this.fooNode          // => HTMLButtonElement
     this.fooNodes         // => HTMLButtonElement[]
-    this.hasFooNode       // => true or false
+    this.fooExists        // => true or false
     this.demoInputNode    // => HTMLInputElement
     this.demoInputNodes   // => HTMLInputElement[]
-    this.hasDemoInput     // => true or false
+    this.demoInputExists  // => true or false
     this.exampleNode      // => HTMLElement
     this.exampleNodes     // => HTMLElement[]
-    this.hasExampleNode   // => true or false
+    this.exampleExists   // => true or false
 
   }
 }
@@ -182,7 +182,7 @@ export class Example extends spx.Component({
 The `SPX.Event` type utilities merge with TypeScripts official DOMEvent declarations and will act in accordance with arguments provided. You can omit arguments in cases where an event callback does not include `attrs` and the inferred values will behave correctly. SPX provides the below list of event utilities:
 
 ```ts
-import type { SPX } from 'spx';
+import type { SPX } from "spx";
 
 SPX.Event<T>;
 SPX.InputEvent<T>;

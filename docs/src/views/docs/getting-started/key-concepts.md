@@ -1,6 +1,6 @@
 ---
-permalink: '/key-concepts/index.html'
-title: 'Key Concepts'
+permalink: "/key-concepts/index.html"
+title: "Key Concepts"
 layout: base.liquid
 anchors:
   - Key Concepts
@@ -30,8 +30,8 @@ There are several ways developers can optimize SPX and improve the speed of per-
 
 Fragments in SPX refer to elements annotated with an `id` attribute that persist across various pages of your website. These fragments serve as the dynamic components of your web application, as the descendant elements within them undergo changes between page visits. In contrast to static elements, which remain consistent across multiple visits, (dynamic) fragments represent the areas of your website that are subject to modification and consistent.
 
-:::: grid row pt-3 pb-4
-::: grid col-12 col-sm-6
+:: row pt-3 pb-4
+:: col-12 col-sm-6
 
 <!-- prettier-ignore -->
 ```ts
@@ -45,8 +45,8 @@ spx({
 });
 ```
 
-:::
-::: grid mt-3 mt-sm-0 col-12 col-sm-6
+::
+:: mt-3 mt-sm-0 col-12 col-sm-6
 
 <!-- prettier-ignore -->
 ```html
@@ -60,8 +60,8 @@ spx({
 </body>
 ```
 
-:::
-::::
+::
+::
 
 In the provided example, we've specified two fragments that are anticipated to change: `menu` and `main`. These fragments are identified by their respective `id` attributes as per the entires supplied to `fragments` upon connection. Between visits, only the contents within these elements undergo replacements, or morphs, based on the updates received from the server or the directive annotation applied to link elements. This targeted approach aids in minimizing traversal operations when SPX swaps content, which brings us to the underlying method employed by SPX for replacing nodes.
 
@@ -123,8 +123,8 @@ SPX supports prefetching tactics to proactively acquire page content over XHR in
 
 By default, SPX initiates prefetches upon pointer hover events. However, recognizing that this may not suit all scenarios, SPX extends three additional prefetching methods. Developers can configure prefetching behaviors upon connection and have actions preset. Alternatively, you can customize prefetch execution on a per-link basis within the DOM using directives (attribute annotations) for more precise adjustment based on `href` importance or relevance.
 
-:::: grid row pt-3 pb-4
-::: grid col-12 col-md-6
+:: row pt-3 pb-4
+:: col-12 col-md-6
 
 <!-- prettier-ignore -->
 ```ts
@@ -146,8 +146,8 @@ spx({
 });
 ```
 
-:::
-::: grid mt-3 mt-sm-0 col-12 col-md-6
+::
+:: mt-3 mt-sm-0 col-12 col-md-6
 
 <!-- prettier-ignore -->
 ```html
@@ -170,8 +170,8 @@ spx({
 <a spx-threshold="500">Link</a>
 ```
 
-:::
-::::
+::
+::
 
 ---
 

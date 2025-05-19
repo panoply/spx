@@ -129,10 +129,6 @@
       "title": "Components",
       "links": [
         {
-          "title": "Extends",
-          "url": "/components/extends/"
-        },
-        {
           "title": "State",
           "url": "/components/state/"
         },
@@ -143,10 +139,6 @@
         {
           "title": "Nodes",
           "url": "/components/nodes/"
-        },
-        {
-          "title": "Sugar",
-          "url": "/components/sugar/"
         },
         {
           "title": "Events",

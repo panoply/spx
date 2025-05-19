@@ -1,5 +1,5 @@
 ---
-permalink: '/components/nodes/index.html'
+permalink: "/components/nodes/index.html"
 title: Components - Nodes
 layout: base.liquid
 group: components
@@ -23,8 +23,8 @@ Component nodes can be defined in the `nodes[]` setting within the static `defin
 
 <br>
 
-:::: grid row mb-4
-::: grid col-6
+:: row mb-4
+:: col-6
 
 <!-- prettier-ignore -->
 ```ts
@@ -43,8 +43,8 @@ export class Demo extends spx.Component({
 }
 ```
 
-:::
-::: grid col-6
+::
+:: col-6
 
 <!-- prettier-ignore -->
 ```html
@@ -63,12 +63,10 @@ export class Demo extends spx.Component({
 </div>
 ```
 
-:::
-::::
+::
+::
 
 > In this setup, the `spx-node` attribute connects each DOM element to its corresponding node within the `Demo` component. The `buttonNode`, `counterNode`, and `feedbackNode` are now directly linked to their respective DOM elements, allowing for seamless interaction and dynamic updates within the component's logic.
-
----
 
 # Accessing Nodes
 
@@ -96,8 +94,6 @@ export class Example extends spx.Component({
 ```
 
 The `Node` suffix is used to clearly distinguish between accessing a single element and other functionalities like arrays of elements or existence checks. This naming convention ensures that your code remains intuitive and easy to understand, especially when managing complex components with multiple nodes.
-
----
 
 # Full Example
 

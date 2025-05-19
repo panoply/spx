@@ -2,7 +2,7 @@
 <html lang="en">
 
   <head>
-    {%- include 'include/head', iframe: false -%}
+    {%- include 'include/head'  , iframe: false -%}
   </head>
 
   <body>
@@ -29,12 +29,10 @@
         {%- include 'include/landing' -%}
       {%- else -%}
 
-        <div
-          id="content"
-          class="row jc-center jc-md-start content-offset pl-xxl-4">
+        <div id="content" class="row jc-center jc-md-start content-offset pl-xxl-4">
 
           <main class="col-11 col-lg col-xl-9 pl-md-4 pb-4">
-            <div class="pr-lg-5 mr-5">
+            <div class="pr-lg-5 mr-2">
               {%- include 'include/breadcrumb' -%}
               {{ content }}
               {%- include 'include/paginate' -%}
@@ -44,14 +42,12 @@
           {%- if anchors -%}
             <div
               class="col-xl-auto anchors d-none d-md-unset"
-              spx-node="search.anchors"
-              spx-component="scrollspy">
+              spx-component="scrollspy"
+              spx-scrollspy:class="fc-blue">
               <ul>
                 {%- for name in anchors -%}
                   <li>
-                    <a
-                      href="{{ name | anchor }}"
-                      spx-node="scrollspy.href">{{ name }}</a>
+                    <a href="{{ name | anchor }}" spx-node="scrollspy.href">{{ name }}</a>
                   </li>
                 {%- endfor -%}
               </ul>
@@ -64,8 +60,6 @@
     {%- sprite -%}
     {%- search 'spx' -%}
 
-    <div
-      class="drawer-backdrop"
-      spx-node="drawer.backdrop"></div>
+    <div class="drawer-backdrop" spx-node="drawer.backdrop"></div>
   </body>
 </html>

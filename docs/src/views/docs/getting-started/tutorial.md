@@ -1,6 +1,6 @@
 ---
-permalink: '/tutorial/index.html'
-title: 'Tutorial'
+permalink: "/tutorial/index.html"
+title: "Tutorial"
 layout: base.liquid
 anchors:
   - Tutorial
@@ -24,10 +24,10 @@ SPX operates under the assumption that developers possess an intermediate level 
 
 # Install SPX
 
-To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your **package.json** file is marked with the type `module`. For additional information on installation, you can refer to the [Installation](/introduction/installation) page.
+To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module) module, so it's crucial to ensure that your **package.json** file is marked with the type `module`. For additional information on installation, you can refer to [Installation](/introduction/installation).
 
-:::: grid row mt-4
-::: grid col-12 col-md-6 pr-4 mb-4
+:: row mt-4
+:: col-12 col-md-6 pr-4 mb-4
 
 #### PNPM
 
@@ -35,11 +35,8 @@ To begin, let's install SPX into your project. SPX is an ESM (ECMAScript Module)
 $ pnpm add spx --save
 ```
 
-:::
-::::
-
-:::: grid row
-::: grid col-12 col-md-6 pr-4
+::
+:: col-12 col-md-6 pr-4
 
 #### NPM
 
@@ -47,8 +44,8 @@ $ pnpm add spx --save
 $ npm install spx --save
 ```
 
-:::
-::::
+::
+::
 
 ---
 

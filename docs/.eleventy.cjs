@@ -115,6 +115,8 @@ module.exports = defineConfig(function (config) {
     'src/assets/flow.svg': 'assets/flow.svg'
   });
 
+  config.setLibrary('md', md);
+
   return {
     htmlTemplateEngine: 'liquid',
     passthroughFileCopy: false,

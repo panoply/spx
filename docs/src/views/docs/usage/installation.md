@@ -1,6 +1,6 @@
 ---
-permalink: '/usage/installation/index.html'
-title: 'Installation'
+permalink: "/usage/installation/index.html"
+title: "Installation"
 layout: base.liquid
 anchors:
   - Installation
@@ -13,8 +13,8 @@ anchors:
 
 SPX is available for consumption via the [NPM](https://www.npmjs.com/package/spx) registry as an ESM module and is designed for usage in Browser environments. SPX is lightweight with a distribution size of **{{ meta.gzipSize }}** (gzipped) and ships with types included.
 
-:::: grid row mt-4
-::: grid col-12 col-md-6 pr-4 mb-4
+:: row mt-4
+:: col-12 col-md-6 pr-4 mb-4
 
 #### PNPM
 
@@ -22,8 +22,8 @@ SPX is available for consumption via the [NPM](https://www.npmjs.com/package/spx
 $ pnpm add spx --save
 ```
 
-:::
-::: grid col-12 col-md-6 pl-sm-4 mb-4
+::
+:: col-12 col-md-6 pl-sm-4 mb-4
 
 #### NPM
 
@@ -31,8 +31,8 @@ $ pnpm add spx --save
 $ npm install spx --save
 ```
 
-:::
-::: grid col-12 col-md-6 pr-sm-4
+::
+:: col-12 col-md-6 pr-sm-4
 
 #### YARN
 
@@ -40,8 +40,8 @@ $ npm install spx --save
 $ yarn add spx
 ```
 
-:::
-::: grid col-12 col-md-6 mt-5 mt-sm-0 pl-sm-4
+::
+:: col-12 col-md-6 mt-5 mt-sm-0 pl-sm-4
 
 #### BUN
 
@@ -49,8 +49,8 @@ $ yarn add spx
 $ bun add spx
 ```
 
-:::
-::::
+::
+::
 
 ---
 

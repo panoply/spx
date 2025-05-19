@@ -28,27 +28,27 @@
     ]
   },
   "dependencies": {
-    "fuse.js": "^7.0.0",
-    "match-sorter": "^6.3.4",
+    "fuse.js": "^7.1.0",
+    "match-sorter": "^8.0.1",
     "qvp": "^0.3.2",
     "relapse": "^0.9.1",
     "spx": "link:.."
   },
   "devDependencies": {
-    "@11ty/eleventy": "^2.0.1",
+    "@11ty/eleventy": "^3.1.0",
     "@brixtol/bootstrap": "^1.7.5",
-    "@fullhuman/postcss-purgecss": "^6.0.0",
+    "@fullhuman/postcss-purgecss": "^7.0.2",
     "@sissel/stylelint-config": "^1.2.4",
-    "autoprefixer": "^10.4.20",
-    "concurrently": "^9.0.1",
-    "cssnano": "^7.0.6",
-    "e11ty": "^0.1.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "cssnano": "^7.0.7",
+    "e11ty": "^0.1.4",
     "markdown-it-container": "^4.0.0",
-    "netlify-cli": "^17.36.2",
-    "papyrus": "^0.6.9",
-    "postcss": "^8.4.47",
-    "postcss-cli": "^11.0.0",
-    "sass": "^1.79.4",
-    "tsup": "^8.3.0"
+    "netlify-cli": "^21.4.2",
+    "papyrus": "^0.7.3",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.1",
+    "sass": "^1.89.0",
+    "tsup": "^8.5.0"
   }
 }

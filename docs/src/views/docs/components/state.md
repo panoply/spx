@@ -1,5 +1,5 @@
 ---
-permalink: '/components/state/index.html'
+permalink: "/components/state/index.html"
 layout: base.liquid
 title: Component States
 anchors:
@@ -12,9 +12,7 @@ anchors:
 
 # State
 
-Component state is stored in the DOM, and bindings are established in mounted components. State references necessitate the definition of an interface model via the static `define.state` object within components, supporting various definition structures.
-
----
+SPX States are data references defined on both the DOM element and component level. State can be used to establish 2-way inferfacing, allowing data communication to and from view elements. SPX persists state in component, which means defintions are preserved between page navigations, skipping state resets whenever a component unmounts from the DOM.
 
 # Type Constructors
 
@@ -31,10 +29,12 @@ export class Example extends spx.Component({
     activeTab: Number,
     disabledTabs: Array
   }
-}) {}
-```
+}) {
 
----
+  /* Component Methods */
+
+}
+```
 
 # Default State
 
@@ -51,59 +51,9 @@ export class Example extends spx.Component({
     activeTab: 2,
     disabledTabs: [4,5] // Tab indexes 4 and 5 will be disabled
   }
-}) {}
-```
+}) {
 
----
-
-# Persisted State
-
-In addition to the above approaches, you may require persisted state values. Persisted states instruct SPX to preserve the state values between page navigations, thereby skipping state resets whenever a component disconnects.
-
-<!-- prettier-ignore -->
-```ts
-import spx from 'spx';
-
-export class Example extends spx.Component {
-
-  static define = {
-    state: {
-      startTab: Number,
-      activeColor: String,
-      activeTab: {
-        typeof: Number,
-        persist: true // We will persist the active tab value
-      },
-      disabledTabs: {
-        typeof: Array,
-        default: [4,5] // Tab indexes 4 and 5 will be disabled
-      }
-    }
-  };
-
-}
-```
-
----
-
-# Shared State
-
-Shared state instructs SPX to maintain state across all instances of a component. Changes applied to shared state are incremental, and it can be controlled from multiple points within your web application.
-
-<!-- prettier-ignore -->
-```ts
-import spx from 'spx';
-
-export class Example extends spx.Component {
-
-  static define = {
-    state: {
-      counter: {
-        typeof: Number,
-        shared: true // This state value is maintained across all instances
-      }
-    }
-  };
+  /* Component Methods */
 
 }
 ```

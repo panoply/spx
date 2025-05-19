@@ -2,61 +2,36 @@ import spx from 'spx';
 
 export class ScrollSpy extends spx.Component({
   name: 'scrollspy',
-  sugar: true,
   nodes: <const>[
     'href',
     'anchor'
   ],
   state: {
-    threshold: 0,
-    rootMargin: '0px'
+    class: String,
+    anchors: Array<string>
   }
 }) {
 
-  /**
-   * Stimulus: Initialize
-   */
-  connect () {
-
-    window.onscroll = this.onScroll;
-    this.anchors = [];
-    this.options = {
-      rootMargin: this.state.rootMargin,
-      threshold: this.state.threshold
-    };
-
-  }
-
   onmount () {
 
-    if (this.hasHref) {
+    if (!this.hrefExists) return;
 
-      this.href.addClass('fc-blue');
-      this.href(a => {
-        this.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
-      });
-    }
+    window.onscroll = this.onScroll.bind(this);
+    this.hrefNode.classList.add(this.state.class);
+    this.state.anchors.length === 0 && this.hrefNodes.forEach(a => {
+      this.state.anchors.push(a.href.slice(a.href.lastIndexOf('#') + 1));
+    });
 
-    if (this.hasAnchor) {
-      this.onScroll();
-    }
-  }
-
-  unmount (): void {
-
-    this.anchors = [];
+    this.onScroll();
 
   }
 
-  onScroll = () => {
-
-    this.anchor((node, i) => {
-      if (this.anchors.includes(node.id)) {
-        const next = node.getBoundingClientRect().top;
-        if (next < window.screenY && this.href(i)) {
-          this.href(href => href.removeClass('fc-blue'));
-          this.href(i).addClass('fc-blue');
-        }
+  onScroll () {
+    this.anchorNodes.forEach((node, i) => {
+      if (!this.state.anchors.includes(node.id)) return;
+      if (node.getBoundingClientRect().top < window.screenY && this.hrefNodes[i]) {
+        this.hrefNodes.forEach(href => href.classList.remove(this.state.class));
+        this.hrefNodes[i].classList.add(this.state.class);
       }
     });
   };
@@ -64,9 +39,5 @@ export class ScrollSpy extends spx.Component({
   /* -------------------------------------------- */
   /* TYPE VALUES                                  */
   /* -------------------------------------------- */
-
-  anchors: string[];
-  observer: IntersectionObserver;
-  options: IntersectionObserverInit;
 
 }

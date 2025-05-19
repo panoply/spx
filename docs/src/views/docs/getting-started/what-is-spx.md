@@ -1,7 +1,7 @@
 ---
-permalink: '/what-is-spx/index.html'
+permalink: "/what-is-spx/index.html"
 layout: base.liquid
-title: 'What is SPX?'
+title: "What is SPX?"
 anchors:
   - What is SPX?
   - Why use SPX?

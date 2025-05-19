@@ -1,14 +1,14 @@
 ---
-title: 'spx-intersect'
+title: "spx-intersect"
 layout: base.liquid
-group: 'directive'
-permalink: '/directives/spx-intersect/index.html'
+group: "directive"
+permalink: "/directives/spx-intersect/index.html"
 prev:
-  label: 'Installation'
-  uri: '/usage/installation'
+  label: "Installation"
+  uri: "/usage/installation"
 next:
-  label: 'Options'
-  uri: '/usage/options/'
+  label: "Options"
+  uri: "/usage/options/"
 ---
 
 # spx-intersect
@@ -21,7 +21,7 @@ Annotating link elements with `spx-intersect` or `spx-intersect="true"` signals 
 
 ::: note
 When using element annotation to target contained `<a>` descendant, you can exclude certain links from intersection prefetching using the `spx-intersect="false"` attribute.
-:::
+::
 
 # Triggers
 
@@ -31,7 +31,7 @@ Using intersection triggers are helpful in cases where you require scroll positi
 
 ::: note
 You need to provide the value defined attribute to perform intersection triggers. For example, if you provide an append trigger via `spx-intersect="append"` then you will need to also pass the `spx-append=""` attribute.
-:::
+::
 
 # Example
 

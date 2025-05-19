@@ -1,5 +1,5 @@
 ---
-permalink: '/usage/lifecycle-events/index.html'
+permalink: "/usage/lifecycle-events/index.html"
 layout: base.liquid
 title: Lifecycle Events
 ---
@@ -16,12 +16,12 @@ Lifecycle events are dispatched at various points during visit operations, provi
 
 The SPX lifecycle events will be triggered in the following order of execution:
 
-:::: grid row
-::: grid col-1
+:: row
+:: col-1
 
-:::
+::
 
-::::
+::
 
 | Order | Event Name | Parameters |
 | ----- | ---------- | ---------- |

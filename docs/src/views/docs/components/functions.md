@@ -12,14 +12,17 @@ import spx from 'spx';
 
 spx.component({
   name: '',
-  nodes: [],
   state: {},
+  nodes: ['foo'],
 })($ => {
 
-  $.dom    // Component DOM Nodes
-  $.state  // Component State
-  $.view   // Component HTMLElement
-  $.root   // Document <html> element
+  $.fooNode    // Component DOM Nodes
+  $.fooNodes   // Component DOM Nodes
+  $.fooExists  // Component DOM Nodes
+
+  $.state      // Component State
+  $.view       // Component HTMLElement
+  $.root       // Document <html> element
 
   return {
     connect: () => {},

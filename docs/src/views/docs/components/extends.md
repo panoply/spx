@@ -1,5 +1,5 @@
 ---
-permalink: '/components/extends/index.html'
+permalink: "/components/extends/index.html"
 title: Components - Extends
 layout: base.liquid
 anchors:
@@ -19,7 +19,6 @@ SPX components leverage a static `define` reference to provide comprehensive con
 spx.Component({
   name: '',         // Component identifier, use in value of spx-component="" (optional)
   merge: false,     // Component snapshot control, when true DOM will merge with cache
-  sugar: false,     // Component sugars enable node enhancement utilities
   nodes: [],        // Component node elements, use in value of spx-node=""
   state: {},        // Component state interface, where we define types.
 })
@@ -106,10 +105,11 @@ export class Component extends spx.Component({
     this.dom                   // The element using spx-component=""
     this.elementNode           // HTMLElement OR undefined
     this.elementNodes          // HTMLElement[] OR []
+    this.elementExists         // boolean signaling if element exists
     this.buttonNode            // HTMLButtonElement OR undefined
     this.buttonNodes           // HTMLButtonElement[] OR []
-    this.hasElement            // boolean
-    this.hasButton             // boolean
+    this.buttonExists          // boolean signaling if element exists
+
   }
 }
 ```

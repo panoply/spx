@@ -1,8 +1,8 @@
 ---
-title: 'SPX Methods | Render'
+title: "SPX Methods | Render"
 layout: base.liquid
 group: api
-permalink: '/api/render/index.html'
+permalink: "/api/render/index.html"
 ---
 
 # spx.render
@@ -11,7 +11,7 @@ The `spx.render` method can be leveraged to perform targeted rendering insertion
 
 ::: note
 Use this method with mindfulness. Expensive operations was cause bottlenecks.
-:::
+::
 
 # Example
 
