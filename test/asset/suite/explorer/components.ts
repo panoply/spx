@@ -280,12 +280,12 @@ export const Components = () => {
                   onmouseover: () => {
                     console.log(name);
                     spx.$.instances.get(scope.reference.key)
-                      .dom
+                      .view
                       .style
                       .outline = '4px red solid';
                   },
                   onmouseout: () => {
-                    spx.$.instances.get(scope.reference.key).dom.style.outline = '';
+                    spx.$.instances.get(scope.reference.key).view.style.outline = '';
                   }
                 }
                 , m(

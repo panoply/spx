@@ -4,7 +4,7 @@ import spx, { SPX } from 'spx';
 // import papyrus, { Papyrus } from 'papyrus';
 import m from 'mithril';
 import esthetic from 'esthetic';
-import { state } from './explorer/state';
+// import { state } from './explorer/state';
 import { Components } from './explorer/components';
 
 esthetic.rules({
@@ -21,7 +21,6 @@ esthetic.rules({
 });
 
 export class Explorer extends spx.Component({
-  sugar: true,
   nodes: <const>[
     'content',
     'components',
@@ -42,6 +41,7 @@ export class Explorer extends spx.Component({
 
   connect () {
 
+    console.log(this);
     // this.papyrusDoc = papyrus.mount(this.documentNode, { language: 'html' });
     // this.papyrusSnap = papyrus.mount(this.snapshotNode, { language: 'html' });
     this.setComponents();
@@ -68,8 +68,8 @@ export class Explorer extends spx.Component({
 
   setLogger (event: SPX.Event) {
 
-    this.components.addClass('d-none');
-    this.logger.removeClass('d-none');
+    this.componentsNode.classList.add('d-none');
+    this.loggerNode.classList.remove('d-none');
     // this.dom.tab(tab => tab.removeClass('active'));
     event.target.classList.add('active');
 
@@ -77,9 +77,9 @@ export class Explorer extends spx.Component({
 
   session (event: SPX.Event) {
 
-    this.logger.addClass('d-none');
-    this.components.removeClass('d-none');
-    this.tab(tab => tab.classList.remove('active'));
+    this.loggerNode.classList.add('d-none');
+    this.componentsNode.classList.remove('d-none');
+    this.tabNodes.forEach(tab => tab.classList.remove('active'));
     event.target.classList.add('active');
   }
 
@@ -101,7 +101,7 @@ export class Explorer extends spx.Component({
 
   setComponents () {
 
-    m.mount(this.components.toNode(), Components);
+    m.mount(this.componentsNode, Components);
 
   }
 
@@ -115,8 +115,8 @@ export class Explorer extends spx.Component({
     element.ariaLabel = `${++this.state.count}`;
     element.innerHTML = `${message}`;
 
-    this.logger.appendChild(element);
-    this.logger.scrollTop = this.logger.parentElement.scrollHeight;
+    this.loggerNode.appendChild(element);
+    this.loggerNode.scrollTop = this.loggerNode.parentElement.scrollHeight;
 
   }
 

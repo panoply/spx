@@ -13,18 +13,6 @@ export class Logger extends spx.Component({
   }
 }) {
 
-  static define = {
-    nodes: <const>[
-      'event',
-      'page',
-      'input',
-      'components'
-    ],
-    state: {
-      count: Number
-    }
-  };
-
   getScopes () {
 
     const model = {
@@ -42,8 +30,10 @@ export class Logger extends spx.Component({
       model.instances[scope.instanceOf].push(id);
     }
 
-    papyrus.render(JSON.stringify(model.instances, null, 2), this.componentsNode, {
-      language: 'javascript'
+    papyrus.mount(this.componentsNode, {
+      input: JSON.stringify(model.instances, null, 2),
+      language: 'javascript',
+      readOnly: true
     });
 
   }

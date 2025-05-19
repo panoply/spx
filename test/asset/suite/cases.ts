@@ -1,17 +1,14 @@
 import spx, { SPX } from 'spx';
 
 export class Cases extends spx.Component({
-  sugar: true,
   nodes: <const>[ 'link' ]
 }) {
 
   onClick ({ target }: SPX.Event<HTMLAnchorElement>) {
 
-    this.link(link => {
+    this.linkNodes.forEach(link => {
 
-      link.isEqualNode(target)
-        ? link.addClass('fc-pink')
-        : link.removeClass('fc-pink');
+      link.isEqualNode(target) ? link.classList.add('fc-pink') : link.classList.remove('fc-pink');
 
     });
 

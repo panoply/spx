@@ -11,7 +11,6 @@ export class Incremental extends spx.Component({
     onmount: Number,
     unmount: 0
   },
-  sugar: true,
   nodes: <const>[
     'color',
     'count',
@@ -39,14 +38,14 @@ export class Incremental extends spx.Component({
 
   labelValue ({ attrs }: SPX.Event<{ text: string; }>) {
 
-    this.label.innerText = attrs.text;
+    this.labelNode.innerText = attrs.text;
 
   }
 
   labelInput (event: SPX.InputEvent) {
     if (event.target instanceof HTMLInputElement) {
 
-      this.label.innerText = event.target.value;
+      this.labelNode.innerText = event.target.value;
 
     }
   }
@@ -54,7 +53,7 @@ export class Incremental extends spx.Component({
   changeColor (event: SPX.InputEvent<{}, HTMLInputElement>) {
 
     this.state.color = event.target.value;
-    this.color(color => {
+    this.colorNodes.forEach(color => {
       color.style.backgroundColor = this.state.color;
     });
 

@@ -47,13 +47,12 @@ export class Mounted extends spx.Component({
     added: String,
     count: Number
   },
-  sugar: true,
   nodes: <const>[ 'insert' ]
 }) {
 
   onmount () {
 
-    this.insert.innerText = this.state.added;
+    this.insertNode.innerText = this.state.added;
 
   }
 

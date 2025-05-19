@@ -1,7 +1,7 @@
-import spx, { SPX } from 'spx';
+import spx from 'spx';
 
 export class Events extends spx.Component({
-  nodes: <const>[ 'logger' ],
+  nodes: <const>[ 'logger', 'someButton' ],
   state: {
     connect: 1,
     visit: Number,
@@ -62,7 +62,7 @@ export class Events extends spx.Component({
     element.ariaLabel = `${++this.state.count}`;
     element.innerText = message;
 
-    if (this.hasLogger) {
+    if (this.loggerExists) {
       this.loggerNode.appendChild(element);
       this.loggerNode.scrollTop = this.loggerNode.scrollHeight;
     } else {

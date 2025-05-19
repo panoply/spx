@@ -3,7 +3,6 @@
 import spx, { SPX } from 'spx';
 
 export class MorphNodes extends spx.Component({
-  sugar: true,
   nodes: <const>[
     'alpha',
     'omega'
@@ -12,19 +11,17 @@ export class MorphNodes extends spx.Component({
 
   onmount (page: SPX.Page) {
 
-    console.log(this.alpha);
-
     if (page.key.indexOf('/page-c') > -1) {
 
-      this.alpha.style.backgroundColor = 'blue';
+      this.alphaNode.style.backgroundColor = 'blue';
 
     } else if (page.key.indexOf('/page-b') > -1) {
 
-      this.alpha.style.backgroundColor = 'red';
+      this.alphaNode.style.backgroundColor = 'red';
 
     } else if (page.key.indexOf('/page-a') > -1) {
 
-      this.alpha.style.backgroundColor = 'green';
+      this.alphaNode.style.backgroundColor = 'green';
 
     }
 

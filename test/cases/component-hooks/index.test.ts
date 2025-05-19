@@ -9,10 +9,7 @@ export class Async extends spx.Component({
     onmountDelay: Number,
     fetchExample: Boolean,
     fetchedData: Array,
-    firstRun: {
-      typeof: Boolean,
-      default: true
-    }
+    firstRun: true
   },
   nodes: <const>[
     'connect',
@@ -39,7 +36,7 @@ export class Async extends spx.Component({
       this.state.fetchedData = await response.json();
       this.state.connectText = `Fetched in ${time}ms`;
 
-    } else if (!this.state.hasConnectDelay && !this.state.hasOnmountDelay) {
+    } else if (!this.state.hasConnectDelay && !this.state.hasConnectDelay) {
 
       const finish = performance.now();
 

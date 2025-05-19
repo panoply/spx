@@ -22,6 +22,11 @@ import { Cases } from './suite/cases';
 import { Explorer } from './suite/explorer';
 // import { Refs } from './suite/refs';
 
+spx.http('https://jsonplaceholder.typicode.com/todos/1').then(data => {
+
+  console.log(data);
+});
+
 spx({
   fragments: [
     'main'

@@ -33,19 +33,19 @@ export class Literal extends spx.Component({
   get preDom () {
 
     return spx.dom`
-    <div>
-      <h1>
-        This is a pre element and will be preserved
-      </h1>
+      <div>
+        <h1>
+          This is a pre element and will be preserved
+        </h1>
 
 
-      <pre>
+        <pre>
 
-        const xxx = 'newlines preserved'
+          const xxx = 'newlines preserved'
 
-        function whitespace () {           return      'preserved'           }
+          function whitespace () {           return      'preserved'           }
 
-      </pre>
+        </pre>
       </div>
     `;
 
@@ -53,8 +53,8 @@ export class Literal extends spx.Component({
 
   onmount () {
 
-    this.div.appendChild(this.buttonDom);
-    this.pre.appendChild(this.preDom);
+    this.divNode.appendChild(this.buttonDom);
+    this.preNode.appendChild(this.preDom);
 
   }
 
