@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import type { LiteralUnion, Merge, KebabCase, Split, LastArrayElement, IsAny, EmptyObject } from 'type-fest';
+import type { LiteralUnion, Merge, KebabCase, Split, LastArrayElement } from 'type-fest';
 import type { Page } from './page';
 import type { setInstances } from '../src/components/instance';
 import { SPX } from './global';
@@ -96,60 +96,6 @@ export type Types = Record<string,
   | TypeOf<ObjectConstructor>
 >
 
-export type TypeState<T extends TypeConstructors> = {
-  /**
-   * The state type
-   */
-  typeof: T;
-  /**
-   * Default value to use
-   */
-  default: TypeOf<T>;
-} | {
-  /**
-   * The state type
-   */
-  typeof: T;
-  /**
-   * Default value to use
-   */
-  default?: TypeOf<T>;
-  /**
-   * Whether or not to persist this state reference
-   */
-  persist?: boolean;
-}
-
-export type TypePersist<T extends TypeConstructors> = {
-  /**
-   * The state type
-   */
-  typeof: T;
-  /**
-   * Default value to use
-   */
-  default?: TypeOf<T>;
-  /**
-   * Whether or not to persist this state reference
-   */
-  persist: boolean;
-}
-
-export type TypeShared<T extends TypeConstructors> = {
-  /**
-   * The state type
-   */
-  typeof: T;
-  /**
-   * Default value to use
-   */
-  default?: TypeOf<T>;
-  /**
-   * Whether or not the state reference is shared
-   */
-  shared: boolean;
-}
-
 export type TypeEvent<E, T, A> = Merge<E, {
   /**
    * Event Target
@@ -179,6 +125,22 @@ interface DOMEvents {
   FormDataEvent: FormDataEvent;
 }
 
+export type StateName = `${Lowercase<string>}${string}`
+
+export type ComponentState = Record<StateName,
+  | number
+  | string
+  | boolean
+  | any[]
+  | object
+  | TypeConstructors
+  | TypeOf<BooleanConstructor>
+  | TypeOf<StringConstructor>
+  | TypeOf<NumberConstructor>
+  | TypeOf<ArrayConstructor>
+  | TypeOf<ObjectConstructor>
+>
+
 type Selector<T extends SPX.Define> = { [K in T['nodes'][number]]: HTMLElement }
 type HasNode<E extends SPX.Define> = { [K in E['nodes'][number] as K extends string ? K : never]?: boolean; }
 type GetNode<T extends SPX.Define> = T['nodes'][number] extends string ? T['nodes'][number] : string;
@@ -203,11 +165,6 @@ export type State<T extends SPX.Define> = Merge<{
     T['state'][K] extends StringConstructor ? ReturnType<T['state'][K]> :
     T['state'][K] extends ArrayConstructor ? ReturnType<T['state'][K]> :
     T['state'][K] extends ObjectConstructor ? ReturnType<T['state'][K]> :
-    T['state'][K] extends TypeState<BooleanConstructor> ? boolean :
-    T['state'][K] extends TypeState<NumberConstructor> ? number :
-    T['state'][K] extends TypeState<StringConstructor> ? ReturnType<T['state'][K]['typeof']> :
-    T['state'][K] extends TypeState<ArrayConstructor> ? ReturnType<T['state'][K]['typeof']> :
-    T['state'][K] extends TypeState<ObjectConstructor> ? ReturnType<T['state'][K]['typeof']> :
     T['state'][K] extends boolean ? boolean :
     T['state'][K] extends unknown[] ? unknown[] :
     T['state'][K] extends object ? object :
@@ -234,251 +191,7 @@ export type State<T extends SPX.Define> = Merge<{
  */
 declare type DOMSelect<T extends string> = Lowercase<T> extends SPX.TagNames
   ? SPX.TagNodes[Lowercase<T>]
-    & Identity<typeof DOMExtend>
-    & DOMArray<SPX.TagNodes[Lowercase<T>]>
   : HTMLElement
-    & Identity<typeof DOMExtend>
-    & DOMArray<HTMLElement>
-
-/**
- * DOM Select
- *
- * Returns the HTMLElement nodes, `this.dom` utilities and array list iterators.
- */
-declare type DOMTag<T extends string> = Lowercase<T> extends SPX.TagNames
-  ? SPX.TagNodes[Lowercase<T>] & Identity<typeof DOMExtend>
-  : HTMLElement & Identity<typeof DOMExtend>
-
-declare class ToNode {
-
-  /**
-   * #### toNode
-   *
-   * Returns the Element itself.
-   *
-   * > **IMPORTANT**
-   * >
-   * > **Use this method to return the raw HTMLElement**
-   *
-   * @example
-   *
-   * this.dom.node.off('click') // => boolean
-   * this.dom.node.off(1,2,3)   // => boolean
-   */
-  static toNode(): HTMLElement;
-
-}
-/**
- * DOM Extends
- *
- * Exposes sugar DOM Node methods that will extend each node of a component for
- * quick and effective operations.
- */
-declare class DOMExtend {
-
-  /**
-   * #### hasClass
-   *
-   * Check whether or not this node element contains the provided class names.
-   *
-   * @example
-   *
-   * this.dom.node.hasClass('a')       // => boolean (string)
-   * this.dom.node.hasClass('b,c')     // => boolean (separator)
-   * this.dom.node.hasClass('d','e')   // => boolean (...spread)
-   */
-  static hasClass(...className: string[]): boolean;
-  /**
-   * #### setClass
-   *
-   * Add a class or multiple classes to the node element. The classList
-   * will be checked before addition and skipped if class exists.
-   *
-   * @example
-   *
-   * this.dom.node.addClass('a')     // => void
-   * this.dom.node.addClass('b,c')   // => void
-   * this.dom.node.addClass('d','e') // => void
-   */
-  static addClass(...className: string[]): void;
-  /**
-   * #### removeClass
-   *
-   * Remove a class or multiple classes contained on this node element.
-   * The classList will be checked before removal, only classes which exist
-   * will be removed.
-   *
-   * @example
-   *
-   * this.dom.node.removeClass('a')     // => void
-   * this.dom.node.removeClass('b,c')   // => void
-   * this.dom.node.removeClass('d','e') // => void
-   */
-  static removeClass(...className: string[]): boolean;
-
-  /**
-   * #### toggleClass
-   *
-   * Toggle a class or multiple classes contained on this node. The classList
-   * will be checked for the existence of the class value, adding the class
-   * value/s if they do not exists, and removing if the do.
-   *
-   * @example
-   *
-   * this.dom.node.toggleClass('a')     // => void
-   * this.dom.node.toggleClass('b,c')   // => void
-   * this.dom.node.toggleClass('d','e') // => void
-   */
-  static toggleClass(fromClass: string | string[], className?: string | string[]): boolean;
-
-  /**
-   * #### hasAttr
-   *
-   * Check whether or not this node element contains the provided attributes.
-   *
-   * @example
-   *
-   * this.dom.node.hasAttr('value')     // => boolean
-   * this.dom.node.hasAttr('id,name')   // => boolean
-   * this.dom.node.hasAttr('type','id') // => boolean
-   */
-  static hasAttr(...attrName: string[]): boolean;
-
-  /**
-   * #### removeAttr
-   *
-   * Remove an attribute or multiple attributes contained on this node element.
-   * Attributes will be checked before removal, only those which exist
-   * will be removed.
-   *
-   * @example
-   *
-   * this.dom.node.removeClass('a')     // => void
-   * this.dom.node.removeClass('b,c')   // => void
-   * this.dom.node.removeClass('d','e') // => void
-   */
-  static removeAttr(...attrName: string[]): boolean;
-
-  /**
-   * #### setAttr
-   *
-   * Creates or resets an attribute or multiple attributes contained on this node.
-   *
-   * @example
-   *
-   * this.dom.node.setAttr({ name: 'value' }) // => void
-   * this.dom.node.setAttr('name', 'value')   // => void
-   */
-  static setAttr(attribute: Record<string, any>): void;
-
-  /**
-   * #### getAttr
-   *
-   * Returns an attribute value or multiple attribute values contained on this node.
-   *
-   * @example
-   *
-   * this.dom.node.getAttr('data-value') // => string
-   * this.dom.node.getAttr('id','value') // => { id: string, type: string }
-   */
-  static getAttr<A extends readonly string[]>(...attribute: A): Record<A[number], string>;
-
-  /**
-   * #### on
-   *
-   * Attach an event or multiple events to this dom node. This method is curried and will
-   * automatically assign context to callbacks. The event returns an object with integer value
-   * that can be used to remove event listeners.
-   *
-   * @example
-   *
-   * this.dom.node.on('keypress')(e => {})       // => { keypress: number }
-   * this.dom.node.on('click','focus')(e => {})  // => { click: number, focus: number }
-   */
-  static on(eventName: string):((this: typeof Class, event: Event) => void);
-  /**
-   * #### off
-   *
-   * Removes an attached event listener that was created using `on`.
-   *
-   * @example
-   *
-   * this.dom.node.off('click') // => boolean
-   * this.dom.node.off(1,2,3)   // => boolean
-   */
-  static off(eventName: string): boolean;
-
-  /**
-   * #### watch
-   *
-   * Observes the provided node for mutations via the `MutationObserver` and will
-   * callback to the curried function of the method. This method will automatically
-   * bind component context to scope.
-   *
-   * @example
-   *
-   * this.dom.node.watch({ subTree: true })((mutation) => {}) // => boolean
-   */
-  static watch(options: MutationObserverInit): (this: typeof Class, event: Event) => void;
-
-}
-
-/**
- * DOM Array
- *
- * Callback functions for iterating and cycling through component nodes.
- * Available on the `this.dom` scope only.
- */
-interface DOMArray<T> {
-  /**
-   * List Nodes
-   *
-   * Returns an array list of all the nodes using the identifier.
-   */
-  (): T[];
-  /**
-   * ### Get Node
-   *
-   * Pass an index number to return the DOM element.
-   */
-  (index: number): T & Identity<typeof DOMExtend>;
-  /**
-   * ### Each
-   *
-   * Iterates over all DOM nodes like `forEach` with an `undefined` or `void`
-   * return value. If values have been returned, this will behave like a map.
-   */
-  <U extends void | undefined>(map: (node: T & Identity<typeof DOMExtend>, index: number) => U): U;
-  /**
-   * ### Map
-   *
-   * Iterates over all DOM nodes and generates a new array based on the return value.
-   * This is the same callback as `each`, only difference is return value types.
-   */
-  <U>(map: (node: T & Identity<typeof DOMExtend>, index: number) => U): U[];
-  /**
-   * ### Reduce
-   *
-   * Iterate as a reducer, return a new value.
-   */
-  <U extends unknown[] | object | number | string>(
-    initial: U,
-    reduce: (acc: U, node: T & Identity<typeof DOMExtend>, index: number) => U): U;
-  /**
-   * ### Filter
-   *
-   * Iterate as a filter, return a boolean `false` or `true` for each node
-   * in the callback and the resulting value will be a filtered list.
-   *
-   * > **NOTE**
-   * >
-   * > **Pass a `boolean` value as the first parameter to signal filter iteration.**
-   * > **When the first parameter is not a `boolean` type, the reducer will be used.**
-   * > **You must return a `boolean` value for every item in the array.**
-   */
- <U extends boolean>(filter: U, each: (node: T & Identity<typeof DOMExtend>, index: number) => U): T[];
-
-}
 
 /**
  * DOM Node
@@ -507,16 +220,10 @@ type DOMElement<T extends string> = DOMSelect<LastArrayElement<Split<KebabCase<T
  * Provides custom component state interfaces be provided and matches against types.
  */
 type InterfaceState<T extends SPX.Define, U extends SPX.Define> = {
-  [K in keyof T['state']]: Match<T['state'][K], U['state'][K]> extends true ? State<T['state']>[K] : T['state'][K]
-}
 
-/**
- * Interface DOM
- *
- * Provides custom component DOM Node map interfaces be provided and matches against types.
- */
-type InterfaceDOM<T extends SPX.Define['nodes']> = {
-  [K in T[number]]?: HTMLElement
+  [K in keyof T['state']]: Match<T['state'][K], U['state'][K]> extends true
+    ? State<T['state']>[K]
+    : T['state'][K]
 }
 
 /**
@@ -542,28 +249,7 @@ export type DOM<T extends readonly string[] = readonly string[]> = (
    *
    * Returns a boolean signaling whether or not the element exists in the DOM.
    */
-  & { readonly [K in T[number] as `has${Capitalize<K>}`]: boolean; }
-
-)
-
-/**
- * DOM
- *
- * The `this.dom` type reference
- */
-export type DOMSugar<T extends readonly string[] = readonly string[]> = (
-  /**
-   * Element
-   *
-   * Returns the DOM Element.
-   */
- & { readonly [K in T[number] as `${K}`]: DOMElement<K> & Identity<typeof ToNode> }
-  /**
-   * Exists
-   *
-   * Returns a boolean signaling whether or not the element exists in the DOM.
-   */
- & { readonly [K in T[number] as `has${Capitalize<K>}`]: boolean; }
+  & { readonly [K in T[number] as `${K}Exists`]: boolean; }
 
 )
 
@@ -579,7 +265,7 @@ export declare class Class<T extends HTMLElement = HTMLElement> {
    *
    * The instance UUID reference key. This is non-writable and is used internally.
    */
-  public readonly ref: string;
+  private readonly ref: string;
 
   /**
    * **SPX Scope**
@@ -591,14 +277,14 @@ export declare class Class<T extends HTMLElement = HTMLElement> {
   /* PUBLIC ------------------------------------- */
 
   /**
-   * **SPX Document Element**
+   * **Document Element**
    *
    * Holds a reference to the DOM Document element `<html>` node.
    */
   public readonly root: HTMLElement;
 
   /**
-   * **SPX Component Element**
+   * **Component Element**
    *
    * Holds a reference to the DOM Document element `<div spx-component="">` node.
    */
@@ -612,7 +298,7 @@ export declare class Class<T extends HTMLElement = HTMLElement> {
    *
    * [SPX Documentation](https://spx.js.org/components/hooks/)
    */
-  public connect<U extends Page>(page?: U): any;
+  public connect<P extends Page>(page?: P): void;
 
   /**
   * **SPX `onmount`**
@@ -621,7 +307,7 @@ export declare class Class<T extends HTMLElement = HTMLElement> {
   *
   * [SPX Documentation](https://spx.js.org/components/hooks/)
   */
-  public onmount<U extends Page>(page?: U): any;
+  public onmount<P extends Page>(page?: P): void;
 
   /**
   * **SPX `unmount`**
@@ -630,7 +316,7 @@ export declare class Class<T extends HTMLElement = HTMLElement> {
   *
   * [SPX Documentation](https://spx.js.org/components/hooks/)
   */
-  public unmount<U extends Page>(page?: U): any;
+  public unmount<P extends Page>(page?: P): void;
 
 }
 
@@ -647,34 +333,14 @@ type StateContext<T extends SPX.Define> = {
 }
 
 type ComponentScope<T extends SPX.Define> = {
-  new (context: Class): T['nodes'] extends ReadonlyArray<string> ? (
-    & Class
-    & StateContext<T>
-    & DOM<T['nodes']>
-  ) : (
-    & Class
-    & StateContext<T>
-  )
-}
-
-type ComponentSugar<T extends SPX.Define> = {
-
-    new (context: Class): T['nodes'] extends ReadonlyArray<string> ? (
-    & Class
-    & StateContext<T>
-    & DOMSugar<T['nodes']>
-  ) : (
-    & Class
-    & StateContext<T>
-  )
+  new (context: Class): T['nodes'] extends ReadonlyArray<string>
+  ? Class & StateContext<T> & DOM<T['nodes']>
+  : Class & StateContext<T>
 }
 
 export interface Component {
-
   <T extends SPX.Define = SPX.Define> (define?: T & {
     /**
-     * ### Component Name
-     *
      * Component identifier for DOM association. If left undefined, SPX will use the name
      * provided upon component registration converted to `kebab-case`. Providing a `name`
      * value results in a strict match, meaning it will run precedence over registry names,
@@ -710,8 +376,6 @@ export interface Component {
      */
     name?: string;
     /**
-     * ### Component State
-     *
      * Define the component state references to be accessible via the `this.state` object.
      * State directives that are provided via attribute annotation must be declared here and
      * when undefined SPX will throw. This option accepts multiple structures, including
@@ -724,8 +388,8 @@ export interface Component {
      * class Example extends spx.Component({ state: { animal: 'dog' } }) {
      *
      *  onmount() {
-     *    this.state.animal     // string (defaults to 'dog')
-     *    this.state.hasAnimal  // boolean
+     *    this.state.animal        // string (defaults to 'dog')
+     *    this.state.animalExists  // boolean
      *  }
      * }
      *
@@ -743,78 +407,42 @@ export interface Component {
      * ```
      */
     state?: T['state'];
-   /**
-     * ### Component Nodes
+    /**
+     * Node identifier references used to associate elements in the DOM with this component.
+     * Component nodes will be matched via `spx-node` directive values.
      *
-     * Define the Node identifier references used to associate elements in the DOM with
-     * this component. Component nodes will be matched via `spx-node` directive values.
+     * > **💡 TIP**
+     * >
+     * > Node identifiers suffixed with element names will associate related types.
+     * > An identifier like `fooButton` will resolve as `HTMLButtonElement` in TypeScript.
+     *
      *
      * [SPX Documentation](https://spx.js.org/components/nodes/)
+     *
+     * ---
      *
      * ```ts
      *
      * class Example extends spx.Component({ nodes: <const>['foo'] }) {
      *
      *  onmount() {
-     *    this.fooNode    // HTMLElement
-     *    this.fooNodes   // HTMLElement[]
-     *    this.hasFoo     // boolean
+     *
+     *    this.fooExists // boolean
+     *    this.fooNode   // HTMLElement
+     *    this.fooNodes  // HTMLElement[]
+     *
      *  }
      * }
      *
      *
      * ```
-     *
-     * #### Directive Association:
-     *
-     * ```html
-     *
-     * <div spx-node="example.foo"></div>
-     *
-     * ```
      */
-    nodes?: readonly string[];
-    /**
-     * ### Node Sugars
-     *
-     * SPX provides sugar extendabilities for interfacing with associated nodes.
-     * When enabled, nodes are accessible using a different structure and expose
-     * additional utilities for executing common tasks.
-     *
-     * The main differences with sugar enabled is node access. You cannot obtain
-     * an element/s using `this.nameNode` or `this.nameNodes` but instead access
-     * is made using `this.name` and `this.name()`.
-     *
-     * [SPX Documentation](https://spx.js.org/components/sugar/)
-     *
-     * ```ts
-     *
-     * class Example extends spx.Component({ sugar: true, nodes: ['foo'] }) {
-     *
-     *  onmount() {
-     *    this.foo    // Primitive
-     *    this.foo()  // HTMLElement[]
-     *    this.hasFoo // boolean
-     *  }
-     * }
-     *
-     *
-     * ```
-     *
-     * #### Directive Association:
-     *
-     * ```html
-     *
-     * <div spx-node="example.foo"></div>
-     *
-     * ```
-     */
-    sugar?: boolean;
+    nodes?: ReadonlyArray<string>;
 
-  }): T['sugar'] extends true ? ComponentSugar<T> : ComponentScope<T>;
+  }): ComponentScope<T>;
 }
 
-export interface ComponentEventOptions {
+export type ComponentEventOptions = {
   /**
    * #### Abort Signal
    *
@@ -854,7 +482,7 @@ export interface ComponentEventOptions {
   capture?: boolean;
 }
 
-export interface ComponentEvent {
+export type ComponentEvent = {
   /**
    * ### dom
    *
@@ -998,7 +626,7 @@ export interface ComponentEvent {
   options: ComponentEventOptions;
 }
 
-export interface ComponentBinds {
+export type ComponentBinds = {
   /**
    * ### dom
    *
@@ -1078,7 +706,7 @@ export interface ComponentBinds {
   isChild: boolean;
 }
 
-export interface ComponentNodes {
+export type ComponentNodes = {
   /**
    * ### key
    *
@@ -1086,46 +714,15 @@ export interface ComponentNodes {
    * which this model is contained within.
    *
    * @example
-   * { 'n.f8i4b2': { key: 'n.f8i4b2' } } // Identical to the key property
+   * { 'c.f8i4b2': { key: 'c.f8i4b2' } } // Identical to the key property
    */
-  key: LiteralUnion<`n.${string}`, string>;
+  key: LiteralUnion<`c.${string}`, string>;
   /**
    * ### dom
    *
-   * Holds getter references to query selected elements in the DOM. This value is
-   * created during {@link setInstances} These will be proxied
-   * within component classes.
+   * cache of the nodes
    */
-  dom: {
-    /**
-     * ### Node Element
-     *
-     * Holds reference to a single DOM Elements marked with the node name identifier.
-     * Accessible within class components via `this.dom.<name>` on the `this.dom` object.
-     *
-     * @example
-     *
-     * // Assuming the node name is "foo"
-     *
-     * this.dom.foo // Returns HTMLElement
-     * this.dom.foo.childNodes // Returns childNodes of HTMLElement
-     */
-    get node(): HTMLElement;
-    /**
-     * ### Node Elements
-     *
-     * Holds reference to all DOM Elements marked with the node name identifier.
-     * Accessible within class components by calling the name identifier as a
-     * function (`this.dom.<name>()`) on the `this.dom` object.
-     *
-     * @example
-     *
-     * // Assuming the node name is "foo"
-     *
-     * this.dom.foo() // Returns HTMLElement[]
-     */
-    get nodes(): HTMLElement[];
-  }
+  dom: { node: HTMLElement; nodes: HTMLElement[] }
   /**
    * ### live
    *
@@ -1189,7 +786,7 @@ export interface ComponentRegister extends Class {
  * This interface describes a component in the DOM. SPX builds a model during tree
  * traversal and uses this reference to extend user defined components.
  */
-export interface Scope {
+export type Scope = {
   /**
    * #### DOM
    *
@@ -1285,25 +882,31 @@ export interface Scope {
      *
      * @default false
      */
-    connect: HookStatus
+    connect: HookStatus;
     /**
      * Whether or not `onmount()` exists
      *
      * @default false
      */
-    onmount: HookStatus
+    onmount: HookStatus;
+    /**
+     * Whether or not `onupdate()` exists
+     *
+     * @default false
+     */
+    onupdate?: HookStatus
     /**
      * Whether or not `unmount()` exists
      *
      * @default false
      */
-    unmount: HookStatus
+    unmount: HookStatus;
     /**
      * Whether or not `onmedia()` exists
      *
      * @default false
      */
-    onmedia: HookStatus
+    onmedia: HookStatus;
   };
   /**
    * ### status
@@ -1334,7 +937,7 @@ export interface Scope {
   /**
    * ### state
    *
-   * The DOM State references, in alignment with the `define.state` static definitions.
+   * The DOM State references, in alignment with the `state` definitions.
    * This value is persisted via Proxy once the component instance is established.
    */
   state: Record<string, string | number | object | any[] | boolean>;
@@ -1411,7 +1014,7 @@ export enum ElementType {
  *
  * This interface represents the `$.component` value.
  */
-export interface ComponentSession {
+export type ComponentSession = {
   /**
    * ### Register
    *

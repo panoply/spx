@@ -2,7 +2,7 @@ import type { Merge } from 'type-fest';
 import type { Config, Page, Observers, Memory, Selectors, HistoryState, EventNames } from './global';
 import type { ComponentSession } from './components';
 
-export interface Session extends ComponentSession {
+export type Session = ComponentSession & {
   /**
    * Getter value which reflects `document.readyState` and matches against `complete`
    */

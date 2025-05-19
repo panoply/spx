@@ -9,8 +9,8 @@ import type { Options } from './options';
 import type { EventNames, LifecycleEvent } from './events';
 import type { ComponentSession, Class, Component, Scope } from './components';
 import type { Session } from './session';
-import type { Attrs, DOMEvents, Identity, Merge, TypeConstructors, TypeEvent, TypeOf, TypeState } from 'types';
-import type { Context, CTX } from './context';
+import type { Attrs, ComponentState, DOMEvents, Identity, TypeEvent } from 'types';
+import { HTTPConfig } from './http';
 export * from './components';
 export * from './session';
 export * from './events';
@@ -90,7 +90,7 @@ export declare namespace SPX {
     static readonly $: Session;
 
     /**
-    * ### Component
+    * ### Live
     *
     * This method retrieves, iterates and interface with component instances. You have the option to
     * specify and filter components by passing name/s or an alias identifier. The method is flexible,
@@ -371,6 +371,18 @@ export declare namespace SPX {
     static off<T extends EventNames>(event: T, callback: LifecycleEvent<T, any> | number): number;
 
     /**
+     * #### HTTP
+     *
+     * HTTP Request client for fetching a resource from the network using **XHR**
+     * instead of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch).
+     *
+     * SPX uses the [XMLHttpRequest](https://developer.mozilla.org/docs/Web/API/XMLHttpRequest) API
+     * under the hood and you can optionally have SPX handle all data and resource requests within
+     * your web application.
+     */
+    static http <T>(url?: string, options?: HTTPConfig): Promise<T>
+
+    /**
     * #### State
     *
     * View or modify page state record.
@@ -531,34 +543,6 @@ export declare namespace SPX {
      * items[2]  // <li>baz</li>
      */
     static dom<T extends HTMLElement>(markup: TemplateStringsArray, ...values: string[]): T
-
-    /**
-     * #### Http
-     *
-     * HTTP Request client for fetching a resource from the network using **XHR**
-     * instead of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch).
-     *
-     * SPX uses the [XMLHttpRequest](https://developer.mozilla.org/docs/Web/API/XMLHttpRequest) API
-     * under the hood and you can optionally have SPX handle all data and resource requests within
-     * your web application.
-     *
-     * ---
-     *
-     * #### Example
-     *
-     * ```js
-     * import spx from 'spx';
-     *
-     * spx.http('/some/path').then(dom => {
-     *
-     *   dom.querySelector('.el').classList.add('active')
-     *
-     *   return dom // Return DOM to update snapshot
-     *
-     * })
-     * ```
-     */
-    static http(url: string): Promise<Document>;
 
     /**
      * #### Fetch
@@ -745,7 +729,7 @@ export declare namespace SPX {
    *
    * The static `define` property of component classes
    */
-  export interface Define {
+  export type Define = {
     /**
      * Identifier Name
      */
@@ -765,42 +749,17 @@ export declare namespace SPX {
      */
     merge?: boolean;
     /**
-     * ### Sugar
-     *
-     * Whether or not nodes should use sugar methods
-     */
-    sugar?: boolean;
-    /**
      * #### State
      *
      * Attribute state references used to connect DOM states with component `this.state`.
      * Accepts Constructor types or `typeof` and `default` object presets.
      */
-    state?: {
-      [key: `${Lowercase<string>}${string}`]: (
-        | number
-        | string
-        | boolean
-        | any[]
-        | object
-        | TypeConstructors
-        | TypeOf<BooleanConstructor>
-        | TypeOf<StringConstructor>
-        | TypeOf<NumberConstructor>
-        | TypeOf<ArrayConstructor>
-        | TypeOf<ObjectConstructor>
-        | TypeState<BooleanConstructor>
-        | TypeState<StringConstructor>
-        | TypeState<NumberConstructor>
-        | TypeState<ArrayConstructor>
-        | TypeState<ObjectConstructor>
-      )
-    };
+    state?: ComponentState;
     /**
      * #### Nodes
      *
      * DOM Node identifier references used to connect elements in the DOM with component
-     * `this.dom.<node>` values.
+     * `this<node>` values.
      */
     nodes?: ReadonlyArray<string>;
   }

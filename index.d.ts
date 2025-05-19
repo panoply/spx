@@ -22,15 +22,11 @@ declare global {
    *
    * @example
    *
-   * class Example extends spx.Component {
-   *
-   *   static define = {
-   *     state: {
-   *       string: String<'foo' | 'bar'>
-   *     }
+   * class Example extends spx.Component({
+   *   state: {
+   *     string: String<'foo' | 'bar'> // Allows generics to be applied
    *   }
-   *
-   * }
+   * }) {}
    */
   export interface StringConstructor {
     new <T extends string>(value?: T): LiteralUnion<T, string>;
@@ -48,15 +44,11 @@ declare global {
    *
    * @example
    *
-   * class Example extends spx.Component {
-   *
-   *   static define = {
-   *     state: {
-   *       object: Object<{ foo: string; bar: number; }>
-   *     }
+   * class Example extends spx.Component({
+   *   state: {
+   *     object: Object<{ foo: string; }> // Allows generics to be applied
    *   }
-   *
-   * }
+   * }) {}
    */
   export interface ObjectConstructor {
     new <T extends object>(value?: T): T
@@ -66,14 +58,18 @@ declare global {
 
   export interface Element {
     /**
-     * Morph Related (Virtual DOM)
+     * ###### !! SPX INTERNAL USAGE ONLY !!
+     *
+     * DOM Morphing related
      */
     actualize?:(element: Node) => Element
   }
 
   export interface HTMLElement {
     /**
-     * SPX Specific Element
+     * ###### !! SPX INTERNAL USAGE ONLY !!
+     *
+     * Component Node related
      */
     spx?: Set<string>
   }
