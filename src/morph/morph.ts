@@ -33,7 +33,7 @@ import * as observe from '../components/observe';
 
 */
 
-export interface MorphContext {
+export type MorphContext = {
   /**
    * Lookup Nodes
    */
