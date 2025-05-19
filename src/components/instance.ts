@@ -4,12 +4,11 @@ import { Colors, Hooks, HookStatus, VisitType } from '../shared/enums';
 import { addEvent } from './listeners';
 import { Component } from './class';
 import { LifecycleHooks, mount } from '../observe/components';
-import { element, elements, forEach, onNextTick, upcase } from '../shared/utils';
+import { element, elements, forEach, onNextTick } from '../shared/utils';
 import * as q from '../app/queries';
 import * as log from '../shared/logs';
 import * as snap from '../app/snapshot';
 import { b, o } from '../shared/native';
-import { sugarProxy } from './proxies';
 
 const setLifecyles = (scope: Scope, instance: Class) => {
 
@@ -45,26 +44,19 @@ const setTriggers = (hooks: LifecycleHooks, isMorph: boolean, isMount: boolean) 
     let promise: number = -1;
 
     if (scope.hooks.connect === HookStatus.DEFINED) {
-
       promise = hooks.push([ scope.key, 'connect' ]) - 1;
-
       scope.status = Hooks.CONNNECT;
-
     }
 
     if (scope.hooks.onmount === HookStatus.DEFINED) {
-
       promise = (promise > -1
         ? hooks[promise].push('onmount')
         : hooks.push([ scope.key, 'onmount' ])) - 1;
-
     }
 
     // if no lifecycle hooks
     if (promise < 0) {
-
       scope.status = Hooks.MOUNTED;
-
     }
   }
 
@@ -84,6 +76,7 @@ const setEvents = (scope: Scope, $instance: Class, isMorph: boolean) => {
     // Update the scope when key if non-existent.
     // This will generally mean we apply incremental association
     if (!(key in $instance.scope.events)) {
+      // @ts-expect-error
       $.maps[key] = $instance.ref;
       $instance.scope.events[key] = event;
     }
@@ -104,57 +97,50 @@ const setNodes = (nodes: Record<string, ComponentNodes>, $instance: Class) => {
   for (const key in nodes) {
 
     const node = nodes[key];
-    const hasNodeKey = `has${upcase(key)}`;
+    const nodeExistsKey = `${key}Exists`;
 
     // Update the scope when key is non-existent.
-    // This will generally mean we apply incremental association
+    // This will typically mean we are applying incremental association
     if (!(key in $instance.scope.nodes)) {
+      // @ts-expect-error
       $.maps[key] = $instance.ref;
       $instance.scope.nodes[key] = node;
     }
 
-    if (hasNodeKey in $instance) {
-      key in $instance.scope.nodes && ++$instance.scope.nodes[key].live;
-      return;
-    }
-
-    const hasNode = () => node.live > 0;
-    const getNode = () => element(node.selector, node.isChild ? $instance.view : b());
-    const getNodes = () => elements(node.selector, node.isChild ? $instance.view : b());
-
-    Object.defineProperty($instance, hasNodeKey, { get: hasNode });
-
-    if ($instance.scope.define.sugar) {
-
-      Object.defineProperties(node.dom, {
-        node: { get: getNode },
-        nodes: { get: getNodes }
-      });
-
-      $instance[key] = sugarProxy(node);
-
+    if (nodeExistsKey in $instance) {
+      if (key in $instance.scope.nodes) {
+        ++$instance.scope.nodes[key].live;
+      }
     } else {
-
       Object.defineProperties($instance, {
-        [`${key}Node`]: { get: getNode },
-        [`${key}Nodes`]: { get: getNodes }
+        [nodeExistsKey]: {
+          get () {
+            return this.scope.nodes[key].live > 0;
+          }
+        },
+        [`${key}Node`]: {
+          get (this: Class) {
+            const { selector, isChild, dom } = this.scope.nodes[key];
+            if (!dom.node) dom.node = element(selector, isChild ? this.view : b());
+            return dom.node;
+          }
+        },
+        [`${key}Nodes`]: {
+          get (this: Class) {
+            const { selector, isChild, dom } = this.scope.nodes[key];
+            if (!dom.nodes) {
+              dom.nodes = elements(selector, isChild ? this.view : b());
+              if (dom.nodes && !dom.node) dom.node = dom.nodes[0];
+            }
+            return dom.nodes;
+          }
+        }
       });
-
     }
+
   }
 
 };
-
-// const mergeScope = (scope: Scope, instance: Class) => {
-
-//   for (const prop of [ 'nodes', 'events', 'binds' ]) {
-//     prop in scope && Object.assign(
-//       instance.scope[prop],
-//       scope[prop]
-//     );
-//   }
-
-// };
 
 const defineInstances = (promises: LifecycleHooks, mounted: q.Mounted, isMorph: boolean) => {
 
