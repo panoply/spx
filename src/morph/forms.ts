@@ -95,7 +95,7 @@ export const select = (curElement: HTMLElement, newElement: HTMLElement) => {
 
     let i: number = 0;
     let selectedIndex: number = -1;
-    let curChild = curElement.firstElementChild;
+    let curChild = curElement.firstChild;
     let optgroup: HTMLOptGroupElement;
     let nodeName: string;
 
@@ -106,13 +106,16 @@ export const select = (curElement: HTMLElement, newElement: HTMLElement) => {
       if (nodeName === 'OPTGROUP') {
 
         optgroup = curChild as HTMLOptGroupElement;
-        curChild = optgroup.firstElementChild;
-
+        curChild = optgroup.firstChild;
+        if (!curChild) {
+          curChild = optgroup.nextSibling;
+          optgroup = null;
+        }
       } else {
 
         if (nodeName === 'OPTION') {
 
-          if (curChild.hasAttribute('selected')) {
+          if ((curChild as Element).hasAttribute('selected')) {
             selectedIndex = i;
             break;
           }
@@ -121,10 +124,10 @@ export const select = (curElement: HTMLElement, newElement: HTMLElement) => {
 
         }
 
-        curChild = curChild.nextElementSibling;
+        curChild = curChild.nextSibling;
 
         if (!curChild && optgroup) {
-          curChild = optgroup.nextElementSibling;
+          curChild = optgroup.nextSibling;
           optgroup = null;
         }
       }
