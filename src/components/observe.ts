@@ -73,14 +73,14 @@ export const unmount = (curNode: HTMLElement, refs: string[]) => {
       $.mounted.delete(instance.scope.key);
 
       if (instance.scope.define.merge) {
-
         instance.scope.snapshot = curNode.innerHTML;
         log.debug(`Component ${instance.scope.define.name} snapshot: ${instance.scope.key}`);
-
       }
 
       for (const k in instance.scope.nodes) {
         instance.scope.nodes[k].live = 0;
+        instance.scope.nodes[k].dom.node = undefined;
+        instance.scope.nodes[k].dom.nodes = undefined;
       }
 
       for (const k in instance.scope.binds) {

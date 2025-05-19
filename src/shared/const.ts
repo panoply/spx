@@ -36,3 +36,18 @@ export const SessionMethod = [
   'reference',
   'memory'
 ];
+
+/**
+ * TypedArray Prototype
+ */
+export const TypedArray = typeof Uint8Array === 'undefined'
+  ? []
+  : [ Object.getPrototypeOf(Uint8Array) ];
+
+/**
+ * Rich Text HTTP Response
+ */
+export const RichText = 'Blob ArrayBuffer DataView FormData URLSearchParams File'
+  .split(' ')
+  .map(x => globalThis[x]).filter(x => x)
+  .concat(TypedArray);

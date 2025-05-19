@@ -77,13 +77,9 @@ export const mount = (promises: LifecycleHooks) => {
         }
 
       } catch (error) {
-
         // Fall through and reject outside of catch
-
         log.warn(`Component to failed to ${MOUNT}: ${instance.scope.instanceOf} (${ref})`, error);
-
         return Promise.reject<string>(ref);
-
       }
     };
 
@@ -155,19 +151,13 @@ export const connect = () => {
   if ($.registry.size === 0 || $.observe.components) return;
 
   if ($.page.type === VisitType.INITIAL) {
-
     getComponents();
-
   } else {
 
     if (ctx.store) {
-
       setInstances(ctx.store).then(hook).then(resetContext);
-
     } else {
-
       hook();
-
     }
   }
 

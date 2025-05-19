@@ -51,12 +51,8 @@ const onEnter = (event: MouseEvent): void => {
  * do not exceeds threshold.
  */
 const onLeave = (event: MouseEvent) => {
-
   const target = getLink(event.target, $.qs.$hover);
-
-  if (target) {
-    request.cleanup(getKey(target.href));
-  }
+  if (target) request.cleanup(getKey(target.href));
 };
 
 /**
@@ -68,10 +64,8 @@ const addListener = (target: EventTarget): void => target.addEventListener(`${po
  * Remove events from a target
  */
 const removeListener = (target: EventTarget): void => {
-
   target.removeEventListener(`${pointer}enter`, onEnter);
   target.removeEventListener(`${pointer}leave`, onLeave);
-
 };
 
 /**

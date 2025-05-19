@@ -1,7 +1,7 @@
 import type { Page, LiteralUnion } from 'types';
 import { $ } from '../app/session';
 import { CharCode } from './enums';
-import { b, nil, s } from './native';
+import { b, nil, o, s } from './native';
 import * as log from '../shared/logs';
 import { CharEntities } from './regexp';
 import { Entities, Identifiers } from './const';
@@ -101,29 +101,36 @@ export const attrJSON = (attr: string, string?: string) => {
 
   try {
 
-    const json = (string || attr)
-      .replace(/\\'|'/g, m => m[0] === '\\' ? m : '"')
-      .replace(/"(?:\\.|[^"])*"/g, m => m.replace(/\n/g, '\\n'))
-      .replace(/\[|[^[\]]*|\]/g
-        , m => /[[\]]/.test(m) ? m : m.split(',').map(value => value
-          .replace(/^(\w+)$/, '"$1"')
-          .replace(/^"([\d.]+)"$/g, '$1')).join(','))
-      .replace(/([a-zA-Z0-9_-]+)\s*:/g, '"$1":')
-      .replace(/:\s*([$\w-]+)\s*([,\]}])/g, ':"$1"$2')
-      .replace(/,(\s*[\]}])/g, '$1')
-      .replace(/([a-zA-Z_-]+)\s*,/g, '"$1",')
-      .replace(/([\]},\s]+)?"(true|false)"([\s,{}\]]+)/g, '$1$2$3');
+    // First, lets attempt to parse
+    return JSON.parse(string || attr);
 
-    return JSON.parse(json);
+  } catch {
 
-  } catch (e) {
+    try {
 
-    log.error('Invalid JSON in attribute value: ' + JSON.stringify(attr || string, null, 2), e);
+      const json = (string || attr)
+        .replace(/\\'|'/g, m => m[0] === '\\' ? m : '"')
+        .replace(/"(?:\\.|[^"])*"/g, m => m.replace(/\n/g, '\\n'))
+        .replace(/\[|[^[\]]*|\]/g
+          , m => /[[\]]/.test(m) ? m : m.split(',').map(value => value
+            .replace(/^(\w+)$/, '"$1"')
+            .replace(/^"([\d.]+)"$/g, '$1')).join(','))
+        .replace(/([a-zA-Z0-9_-]+)\s*:/g, '"$1":')
+        .replace(/:\s*([$\w-]+)\s*([,\]}])/g, ':"$1"$2')
+        .replace(/,(\s*[\]}])/g, '$1')
+        .replace(/([a-zA-Z_-]+)\s*,/g, '"$1",')
+        .replace(/([\]},\s]+)?"(true|false)"([\s,{}\]]+)/g, '$1$2$3');
 
-    return string;
+      return JSON.parse(json);
 
+    } catch (e) {
+
+      log.error('Invalid JSON in attribute value: ' + JSON.stringify(attr || string, null, 2), e);
+
+      return string;
+
+    }
   }
-
 };
 
 /**
@@ -236,6 +243,20 @@ export const setStateDefaults = (value: any) => {
     case Array: return [];
     default: return value;
   }
+
+};
+
+export const httpHeaders = (result: string) => {
+  const parse = o();
+  forEach(x => {
+    const i = x.indexOf(':');
+    const name = x.substring(0, i).trim().toLowerCase();
+    const value = x.substring(i + 1).trim();
+    name === 'set-cookie'
+      ? parse[name] ? parse[name].push(value) : (parse[name] = [ value ])
+      : parse[name] = value;
+  }, result.split('\n'));
+  return parse;
 
 };
 
@@ -354,11 +375,8 @@ export const glue = (...input: string[]) => input.join(nil);
  * Creates a random integer. Ensure unique generation be referencing Set cache
  */
 export const uid = (k = Math.floor(Math.random() * 89999 + 10000)) => {
-
   if (Identifiers.has(k)) return uid();
-
   Identifiers.add(k);
-
   return k;
 };
 
@@ -366,24 +384,17 @@ export const uid = (k = Math.floor(Math.random() * 89999 + 10000)) => {
  * Creates a UUID string. Ensure unique generation be referencing Set cache
  */
 export const uuid: { (size?: 1 | 2 | 3 | 4 | 5): string; } = function uuid (s = 5) {
-
   const k = Math.random().toString(36).slice(-s);
-
   if (Identifiers.has(k)) return uuid(s);
-
   Identifiers.add(k);
-
   return k;
-
 };
 
 /**
  * Creates a hash from string.
  */
 export const hash = (key: string) => {
-
   let h = 0;
-
   for (let i = 0, s = key.length; i < s; i++) h = ((h << 3) - h + key.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
 };
@@ -411,30 +422,29 @@ export const size = (bytes: number): string =>
     : bytes < 1073741824 ? (bytes / 1048576).toFixed(1) + ' MB' : (bytes / 1073741824).toFixed(1) + ' GB';
 
 /**
- * Converts the first letter to lowercase
+/**
+ * Lowercases the first letter, preserves the rest.
  */
-export const downcase = (input: string) => input[0].toLowerCase() + input.slice(1);
+export const downcase = (input: string): string =>
+  input.length === 0 ? '' : input[0].toLowerCase() + input.substring(1);
 
 /**
- * Converts the first letter to Uppercase
+ * Uppercases the first letter, preserves the rest.
  */
-export const upcase = (input: string) => input[0].toUpperCase() + input.slice(1);
+export const upcase = (input: string): string =>
+  input.length === 0 ? '' : input[0].toUpperCase() + input.substring(1);
 
 /**
- * Converts a string from kebab-case or snake_case to camelCase.
+ * Converts camelCase or snake_case to kebab-case.
  */
-export const kebabCase = (input: string) =>
-  /[A-Z]/.test(input)
-    ? input.replace(/(.{1})([A-Z])/g, '$1-$2').toLowerCase()
-    : input;
+export const kebabCase = (input: string): string =>
+  input.replace(/([a-z0-9])([A-Z])|_+/g, '$1-$2').toLowerCase();
 
 /**
- * Converts a string from kebab-case or snake_case to camelCase.
+ * Converts kebab-case or snake_case to camelCase.
  */
-export const camelCase = (input: string) =>
-  /[_-]/.test(downcase(input))
-    ? input.replace(/([_-]+).{1}/g, (x, k) => x[k.length].toUpperCase())
-    : input;
+export const camelCase = (input: string): string =>
+  input.replace(/[-_]+(\w)/g, (_, c) => c.toUpperCase());
 
 /**
  * Generates `Set<HTMLElement>` store model
