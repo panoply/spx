@@ -11,6 +11,8 @@ Single Page XHR - The essential dom enhancement for static SSR powered web appli
 
 ### Documentation
 
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/panoply/spx)
+
 <h4>
   Documentation lives on&nbsp;&nbsp;➠&nbsp;&nbsp;https://spx.js.org
 </h4>
